@@ -1,3 +1,4 @@
+// --- DATA ---
 const templates = [
     { id: 1, name: 'Netflix', icon: 'fa-brands fa-netflix', color: '#E50914', category: 'entertainment', price: 15.99, currency: 'USD' },
     { id: 2, name: 'Disney+', icon: 'fa-solid fa-d', color: '#113CCF', category: 'entertainment', price: 7.99, currency: 'USD' },
@@ -11,32 +12,22 @@ const templates = [
     { id: 10, name: 'Apple Music', icon: 'fa-solid fa-music', color: '#FC3C44', category: 'music', price: 10.99, currency: 'USD' },
     { id: 11, name: 'YouTube Music', icon: 'fa-brands fa-youtube', color: '#FF0000', category: 'music', price: 10.99, currency: 'USD' },
     { id: 12, name: 'Tidal', icon: 'fa-solid fa-water', color: '#000000', category: 'music', price: 10.99, currency: 'USD' },
-    { id: 13, name: 'Deezer', icon: 'fa-solid fa-headphones', color: '#A238FF', category: 'music', price: 10.99, currency: 'USD' },
-    { id: 14, name: 'SoundCloud', icon: 'fa-brands fa-soundcloud', color: '#FF5500', category: 'music', price: 12.99, currency: 'USD' },
-    { id: 15, name: 'Microsoft 365', icon: 'fa-brands fa-microsoft', color: '#0078D4', category: 'productivity', price: 6.99, currency: 'USD' },
-    { id: 16, name: 'Google Workspace', icon: 'fa-brands fa-google', color: '#4285F4', category: 'productivity', price: 6.99, currency: 'USD' },
-    { id: 17, name: 'Notion', icon: 'fa-solid fa-n', color: '#000000', category: 'productivity', price: 8.00, currency: 'USD' },
-    { id: 18, name: 'Todoist', icon: 'fa-solid fa-check-circle', color: '#E44332', category: 'productivity', price: 4.99, currency: 'USD' },
-    { id: 19, name: 'Evernote', icon: 'fa-solid fa-note-sticky', color: '#00A82D', category: 'productivity', price: 7.99, currency: 'USD' },
-    { id: 20, name: 'Trello', icon: 'fa-brands fa-trello', color: '#0079BF', category: 'productivity', price: 5.00, currency: 'USD' },
-    { id: 21, name: 'iCloud+', icon: 'fa-solid fa-cloud', color: '#555555', category: 'cloud', price: 2.99, currency: 'USD' },
-    { id: 22, name: 'Google One', icon: 'fa-brands fa-google', color: '#4285F4', category: 'cloud', price: 2.99, currency: 'USD' },
-    { id: 23, name: 'Dropbox', icon: 'fa-brands fa-dropbox', color: '#0061FF', category: 'cloud', price: 11.99, currency: 'USD' },
-    { id: 24, name: 'OneDrive', icon: 'fa-solid fa-cloud', color: '#0078D4', category: 'cloud', price: 1.99, currency: 'USD' },
-    { id: 25, name: 'Xbox Game Pass', icon: 'fa-brands fa-xbox', color: '#107C10', category: 'gaming', price: 14.99, currency: 'USD' },
-    { id: 26, name: 'PlayStation Plus', icon: 'fa-brands fa-playstation', color: '#003087', category: 'gaming', price: 9.99, currency: 'USD' },
-    { id: 27, name: 'Nintendo Switch Online', icon: 'fa-solid fa-gamepad', color: '#E60012', category: 'gaming', price: 3.99, currency: 'USD' },
-    { id: 28, name: 'EA Play', icon: 'fa-solid fa-futbol', color: '#1D1D1D', category: 'gaming', price: 4.99, currency: 'USD' },
-    { id: 29, name: 'Apple Arcade', icon: 'fa-solid fa-dice', color: '#555555', category: 'gaming', price: 6.99, currency: 'USD' },
-    { id: 30, name: 'Duolingo Plus', icon: 'fa-solid fa-graduation-cap', color: '#58CC02', category: 'education', price: 12.99, currency: 'USD' },
-    { id: 31, name: 'MasterClass', icon: 'fa-solid fa-chalkboard-user', color: '#000000', category: 'education', price: 10.00, currency: 'USD' },
-    { id: 32, name: 'Skillshare', icon: 'fa-solid fa-palette', color: '#00FF84', category: 'education', price: 13.99, currency: 'USD' },
-    { id: 33, name: 'Coursera Plus', icon: 'fa-solid fa-book-open', color: '#0056D2', category: 'education', price: 59.00, currency: 'USD' },
-    { id: 34, name: 'LinkedIn Learning', icon: 'fa-brands fa-linkedin', color: '#0A66C2', category: 'education', price: 29.99, currency: 'USD' },
-    { id: 35, name: 'Peloton', icon: 'fa-solid fa-bicycle', color: '#E60023', category: 'fitness', price: 12.99, currency: 'USD' },
-    { id: 36, name: 'Strava', icon: 'fa-solid fa-person-running', color: '#FC4C02', category: 'fitness', price: 7.99, currency: 'USD' },
-    { id: 37, name: 'Headspace', icon: 'fa-solid fa-spa', color: '#F47D31', category: 'fitness', price: 12.99, currency: 'USD' },
-    { id: 38, name: 'Calm', icon: 'fa-solid fa-moon', color: '#3B6E8F', category: 'fitness', price: 14.99, currency: 'USD' },
+    { id: 13, name: 'Microsoft 365', icon: 'fa-brands fa-microsoft', color: '#0078D4', category: 'productivity', price: 6.99, currency: 'USD' },
+    { id: 14, name: 'Google Workspace', icon: 'fa-brands fa-google', color: '#4285F4', category: 'productivity', price: 6.99, currency: 'USD' },
+    { id: 15, name: 'Notion', icon: 'fa-solid fa-n', color: '#000000', category: 'productivity', price: 8.00, currency: 'USD' },
+    { id: 16, name: 'iCloud+', icon: 'fa-solid fa-cloud', color: '#555555', category: 'cloud', price: 2.99, currency: 'USD' },
+    { id: 17, name: 'Google One', icon: 'fa-brands fa-google', color: '#4285F4', category: 'cloud', price: 2.99, currency: 'USD' },
+    { id: 18, name: 'Dropbox', icon: 'fa-brands fa-dropbox', color: '#0061FF', category: 'cloud', price: 11.99, currency: 'USD' },
+    { id: 19, name: 'Xbox Game Pass', icon: 'fa-brands fa-xbox', color: '#107C10', category: 'gaming', price: 14.99, currency: 'USD' },
+    { id: 20, name: 'PlayStation Plus', icon: 'fa-brands fa-playstation', color: '#003087', category: 'gaming', price: 9.99, currency: 'USD' },
+    { id: 21, name: 'Nintendo Switch Online', icon: 'fa-solid fa-gamepad', color: '#E60012', category: 'gaming', price: 3.99, currency: 'USD' },
+    { id: 22, name: 'Duolingo Plus', icon: 'fa-solid fa-graduation-cap', color: '#58CC02', category: 'education', price: 12.99, currency: 'USD' },
+    { id: 23, name: 'MasterClass', icon: 'fa-solid fa-chalkboard-user', color: '#000000', category: 'education', price: 10.00, currency: 'USD' },
+    { id: 24, name: 'Skillshare', icon: 'fa-solid fa-palette', color: '#00FF84', category: 'education', price: 13.99, currency: 'USD' },
+    { id: 25, name: 'Peloton', icon: 'fa-solid fa-bicycle', color: '#E60023', category: 'fitness', price: 12.99, currency: 'USD' },
+    { id: 26, name: 'Strava', icon: 'fa-solid fa-person-running', color: '#FC4C02', category: 'fitness', price: 7.99, currency: 'USD' },
+    { id: 27, name: 'Headspace', icon: 'fa-solid fa-spa', color: '#F47D31', category: 'fitness', price: 12.99, currency: 'USD' },
+    { id: 28, name: 'Calm', icon: 'fa-solid fa-moon', color: '#3B6E8F', category: 'fitness', price: 14.99, currency: 'USD' },
 ];
 
 const icons = [
@@ -72,63 +63,98 @@ const currencySymbols = {
     'SEK': 'kr', 'NOK': 'kr', 'DKK': 'kr', 'PLN': 'zł', 'CZK': 'Kč', 'HUF': 'Ft',
     'RUB': '₽', 'TRY': '₺', 'ZAR': 'R', 'AED': 'د.إ', 'SAR': '﷼', 'THB': '฿',
     'IDR': 'Rp', 'MYR': 'RM', 'PHP': '₱', 'VND': '₫', 'TWD': 'NT$', 'NZD': 'NZ$',
-    'CLP': '$', 'COP': '$', 'PEN': 'S/', 'ARS': '$', 'UAH': '₴', 'NGN': '₦',
-    'EGP': 'E£', 'PKR': '₨', 'BDT': '৳'
 };
 
-let subscriptions = [
-    { id: 1, name: 'Netflix', icon: 'fa-brands fa-netflix', color: '#E50914', price: 15.99, currency: 'USD', cycle: 'monthly', category: 'entertainment', nextBilling: '2024-02-15' },
-    { id: 2, name: 'Spotify', icon: 'fa-brands fa-spotify', color: '#1DB954', price: 9.99, currency: 'USD', cycle: 'monthly', category: 'music', nextBilling: '2024-02-20' },
-    { id: 3, name: 'Microsoft 365', icon: 'fa-brands fa-microsoft', color: '#0078D4', price: 6.99, currency: 'USD', cycle: 'monthly', category: 'productivity', nextBilling: '2024-02-25' },
-    { id: 4, name: 'Disney+', icon: 'fa-solid fa-d', color: '#113CCF', price: 7.99, currency: 'USD', cycle: 'monthly', category: 'entertainment', nextBilling: '2024-03-01' },
-    { id: 5, name: 'iCloud+', icon: 'fa-solid fa-cloud', color: '#555555', price: 2.99, currency: 'USD', cycle: 'monthly', category: 'cloud', nextBilling: '2024-02-28' },
-    { id: 6, name: 'Xbox Game Pass', icon: 'fa-brands fa-xbox', color: '#107C10', price: 14.99, currency: 'USD', cycle: 'monthly', category: 'gaming', nextBilling: '2024-02-18' },
+const categoryColors = {
+    'entertainment': '#E50914',
+    'music': '#1DB954',
+    'productivity': '#0078D4',
+    'cloud': '#5ac8fa',
+    'gaming': '#107C10',
+    'education': '#FF9500',
+    'fitness': '#FF2D55',
+    'news': '#AF52DE',
+    'finance': '#34C759',
+    'other': '#8E8E93'
+};
+
+const defaultSubscriptions = [
+    { id: 1, name: 'Netflix', icon: 'fa-brands fa-netflix', color: '#E50914', price: 15.99, currency: 'USD', cycle: 'monthly', category: 'entertainment', nextBilling: '2026-07-15' },
+    { id: 2, name: 'Spotify', icon: 'fa-brands fa-spotify', color: '#1DB954', price: 9.99, currency: 'USD', cycle: 'monthly', category: 'music', nextBilling: '2026-07-20' },
+    { id: 3, name: 'Microsoft 365', icon: 'fa-brands fa-microsoft', color: '#0078D4', price: 6.99, currency: 'USD', cycle: 'monthly', category: 'productivity', nextBilling: '2026-07-25' },
+    { id: 4, name: 'Disney+', icon: 'fa-solid fa-d', color: '#113CCF', price: 7.99, currency: 'USD', cycle: 'monthly', category: 'entertainment', nextBilling: '2026-08-01' },
+    { id: 5, name: 'iCloud+', icon: 'fa-solid fa-cloud', color: '#555555', price: 2.99, currency: 'USD', cycle: 'monthly', category: 'cloud', nextBilling: '2026-07-28' },
+    { id: 6, name: 'Xbox Game Pass', icon: 'fa-brands fa-xbox', color: '#107C10', price: 14.99, currency: 'USD', cycle: 'monthly', category: 'gaming', nextBilling: '2026-07-18' },
 ];
 
-let currentStep = 1;
-let selectedTemplate = null;
-let selectedIcon = null;
-let selectedColor = '#000000';
-let selectedCycle = 'monthly';
-
-const addModal = document.getElementById('addModal');
-const iconModal = document.getElementById('iconModal');
-const settingsModal = document.getElementById('settingsModal');
-const infoModal = document.getElementById('infoModal');
-
-function init() {
-    renderSubscriptions();
-    renderTemplates();
-    renderIcons();
-    setupEventListeners();
-    updateStats();
+// --- LOCAL STORAGE ---
+function loadSubscriptions() {
+    const stored = localStorage.getItem('subkeep_subscriptions');
+    if (stored) return JSON.parse(stored);
+    localStorage.setItem('subkeep_subscriptions', JSON.stringify(defaultSubscriptions));
+    return defaultSubscriptions;
 }
 
-function renderSubscriptions() {
-    const list = document.getElementById('subscriptionsList');
-    list.innerHTML = subscriptions.map(sub => `
-        <div class="subscription-card" data-id="${sub.id}">
-            <div class="sub-icon" style="background: ${sub.color}">
-                <i class="${sub.icon}"></i>
-            </div>
-            <div class="sub-info">
-                <div class="sub-name">${sub.name}</div>
-                <div class="sub-meta">${sub.category} · ${formatDate(sub.nextBilling)}</div>
-            </div>
-            <div class="sub-price">
-                <div class="sub-amount">${currencySymbols[sub.currency]}${sub.price}</div>
-                <div class="sub-cycle">/${sub.cycle}</div>
-            </div>
-        </div>
-    `).join('');
+function saveSubscriptions() {
+    localStorage.setItem('subkeep_subscriptions', JSON.stringify(subscriptions));
 }
 
+let subscriptions = loadSubscriptions();
+
+// --- HELPERS ---
+function getSymbol(cur) { return currencySymbols[cur] || '$'; }
+
+function formatDate(dateStr) {
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function formatDateFull(date) {
+    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+function formatMonthYear(date) {
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
+function getMonthlyTotal() {
+    return subscriptions.reduce((sum, s) => {
+        if (s.cycle === 'monthly') return sum + s.price;
+        if (s.cycle === 'yearly') return sum + (s.price / 12);
+        if (s.cycle === 'weekly') return sum + (s.price * 4.33);
+        if (s.cycle === 'daily') return sum + (s.price * 30);
+        return sum + s.price;
+    }, 0);
+}
+
+function generatePaymentHistory(subs) {
+    const history = [];
+    const now = new Date();
+    for (let m = 0; m < 6; m++) {
+        const month = new Date(now.getFullYear(), now.getMonth() - m, 1);
+        subs.forEach(sub => {
+            if (sub.cycle === 'monthly' || sub.cycle === 'weekly') {
+                history.push({
+                    name: sub.name,
+                    icon: sub.icon,
+                    color: sub.color,
+                    amount: sub.price,
+                    currency: sub.currency,
+                    date: new Date(month.getFullYear(), month.getMonth(), Math.min(28, parseInt(sub.nextBilling.split('-')[2]) || 15)),
+                    category: sub.category
+                });
+            }
+        });
+    }
+    return history.sort((a, b) => b.date - a.date);
+}
+
+// --- RENDER TEMPLATES ---
 function renderTemplates(category = 'all', search = '') {
     let filtered = templates;
     if (category !== 'all') filtered = filtered.filter(t => t.category === category);
     if (search) filtered = filtered.filter(t => t.name.toLowerCase().includes(search.toLowerCase()));
-    
     const list = document.getElementById('templatesList');
+    if (!list) return;
     list.innerHTML = filtered.map(t => `
         <div class="template-item" data-id="${t.id}">
             <div class="template-icon" style="background: ${t.color}">
@@ -142,11 +168,12 @@ function renderTemplates(category = 'all', search = '') {
     `).join('');
 }
 
+// --- RENDER ICONS ---
 function renderIcons(search = '') {
     let filtered = icons;
     if (search) filtered = icons.filter(i => i.toLowerCase().includes(search.toLowerCase()));
-    
     const grid = document.getElementById('iconGrid');
+    if (!grid) return;
     grid.innerHTML = filtered.map(icon => `
         <div class="icon-item ${selectedIcon === icon ? 'selected' : ''}" data-icon="${icon}">
             <i class="${icon}"></i>
@@ -154,40 +181,44 @@ function renderIcons(search = '') {
     `).join('');
 }
 
-function formatDate(dateStr) {
-    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function updateStats() {
-    document.getElementById('totalSubs').textContent = subscriptions.length;
-    const monthly = subscriptions.reduce((sum, s) => sum + s.price, 0);
-    document.getElementById('monthlyTotal').textContent = `$${monthly.toFixed(2)}`;
-    document.getElementById('yearlyTotal').textContent = `$${(monthly * 12).toFixed(2)}`;
-}
+// --- MODAL STATE ---
+let currentStep = 1;
+let selectedTemplate = null;
+let selectedIcon = null;
+let selectedColor = '#000000';
+let selectedCycle = 'monthly';
 
 function goToStep(step) {
     currentStep = step;
-    document.querySelectorAll('.step-content').forEach((el, i) => {
-        el.classList.toggle('active', i + 1 === step);
-    });
-    document.getElementById('modalTitle').textContent = step === 1 ? 'Add Subscription' : 'Subscription Details';
-    document.getElementById('modalBackBtn').style.display = step === 1 ? 'none' : 'flex';
-    document.getElementById('nextBtn').textContent = step === 1 ? 'Continue' : 'Add Subscription';
+    const s1 = document.getElementById('step1');
+    const s2 = document.getElementById('step2');
+    if (s1) s1.style.display = step === 1 ? 'block' : 'none';
+    if (s2) s2.style.display = step === 2 ? 'block' : 'none';
+    const title = document.getElementById('modalTitle');
+    const back = document.getElementById('modalBackBtn');
+    const next = document.getElementById('nextBtn');
+    if (title) title.textContent = step === 1 ? 'Add Subscription' : 'Subscription Details';
+    if (back) back.style.display = step === 1 ? 'none' : 'flex';
+    if (next) next.textContent = step === 1 ? 'Continue' : 'Add Subscription';
 }
 
 function selectTemplate(id) {
     selectedTemplate = templates.find(t => t.id === id);
     selectedIcon = selectedTemplate.icon;
     selectedColor = selectedTemplate.color;
-    document.getElementById('subName').value = selectedTemplate.name;
-    document.getElementById('subPrice').value = selectedTemplate.price;
-    document.getElementById('subCategory').value = selectedTemplate.category;
+    const nameEl = document.getElementById('subName');
+    const priceEl = document.getElementById('subPrice');
+    const catEl = document.getElementById('subCategory');
+    if (nameEl) nameEl.value = selectedTemplate.name;
+    if (priceEl) priceEl.value = selectedTemplate.price;
+    if (catEl) catEl.value = selectedTemplate.category;
     goToStep(2);
     updateIconPreview();
 }
 
 function updateIconPreview() {
     const preview = document.getElementById('iconPreview');
+    if (!preview) return;
     if (selectedIcon) {
         preview.innerHTML = `<i class="${selectedIcon}"></i>`;
         preview.style.background = selectedColor;
@@ -200,26 +231,37 @@ function resetForm() {
     selectedIcon = null;
     selectedColor = '#000000';
     selectedCycle = 'monthly';
-    document.getElementById('subName').value = '';
-    document.getElementById('subPrice').value = '';
-    document.getElementById('subStartDate').value = '';
-    document.getElementById('templateSearch').value = '';
+    const nameEl = document.getElementById('subName');
+    const priceEl = document.getElementById('subPrice');
+    const dateEl = document.getElementById('subStartDate');
+    const searchEl = document.getElementById('templateSearch');
+    if (nameEl) nameEl.value = '';
+    if (priceEl) priceEl.value = '';
+    if (dateEl) dateEl.value = '';
+    if (searchEl) searchEl.value = '';
     document.querySelectorAll('.cycle-btn').forEach(b => b.classList.toggle('active', b.dataset.cycle === 'monthly'));
     const preview = document.getElementById('iconPreview');
-    preview.innerHTML = '<i class="fas fa-plus"></i>';
-    preview.style.background = '';
-    preview.classList.remove('has-icon');
+    if (preview) {
+        preview.innerHTML = '<i class="fas fa-plus"></i>';
+        preview.style.background = '';
+        preview.classList.remove('has-icon');
+    }
     renderTemplates();
 }
 
 function addSubscription() {
-    const name = document.getElementById('subName').value;
-    const price = parseFloat(document.getElementById('subPrice').value) || 0;
-    const currency = document.getElementById('currencySelect').value;
-    const cycle = selectedCycle;
-    const category = document.getElementById('subCategory').value;
-    const startDate = document.getElementById('subStartDate').value || new Date().toISOString().split('T')[0];
-    
+    const nameEl = document.getElementById('subName');
+    const priceEl = document.getElementById('subPrice');
+    const curEl = document.getElementById('currencySelect');
+    const catEl = document.getElementById('subCategory');
+    const dateEl = document.getElementById('subStartDate');
+
+    const name = nameEl ? nameEl.value : '';
+    const price = priceEl ? parseFloat(priceEl.value) || 0 : 0;
+    const currency = curEl ? curEl.value : 'USD';
+    const category = catEl ? catEl.value : 'other';
+    const startDate = dateEl && dateEl.value ? dateEl.value : new Date().toISOString().split('T')[0];
+
     subscriptions.unshift({
         id: Date.now(),
         name,
@@ -227,71 +269,192 @@ function addSubscription() {
         color: selectedColor,
         price,
         currency,
-        cycle,
+        cycle: selectedCycle,
         category,
         nextBilling: startDate
     });
-    
-    renderSubscriptions();
-    updateStats();
-    addModal.classList.remove('active');
+
+    saveSubscriptions();
+    const list = document.getElementById('subscriptionsList');
+    if (list) renderSubscriptions();
+    const addModal = document.getElementById('addModal');
+    if (addModal) addModal.classList.remove('active');
     resetForm();
 }
 
-function setupEventListeners() {
-    document.getElementById('addSubBtn').addEventListener('click', () => {
-        resetForm();
-        goToStep(1);
-        addModal.classList.add('active');
-    });
-    
-    document.getElementById('closeModal').addEventListener('click', () => addModal.classList.remove('active'));
-    document.getElementById('modalBackBtn').addEventListener('click', () => goToStep(1));
-    
-    document.getElementById('nextBtn').addEventListener('click', () => {
-        if (currentStep === 1 && !selectedTemplate) return;
-        if (currentStep === 2) addSubscription();
-        else goToStep(2);
-    });
-    
-    document.getElementById('customSubBtn').addEventListener('click', () => {
-        selectedTemplate = null;
-        goToStep(2);
-    });
-    
-    document.getElementById('templateSearch').addEventListener('input', (e) => {
-        const cat = document.querySelector('.pill.active')?.dataset.category || 'all';
-        renderTemplates(cat, e.target.value);
-    });
-    
-    document.querySelectorAll('.pill').forEach(pill => {
+function renderSubscriptions() {
+    const list = document.getElementById('subscriptionsList');
+    if (!list) return;
+    list.innerHTML = subscriptions.map(sub => `
+        <div class="subscription-card" data-id="${sub.id}">
+            <div class="sub-icon" style="background: ${sub.color}">
+                <i class="${sub.icon}"></i>
+            </div>
+            <div class="sub-info">
+                <div class="sub-name">${sub.name}</div>
+                <div class="sub-meta">${sub.category} · ${formatDate(sub.nextBilling)}</div>
+            </div>
+            <div class="sub-price">
+                <div class="sub-amount">${getSymbol(sub.currency)}${sub.price}</div>
+                <div class="sub-cycle">/${sub.cycle}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateStats() {
+    const totalSubs = document.getElementById('totalSubs');
+    const monthlyTotal = document.getElementById('monthlyTotal');
+    const yearlyTotal = document.getElementById('yearlyTotal');
+    if (totalSubs) totalSubs.textContent = subscriptions.length;
+    const monthly = getMonthlyTotal();
+    if (monthlyTotal) monthlyTotal.textContent = `$${monthly.toFixed(2)}`;
+    if (yearlyTotal) yearlyTotal.textContent = `$${(monthly * 12).toFixed(2)}`;
+}
+
+function showSubDetail(id) {
+    const sub = subscriptions.find(s => s.id === id);
+    if (!sub) return;
+    const content = document.getElementById('detailContent');
+    if (!content) return;
+    content.innerHTML = `
+        <div class="detail-header">
+            <div class="detail-icon" style="background: ${sub.color}">
+                <i class="${sub.icon}"></i>
+            </div>
+            <div class="detail-title">
+                <h2>${sub.name}</h2>
+                <p>${sub.category.charAt(0).toUpperCase() + sub.category.slice(1)}</p>
+            </div>
+        </div>
+        <div class="detail-stats">
+            <div class="detail-stat">
+                <div class="detail-stat-value">${getSymbol(sub.currency)}${sub.price}</div>
+                <div class="detail-stat-label">Price</div>
+            </div>
+            <div class="detail-stat">
+                <div class="detail-stat-value">${sub.cycle.charAt(0).toUpperCase() + sub.cycle.slice(1)}</div>
+                <div class="detail-stat-label">Cycle</div>
+            </div>
+            <div class="detail-stat">
+                <div class="detail-stat-value">${getSymbol(sub.currency)}${(sub.price * 12).toFixed(2)}</div>
+                <div class="detail-stat-label">Yearly</div>
+            </div>
+        </div>
+        <div class="detail-section">
+            <h4>Details</h4>
+            <div class="detail-row">
+                <span class="detail-row-label">Next Billing</span>
+                <span class="detail-row-value">${new Date(sub.nextBilling).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-row-label">Billing Cycle</span>
+                <span class="detail-row-value">${sub.cycle.charAt(0).toUpperCase() + sub.cycle.slice(1)}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-row-label">Currency</span>
+                <span class="detail-row-value">${sub.currency}</span>
+            </div>
+        </div>
+        <div class="detail-actions">
+            <button class="btn btn-danger" onclick="deleteSub(${sub.id})">
+                <i class="fas fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-primary" onclick="document.getElementById('detailModal').classList.remove('active')">
+                Close
+            </button>
+        </div>
+    `;
+    document.getElementById('detailModal').classList.add('active');
+}
+
+function deleteSub(id) {
+    subscriptions = subscriptions.filter(s => s.id !== id);
+    saveSubscriptions();
+    renderSubscriptions();
+    updateStats();
+    document.getElementById('detailModal').classList.remove('active');
+}
+
+// --- COMMON EVENT LISTENERS ---
+function setupCommonListeners() {
+    // Add subscription
+    const addSubBtn = document.getElementById('addSubBtn');
+    if (addSubBtn) {
+        addSubBtn.addEventListener('click', () => {
+            resetForm();
+            goToStep(1);
+            document.getElementById('addModal').classList.add('active');
+        });
+    }
+
+    const closeModal = document.getElementById('closeModal');
+    if (closeModal) closeModal.addEventListener('click', () => document.getElementById('addModal').classList.remove('active'));
+    const modalBackBtn = document.getElementById('modalBackBtn');
+    if (modalBackBtn) modalBackBtn.addEventListener('click', () => goToStep(1));
+
+    const nextBtn = document.getElementById('nextBtn');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if (currentStep === 1 && !selectedTemplate) return;
+            if (currentStep === 2) addSubscription();
+            else goToStep(2);
+        });
+    }
+
+    const customSubBtn = document.getElementById('customSubBtn');
+    if (customSubBtn) {
+        customSubBtn.addEventListener('click', () => {
+            selectedTemplate = null;
+            goToStep(2);
+        });
+    }
+
+    const templateSearch = document.getElementById('templateSearch');
+    if (templateSearch) {
+        templateSearch.addEventListener('input', (e) => {
+            const cat = document.querySelector('.pill.active')?.dataset.category || 'all';
+            renderTemplates(cat, e.target.value);
+        });
+    }
+
+    document.querySelectorAll('.category-pills .pill').forEach(pill => {
         pill.addEventListener('click', () => {
-            document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.category-pills .pill').forEach(p => p.classList.remove('active'));
             pill.classList.add('active');
-            renderTemplates(pill.dataset.category, document.getElementById('templateSearch').value);
+            renderTemplates(pill.dataset.category, document.getElementById('templateSearch')?.value || '');
         });
     });
-    
-    document.getElementById('templatesList').addEventListener('click', (e) => {
-        const item = e.target.closest('.template-item');
-        if (item) selectTemplate(parseInt(item.dataset.id));
-    });
-    
-    document.getElementById('iconSelector').addEventListener('click', () => iconModal.classList.add('active'));
-    document.getElementById('closeIconModal').addEventListener('click', () => iconModal.classList.remove('active'));
-    
-    document.getElementById('iconGrid').addEventListener('click', (e) => {
-        const item = e.target.closest('.icon-item');
-        if (item) {
-            selectedIcon = item.dataset.icon;
-            updateIconPreview();
-            renderIcons(document.getElementById('iconSearch').value);
-            iconModal.classList.remove('active');
-        }
-    });
-    
-    document.getElementById('iconSearch').addEventListener('input', (e) => renderIcons(e.target.value));
-    
+
+    const templatesList = document.getElementById('templatesList');
+    if (templatesList) {
+        templatesList.addEventListener('click', (e) => {
+            const item = e.target.closest('.template-item');
+            if (item) selectTemplate(parseInt(item.dataset.id));
+        });
+    }
+
+    const iconSelector = document.getElementById('iconSelector');
+    if (iconSelector) iconSelector.addEventListener('click', () => document.getElementById('iconModal').classList.add('active'));
+    const closeIconModal = document.getElementById('closeIconModal');
+    if (closeIconModal) closeIconModal.addEventListener('click', () => document.getElementById('iconModal').classList.remove('active'));
+
+    const iconGrid = document.getElementById('iconGrid');
+    if (iconGrid) {
+        iconGrid.addEventListener('click', (e) => {
+            const item = e.target.closest('.icon-item');
+            if (item) {
+                selectedIcon = item.dataset.icon;
+                updateIconPreview();
+                renderIcons(document.getElementById('iconSearch')?.value || '');
+                document.getElementById('iconModal').classList.remove('active');
+            }
+        });
+    }
+
+    const iconSearch = document.getElementById('iconSearch');
+    if (iconSearch) iconSearch.addEventListener('input', (e) => renderIcons(e.target.value));
+
     document.querySelectorAll('.cycle-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.cycle-btn').forEach(b => b.classList.remove('active'));
@@ -299,31 +462,75 @@ function setupEventListeners() {
             selectedCycle = btn.dataset.cycle;
         });
     });
-    
-    document.getElementById('settingsBtn').addEventListener('click', () => settingsModal.classList.add('active'));
-    document.getElementById('closeSettings').addEventListener('click', () => settingsModal.classList.remove('active'));
-    
-    document.getElementById('infoBtn').addEventListener('click', () => infoModal.classList.add('active'));
-    document.getElementById('closeInfo').addEventListener('click', () => infoModal.classList.remove('active'));
-    
-    document.getElementById('darkModeToggle').addEventListener('change', (e) => {
-        document.documentElement.setAttribute('data-theme', e.target.checked ? 'dark' : 'light');
-    });
-    
+
+    // Settings / Info
+    const settingsBtn = document.getElementById('settingsBtn');
+    if (settingsBtn) settingsBtn.addEventListener('click', () => document.getElementById('settingsModal').classList.add('active'));
+    const closeSettings = document.getElementById('closeSettings');
+    if (closeSettings) closeSettings.addEventListener('click', () => document.getElementById('settingsModal').classList.remove('active'));
+    const infoBtn = document.getElementById('infoBtn');
+    if (infoBtn) infoBtn.addEventListener('click', () => document.getElementById('infoModal').classList.add('active'));
+    const closeInfo = document.getElementById('closeInfo');
+    if (closeInfo) closeInfo.addEventListener('click', () => document.getElementById('infoModal').classList.remove('active'));
+
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('change', (e) => {
+            document.documentElement.setAttribute('data-theme', e.target.checked ? 'dark' : 'light');
+        });
+    }
+
+    // Detail modal
+    const closeDetail = document.getElementById('closeDetail');
+    if (closeDetail) closeDetail.addEventListener('click', () => document.getElementById('detailModal').classList.remove('active'));
+
+    // Subscription card click
+    const subscriptionsList = document.getElementById('subscriptionsList');
+    if (subscriptionsList) {
+        subscriptionsList.addEventListener('click', (e) => {
+            const card = e.target.closest('.subscription-card');
+            if (card) showSubDetail(parseInt(card.dataset.id));
+        });
+    }
+
+    // Sort button
+    const sortBtn = document.getElementById('sortBtn');
+    if (sortBtn) {
+        sortBtn.addEventListener('click', () => {
+            subscriptions.sort((a, b) => a.price - b.price);
+            saveSubscriptions();
+            renderSubscriptions();
+        });
+    }
+
+    // More page items
+    const moreSettings = document.getElementById('moreSettings');
+    if (moreSettings) moreSettings.addEventListener('click', () => document.getElementById('settingsModal').classList.add('active'));
+    const moreAbout = document.getElementById('moreAbout');
+    if (moreAbout) moreAbout.addEventListener('click', () => document.getElementById('infoModal').classList.add('active'));
+    const moreDelete = document.getElementById('moreDelete');
+    if (moreDelete) {
+        moreDelete.addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete all subscriptions?')) {
+                subscriptions = [];
+                saveSubscriptions();
+                renderSubscriptions();
+                updateStats();
+            }
+        });
+    }
+
+    // Close modals on overlay click
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) overlay.classList.remove('active');
         });
     });
-    
-    document.querySelectorAll('.bottom-nav').forEach(nav => {
-        nav.addEventListener('click', () => {
-            if (!nav.classList.contains('add-btn')) {
-                document.querySelectorAll('.bottom-nav').forEach(n => n.classList.remove('active'));
-                nav.classList.add('active');
-            }
-        });
-    });
 }
 
-document.addEventListener('DOMContentLoaded', init);
+// --- INIT ---
+function initCommon() {
+    renderTemplates();
+    renderIcons();
+    setupCommonListeners();
+}
