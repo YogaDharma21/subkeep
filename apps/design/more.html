@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SubKeep</title>
+    <title>SubKeep - More</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="app">
         <header class="header">
-            <h1 class="header-title">SubKeep</h1>
+            <h1 class="header-title">More</h1>
             <div class="header-actions">
                 <button class="icon-btn" id="settingsBtn"><i class="fas fa-gear"></i></button>
                 <button class="icon-btn" id="infoBtn"><i class="fas fa-circle-info"></i></button>
@@ -18,37 +18,71 @@
         </header>
 
         <div class="main-content">
-            <div class="stats-row">
-                <div class="stat-item">
-                    <span class="stat-value" id="totalSubs">6</span>
-                    <span class="stat-label">Subscriptions</span>
+            <div class="more-menu">
+                <div class="more-item" id="moreSettings">
+                    <div class="more-item-icon" style="background: var(--text-secondary);"><i class="fas fa-gear"></i></div>
+                    <div class="more-item-info">
+                        <div class="more-item-title">Settings</div>
+                        <div class="more-item-desc">Theme, notifications, currency</div>
+                    </div>
+                    <i class="fas fa-chevron-right more-item-arrow"></i>
                 </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-value" id="monthlyTotal">$58.94</span>
-                    <span class="stat-label">Per Month</span>
+                <div class="more-item" id="moreExport">
+                    <div class="more-item-icon" style="background: var(--blue);"><i class="fas fa-file-export"></i></div>
+                    <div class="more-item-info">
+                        <div class="more-item-title">Export Data</div>
+                        <div class="more-item-desc">Download your subscription data</div>
+                    </div>
+                    <i class="fas fa-chevron-right more-item-arrow"></i>
                 </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-value" id="yearlyTotal">$707.28</span>
-                    <span class="stat-label">Per Year</span>
+                <div class="more-item" id="moreBackup">
+                    <div class="more-item-icon" style="background: var(--green);"><i class="fas fa-cloud-arrow-up"></i></div>
+                    <div class="more-item-info">
+                        <div class="more-item-title">Backup & Restore</div>
+                        <div class="more-item-desc">Sync your data across devices</div>
+                    </div>
+                    <i class="fas fa-chevron-right more-item-arrow"></i>
+                </div>
+                <div class="more-item" id="moreReminders">
+                    <div class="more-item-icon" style="background: var(--orange);"><i class="fas fa-bell"></i></div>
+                    <div class="more-item-info">
+                        <div class="more-item-title">Reminders</div>
+                        <div class="more-item-desc">Get notified before billing</div>
+                    </div>
+                    <i class="fas fa-chevron-right more-item-arrow"></i>
                 </div>
             </div>
 
-            <div class="section">
-                <div class="section-header">
-                    <h2>My Subscriptions</h2>
-                    <button class="text-btn" id="sortBtn">
-                        <i class="fas fa-arrow-down-short-wide"></i>
-                        Sort
-                    </button>
+            <div class="more-menu" style="margin-top: 12px;">
+                <div class="more-item" id="moreAbout">
+                    <div class="more-item-icon" style="background: var(--purple);"><i class="fas fa-circle-info"></i></div>
+                    <div class="more-item-info">
+                        <div class="more-item-title">About SubKeep</div>
+                        <div class="more-item-desc">Version 1.0.0</div>
+                    </div>
+                    <i class="fas fa-chevron-right more-item-arrow"></i>
                 </div>
-                <div class="subscriptions-list" id="subscriptionsList"></div>
+                <div class="more-item" id="moreRate">
+                    <div class="more-item-icon" style="background: var(--pink);"><i class="fas fa-star"></i></div>
+                    <div class="more-item-info">
+                        <div class="more-item-title">Rate SubKeep</div>
+                        <div class="more-item-desc">Help us improve with your feedback</div>
+                    </div>
+                    <i class="fas fa-chevron-right more-item-arrow"></i>
+                </div>
+                <div class="more-item" id="moreDelete" style="color: var(--red);">
+                    <div class="more-item-icon" style="background: var(--red);"><i class="fas fa-trash"></i></div>
+                    <div class="more-item-info">
+                        <div class="more-item-title">Delete All Data</div>
+                        <div class="more-item-desc">Remove all subscriptions</div>
+                    </div>
+                    <i class="fas fa-chevron-right more-item-arrow"></i>
+                </div>
             </div>
         </div>
 
         <nav class="bottom-bar">
-            <a href="index.html" class="bottom-nav active">
+            <a href="index.html" class="bottom-nav">
                 <i class="fas fa-house"></i>
                 <span>Home</span>
             </a>
@@ -63,7 +97,7 @@
                 <i class="fas fa-chart-simple"></i>
                 <span>Stats</span>
             </a>
-            <a href="more.html" class="bottom-nav">
+            <a href="more.html" class="bottom-nav active">
                 <i class="fas fa-ellipsis"></i>
                 <span>More</span>
             </a>
@@ -245,22 +279,9 @@
         </div>
     </div>
 
-    <!-- Subscription Detail Modal -->
-    <div class="modal-overlay" id="detailModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h2>Subscription Details</h2>
-                <button class="text-btn" id="closeDetail"><i class="fas fa-xmark"></i></button>
-            </div>
-            <div class="modal-body" id="detailContent"></div>
-        </div>
-    </div>
-
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            renderSubscriptions();
-            updateStats();
             initCommon();
         });
     </script>

@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SubKeep</title>
+    <title>SubKeep - Calendar</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="app">
         <header class="header">
-            <h1 class="header-title">SubKeep</h1>
+            <h1 class="header-title">Calendar</h1>
             <div class="header-actions">
                 <button class="icon-btn" id="settingsBtn"><i class="fas fa-gear"></i></button>
                 <button class="icon-btn" id="infoBtn"><i class="fas fa-circle-info"></i></button>
@@ -18,41 +18,41 @@
         </header>
 
         <div class="main-content">
-            <div class="stats-row">
-                <div class="stat-item">
-                    <span class="stat-value" id="totalSubs">6</span>
-                    <span class="stat-label">Subscriptions</span>
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h3 id="calendarMonth">July 2026</h3>
+                    <div class="calendar-nav">
+                        <button id="calPrev"><i class="fas fa-chevron-left"></i></button>
+                        <button id="calNext"><i class="fas fa-chevron-right"></i></button>
+                    </div>
                 </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-value" id="monthlyTotal">$58.94</span>
-                    <span class="stat-label">Per Month</span>
+                <div class="calendar-weekdays">
+                    <div class="calendar-weekday">Sun</div>
+                    <div class="calendar-weekday">Mon</div>
+                    <div class="calendar-weekday">Tue</div>
+                    <div class="calendar-weekday">Wed</div>
+                    <div class="calendar-weekday">Thu</div>
+                    <div class="calendar-weekday">Fri</div>
+                    <div class="calendar-weekday">Sat</div>
                 </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-value" id="yearlyTotal">$707.28</span>
-                    <span class="stat-label">Per Year</span>
-                </div>
+                <div class="calendar-days" id="calendarDays"></div>
             </div>
 
-            <div class="section">
-                <div class="section-header">
-                    <h2>My Subscriptions</h2>
-                    <button class="text-btn" id="sortBtn">
-                        <i class="fas fa-arrow-down-short-wide"></i>
-                        Sort
-                    </button>
+            <div class="day-detail" id="dayDetail" style="display: none;">
+                <div class="day-detail-header">
+                    <h3 id="dayDetailTitle">Subscriptions</h3>
+                    <p id="dayDetailDate"></p>
                 </div>
-                <div class="subscriptions-list" id="subscriptionsList"></div>
+                <div class="day-detail-list" id="dayDetailList"></div>
             </div>
         </div>
 
         <nav class="bottom-bar">
-            <a href="index.html" class="bottom-nav active">
+            <a href="index.html" class="bottom-nav">
                 <i class="fas fa-house"></i>
                 <span>Home</span>
             </a>
-            <a href="calendar.html" class="bottom-nav">
+            <a href="calendar.html" class="bottom-nav active">
                 <i class="fas fa-calendar"></i>
                 <span>Calendar</span>
             </a>
@@ -245,23 +245,114 @@
         </div>
     </div>
 
-    <!-- Subscription Detail Modal -->
-    <div class="modal-overlay" id="detailModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h2>Subscription Details</h2>
-                <button class="text-btn" id="closeDetail"><i class="fas fa-xmark"></i></button>
-            </div>
-            <div class="modal-body" id="detailContent"></div>
-        </div>
-    </div>
-
     <script src="script.js"></script>
     <script>
+        let calendarDate = new Date();
+        let selectedCalendarDay = null;
+
+        function renderCalendar() {
+            const year = calendarDate.getFullYear();
+            const month = calendarDate.getMonth();
+            document.getElementById('calendarMonth').textContent = formatMonthYear(calendarDate);
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrev = new Date(year, month, 0).getDate();
+            const today = new Date();
+
+            const billingDays = {};
+            subscriptions.forEach(sub => {
+                const d = new Date(sub.nextBilling);
+                if (d.getFullYear() === year && d.getMonth() === month) {
+                    const day = d.getDate();
+                    if (!billingDays[day]) billingDays[day] = [];
+                    billingDays[day].push(sub);
+                }
+            });
+
+            let html = '';
+            for (let i = firstDay - 1; i >= 0; i--) {
+                html += `<div class="calendar-day other-month">${daysInPrev - i}</div>`;
+            }
+            for (let d = 1; d <= daysInMonth; d++) {
+                const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === d;
+                const isSelected = selectedCalendarDay && selectedCalendarDay.getFullYear() === year && selectedCalendarDay.getMonth() === month && selectedCalendarDay.getDate() === d;
+                const hasSub = billingDays[d];
+                let classes = 'calendar-day';
+                if (isToday) classes += ' today';
+                if (isSelected) classes += ' selected';
+                if (hasSub) classes += ' has-sub';
+                html += `<div class="${classes}" data-day="${d}">${d}</div>`;
+            }
+            const totalCells = firstDay + daysInMonth;
+            const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+            for (let i = 1; i <= remaining; i++) {
+                html += `<div class="calendar-day other-month">${i}</div>`;
+            }
+
+            document.getElementById('calendarDays').innerHTML = html;
+
+            if (selectedCalendarDay && selectedCalendarDay.getFullYear() === year && selectedCalendarDay.getMonth() === month) {
+                showDayDetail(selectedCalendarDay.getDate(), billingDays);
+            } else {
+                document.getElementById('dayDetail').style.display = 'none';
+            }
+        }
+
+        function showDayDetail(day, billingDays) {
+            const detail = document.getElementById('dayDetail');
+            const subs = billingDays[day] || [];
+            const date = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), day);
+
+            document.getElementById('dayDetailTitle').textContent = subs.length > 0 ? `${subs.length} subscription${subs.length > 1 ? 's' : ''} due` : 'No subscriptions';
+            document.getElementById('dayDetailDate').textContent = formatDateFull(date);
+
+            if (subs.length === 0) {
+                document.getElementById('dayDetailList').innerHTML = `
+                    <div class="day-detail-empty">
+                        <i class="fas fa-calendar-check" style="font-size:24px;margin-bottom:8px;display:block;"></i>
+                        No payments scheduled for this day
+                    </div>`;
+            } else {
+                document.getElementById('dayDetailList').innerHTML = subs.map(sub => `
+                    <div class="day-detail-item">
+                        <div class="sub-icon" style="background: ${sub.color}; width:36px; height:36px; border-radius:10px; font-size:14px;">
+                            <i class="${sub.icon}"></i>
+                        </div>
+                        <div class="sub-info">
+                            <div class="sub-name" style="font-size:14px;">${sub.name}</div>
+                            <div class="sub-meta" style="font-size:12px;">${sub.category}</div>
+                        </div>
+                        <div class="sub-price">
+                            <div class="sub-amount" style="font-size:14px;">${getSymbol(sub.currency)}${sub.price}</div>
+                        </div>
+                    </div>`).join('');
+            }
+            detail.style.display = 'block';
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            renderSubscriptions();
-            updateStats();
             initCommon();
+            renderCalendar();
+
+            document.getElementById('calPrev').addEventListener('click', () => {
+                calendarDate.setMonth(calendarDate.getMonth() - 1);
+                selectedCalendarDay = null;
+                renderCalendar();
+            });
+            document.getElementById('calNext').addEventListener('click', () => {
+                calendarDate.setMonth(calendarDate.getMonth() + 1);
+                selectedCalendarDay = null;
+                renderCalendar();
+            });
+            document.getElementById('calendarDays').addEventListener('click', (e) => {
+                const dayEl = e.target.closest('.calendar-day');
+                if (dayEl && !dayEl.classList.contains('other-month')) {
+                    const day = parseInt(dayEl.dataset.day);
+                    selectedCalendarDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), day);
+                    renderCalendar();
+                }
+            });
         });
     </script>
 </body>

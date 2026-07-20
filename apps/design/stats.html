@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SubKeep</title>
+    <title>SubKeep - Analytics</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <div class="app">
         <header class="header">
-            <h1 class="header-title">SubKeep</h1>
+            <h1 class="header-title">Analytics</h1>
             <div class="header-actions">
                 <button class="icon-btn" id="settingsBtn"><i class="fas fa-gear"></i></button>
                 <button class="icon-btn" id="infoBtn"><i class="fas fa-circle-info"></i></button>
@@ -18,37 +19,73 @@
         </header>
 
         <div class="main-content">
-            <div class="stats-row">
-                <div class="stat-item">
-                    <span class="stat-value" id="totalSubs">6</span>
-                    <span class="stat-label">Subscriptions</span>
+            <!-- Spending Trend -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <h3>Spending Trend</h3>
+                    <div class="year-selector">
+                        <button class="year-btn active" data-year="2026">2026</button>
+                        <button class="year-btn" data-year="2025">2025</button>
+                    </div>
                 </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-value" id="monthlyTotal">$58.94</span>
-                    <span class="stat-label">Per Month</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-value" id="yearlyTotal">$707.28</span>
-                    <span class="stat-label">Per Year</span>
+                <div class="analytics-card-body">
+                    <div class="chart-container">
+                        <canvas id="spendingChart"></canvas>
+                    </div>
                 </div>
             </div>
 
-            <div class="section">
-                <div class="section-header">
-                    <h2>My Subscriptions</h2>
-                    <button class="text-btn" id="sortBtn">
-                        <i class="fas fa-arrow-down-short-wide"></i>
-                        Sort
-                    </button>
+            <!-- Monthly Stats -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <h3>Monthly Statistics</h3>
                 </div>
-                <div class="subscriptions-list" id="subscriptionsList"></div>
+                <div class="analytics-card-body">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-card-value" id="avgMonthly">$58.94</div>
+                            <div class="stat-card-label">Avg / Month</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-value" id="highestMonth">$58.94</div>
+                            <div class="stat-card-label">Highest</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-value" id="lowestMonth">$0.00</div>
+                            <div class="stat-card-label">Lowest</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-value" id="totalSpent">$707.28</div>
+                            <div class="stat-card-label">Total (YTD)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Breakdown -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <h3>Category Breakdown</h3>
+                </div>
+                <div class="analytics-card-body">
+                    <div class="chart-container" style="height: 220px;">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    <div class="category-list" id="categoryList"></div>
+                </div>
+            </div>
+
+            <!-- Payment History -->
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <h3>Payment History</h3>
+                </div>
+                <div class="payment-list" id="paymentHistory"></div>
             </div>
         </div>
 
         <nav class="bottom-bar">
-            <a href="index.html" class="bottom-nav active">
+            <a href="index.html" class="bottom-nav">
                 <i class="fas fa-house"></i>
                 <span>Home</span>
             </a>
@@ -59,7 +96,7 @@
             <button class="bottom-nav add-btn" id="addSubBtn">
                 <i class="fas fa-plus"></i>
             </button>
-            <a href="stats.html" class="bottom-nav">
+            <a href="stats.html" class="bottom-nav active">
                 <i class="fas fa-chart-simple"></i>
                 <span>Stats</span>
             </a>
@@ -245,23 +282,119 @@
         </div>
     </div>
 
-    <!-- Subscription Detail Modal -->
-    <div class="modal-overlay" id="detailModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h2>Subscription Details</h2>
-                <button class="text-btn" id="closeDetail"><i class="fas fa-xmark"></i></button>
-            </div>
-            <div class="modal-body" id="detailContent"></div>
-        </div>
-    </div>
-
     <script src="script.js"></script>
     <script>
+        let spendingChart = null;
+        let categoryChart = null;
+
+        function renderSpendingChart() {
+            const ctx = document.getElementById('spendingChart').getContext('2d');
+            const now = new Date();
+            const months = [];
+            const values = [];
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                months.push(d.toLocaleDateString('en-US', { month: 'short' }));
+                values.push(getMonthlyTotal());
+            }
+            if (spendingChart) spendingChart.destroy();
+            spendingChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() === '#ffffff' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.8)',
+                        borderRadius: 6,
+                        barThickness: 28,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(128,128,128,0.1)' }, ticks: { callback: v => '$' + v, font: { size: 11 } } },
+                        x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        function renderCategoryChart() {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            const cats = {};
+            subscriptions.forEach(sub => {
+                if (!cats[sub.category]) cats[sub.category] = 0;
+                cats[sub.category] += sub.price;
+            });
+            const labels = Object.keys(cats);
+            const data = Object.values(cats);
+            const colors = labels.map(c => categoryColors[c] || '#8E8E93');
+            if (categoryChart) categoryChart.destroy();
+            categoryChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.map(l => l.charAt(0).toUpperCase() + l.slice(1)),
+                    datasets: [{ data, backgroundColor: colors, borderWidth: 0, spacing: 2 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } } }
+            });
+            const total = data.reduce((a, b) => a + b, 0);
+            const list = document.getElementById('categoryList');
+            list.innerHTML = labels.map((cat, i) => {
+                const pct = total > 0 ? ((data[i] / total) * 100).toFixed(1) : 0;
+                return `<div class="category-item">
+                    <div class="category-dot" style="background: ${colors[i]}"></div>
+                    <div class="category-info">
+                        <div class="category-name">${cat.charAt(0).toUpperCase() + cat.slice(1)}</div>
+                        <div class="category-bar-bg"><div class="category-bar-fill" style="width: ${pct}%; background: ${colors[i]};"></div></div>
+                    </div>
+                    <div class="category-percent">${pct}%</div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderMonthlyStats() {
+            const monthly = getMonthlyTotal();
+            document.getElementById('avgMonthly').textContent = `$${monthly.toFixed(2)}`;
+            document.getElementById('highestMonth').textContent = `$${monthly.toFixed(2)}`;
+            document.getElementById('lowestMonth').textContent = `$${(monthly * 0.85).toFixed(2)}`;
+            document.getElementById('totalSpent').textContent = `$${(monthly * 6).toFixed(2)}`;
+        }
+
+        function renderPaymentHistory() {
+            const history = generatePaymentHistory(subscriptions).slice(0, 8);
+            const list = document.getElementById('paymentHistory');
+            list.innerHTML = history.map(p => `
+                <div class="payment-item">
+                    <div class="payment-icon" style="background: ${p.color}"><i class="${p.icon}"></i></div>
+                    <div class="payment-info">
+                        <div class="payment-name">${p.name}</div>
+                        <div class="payment-date">${p.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+                    </div>
+                    <div class="payment-amount">-${getSymbol(p.currency)}${p.amount}</div>
+                </div>`).join('');
+        }
+
+        function renderAnalytics() {
+            renderSpendingChart();
+            renderCategoryChart();
+            renderPaymentHistory();
+            renderMonthlyStats();
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            renderSubscriptions();
-            updateStats();
             initCommon();
+            renderAnalytics();
+
+            document.querySelectorAll('.year-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderSpendingChart();
+                });
+            });
         });
     </script>
 </body>
