@@ -326,6 +326,8 @@
             padding: 0;
             margin-top: -20px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            justify-content: center;
+            gap: 0;
         }
 
         .bottom-nav.add-btn span {
@@ -1641,6 +1643,10 @@
             </div>
             <div class="modal-body">
                 <div class="step-content active" id="step1">
+                    <button class="btn btn-outline btn-block" id="customSubBtn" style="margin-bottom: 16px;">
+                        <i class="fas fa-plus"></i>
+                        Create Custom
+                    </button>
                     <div class="search-box">
                         <i class="fas fa-magnifying-glass"></i>
                         <input type="text" id="templateSearch" placeholder="Search services...">
@@ -1656,11 +1662,6 @@
                         <button class="pill" data-category="fitness">Fitness</button>
                     </div>
                     <div class="templates-list" id="templatesList"></div>
-                    <div class="divider-text">or</div>
-                    <button class="btn btn-outline btn-block" id="customSubBtn">
-                        <i class="fas fa-plus"></i>
-                        Create Custom
-                    </button>
                 </div>
                 <div class="step-content" id="step2" style="display:none;">
                     <div class="icon-selector" id="iconSelector">
