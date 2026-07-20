@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubKeep - Subscription Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="header-title">SubKeep</h1>
+            <div class="header-actions">
+                <button class="icon-btn" id="settingsBtn">
+                    <i class="fas fa-gear"></i>
+                </button>
+                <button class="icon-btn" id="infoBtn">
+                    <i class="fas fa-circle-info"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-item">
+                    <span class="stat-value" id="totalSubs">6</span>
+                    <span class="stat-label">Subscriptions</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-value" id="monthlyTotal">$58.94</span>
+                    <span class="stat-label">Per Month</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-value" id="yearlyTotal">$707.28</span>
+                    <span class="stat-label">Per Year</span>
+                </div>
+            </div>
+
+            <!-- Subscriptions List -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>My Subscriptions</h2>
+                    <button class="text-btn" id="sortBtn">
+                        <i class="fas fa-arrow-down-short-wide"></i>
+                        Sort
+                    </button>
+                </div>
+                
+                <div class="subscriptions-list" id="subscriptionsList">
+                    <!-- Subscriptions rendered here -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Bar -->
+        <nav class="bottom-bar">
+            <button class="bottom-nav active" data-view="home">
+                <i class="fas fa-house"></i>
+                <span>Home</span>
+            </button>
+            <button class="bottom-nav" data-view="calendar">
+                <i class="fas fa-calendar"></i>
+                <span>Calendar</span>
+            </button>
+            <button class="bottom-nav add-btn" id="addSubBtn">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="bottom-nav" data-view="stats">
+                <i class="fas fa-chart-simple"></i>
+                <span>Stats</span>
+            </button>
+            <button class="bottom-nav" data-view="more">
+                <i class="fas fa-ellipsis"></i>
+                <span>More</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Add Subscription Modal -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <div class="modal-header">
+                <button class="text-btn" id="modalBackBtn">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 id="modalTitle">Add Subscription</h2>
+                <button class="text-btn" id="closeModal">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Step 1: Template Selection -->
+                <div class="step-content active" id="step1">
+                    <div class="search-box">
+                        <i class="fas fa-magnifying-glass"></i>
+                        <input type="text" id="templateSearch" placeholder="Search services...">
+                    </div>
+                    
+                    <div class="category-pills">
+                        <button class="pill active" data-category="all">All</button>
+                        <button class="pill" data-category="entertainment">Entertainment</button>
+                        <button class="pill" data-category="music">Music</button>
+                        <button class="pill" data-category="productivity">Productivity</button>
+                        <button class="pill" data-category="cloud">Cloud</button>
+                        <button class="pill" data-category="gaming">Gaming</button>
+                        <button class="pill" data-category="education">Education</button>
+                        <button class="pill" data-category="fitness">Fitness</button>
+                    </div>
+
+                    <div class="templates-list" id="templatesList">
+                        <!-- Templates rendered here -->
+                    </div>
+
+                    <div class="divider-text">or</div>
+
+                    <button class="btn btn-outline btn-block" id="customSubBtn">
+                        <i class="fas fa-plus"></i>
+                        Create Custom
+                    </button>
+                </div>
+
+                <!-- Step 2: Details Form -->
+                <div class="step-content" id="step2">
+                    <div class="icon-selector" id="iconSelector">
+                        <div class="selected-icon" id="iconPreview">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <span>Tap to choose icon</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="subName" placeholder="e.g., Netflix">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Price</label>
+                            <input type="number" id="subPrice" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Currency</label>
+                            <select id="currencySelect">
+                                <option value="USD">$ USD</option>
+                                <option value="EUR">€ EUR</option>
+                                <option value="GBP">£ GBP</option>
+                                <option value="JPY">¥ JPY</option>
+                                <option value="AUD">A$ AUD</option>
+                                <option value="CAD">C$ CAD</option>
+                                <option value="INR">₹ INR</option>
+                                <option value="BRL">R$ BRL</option>
+                                <option value="KRW">₩ KRW</option>
+                                <option value="MXN">$ MXN</option>
+                                <option value="SGD">S$ SGD</option>
+                                <option value="HKD">HK$ HKD</option>
+                                <option value="SEK">kr SEK</option>
+                                <option value="NOK">kr NOK</option>
+                                <option value="DKK">kr DKK</option>
+                                <option value="PLN">zł PLN</option>
+                                <option value="CZK">Kč CZK</option>
+                                <option value="HUF">Ft HUF</option>
+                                <option value="RUB">₽ RUB</option>
+                                <option value="TRY">₺ TRY</option>
+                                <option value="ZAR">R ZAR</option>
+                                <option value="AED">د.إ AED</option>
+                                <option value="SAR">﷼ SAR</option>
+                                <option value="THB">฿ THB</option>
+                                <option value="IDR">Rp IDR</option>
+                                <option value="MYR">RM MYR</option>
+                                <option value="PHP">₱ PHP</option>
+                                <option value="VND">₫ VND</option>
+                                <option value="TWD">NT$ TWD</option>
+                                <option value="NZD">NZ$ NZD</option>
+                                <option value="CLP">$ CLP</option>
+                                <option value="COP">$ COP</option>
+                                <option value="PEN">S/ PEN</option>
+                                <option value="ARS">$ ARS</option>
+                                <option value="UAH">₴ UAH</option>
+                                <option value="NGN">₦ NGN</option>
+                                <option value="EGP">E£ EGP</option>
+                                <option value="PKR">₨ PKR</option>
+                                <option value="BDT">৳ BDT</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Billing Cycle</label>
+                        <div class="cycle-options">
+                            <button class="cycle-btn" data-cycle="daily">Daily</button>
+                            <button class="cycle-btn" data-cycle="weekly">Weekly</button>
+                            <button class="cycle-btn active" data-cycle="monthly">Monthly</button>
+                            <button class="cycle-btn" data-cycle="yearly">Yearly</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="subCategory">
+                            <option value="entertainment">Entertainment</option>
+                            <option value="music">Music</option>
+                            <option value="productivity">Productivity</option>
+                            <option value="cloud">Cloud Storage</option>
+                            <option value="gaming">Gaming</option>
+                            <option value="education">Education</option>
+                            <option value="fitness">Fitness</option>
+                            <option value="news">News</option>
+                            <option value="finance">Finance</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" id="subStartDate">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-block" id="nextBtn">
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Icon Picker Modal -->
+    <div class="modal-overlay" id="iconModal">
+        <div class="modal modal-bottom">
+            <div class="modal-header">
+                <h2>Choose Icon</h2>
+                <button class="text-btn" id="closeIconModal">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="search-box">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="text" id="iconSearch" placeholder="Search icons...">
+                </div>
+                <div class="icon-grid" id="iconGrid">
+                    <!-- Icons rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal modal-bottom">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="text-btn" id="closeSettings">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-list">
+                    <div class="settings-item">
+                        <div class="settings-info">
+                            <i class="fas fa-moon"></i>
+                            <span>Dark Mode</span>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="darkModeToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-info">
+                            <i class="fas fa-bell"></i>
+                            <span>Notifications</span>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-info">
+                            <i class="fas fa-dollar-sign"></i>
+                            <span>Default Currency</span>
+                        </div>
+                        <span class="settings-value">USD</span>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-info">
+                            <i class="fas fa-trash"></i>
+                            <span>Delete All Data</span>
+                        </div>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div class="modal-overlay" id="infoModal">
+        <div class="modal modal-bottom">
+            <div class="modal-header">
+                <h2>About</h2>
+                <button class="text-btn" id="closeInfo">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="about-content">
+                    <div class="about-icon">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <h3>SubKeep</h3>
+                    <p>Track your subscriptions and never miss a payment.</p>
+                    <span class="version">Version 1.0.0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
