@@ -14,6 +14,7 @@ import {
   Cell,
 } from "recharts"
 import { categoryColors, getSymbol } from "@/lib/constants"
+import { PieChart as PieChartIcon } from "lucide-react"
 
 interface StatsChartsProps {
   subscriptions: Array<{
@@ -173,11 +174,18 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
         </div>
       </div>
 
-      {categoryData.length > 0 && (
       <div className="rounded-xl border border-border bg-background">
         <div className="border-b border-border p-4">
           <h3 className="text-sm font-semibold">Category Breakdown</h3>
         </div>
+        {categoryData.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-8">
+            <div className="mb-3 flex size-16 items-center justify-center rounded-full bg-muted">
+              <PieChart className="size-8 text-muted-foreground/50" />
+            </div>
+            <p className="text-sm text-muted-foreground">No subscriptions yet</p>
+          </div>
+        ) : (
         <div className="p-4">
           <div className="mb-4 flex justify-center">
             <div className="h-[180px] w-[180px]">
@@ -229,8 +237,8 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
             })}
           </div>
         </div>
+        )}
       </div>
-      )}
 
       {paymentHistory.length > 0 && (
       <div className="rounded-xl border border-border bg-background">
