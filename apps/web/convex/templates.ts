@@ -1,4 +1,4 @@
-import { query, internalMutation } from "./_generated/server"
+import { query, mutation, internalMutation } from "./_generated/server"
 import { v } from "convex/values"
 
 const defaultTemplates = [
@@ -89,6 +89,21 @@ export const search = query({
 })
 
 export const seed = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const existing = await ctx.db.query("templates").collect()
+    if (existing.length >= defaultTemplates.length) return "already_seeded"
+    for (const t of existing) {
+      await ctx.db.delete(t._id)
+    }
+    for (const template of defaultTemplates) {
+      await ctx.db.insert("templates", template)
+    }
+    return "seeded"
+  },
+})
+
+export const seedTemplates = mutation({
   args: {},
   handler: async (ctx) => {
     const existing = await ctx.db.query("templates").collect()
