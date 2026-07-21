@@ -9,11 +9,12 @@ import { Skeleton } from "@/components/ui/skeleton"
 export default function StatsPage() {
   const { isSignedIn } = useAuth()
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
+  const payments = useQuery(api.payments.list, isSignedIn ? {} : "skip")
 
   return (
     <div className="p-4">
       {subscriptions ? (
-        <StatsCharts subscriptions={subscriptions} />
+        <StatsCharts subscriptions={subscriptions} payments={payments || []} />
       ) : (
         <div className="space-y-4">
           <Skeleton className="h-[250px] rounded-xl" />

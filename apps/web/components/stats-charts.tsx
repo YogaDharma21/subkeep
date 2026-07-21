@@ -25,9 +25,19 @@ interface StatsChartsProps {
     nextBilling: string
     color: string
   }>
+  payments?: Array<{
+    _id: string
+    name: string
+    icon: string
+    color: string
+    amount: number
+    currency: string
+    category: string
+    date: string
+  }>
 }
 
-export function StatsCharts({ subscriptions }: StatsChartsProps) {
+export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) {
   const monthlyTotal = useMemo(() => {
     return subscriptions.reduce((sum, s) => {
       if (s.cycle === "monthly") return sum + s.price
@@ -67,36 +77,18 @@ export function StatsCharts({ subscriptions }: StatsChartsProps) {
   const total = categoryData.reduce((sum, c) => sum + c.value, 0)
 
   const paymentHistory = useMemo(() => {
-    const history: Array<{
-      name: string
-      icon: string
-      color: string
-      amount: number
-      currency: string
-      date: Date
-    }> = []
-    const now = new Date()
-    for (let m = 0; m < 6; m++) {
-      const month = new Date(now.getFullYear(), now.getMonth() - m, 1)
-      subscriptions.forEach((sub) => {
-        if (sub.cycle === "monthly" || sub.cycle === "weekly") {
-          history.push({
-            name: sub.name,
-            icon: "Receipt",
-            color: sub.color,
-            amount: sub.price,
-            currency: sub.currency,
-            date: new Date(
-              month.getFullYear(),
-              month.getMonth(),
-              Math.min(28, parseInt(sub.nextBilling.split("-")[2]) || 15)
-            ),
-          })
-        }
-      })
-    }
-    return history.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 8)
-  }, [subscriptions])
+    return payments
+      .map((p) => ({
+        name: p.name,
+        icon: p.icon,
+        color: p.color,
+        amount: p.amount,
+        currency: p.currency,
+        date: new Date(p.date),
+      }))
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .slice(0, 10)
+  }, [payments])
 
   return (
     <div className="space-y-4">
