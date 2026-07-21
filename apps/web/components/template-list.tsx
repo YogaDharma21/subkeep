@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useQuery } from "convex/react"
+import { useState, useEffect } from "react"
+import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import * as LucideIcons from "lucide-react"
 import { Search } from "lucide-react"
@@ -36,6 +36,13 @@ export function TemplateList({ onSelect }: TemplateListProps) {
     search,
     category: activeCategory,
   })
+  const seedTemplates = useMutation(api.templates.seedTemplates)
+
+  useEffect(() => {
+    if (templates && templates.length === 0 && search === "" && activeCategory === "all") {
+      seedTemplates()
+    }
+  }, [templates, search, activeCategory, seedTemplates])
 
   return (
     <div>
