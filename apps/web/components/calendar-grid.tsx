@@ -31,7 +31,7 @@ interface CalendarGridProps {
 export function CalendarGrid({ subscriptions }: CalendarGridProps) {
   const router = useRouter()
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [selectedDay, setSelectedDay] = useState<number | null>(null)
+  const [selectedDay, setSelectedDay] = useState<number | null>(new Date().getDate())
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
