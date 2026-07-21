@@ -172,6 +172,13 @@ export const removeAll = mutation({
     for (const sub of subs) {
       await ctx.db.delete(sub._id)
     }
+    const payments = await ctx.db
+      .query("payments")
+      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .collect()
+    for (const p of payments) {
+      await ctx.db.delete(p._id)
+    }
   },
 })
 

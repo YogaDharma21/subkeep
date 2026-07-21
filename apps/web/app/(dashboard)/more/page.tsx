@@ -8,9 +8,7 @@ import {
   Settings,
   Download,
   Upload,
-  Bell,
   Info,
-  Star,
   Trash2,
   ChevronRight,
   FileJson,
@@ -168,13 +166,6 @@ export default function MorePage() {
         color: "bg-teal-500",
         onClick: () => fileInputRef.current?.click(),
       },
-      {
-        icon: Bell,
-        label: "Reminders",
-        description: "Get notified before billing",
-        color: "bg-orange-500",
-        onClick: () => {},
-      },
     ],
     [
       {
@@ -183,13 +174,6 @@ export default function MorePage() {
         description: "Version 1.0.0",
         color: "bg-purple-500",
         onClick: () => setAboutOpen(true),
-      },
-      {
-        icon: Star,
-        label: "Rate SubKeep",
-        description: "Help us improve with your feedback",
-        color: "bg-pink-500",
-        onClick: () => {},
       },
     ],
   ]
