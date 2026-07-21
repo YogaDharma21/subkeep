@@ -26,4 +26,16 @@ export default defineSchema({
     defaultPrice: v.number(),
     defaultCurrency: v.string(),
   }).index("by_category", ["category"]),
+
+  payments: defineTable({
+    userId: v.string(),
+    subscriptionId: v.id("subscriptions"),
+    name: v.string(),
+    icon: v.string(),
+    color: v.string(),
+    amount: v.number(),
+    currency: v.string(),
+    category: v.string(),
+    date: v.string(),
+  }).index("by_user", ["userId"]),
 })

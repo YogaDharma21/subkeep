@@ -6,7 +6,7 @@ import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
 import * as LucideIcons from "lucide-react"
-import { ArrowLeft, Pencil, Pause, Play, Copy, Trash2 } from "lucide-react"
+import { ArrowLeft, Pencil, Pause, Play, Copy, Trash2, DollarSign } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -54,6 +54,7 @@ export default function SubscriptionDetailPage({
   const suspendMutation = useMutation(api.subscriptions.suspend)
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
+  const recordPaymentMutation = useMutation(api.payments.create)
 
   const [editName, setEditName] = useState("")
   const [editPrice, setEditPrice] = useState("")
@@ -105,6 +106,20 @@ export default function SubscriptionDetailPage({
     if (!id) return
     await removeMutation({ id: id as Id<"subscriptions"> })
     router.push("/")
+  }
+
+  const handleRecordPayment = async () => {
+    if (!sub || !id) return
+    await recordPaymentMutation({
+      subscriptionId: id as Id<"subscriptions">,
+      name: sub.name,
+      icon: sub.icon,
+      color: sub.color,
+      amount: sub.price,
+      currency: sub.currency,
+      category: sub.category,
+      date: new Date().toISOString().split("T")[0],
+    })
   }
 
   if (!sub) {
@@ -348,6 +363,16 @@ export default function SubscriptionDetailPage({
         </Button>
         <Button variant="outline" className="flex-1" onClick={handleClone}>
           <Copy className="size-4" /> Clone
+        </Button>
+      </div>
+
+      <div className="mt-3">
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={handleRecordPayment}
+        >
+          <DollarSign className="size-4" /> Record Payment
         </Button>
       </div>
 
