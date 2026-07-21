@@ -173,6 +173,7 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
         </div>
       </div>
 
+      {categoryData.length > 0 && (
       <div className="rounded-xl border border-border bg-background">
         <div className="border-b border-border p-4">
           <h3 className="text-sm font-semibold">Category Breakdown</h3>
@@ -229,7 +230,9 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
           </div>
         </div>
       </div>
+      )}
 
+      {paymentHistory.length > 0 && (
       <div className="rounded-xl border border-border bg-background">
         <div className="border-b border-border p-4">
           <h3 className="text-sm font-semibold">Payment History</h3>
@@ -265,6 +268,7 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
           ))}
         </div>
       </div>
+      )}
     </div>
   )
 }
