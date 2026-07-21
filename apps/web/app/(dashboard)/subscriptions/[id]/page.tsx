@@ -122,6 +122,11 @@ export default function SubscriptionDetailPage({
     })
   }
 
+  if (sub === null) {
+    router.replace("/")
+    return null
+  }
+
   if (!sub) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">

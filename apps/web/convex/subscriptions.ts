@@ -20,8 +20,7 @@ export const get = query({
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new Error("Not authenticated")
     const sub = await ctx.db.get(args.id)
-    if (!sub) throw new Error("Subscription not found")
-    if (sub.userId !== identity.subject) throw new Error("Unauthorized")
+    if (!sub || sub.userId !== identity.subject) return null
     return sub
   },
 })
