@@ -13,8 +13,6 @@ import {
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { TemplateList } from "@/components/template-list"
 import { IconPicker } from "@/components/icon-picker"
 import { cn } from "@/lib/utils"
@@ -148,7 +146,7 @@ export function AddSubscriptionSheet({
             </div>
           ) : (
             <>
-              <ScrollArea className="flex-1 px-4 pt-4">
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4">
                 <div className="space-y-4 pb-4">
                   <button
                     onClick={() => setIconOpen(true)}
@@ -258,7 +256,7 @@ export function AddSubscriptionSheet({
                     />
                   </div>
                 </div>
-              </ScrollArea>
+              </div>
 
               <div className="shrink-0 border-t border-border p-4">
                 <Button
