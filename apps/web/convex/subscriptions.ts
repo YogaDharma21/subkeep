@@ -175,3 +175,39 @@ export const removeAll = mutation({
     }
   },
 })
+
+export const restoreAll = mutation({
+  args: {
+    subscriptions: v.array(
+      v.object({
+        name: v.string(),
+        icon: v.string(),
+        color: v.string(),
+        price: v.number(),
+        currency: v.string(),
+        cycle: v.string(),
+        category: v.string(),
+        startDate: v.string(),
+        nextBilling: v.string(),
+        isActive: v.boolean(),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Not authenticated")
+    const existing = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .collect()
+    for (const sub of existing) {
+      await ctx.db.delete(sub._id)
+    }
+    for (const sub of args.subscriptions) {
+      await ctx.db.insert("subscriptions", {
+        userId: identity.subject,
+        ...sub,
+      })
+    }
+  },
+})

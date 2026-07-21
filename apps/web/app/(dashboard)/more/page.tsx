@@ -1,30 +1,133 @@
 "use client"
 
-import { useState } from "react"
-import { useMutation } from "convex/react"
+import { useState, useRef } from "react"
+import { useQuery, useMutation } from "convex/react"
+import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
 import {
   Settings,
   Download,
-  CloudUpload,
+  Upload,
   Bell,
   Info,
   Star,
   Trash2,
   ChevronRight,
+  FileJson,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SettingsSheet } from "@/components/settings-sheet"
 
 
 export default function MorePage() {
+  const { isSignedIn } = useAuth()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [restoreConfirm, setRestoreConfirm] = useState(false)
+  const [restoreData, setRestoreData] = useState<{
+    subscriptions: Array<Record<string, unknown>>
+    payments: Array<Record<string, unknown>>
+  } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const removeAll = useMutation(api.subscriptions.removeAll)
+  const restoreSubscriptions = useMutation(api.subscriptions.restoreAll)
+  const restorePayments = useMutation(api.payments.restoreAll)
+
+  const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
+  const payments = useQuery(api.payments.list, isSignedIn ? {} : "skip")
 
   const handleDeleteAll = async () => {
     await removeAll()
     setDeleteConfirm(false)
+  }
+
+  const downloadJson = (data: Record<string, unknown>, filename: string) => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleExportData = () => {
+    if (!subscriptions) return
+    const data = subscriptions.map((s) => ({
+      name: s.name,
+      icon: s.icon,
+      color: s.color,
+      price: s.price,
+      currency: s.currency,
+      cycle: s.cycle,
+      category: s.category,
+      startDate: s.startDate,
+      nextBilling: s.nextBilling,
+      isActive: s.isActive,
+    }))
+    const date = new Date().toISOString().split("T")[0]
+    downloadJson({ subscriptions: data }, `subkeep-export-${date}.json`)
+  }
+
+  const handleBackup = () => {
+    if (!subscriptions || !payments) return
+    const data = {
+      version: 1,
+      exportDate: new Date().toISOString(),
+      subscriptions: subscriptions.map((s) => ({
+        name: s.name,
+        icon: s.icon,
+        color: s.color,
+        price: s.price,
+        currency: s.currency,
+        cycle: s.cycle,
+        category: s.category,
+        startDate: s.startDate,
+        nextBilling: s.nextBilling,
+        isActive: s.isActive,
+      })),
+      payments: payments.map((p) => ({
+        name: p.name,
+        icon: p.icon,
+        color: p.color,
+        amount: p.amount,
+        currency: p.currency,
+        category: p.category,
+        date: p.date,
+      })),
+    }
+    const date = new Date().toISOString().split("T")[0]
+    downloadJson(data, `subkeep-backup-${date}.json`)
+  }
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string)
+        if (data.subscriptions && Array.isArray(data.subscriptions)) {
+          setRestoreData(data)
+          setRestoreConfirm(true)
+        }
+      } catch {
+        alert("Invalid backup file")
+      }
+    }
+    reader.readAsText(file)
+    e.target.value = ""
+  }
+
+  const handleRestore = async () => {
+    if (!restoreData) return
+    await restoreSubscriptions({ subscriptions: restoreData.subscriptions as never[] })
+    if (restoreData.payments && restoreData.payments.length > 0) {
+      await restorePayments({ payments: restoreData.payments as never[] })
+    }
+    setRestoreConfirm(false)
+    setRestoreData(null)
   }
 
   const menuGroups = [
@@ -39,16 +142,23 @@ export default function MorePage() {
       {
         icon: Download,
         label: "Export Data",
-        description: "Download your subscription data",
+        description: "Download subscriptions as JSON",
         color: "bg-blue-500",
-        onClick: () => {},
+        onClick: handleExportData,
       },
       {
-        icon: CloudUpload,
-        label: "Backup & Restore",
-        description: "Sync your data across devices",
+        icon: FileJson,
+        label: "Backup",
+        description: "Export all data including payments",
         color: "bg-green-500",
-        onClick: () => {},
+        onClick: handleBackup,
+      },
+      {
+        icon: Upload,
+        label: "Restore",
+        description: "Import data from backup file",
+        color: "bg-teal-500",
+        onClick: () => fileInputRef.current?.click(),
       },
       {
         icon: Bell,
@@ -78,6 +188,14 @@ export default function MorePage() {
 
   return (
     <div className="p-4">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        className="hidden"
+        onChange={handleFileSelect}
+      />
+
       {menuGroups.map((group, gi) => (
         <div
           key={gi}
@@ -156,6 +274,47 @@ export default function MorePage() {
                 onClick={handleDeleteAll}
               >
                 Delete All
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {restoreConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-sm rounded-2xl bg-background p-6">
+            <div className="mb-4 flex justify-center">
+              <div className="flex size-12 items-center justify-center rounded-full bg-green-500/10">
+                <Upload className="size-6 text-green-500" />
+              </div>
+            </div>
+            <h3 className="mb-2 text-center text-lg font-semibold">
+              Restore Data?
+            </h3>
+            <p className="mb-6 text-center text-sm text-muted-foreground">
+              This will replace all your current data with the backup. This
+              action cannot be undone.
+            </p>
+            <div className="mb-4 rounded-lg bg-muted p-3 text-xs text-muted-foreground">
+              <div>{restoreData?.subscriptions?.length || 0} subscriptions</div>
+              <div>{restoreData?.payments?.length || 0} payments</div>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setRestoreConfirm(false)
+                  setRestoreData(null)
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 bg-green-500 hover:bg-green-600"
+                onClick={handleRestore}
+              >
+                Restore
               </Button>
             </div>
           </div>
