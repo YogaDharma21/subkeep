@@ -30,9 +30,15 @@ npm install
 2. Set up environment variables in `.env.local`:
 
 ```
-NEXT_PUBLIC_CONVEX_URL=<your-convex-url>
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<your-clerk-key>
-CLERK_SECRET_KEY=<your-clerk-secret>
+# Convex
+CONVEX_DEPLOYMENT=dev:<your-deployment-id>
+NEXT_PUBLIC_CONVEX_URL=https://<your-deployment-id>.convex.cloud
+NEXT_PUBLIC_CONVEX_SITE_URL=https://<your-deployment-id>.convex.site
+
+# Clerk
+CLERK_FRONTEND_API_URL=https://<your-clerk-id>.clerk.accounts.dev
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
 ```
 
 3. Run Convex dev (pushes schema + seeds templates):
