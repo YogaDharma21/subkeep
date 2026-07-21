@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -28,6 +29,7 @@ interface CalendarGridProps {
 }
 
 export function CalendarGrid({ subscriptions }: CalendarGridProps) {
+  const router = useRouter()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
 
@@ -178,7 +180,8 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
               selectedSubs.map((sub) => (
                   <div
                     key={sub._id}
-                    className="flex items-center gap-3 rounded-lg p-3 hover:bg-muted"
+                    onClick={() => router.push(`/subscriptions/${sub._id}`)}
+                    className="flex cursor-pointer items-center gap-3 rounded-lg p-3 hover:bg-muted"
                   >
                     <div
                       className="flex size-9 items-center justify-center rounded-lg"
