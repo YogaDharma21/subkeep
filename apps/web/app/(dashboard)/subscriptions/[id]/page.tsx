@@ -266,16 +266,20 @@ export default function SubscriptionDetailPage({
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium">Billing Cycle</label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {billingCycles.map((bc) => (
-                <Badge
+                <button
                   key={bc.value}
-                  variant={editCycle === bc.value ? "default" : "outline"}
-                  className="cursor-pointer justify-center rounded-lg py-2"
+                  type="button"
                   onClick={() => setEditCycle(bc.value)}
+                  className={`flex items-center justify-center rounded-xl border-2 px-4 py-3 text-sm font-medium transition-all ${
+                    editCycle === bc.value
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border bg-background text-foreground hover:border-foreground/50"
+                  }`}
                 >
                   {bc.label}
-                </Badge>
+                </button>
               ))}
             </div>
           </div>

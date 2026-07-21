@@ -214,16 +214,20 @@ export function AddSubscriptionSheet({
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Billing Cycle</label>
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       {billingCycles.map((bc) => (
-                        <Badge
+                        <button
                           key={bc.value}
-                          variant={cycle === bc.value ? "default" : "outline"}
-                          className="cursor-pointer justify-center rounded-lg py-2"
+                          type="button"
                           onClick={() => setCycle(bc.value)}
+                          className={`flex items-center justify-center rounded-xl border-2 px-4 py-3 text-sm font-medium transition-all ${
+                            cycle === bc.value
+                              ? "border-foreground bg-foreground text-background"
+                              : "border-border bg-background text-foreground hover:border-foreground/50"
+                          }`}
                         >
                           {bc.label}
-                        </Badge>
+                        </button>
                       ))}
                     </div>
                   </div>
