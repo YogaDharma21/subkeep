@@ -14,14 +14,22 @@ import {
   Trash2,
   ChevronRight,
   FileJson,
+  ExternalLink,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { SettingsSheet } from "@/components/settings-sheet"
 
 
 export default function MorePage() {
   const { isSignedIn } = useAuth()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [aboutOpen, setAboutOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [restoreConfirm, setRestoreConfirm] = useState(false)
   const [restoreData, setRestoreData] = useState<{
@@ -174,7 +182,7 @@ export default function MorePage() {
         label: "About SubKeep",
         description: "Version 1.0.0",
         color: "bg-purple-500",
-        onClick: () => {},
+        onClick: () => setAboutOpen(true),
       },
       {
         icon: Star,
@@ -322,6 +330,33 @@ export default function MorePage() {
       )}
 
       <SettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
+
+      <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>About SubKeep</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 text-sm text-muted-foreground">
+            <p>
+              SubKeep is a subscription tracker that helps you manage and visualize
+              all your recurring payments in one place.
+            </p>
+            <p>
+              Track monthly costs, view upcoming billing dates on a calendar, and
+              get insights into your spending habits.
+            </p>
+            <a
+              href="https://github.com/YogaDharma21/subkeep"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-foreground hover:underline"
+            >
+              <ExternalLink className="size-4" />
+              View on GitHub
+            </a>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
