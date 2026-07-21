@@ -64,6 +64,12 @@ export default function SubscriptionDetailPage({
   const [editIcon, setEditIcon] = useState<string | null>(null)
   const [editColor, setEditColor] = useState("#000000")
 
+  const colorOptions = [
+    "#000000", "#555555", "#E50914", "#1DB954", "#00A8E1",
+    "#4285F4", "#0078D4", "#B535F6", "#F47D31", "#00C4CC",
+    "#E60023", "#107C10", "#003087", "#58CC02", "#FF0000",
+  ]
+
   const startEditing = () => {
     if (!sub) return
     setEditName(sub.name)
@@ -300,6 +306,25 @@ export default function SubscriptionDetailPage({
                 >
                   {bc.label}
                 </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium">Icon Color</label>
+            <div className="flex flex-wrap gap-2">
+              {colorOptions.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setEditColor(c)}
+                  className={cn(
+                    "size-8 rounded-full border-2 transition-all",
+                    editColor === c
+                      ? "border-foreground scale-110"
+                      : "border-transparent"
+                  )}
+                  style={{ backgroundColor: c }}
+                />
               ))}
             </div>
           </div>
