@@ -54,6 +54,12 @@ export function AddSubscriptionSheet({
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
   const [selectedColor, setSelectedColor] = useState("#000000")
 
+  const colorOptions = [
+    "#000000", "#555555", "#E50914", "#1DB954", "#00A8E1",
+    "#4285F4", "#0078D4", "#B535F6", "#F47D31", "#00C4CC",
+    "#E60023", "#107C10", "#003087", "#58CC02", "#FF0000",
+  ]
+
   const resetForm = () => {
     setStep(1)
     setName("")
@@ -175,6 +181,26 @@ export function AddSubscriptionSheet({
                   </button>
 
                   <div className="space-y-2">
+                    <label className="text-sm font-medium">Icon Color</label>
+                    <div className="flex flex-wrap gap-2">
+                      {colorOptions.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setSelectedColor(c)}
+                          className={cn(
+                            "size-8 rounded-full border-2 transition-all",
+                            selectedColor === c
+                              ? "border-foreground scale-110"
+                              : "border-transparent"
+                          )}
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
                     <label className="text-sm font-medium">Name</label>
                     <Input
                       placeholder="e.g., Netflix"
@@ -275,7 +301,6 @@ export function AddSubscriptionSheet({
           selected={selectedIcon}
           onSelect={(icon) => {
             setSelectedIcon(icon)
-            setSelectedColor("#000000")
           }}
           open={iconOpen}
           onClose={() => setIconOpen(false)}
