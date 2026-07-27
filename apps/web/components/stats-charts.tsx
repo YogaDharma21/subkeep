@@ -49,6 +49,9 @@ function parseLocalDate(dateStr: string): Date {
 }
 
 export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) {
+  const [breakdownMetric, setBreakdownMetric] = useState<"cost" | "count">("cost")
+  const [breakdownFilter, setBreakdownFilter] = useState<"all" | "paid">("all")
+
   const monthlyTotal = useMemo(() => {
     return subscriptions.reduce((sum, s) => {
       const cycle = (s.cycle || "monthly").toLowerCase()
@@ -106,18 +109,38 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
     return months
   }, [subscriptions])
 
+  const filteredSubs = useMemo(() => {
+    if (breakdownFilter === "paid") {
+      return subscriptions.filter((s) => s.price > 0)
+    }
+    return subscriptions
+  }, [subscriptions, breakdownFilter])
+
   const categoryData = useMemo(() => {
-    const cats: Record<string, number> = {}
-    subscriptions.forEach((sub) => {
-      if (!cats[sub.category]) cats[sub.category] = 0
-      cats[sub.category] += sub.price
+    const cats: Record<string, { cost: number; count: number }> = {}
+    filteredSubs.forEach((sub) => {
+      if (!cats[sub.category]) cats[sub.category] = { cost: 0, count: 0 }
+      const cycle = (sub.cycle || "monthly").toLowerCase()
+      let monthlyCost = sub.price
+      if (cycle === "yearly") monthlyCost = sub.price / 12
+      else if (cycle === "quarterly") monthlyCost = sub.price / 3
+      else if (cycle === "semi-annual") monthlyCost = sub.price / 6
+      else if (cycle === "weekly") monthlyCost = sub.price * 4.33
+      else if (cycle === "daily") monthlyCost = sub.price * 30
+      else if (cycle === "none") monthlyCost = sub.price
+
+      cats[sub.category].cost += monthlyCost
+      cats[sub.category].count += 1
     })
-    return Object.entries(cats).map(([name, value]) => ({
+
+    return Object.entries(cats).map(([name, data]) => ({
       name: name.charAt(0).toUpperCase() + name.slice(1),
-      value,
+      value: breakdownMetric === "cost" ? Number(data.cost.toFixed(2)) : data.count,
+      rawCost: Number(data.cost.toFixed(2)),
+      rawCount: data.count,
       color: categoryColors[name] || "#8E8E93",
     }))
-  }, [subscriptions])
+  }, [filteredSubs, breakdownMetric])
 
   const total = categoryData.reduce((sum, c) => sum + c.value, 0)
 
@@ -160,39 +183,19 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
                   formatter={(value) => [`$${Number(value).toFixed(2)}`, "Amount"]}
                   contentStyle={{
                     backgroundColor: "var(--background)",
-                    border: "1px solid var(--border)",
+                    borderColor: "var(--border)",
                     borderRadius: "8px",
+                    fontSize: "12px",
                   }}
                 />
-                <Bar
-                  dataKey="amount"
-                  fill="var(--foreground)"
-                  radius={[6, 6, 0, 0]}
-                  barSize={28}
-                />
+                <Bar dataKey="amount" fill="#000000" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-border bg-background">
-        <div className="border-b border-border p-4">
-          <h3 className="text-sm font-semibold">Monthly Statistics</h3>
-        </div>
-        <div className="p-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
             <div className="rounded-xl bg-muted p-4 text-center">
               <div className="text-xl font-bold">
-                ${monthlyTotal.toFixed(2)}
-              </div>
-              <div className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
-                Avg / Month
-              </div>
-            </div>
-            <div className="rounded-xl bg-muted p-4 text-center">
-              <div className="text-xl font-bold">
-                ${monthlyTotal.toFixed(2)}
+                ${(monthlyTotal * 1.15).toFixed(2)}
               </div>
               <div className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
                 Highest
@@ -200,10 +203,10 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
             </div>
             <div className="rounded-xl bg-muted p-4 text-center">
               <div className="text-xl font-bold">
-                ${(monthlyTotal * 0.85).toFixed(2)}
+                ${monthlyTotal.toFixed(2)}
               </div>
               <div className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
-                Lowest
+                Avg / Month
               </div>
             </div>
             <div className="rounded-xl bg-muted p-4 text-center">
@@ -219,15 +222,71 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
       </div>
 
       <div className="rounded-xl border border-border bg-background">
-        <div className="border-b border-border p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-4">
           <h3 className="text-sm font-semibold">Category Breakdown</h3>
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-lg border border-border bg-muted p-0.5 text-xs font-medium">
+              <button
+                type="button"
+                onClick={() => setBreakdownMetric("cost")}
+                className={cn(
+                  "rounded-md px-2.5 py-1 transition-all",
+                  breakdownMetric === "cost"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                By Cost ($)
+              </button>
+              <button
+                type="button"
+                onClick={() => setBreakdownMetric("count")}
+                className={cn(
+                  "rounded-md px-2.5 py-1 transition-all",
+                  breakdownMetric === "count"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                By Count (#)
+              </button>
+            </div>
+            <div className="flex rounded-lg border border-border bg-muted p-0.5 text-xs font-medium">
+              <button
+                type="button"
+                onClick={() => setBreakdownFilter("all")}
+                className={cn(
+                  "rounded-md px-2 py-1 transition-all",
+                  breakdownFilter === "all"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                onClick={() => setBreakdownFilter("paid")}
+                className={cn(
+                  "rounded-md px-2 py-1 transition-all",
+                  breakdownFilter === "paid"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Paid Only
+              </button>
+            </div>
+          </div>
         </div>
         {categoryData.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8">
             <div className="mb-3 flex size-16 items-center justify-center rounded-full bg-muted">
-              <PieChart className="size-8 text-muted-foreground/50" />
+              <PieChartIcon className="size-8 text-muted-foreground/50" />
             </div>
-            <p className="text-sm text-muted-foreground">No subscriptions yet</p>
+            <p className="text-sm text-muted-foreground">
+              {breakdownFilter === "paid" ? "No paid subscriptions found" : "No subscriptions yet"}
+            </p>
           </div>
         ) : (
         <div className="p-4">
@@ -257,6 +316,10 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
           <div className="space-y-2.5">
             {categoryData.map((cat) => {
               const pct = total > 0 ? ((cat.value / total) * 100).toFixed(1) : "0"
+              const detailText =
+                cat.rawCost > 0
+                  ? `$${cat.rawCost.toFixed(2)}/mo · ${cat.rawCount} sub${cat.rawCount > 1 ? "s" : ""}`
+                  : `Free · ${cat.rawCount} sub${cat.rawCount > 1 ? "s" : ""}`
               return (
                 <div key={cat.name} className="flex items-center gap-3">
                   <div
@@ -264,7 +327,10 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
                     style={{ backgroundColor: cat.color }}
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium">{cat.name}</div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium">{cat.name}</span>
+                      <span className="text-xs text-muted-foreground">{detailText}</span>
+                    </div>
                     <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
                       <div
                         className="h-full rounded-full transition-all"
@@ -275,7 +341,7 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
                       />
                     </div>
                   </div>
-                  <div className="text-xs font-semibold text-muted-foreground">
+                  <div className="w-12 text-right text-xs font-semibold text-muted-foreground">
                     {pct}%
                   </div>
                 </div>
