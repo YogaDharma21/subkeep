@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useDeferredValue } from "react"
 import dynamicIconImports from "lucide-react/dynamicIconImports"
 import { Search, X, Check } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -77,6 +77,17 @@ function kebabToPascal(str: string): string {
 
 const ALL_LUCIDE_ICONS: string[] = Object.keys(dynamicIconImports).map(kebabToPascal)
 
+// Pre-indexed for sub-millisecond search performance
+const INDEXED_ALIASES = Object.entries(SEARCH_ALIASES).map(([alias, names]) => ({
+  alias: alias.toLowerCase(),
+  names,
+}))
+
+const INDEXED_ALL_ICONS = ALL_LUCIDE_ICONS.map((name) => ({
+  name,
+  lower: name.toLowerCase(),
+}))
+
 interface IconPickerProps {
   selected: string | null
   onSelect: (icon: string) => void
@@ -86,10 +97,13 @@ interface IconPickerProps {
 
 export function IconPicker({ selected, onSelect, open, onClose }: IconPickerProps) {
   const [search, setSearch] = useState("")
+  const deferredSearch = useDeferredValue(search)
   const [activeCategory, setActiveCategory] = useState("Popular")
+  const [visibleCount, setVisibleCount] = useState(72)
+
+  const q = deferredSearch.trim().toLowerCase()
 
   const filteredIcons = useMemo(() => {
-    const q = search.trim().toLowerCase()
     if (!q) {
       if (activeCategory === "All") return ALL_LUCIDE_ICONS
       return ICON_CATEGORIES[activeCategory] || ICON_CATEGORIES.Popular
@@ -98,21 +112,39 @@ export function IconPicker({ selected, onSelect, open, onClose }: IconPickerProp
     const matchesSet = new Set<string>()
 
     // Check alias matching
-    for (const [aliasKey, iconNames] of Object.entries(SEARCH_ALIASES)) {
-      if (aliasKey.includes(q) || q.includes(aliasKey)) {
-        iconNames.forEach((name) => matchesSet.add(name))
+    for (const item of INDEXED_ALIASES) {
+      if (item.alias.includes(q) || q.includes(item.alias)) {
+        for (const name of item.names) {
+          matchesSet.add(name)
+        }
       }
     }
 
     // Direct name matching
-    ALL_LUCIDE_ICONS.forEach((iconName) => {
-      if (iconName.toLowerCase().includes(q)) {
-        matchesSet.add(iconName)
+    for (const item of INDEXED_ALL_ICONS) {
+      if (item.lower.includes(q)) {
+        matchesSet.add(item.name)
       }
-    })
+    }
 
     return Array.from(matchesSet)
-  }, [search, activeCategory])
+  }, [q, activeCategory])
+
+  const displayedIcons = useMemo(() => {
+    return filteredIcons.slice(0, visibleCount)
+  }, [filteredIcons, visibleCount])
+
+  const hasMore = filteredIcons.length > visibleCount
+
+  const handleSearchChange = (val: string) => {
+    setSearch(val)
+    setVisibleCount(72)
+  }
+
+  const handleCategoryChange = (cat: string) => {
+    setActiveCategory(cat)
+    setVisibleCount(72)
+  }
 
   if (!open) return null
 
@@ -138,12 +170,12 @@ export function IconPicker({ selected, onSelect, open, onClose }: IconPickerProp
             <Input
               placeholder="Search icons (e.g., chat, streaming, wallet)..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-9 pr-8"
             />
             {search && (
               <button
-                onClick={() => setSearch("")}
+                onClick={() => handleSearchChange("")}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 <X className="size-4" />
@@ -156,7 +188,7 @@ export function IconPicker({ selected, onSelect, open, onClose }: IconPickerProp
               {["Popular", ...Object.keys(ICON_CATEGORIES).filter(c => c !== "Popular"), "All"].map((cat) => (
                 <button
                   key={cat}
-                  onClick={() => setActiveCategory(cat)}
+                  onClick={() => handleCategoryChange(cat)}
                   className={cn(
                     "px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-colors",
                     activeCategory === cat
@@ -176,33 +208,46 @@ export function IconPicker({ selected, onSelect, open, onClose }: IconPickerProp
                 No icons found for &quot;{search}&quot;
               </div>
             ) : (
-              <div className="grid grid-cols-5 sm:grid-cols-6 gap-2 p-1">
-                {filteredIcons.map((icon) => {
-                  const isSelected = selected === icon
-                  return (
+              <div className="space-y-3 p-1">
+                <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
+                  {displayedIcons.map((icon) => {
+                    const isSelected = selected === icon
+                    return (
+                      <button
+                        key={icon}
+                        title={icon}
+                        onClick={() => {
+                          onSelect(icon)
+                          onClose()
+                        }}
+                        className={cn(
+                          "relative flex aspect-square flex-col items-center justify-center rounded-xl border p-2 transition-all hover:bg-muted active:scale-95",
+                          isSelected
+                            ? "border-foreground bg-foreground text-background ring-2 ring-foreground/20"
+                            : "border-border text-foreground hover:border-foreground/40"
+                        )}
+                      >
+                        <DynamicIcon name={icon} className="size-5" />
+                        {isSelected && (
+                          <span className="absolute top-1 right-1 flex size-3.5 items-center justify-center rounded-full bg-background text-foreground">
+                            <Check className="size-2.5" />
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+                {hasMore && (
+                  <div className="py-2 text-center">
                     <button
-                      key={icon}
-                      title={icon}
-                      onClick={() => {
-                        onSelect(icon)
-                        onClose()
-                      }}
-                      className={cn(
-                        "relative flex aspect-square flex-col items-center justify-center rounded-xl border p-2 transition-all hover:bg-muted active:scale-95",
-                        isSelected
-                          ? "border-foreground bg-foreground text-background ring-2 ring-foreground/20"
-                          : "border-border text-foreground hover:border-foreground/40"
-                      )}
+                      type="button"
+                      onClick={() => setVisibleCount((prev) => prev + 72)}
+                      className="rounded-xl border border-border bg-muted px-4 py-2 text-xs font-medium text-foreground transition-all hover:bg-muted/80 active:scale-95"
                     >
-                      <DynamicIcon name={icon} className="size-5" />
-                      {isSelected && (
-                        <span className="absolute top-1 right-1 flex size-3.5 items-center justify-center rounded-full bg-background text-foreground">
-                          <Check className="size-2.5" />
-                        </span>
-                      )}
+                      Load more icons ({filteredIcons.length - visibleCount} remaining)
                     </button>
-                  )
-                })}
+                  </div>
+                )}
               </div>
             )}
           </ScrollArea>
