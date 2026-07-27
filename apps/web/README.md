@@ -4,10 +4,10 @@ A sleek, mobile-first subscription tracker built with Next.js 16, Convex, Clerk,
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
 <details>
-<summary>👉 <b>Click to expand / collapse project screenshots</b></summary>
+<summary>Click to expand / collapse project screenshots</summary>
 <br />
 
 | Landing Page | Main Dashboard |
@@ -22,23 +22,23 @@ A sleek, mobile-first subscription tracker built with Next.js 16, Convex, Clerk,
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-- 💳 **Subscription Management** — Add, edit, suspend, clone, and delete subscriptions with custom colors and icons.
-- 📆 **Flexible Billing Cycles** — Support for Daily, Weekly, Monthly, **3 Months**, **6 Months**, Yearly, and **No Cycle / One-time** payments.
-- 🗓 **Start Date & End Date** — Track subscription start dates and optional end dates with automatic expiration handling.
-- 👤 **Account & Website Links** — Track sub-accounts/emails (`user@gmail.com`) and direct clickable provider links (`netflix.com`).
-- ⚡️ **Instant Icon Picker** — Sub-millisecond keyword search ("chat", "stream", "ai", "finance") powered by `useDeferredValue` and pre-indexed aliases across 1,500+ Lucide icons.
-- 📊 **Start-Date Aware Trends** — Historical spending trend chart calculates monthly costs strictly based on active subscription date ranges.
-- 📈 **Interactive Category Breakdown** — Toggle between **By Cost ($)** and **By Count (#)**, and filter between **All** or **Paid Only** subscriptions.
-- 📅 **Calendar Projections** — Automatically projects recurring billing dates across any month and year.
-- 🚀 **50+ Pre-built Templates** — Quick setup for popular services (Netflix, Spotify, ChatGPT, iCloud, etc.).
-- 📂 **Export, Backup & Restore** — Download JSON data backups and restore subscriptions effortlessly.
-- 🌓 **Automatic Dark / Light Mode** — Seamless theme detection and manual toggle via `next-themes`.
+- **Subscription Management** — Add, edit, suspend, clone, and delete subscriptions with custom colors and icons.
+- **Flexible Billing Cycles** — Support for Daily, Weekly, Monthly, **3 Months**, **6 Months**, Yearly, and **No Cycle / One-time** payments.
+- **Start Date & End Date** — Track subscription start dates and optional end dates with automatic expiration handling.
+- **Account & Website Links** — Track sub-accounts/emails (`user@gmail.com`) and direct clickable provider links (`netflix.com`).
+- **Instant Icon Picker** — Sub-millisecond keyword search ("chat", "stream", "ai", "finance") powered by `useDeferredValue` and pre-indexed aliases across 1,500+ Lucide icons.
+- **Start-Date Aware Trends** — Historical spending trend chart calculates monthly costs strictly based on active subscription date ranges.
+- **Interactive Category Breakdown** — Toggle between **By Cost ($)** and **By Count (#)**, and filter between **All** or **Paid Only** subscriptions.
+- **Calendar Projections** — Automatically projects recurring billing dates across any month and year.
+- **50+ Pre-built Templates** — Quick setup for popular services (Netflix, Spotify, ChatGPT, iCloud, etc.).
+- **Export, Backup & Restore** — Download JSON data backups and restore subscriptions effortlessly.
+- **Automatic Dark / Light Mode** — Seamless theme detection and manual toggle via `next-themes`.
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Framework:** Next.js 16 (App Router & Turbopack)
 - **Database:** Convex (real-time backend & mutations)
@@ -49,7 +49,7 @@ A sleek, mobile-first subscription tracker built with Next.js 16, Convex, Clerk,
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -91,7 +91,7 @@ npm run dev
 
 ---
 
-## 📜 Scripts
+## Scripts
 
 | Command | Description |
 |---|---|
@@ -104,7 +104,7 @@ npm run dev
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 app/

@@ -4,10 +4,10 @@ SubKeep is a sleek, modern subscription tracker that helps you manage recurring 
 
 ---
 
-## 📸 Project Screenshots
+## Project Screenshots
 
 <details>
-<summary>👉 <b>Click to expand / collapse project screenshots</b></summary>
+<summary>Click to expand / collapse project screenshots</summary>
 <br />
 
 | Landing Page | Main Dashboard |
@@ -22,7 +22,7 @@ SubKeep is a sleek, modern subscription tracker that helps you manage recurring 
 
 ---
 
-## 🚀 Applications & Structure
+## Applications & Structure
 
 This repository is structured as a self-contained monorepo:
 
@@ -35,7 +35,7 @@ For full setup details, environment configuration, and features, see [apps/web/R
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 ```bash
 # 1. Go to the web app
@@ -51,6 +51,6 @@ npm run dev
 
 ---
 
-## 📄 License
+## License
 
 [MIT](LICENSE)
