@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Moon, Bell, DollarSign, X } from "lucide-react"
 import {
   Sheet,
@@ -17,7 +18,14 @@ interface SettingsSheetProps {
 }
 
 export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
-  const { theme, setTheme } = useTheme()
+  const { theme, resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const isDark = mounted ? (resolvedTheme === "dark" || theme === "dark") : false
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -41,13 +49,13 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
                 <span className="text-sm">Dark Mode</span>
               </div>
               <button
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                onClick={() => setTheme(isDark ? "light" : "dark")}
                 className="relative h-7 w-12 rounded-full bg-muted transition-colors data-[state=on]:bg-foreground"
-                data-state={theme === "dark" ? "on" : "off"}
+                data-state={isDark ? "on" : "off"}
               >
                 <span
                   className="absolute left-1 top-1 h-5 w-5 rounded-full bg-background shadow-sm transition-transform data-[state=on]:translate-x-5"
-                  data-state={theme === "dark" ? "on" : "off"}
+                  data-state={isDark ? "on" : "off"}
                 />
               </button>
             </div>

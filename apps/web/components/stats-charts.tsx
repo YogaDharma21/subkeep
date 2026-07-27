@@ -183,13 +183,15 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
                 <Tooltip
                   formatter={(value) => [`$${Number(value).toFixed(2)}`, "Amount"]}
                   contentStyle={{
-                    backgroundColor: "var(--background)",
+                    backgroundColor: "var(--card)",
                     borderColor: "var(--border)",
+                    color: "var(--card-foreground)",
                     borderRadius: "8px",
                     fontSize: "12px",
                   }}
+                  itemStyle={{ color: "var(--card-foreground)" }}
                 />
-                <Bar dataKey="amount" fill="#000000" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="amount" fill="var(--foreground)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
