@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { use, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
@@ -27,16 +27,11 @@ export default function SubscriptionDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const { id } = use(params)
   const router = useRouter()
-  const [id, setId] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
   const [iconOpen, setIconOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
-
-  // Resolve params
-  params.then((p) => {
-    if (p.id !== id) setId(p.id)
-  })
 
   const sub = useQuery(
     api.subscriptions.get,
