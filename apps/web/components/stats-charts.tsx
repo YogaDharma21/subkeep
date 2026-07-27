@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import {
   BarChart,
   Bar,
@@ -15,6 +15,7 @@ import {
 } from "recharts"
 import { categoryColors, getSymbol } from "@/lib/constants"
 import { PieChart as PieChartIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface StatsChartsProps {
   subscriptions: Array<{
