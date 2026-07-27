@@ -1,17 +1,55 @@
-# SubKeep
+# SubKeep (v1.0.0)
 
-A mobile-first subscription tracker built with Next.js, Convex, and Clerk.
+A sleek, mobile-first subscription tracker built with Next.js 16, Convex, Clerk, and Tailwind CSS v4.
 
-## Tech Stack
+---
 
-- **Framework:** Next.js 16 (App Router + Turbopack)
-- **UI:** shadcn/ui + Tailwind CSS v4
-- **Backend:** Convex (real-time database)
+## 📸 Screenshots
+
+<details>
+<summary>👉 <b>Click to expand / collapse project screenshots</b></summary>
+<br />
+
+| Landing Page | Main Dashboard |
+| :---: | :---: |
+| ![Landing Page](./public/screenshot-landing.png) | ![Dashboard](./public/screenshot-home.png) |
+
+| Calendar Billing Projections | Custom Subscription & Fast Icon Search |
+| :---: | :---: |
+| ![Calendar View](./public/screenshot-calendar.png) | ![Custom Subscription](./public/screenshot-create.png) |
+
+</details>
+
+---
+
+## ✨ Key Features
+
+- 💳 **Subscription Management** — Add, edit, suspend, clone, and delete subscriptions with custom colors and icons.
+- 📆 **Flexible Billing Cycles** — Support for Daily, Weekly, Monthly, **3 Months**, **6 Months**, Yearly, and **No Cycle / One-time** payments.
+- 🗓 **Start Date & End Date** — Track subscription start dates and optional end dates with automatic expiration handling.
+- 👤 **Account & Website Links** — Track sub-accounts/emails (`user@gmail.com`) and direct clickable provider links (`netflix.com`).
+- ⚡️ **Instant Icon Picker** — Sub-millisecond keyword search ("chat", "stream", "ai", "finance") powered by `useDeferredValue` and pre-indexed aliases across 1,500+ Lucide icons.
+- 📊 **Start-Date Aware Trends** — Historical spending trend chart calculates monthly costs strictly based on active subscription date ranges.
+- 📈 **Interactive Category Breakdown** — Toggle between **By Cost ($)** and **By Count (#)**, and filter between **All** or **Paid Only** subscriptions.
+- 📅 **Calendar Projections** — Automatically projects recurring billing dates across any month and year.
+- 🚀 **50+ Pre-built Templates** — Quick setup for popular services (Netflix, Spotify, ChatGPT, iCloud, etc.).
+- 📂 **Export, Backup & Restore** — Download JSON data backups and restore subscriptions effortlessly.
+- 🌓 **Automatic Dark / Light Mode** — Seamless theme detection and manual toggle via `next-themes`.
+
+---
+
+## 🛠 Tech Stack
+
+- **Framework:** Next.js 16 (App Router & Turbopack)
+- **Database:** Convex (real-time backend & mutations)
 - **Auth:** Clerk
+- **Styling:** Tailwind CSS v4 + shadcn/ui
 - **Charts:** Recharts
-- **Icons:** Lucide React
+- **Icons:** Lucide React (`lucide-react/dynamicIconImports` code-split dynamic renderer)
 
-## Getting Started
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -29,96 +67,63 @@ npm install
 
 2. Set up environment variables in `.env.local`:
 
-```
+```env
 # Convex
 CONVEX_DEPLOYMENT=dev:<your-deployment-id>
 NEXT_PUBLIC_CONVEX_URL=https://<your-deployment-id>.convex.cloud
-NEXT_PUBLIC_CONVEX_SITE_URL=https://<your-deployment-id>.convex.site
 
 # Clerk
-CLERK_FRONTEND_API_URL=https://<your-clerk-id>.clerk.accounts.dev
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 ```
 
-3. Run Convex dev (pushes schema + seeds templates):
+3. Push Convex schema and start Convex dev server:
 
 ```bash
 npx convex dev
 ```
 
-4. Start the dev server:
+4. Start the Next.js dev server:
 
 ```bash
 npm run dev
 ```
 
-## Scripts
+---
+
+## 📜 Scripts
 
 | Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Production build |
+|---|---|
+| `npm run dev` | Start Next.js development server |
+| `npm run build` | Build optimized production bundle |
 | `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
 | `npm run typecheck` | Run TypeScript type checking |
-| `npm run format` | Format code with Prettier |
+| `npm run lint` | Run ESLint check |
+| `npm run format` | Format files with Prettier |
 
-## Project Structure
+---
+
+## 📁 Project Structure
 
 ```
 app/
-  (auth)/           # Clerk sign-in/sign-up pages
-  (dashboard)/      # Main app pages
-    page.tsx        # Home (stats + subscription list)
-    calendar/       # Calendar view with billing dates
-    stats/          # Analytics charts
-    more/           # Settings, export, backup, restore
-    subscriptions/  # Subscription detail (edit/suspend/clone/delete)
-  layout.tsx        # Root layout (providers)
-  manifest.ts       # PWA manifest
+  (auth)/           # Clerk sign-in / sign-up pages
+  (dashboard)/      # Main application routes
+    page.tsx        # Dashboard (spending summary & subscription list)
+    calendar/       # Calendar view with projected billing dates
+    stats/          # Spending trend & interactive category breakdown
+    more/           # Settings, backups, export & restore
+    subscriptions/  # Subscription detail (edit, account, website, clone, delete)
+  layout.tsx        # Root layout (Clerk, Convex, NextThemes providers)
 convex/
   schema.ts         # Database schema (subscriptions, templates, payments)
-  subscriptions.ts  # Subscription CRUD + stats
-  templates.ts      # 50 pre-built templates + seed
+  subscriptions.ts  # CRUD mutations & stats calculations
+  templates.ts      # Pre-built templates seed data
   payments.ts       # Payment history tracking
 components/
-  ui/               # shadcn/ui components
-  *.tsx             # App-specific components
-lib/
-  constants.ts      # Categories, currencies, icons, billing cycles
+  dynamic-icon.tsx  # Code-split dynamic icon renderer
+  icon-picker.tsx   # Lag-free keyword icon search picker
+  stats-charts.tsx  # Spending trend & category breakdown charts
+  calendar-grid.tsx # Calendar recurrence projection engine
 ```
-
-## Features
-
-- **Subscription Management** — Add, edit, suspend, clone, delete subscriptions
-- **50 Templates** — Pre-built templates for popular services (Netflix, Spotify, etc.)
-- **Calendar View** — See upcoming billing dates on a monthly calendar
-- **Stats & Charts** — Monthly spending, category breakdown, payment history
-- **Payment History** — Record payments per subscription
-- **Export & Backup** — Download subscriptions as JSON, full backup with payments
-- **Restore** — Import data from a backup file
-- **Dark/Light Mode** — Theme toggle via next-themes
-- **Mobile-First** — 480px max-width, bottom navigation, touch-friendly
-
-## Adding Components
-
-```bash
-npx shadcn@latest add <component-name>
-```
-
-## Using Components
-
-```tsx
-import { Button } from "@/components/ui/button"
-```
-
-## Deployment
-
-Deploy to [Vercel](https://vercel.com):
-
-```bash
-npx vercel
-```
-
-Make sure to set environment variables in the Vercel dashboard.
