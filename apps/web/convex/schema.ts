@@ -13,6 +13,9 @@ export default defineSchema({
     category: v.string(),
     startDate: v.string(),
     nextBilling: v.string(),
+    endDate: v.optional(v.string()),
+    account: v.optional(v.string()),
+    website: v.optional(v.string()),
     isActive: v.boolean(),
   })
     .index("by_user", ["userId"])

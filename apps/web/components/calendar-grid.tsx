@@ -3,29 +3,36 @@
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import * as LucideIcons from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import type { ComponentType } from "react"
+import { getSymbol } from "@/lib/constants"
+import { DynamicIcon } from "@/components/dynamic-icon"
 
-const icons = LucideIcons as unknown as Record<string, ComponentType<Record<string, unknown>>>
-
-function DynamicIcon({ name, className }: { name: string; className?: string }) {
-  const Icon = icons[name] || LucideIcons.Receipt
-  return <Icon className={className} />
+interface SubscriptionItem {
+  _id: string
+  name: string
+  icon: string
+  color: string
+  price: number
+  currency: string
+  cycle?: string
+  startDate?: string
+  nextBilling: string
+  endDate?: string
+  category: string
+  isActive?: boolean
 }
 
 interface CalendarGridProps {
-  subscriptions: Array<{
-    _id: string
-    name: string
-    icon: string
-    color: string
-    price: number
-    currency: string
-    nextBilling: string
-    category: string
-  }>
+  subscriptions: SubscriptionItem[]
+}
+
+function parseLocalDate(dateStr: string): Date {
+  const parts = dateStr.split("-").map(Number)
+  const y = parts[0]
+  const m = (parts[1] || 1) - 1
+  const d = parts[2] || 1
+  return new Date(y, m, d)
 }
 
 export function CalendarGrid({ subscriptions }: CalendarGridProps) {
@@ -46,17 +53,101 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
   const daysInPrevMonth = new Date(year, month, 0).getDate()
 
   const billingDays = useMemo(() => {
-    const map: Record<number, typeof subscriptions> = {}
+    const map: Record<number, SubscriptionItem[]> = {}
+
     subscriptions.forEach((sub) => {
-      const d = new Date(sub.nextBilling)
-      if (d.getFullYear() === year && d.getMonth() === month) {
-        const day = d.getDate()
-        if (!map[day]) map[day] = []
-        map[day].push(sub)
+      // Don't list inactive subscriptions in future projections if suspended
+      if (sub.isActive === false) return
+
+      const cycle = (sub.cycle || "monthly").toLowerCase()
+      const subStart = sub.startDate
+        ? parseLocalDate(sub.startDate)
+        : parseLocalDate(sub.nextBilling)
+      const subEnd = sub.endDate ? parseLocalDate(sub.endDate) : null
+
+      const monthStart = new Date(year, month, 1)
+      const monthEnd = new Date(year, month, daysInMonth)
+
+      // Skip if subscription ended before this month or hasn't started yet
+      if (subEnd && subEnd < monthStart) return
+      if (subStart > monthEnd) return
+
+      const addSubToDay = (d: number) => {
+        if (!map[d]) map[d] = []
+        if (!map[d].some((item) => item._id === sub._id)) {
+          map[d].push(sub)
+        }
+      }
+
+      if (cycle === "monthly") {
+        const startDay = subStart.getDate()
+        const targetDay = Math.min(startDay, daysInMonth)
+        const candDate = new Date(year, month, targetDay)
+        if (candDate >= subStart && (!subEnd || candDate <= subEnd)) {
+          addSubToDay(targetDay)
+        }
+      } else if (cycle === "quarterly") {
+        const monthDiff = (year - subStart.getFullYear()) * 12 + (month - subStart.getMonth())
+        if (monthDiff >= 0 && monthDiff % 3 === 0) {
+          const startDay = subStart.getDate()
+          const targetDay = Math.min(startDay, daysInMonth)
+          const candDate = new Date(year, month, targetDay)
+          if (candDate >= subStart && (!subEnd || candDate <= subEnd)) {
+            addSubToDay(targetDay)
+          }
+        }
+      } else if (cycle === "semi-annual") {
+        const monthDiff = (year - subStart.getFullYear()) * 12 + (month - subStart.getMonth())
+        if (monthDiff >= 0 && monthDiff % 6 === 0) {
+          const startDay = subStart.getDate()
+          const targetDay = Math.min(startDay, daysInMonth)
+          const candDate = new Date(year, month, targetDay)
+          if (candDate >= subStart && (!subEnd || candDate <= subEnd)) {
+            addSubToDay(targetDay)
+          }
+        }
+      } else if (cycle === "yearly") {
+        if (subStart.getMonth() === month) {
+          const startDay = subStart.getDate()
+          const targetDay = Math.min(startDay, daysInMonth)
+          const candDate = new Date(year, month, targetDay)
+          if (candDate >= subStart && (!subEnd || candDate <= subEnd)) {
+            addSubToDay(targetDay)
+          }
+        }
+      } else if (cycle === "weekly") {
+        for (let d = 1; d <= daysInMonth; d++) {
+          const candDate = new Date(year, month, d)
+          if (candDate >= subStart && (!subEnd || candDate <= subEnd)) {
+            const diffDays = Math.round(
+              (candDate.getTime() - subStart.getTime()) / (1000 * 60 * 60 * 24)
+            )
+            if (diffDays >= 0 && diffDays % 7 === 0) {
+              addSubToDay(d)
+            }
+          }
+        }
+      } else if (cycle === "daily") {
+        for (let d = 1; d <= daysInMonth; d++) {
+          const candDate = new Date(year, month, d)
+          if (candDate >= subStart && (!subEnd || candDate <= subEnd)) {
+            addSubToDay(d)
+          }
+        }
+      } else if (cycle === "none") {
+        if (subStart.getFullYear() === year && subStart.getMonth() === month) {
+          addSubToDay(subStart.getDate())
+        }
+      } else {
+        // Fallback matching against nextBilling
+        const nbDate = parseLocalDate(sub.nextBilling)
+        if (nbDate.getFullYear() === year && nbDate.getMonth() === month) {
+          addSubToDay(nbDate.getDate())
+        }
       }
     })
     return map
-  }, [subscriptions, year, month])
+  }, [subscriptions, year, month, daysInMonth])
 
   const today = new Date()
   const isToday = (day: number) =>
@@ -118,14 +209,11 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
         <div className="grid grid-cols-7 gap-1">
           {days.map((d, i) => {
             const hasSub = d.isCurrentMonth && billingDays[d.day]
-            const isSelected =
-              selectedDay === d.day && d.isCurrentMonth
+            const isSelected = selectedDay === d.day && d.isCurrentMonth
             return (
               <button
                 key={i}
-                onClick={() =>
-                  d.isCurrentMonth && setSelectedDay(d.day)
-                }
+                onClick={() => d.isCurrentMonth && setSelectedDay(d.day)}
                 disabled={!d.isCurrentMonth}
                 className={cn(
                   "relative flex aspect-square items-center justify-center rounded-lg text-sm transition-all",
@@ -178,30 +266,31 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
               </div>
             ) : (
               selectedSubs.map((sub) => (
+                <div
+                  key={sub._id}
+                  onClick={() => router.push(`/subscriptions/${sub._id}`)}
+                  className="flex cursor-pointer items-center gap-3 rounded-lg p-3 hover:bg-muted"
+                >
                   <div
-                    key={sub._id}
-                    onClick={() => router.push(`/subscriptions/${sub._id}`)}
-                    className="flex cursor-pointer items-center gap-3 rounded-lg p-3 hover:bg-muted"
+                    className="flex size-9 items-center justify-center rounded-lg"
+                    style={{ backgroundColor: sub.color }}
                   >
-                    <div
-                      className="flex size-9 items-center justify-center rounded-lg"
-                      style={{ backgroundColor: sub.color }}
-                    >
-                      <DynamicIcon name={sub.icon} className="size-4 text-white" />
+                    <DynamicIcon name={sub.icon} className="size-4 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium">
+                      {sub.name}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">
-                        {sub.name}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {sub.category}
-                      </div>
-                    </div>
-                    <div className="text-sm font-semibold">
-                      ${sub.price}
+                    <div className="text-xs text-muted-foreground">
+                      {sub.category}
+                      {sub.cycle && ` · ${sub.cycle}`}
                     </div>
                   </div>
-                ))
+                  <div className="text-sm font-semibold">
+                    {getSymbol(sub.currency)}{sub.price}
+                  </div>
+                </div>
+              ))
             )}
           </div>
         </div>

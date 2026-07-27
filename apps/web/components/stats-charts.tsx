@@ -23,7 +23,9 @@ interface StatsChartsProps {
     currency: string
     cycle: string
     category: string
+    startDate?: string
     nextBilling: string
+    endDate?: string
     color: string
   }>
   payments?: Array<{
@@ -38,13 +40,25 @@ interface StatsChartsProps {
   }>
 }
 
+function parseLocalDate(dateStr: string): Date {
+  const parts = dateStr.split("-").map(Number)
+  const y = parts[0]
+  const m = (parts[1] || 1) - 1
+  const d = parts[2] || 1
+  return new Date(y, m, d)
+}
+
 export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) {
   const monthlyTotal = useMemo(() => {
     return subscriptions.reduce((sum, s) => {
-      if (s.cycle === "monthly") return sum + s.price
-      if (s.cycle === "yearly") return sum + s.price / 12
-      if (s.cycle === "weekly") return sum + s.price * 4.33
-      if (s.cycle === "daily") return sum + s.price * 30
+      const cycle = (s.cycle || "monthly").toLowerCase()
+      if (cycle === "monthly") return sum + s.price
+      if (cycle === "quarterly") return sum + s.price / 3
+      if (cycle === "semi-annual") return sum + s.price / 6
+      if (cycle === "yearly") return sum + s.price / 12
+      if (cycle === "weekly") return sum + s.price * 4.33
+      if (cycle === "daily") return sum + s.price * 30
+      if (cycle === "none") return sum
       return sum + s.price
     }, 0)
   }, [subscriptions])
@@ -52,15 +66,45 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
   const spendingData = useMemo(() => {
     const now = new Date()
     const months = []
+
     for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0)
+      const monthLabel = monthStart.toLocaleDateString("en-US", { month: "short" })
+
+      let monthSum = 0
+      subscriptions.forEach((sub) => {
+        const subStart = sub.startDate
+          ? parseLocalDate(sub.startDate)
+          : parseLocalDate(sub.nextBilling)
+        const subEnd = sub.endDate ? parseLocalDate(sub.endDate) : null
+
+        if (subStart <= monthEnd && (!subEnd || subEnd >= monthStart)) {
+          const cycle = (sub.cycle || "monthly").toLowerCase()
+          if (cycle === "monthly") monthSum += sub.price
+          else if (cycle === "quarterly") monthSum += sub.price / 3
+          else if (cycle === "semi-annual") monthSum += sub.price / 6
+          else if (cycle === "yearly") monthSum += sub.price / 12
+          else if (cycle === "weekly") monthSum += sub.price * 4.33
+          else if (cycle === "daily") monthSum += sub.price * 30
+          else if (cycle === "none") {
+            if (subStart >= monthStart && subStart <= monthEnd) {
+              monthSum += sub.price
+            }
+          } else {
+            monthSum += sub.price
+          }
+        }
+      })
+
       months.push({
-        month: d.toLocaleDateString("en-US", { month: "short" }),
-        amount: monthlyTotal,
+        month: monthLabel,
+        amount: Number(monthSum.toFixed(2)),
       })
     }
+
     return months
-  }, [monthlyTotal])
+  }, [subscriptions])
 
   const categoryData = useMemo(() => {
     const cats: Record<string, number> = {}
@@ -187,27 +231,29 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
           </div>
         ) : (
         <div className="p-4">
-          <div className="mb-4 flex justify-center">
-            <div className="h-[180px] w-[180px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={80}
-                    dataKey="value"
-                    strokeWidth={0}
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={index} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
+          {total > 0 && (
+            <div className="mb-4 flex justify-center">
+              <div className="h-[180px] w-[180px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={55}
+                      outerRadius={80}
+                      dataKey="value"
+                      strokeWidth={0}
+                    >
+                      {categoryData.map((entry, index) => (
+                        <Cell key={index} fill={entry.color} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-          </div>
+          )}
           <div className="space-y-2.5">
             {categoryData.map((cat) => {
               const pct = total > 0 ? ((cat.value / total) * 100).toFixed(1) : "0"

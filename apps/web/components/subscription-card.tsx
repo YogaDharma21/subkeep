@@ -1,17 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import * as LucideIcons from "lucide-react"
 import { getSymbol } from "@/lib/constants"
 import { format } from "date-fns"
-import type { ComponentType } from "react"
-
-const icons = LucideIcons as unknown as Record<string, ComponentType<Record<string, unknown>>>
-
-function DynamicIcon({ name, className }: { name: string; className?: string }) {
-  const Icon = icons[name] || LucideIcons.Receipt
-  return <Icon className={className} />
-}
+import { DynamicIcon } from "@/components/dynamic-icon"
 
 interface Subscription {
   _id: string
@@ -23,6 +15,9 @@ interface Subscription {
   cycle: string
   category: string
   nextBilling: string
+  endDate?: string
+  account?: string
+  website?: string
 }
 
 export function SubscriptionCard({ sub }: { sub: Subscription }) {
@@ -38,10 +33,21 @@ export function SubscriptionCard({ sub }: { sub: Subscription }) {
         <DynamicIcon name={sub.icon} className="size-5 text-white" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-semibold">{sub.name}</div>
+        <div className="flex items-center gap-1.5 truncate">
+          <span className="truncate text-sm font-semibold">{sub.name}</span>
+          {sub.account && (
+            <span className="truncate text-xs font-normal text-muted-foreground">
+              ({sub.account})
+            </span>
+          )}
+        </div>
         <div className="text-xs text-muted-foreground">
-          {sub.category} &middot;{" "}
-          {format(new Date(sub.nextBilling), "MMM d")}
+          {sub.category} &middot; Next: {format(new Date(sub.nextBilling), "MMM d")}
+          {sub.endDate && (
+            <span className="ml-1 text-[11px] font-normal text-muted-foreground/80">
+              (Ends {format(new Date(sub.endDate), "MMM d, yyyy")})
+            </span>
+          )}
         </div>
       </div>
       <div className="shrink-0 text-right">

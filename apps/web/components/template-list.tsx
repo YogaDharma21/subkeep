@@ -3,20 +3,12 @@
 import { useState, useEffect } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
-import * as LucideIcons from "lucide-react"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { categories } from "@/lib/constants"
-import type { ComponentType } from "react"
-
-const icons = LucideIcons as unknown as Record<string, ComponentType<Record<string, unknown>>>
-
-function DynamicIcon({ name, className }: { name: string; className?: string }) {
-  const Icon = icons[name] || LucideIcons.Receipt
-  return <Icon className={className} />
-}
+import { DynamicIcon } from "@/components/dynamic-icon"
 
 interface TemplateListProps {
   onSelect: (template: {

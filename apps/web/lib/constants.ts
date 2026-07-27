@@ -91,7 +91,10 @@ export const billingCycles = [
   { value: "daily", label: "Daily" },
   { value: "weekly", label: "Weekly" },
   { value: "monthly", label: "Monthly" },
+  { value: "quarterly", label: "3 Months" },
+  { value: "semi-annual", label: "6 Months" },
   { value: "yearly", label: "Yearly" },
+  { value: "none", label: "No Cycle" },
 ]
 
 export const iconList = [
@@ -247,10 +250,14 @@ export function calculateMonthlyTotal(
   subs: Array<{ price: number; cycle: string }>
 ): number {
   return subs.reduce((sum, s) => {
-    if (s.cycle === "monthly") return sum + s.price
-    if (s.cycle === "yearly") return sum + s.price / 12
-    if (s.cycle === "weekly") return sum + s.price * 4.33
-    if (s.cycle === "daily") return sum + s.price * 30
+    const cycle = (s.cycle || "monthly").toLowerCase()
+    if (cycle === "monthly") return sum + s.price
+    if (cycle === "quarterly") return sum + s.price / 3
+    if (cycle === "semi-annual") return sum + s.price / 6
+    if (cycle === "yearly") return sum + s.price / 12
+    if (cycle === "weekly") return sum + s.price * 4.33
+    if (cycle === "daily") return sum + s.price * 30
+    if (cycle === "none") return sum
     return sum + s.price
   }, 0)
 }

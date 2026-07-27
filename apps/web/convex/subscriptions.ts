@@ -39,10 +39,14 @@ export const getStats = query({
 
     const count = subs.length
     const monthlyTotal = subs.reduce((sum, s) => {
-      if (s.cycle === "monthly") return sum + s.price
-      if (s.cycle === "yearly") return sum + s.price / 12
-      if (s.cycle === "weekly") return sum + s.price * 4.33
-      if (s.cycle === "daily") return sum + s.price * 30
+      const cycle = (s.cycle || "monthly").toLowerCase()
+      if (cycle === "monthly") return sum + s.price
+      if (cycle === "quarterly") return sum + s.price / 3
+      if (cycle === "semi-annual") return sum + s.price / 6
+      if (cycle === "yearly") return sum + s.price / 12
+      if (cycle === "weekly") return sum + s.price * 4.33
+      if (cycle === "daily") return sum + s.price * 30
+      if (cycle === "none") return sum
       return sum + s.price
     }, 0)
     const yearlyTotal = monthlyTotal * 12
@@ -62,6 +66,9 @@ export const create = mutation({
     category: v.string(),
     startDate: v.string(),
     nextBilling: v.string(),
+    endDate: v.optional(v.string()),
+    account: v.optional(v.string()),
+    website: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
@@ -77,6 +84,9 @@ export const create = mutation({
       category: args.category,
       startDate: args.startDate,
       nextBilling: args.nextBilling,
+      endDate: args.endDate || undefined,
+      account: args.account || undefined,
+      website: args.website || undefined,
       isActive: true,
     })
   },
@@ -94,6 +104,9 @@ export const update = mutation({
     category: v.optional(v.string()),
     startDate: v.optional(v.string()),
     nextBilling: v.optional(v.string()),
+    endDate: v.optional(v.string()),
+    account: v.optional(v.string()),
+    website: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
@@ -104,10 +117,17 @@ export const update = mutation({
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id: _, ...updates } = args
-    const filtered = Object.fromEntries(
-      Object.entries(updates).filter(([, v]) => v !== undefined)
-    )
-    await ctx.db.patch(args.id, filtered)
+    const patchObj: Record<string, string | number | undefined> = {}
+    for (const [k, v] of Object.entries(updates)) {
+      if (v !== undefined) {
+        if ((k === "endDate" || k === "account" || k === "website") && v === "") {
+          patchObj[k] = undefined
+        } else {
+          patchObj[k] = v
+        }
+      }
+    }
+    await ctx.db.patch(args.id, patchObj)
   },
 })
 
@@ -143,6 +163,9 @@ export const clone = mutation({
       category: sub.category,
       startDate: new Date().toISOString().split("T")[0],
       nextBilling: new Date().toISOString().split("T")[0],
+      endDate: sub.endDate,
+      account: sub.account,
+      website: sub.website,
       isActive: true,
     })
   },
@@ -195,6 +218,9 @@ export const restoreAll = mutation({
         category: v.string(),
         startDate: v.string(),
         nextBilling: v.string(),
+        endDate: v.optional(v.string()),
+        account: v.optional(v.string()),
+        website: v.optional(v.string()),
         isActive: v.boolean(),
       })
     ),
