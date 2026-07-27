@@ -3,8 +3,8 @@
 import { useState } from "react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
-import * as LucideIcons from "lucide-react"
-import { ArrowLeft, Plus } from "lucide-react"
+import { ArrowLeft, Plus, X } from "lucide-react"
+import { DynamicIcon } from "@/components/dynamic-icon"
 import {
   Sheet,
   SheetContent,
@@ -21,14 +21,6 @@ import {
   currencies,
   billingCycles,
 } from "@/lib/constants"
-import type { ComponentType } from "react"
-
-const icons = LucideIcons as unknown as Record<string, ComponentType<Record<string, unknown>>>
-
-function DynamicIcon({ name, className }: { name: string; className?: string }) {
-  const Icon = icons[name] || LucideIcons.Receipt
-  return <Icon className={className} />
-}
 
 interface AddSubscriptionSheetProps {
   open: boolean
@@ -51,6 +43,9 @@ export function AddSubscriptionSheet({
   const [startDate, setStartDate] = useState(
     new Date().toISOString().split("T")[0]
   )
+  const [endDate, setEndDate] = useState("")
+  const [account, setAccount] = useState("")
+  const [website, setWebsite] = useState("")
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
   const [selectedColor, setSelectedColor] = useState("#000000")
 
@@ -68,6 +63,9 @@ export function AddSubscriptionSheet({
     setCycle("monthly")
     setCategory("entertainment")
     setStartDate(new Date().toISOString().split("T")[0])
+    setEndDate("")
+    setAccount("")
+    setWebsite("")
     setSelectedIcon(null)
     setSelectedColor("#000000")
   }
@@ -105,6 +103,9 @@ export function AddSubscriptionSheet({
       category,
       startDate,
       nextBilling: startDate,
+      endDate: endDate || undefined,
+      account: account || undefined,
+      website: website || undefined,
     })
     resetForm()
     onOpenChange(false)
@@ -131,7 +132,7 @@ export function AddSubscriptionSheet({
             size="icon-sm"
             onClick={() => { resetForm(); onOpenChange(false) }}
           >
-            <LucideIcons.X className="size-4" />
+            <X className="size-4" />
           </Button>
         </SheetHeader>
 
@@ -238,13 +239,13 @@ export function AddSubscriptionSheet({
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Billing Cycle</label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                       {billingCycles.map((bc) => (
                         <button
                           key={bc.value}
                           type="button"
                           onClick={() => setCycle(bc.value)}
-                          className={`flex items-center justify-center rounded-xl border-2 px-4 py-3 text-sm font-medium transition-all ${
+                          className={`flex items-center justify-center rounded-xl border-2 px-3 py-2.5 text-xs font-medium transition-all ${
                             cycle === bc.value
                               ? "border-foreground bg-foreground text-background"
                               : "border-border bg-background text-foreground hover:border-foreground/50"
@@ -273,13 +274,42 @@ export function AddSubscriptionSheet({
                     </select>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Start Date</label>
-                    <Input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Account / Email (Optional)</label>
+                      <Input
+                        placeholder="e.g. user@gmail.com"
+                        value={account}
+                        onChange={(e) => setAccount(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Provider Website (Optional)</label>
+                      <Input
+                        placeholder="e.g. netflix.com"
+                        value={website}
+                        onChange={(e) => setWebsite(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Start Date</label>
+                      <Input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">End Date (Optional)</label>
+                      <Input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

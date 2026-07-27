@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
-import * as LucideIcons from "lucide-react"
 import { ArrowLeft, Pencil, Pause, Play, Copy, Trash2, DollarSign } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { IconPicker } from "@/components/icon-picker"
+import { DynamicIcon } from "@/components/dynamic-icon"
 import { cn } from "@/lib/utils"
 import {
   categories,
@@ -21,14 +21,6 @@ import {
   categoryColors,
 } from "@/lib/constants"
 import { format } from "date-fns"
-import type { ComponentType } from "react"
-
-const icons = LucideIcons as unknown as Record<string, ComponentType<Record<string, unknown>>>
-
-function DynamicIcon({ name, className }: { name: string; className?: string }) {
-  const Icon = icons[name] || LucideIcons.Receipt
-  return <Icon className={className} />
-}
 
 export default function SubscriptionDetailPage({
   params,
@@ -63,6 +55,9 @@ export default function SubscriptionDetailPage({
   const [editCategory, setEditCategory] = useState("entertainment")
   const [editIcon, setEditIcon] = useState<string | null>(null)
   const [editColor, setEditColor] = useState("#000000")
+  const [editEndDate, setEditEndDate] = useState("")
+  const [editAccount, setEditAccount] = useState("")
+  const [editWebsite, setEditWebsite] = useState("")
 
   const colorOptions = [
     "#000000", "#555555", "#E50914", "#1DB954", "#00A8E1",
@@ -79,6 +74,9 @@ export default function SubscriptionDetailPage({
     setEditCategory(sub.category)
     setEditIcon(sub.icon)
     setEditColor(sub.color)
+    setEditEndDate(sub.endDate || "")
+    setEditAccount(sub.account || "")
+    setEditWebsite(sub.website || "")
     setEditing(true)
   }
 
@@ -93,6 +91,9 @@ export default function SubscriptionDetailPage({
       category: editCategory,
       icon: editIcon || sub.icon,
       color: editColor,
+      endDate: editEndDate,
+      account: editAccount,
+      website: editWebsite,
     })
     setEditing(false)
   }
@@ -292,13 +293,13 @@ export default function SubscriptionDetailPage({
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium">Billing Cycle</label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {billingCycles.map((bc) => (
                 <button
                   key={bc.value}
                   type="button"
                   onClick={() => setEditCycle(bc.value)}
-                  className={`flex items-center justify-center rounded-xl border-2 px-4 py-3 text-sm font-medium transition-all ${
+                  className={`flex items-center justify-center rounded-xl border-2 px-3 py-2 text-xs font-medium transition-all ${
                     editCycle === bc.value
                       ? "border-foreground bg-foreground text-background"
                       : "border-border bg-background text-foreground hover:border-foreground/50"
@@ -308,6 +309,32 @@ export default function SubscriptionDetailPage({
                 </button>
               ))}
             </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium">Account / Email</label>
+              <Input
+                placeholder="e.g. user@gmail.com"
+                value={editAccount}
+                onChange={(e) => setEditAccount(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium">Provider Website</label>
+              <Input
+                placeholder="e.g. netflix.com"
+                value={editWebsite}
+                onChange={(e) => setEditWebsite(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium">End Date (Optional)</label>
+            <Input
+              type="date"
+              value={editEndDate}
+              onChange={(e) => setEditEndDate(e.target.value)}
+            />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium">Icon Color</label>
@@ -353,7 +380,8 @@ export default function SubscriptionDetailPage({
                   Billing Cycle
                 </span>
                 <span className="text-sm font-medium">
-                  {sub.cycle.charAt(0).toUpperCase() + sub.cycle.slice(1)}
+                  {billingCycles.find((bc) => bc.value === sub.cycle)?.label ||
+                    sub.cycle.charAt(0).toUpperCase() + sub.cycle.slice(1)}
                 </span>
               </div>
               <Separator />
@@ -364,10 +392,54 @@ export default function SubscriptionDetailPage({
               <Separator />
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
+                  Account / Email
+                </span>
+                <span className="text-sm font-medium">
+                  {sub.account || "Not specified"}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Provider Website
+                </span>
+                <span className="text-sm font-medium">
+                  {sub.website ? (
+                    <a
+                      href={
+                        sub.website.startsWith("http://") || sub.website.startsWith("https://")
+                          ? sub.website
+                          : `https://${sub.website}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      {sub.website}
+                    </a>
+                  ) : (
+                    "Not specified"
+                  )}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
                   Start Date
                 </span>
                 <span className="text-sm font-medium">
                   {format(new Date(sub.startDate), "MMMM d, yyyy")}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  End Date
+                </span>
+                <span className="text-sm font-medium">
+                  {sub.endDate
+                    ? format(new Date(sub.endDate), "MMMM d, yyyy")
+                    : "Ongoing"}
                 </span>
               </div>
             </div>
