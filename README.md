@@ -1,69 +1,56 @@
-# Starter Kit
+# SubKeep (v1.0.0)
 
-A **polyglot monorepo** template for managing multiple independent projects in various languages and frameworks.
+SubKeep is a sleek, modern subscription tracker that helps you manage recurring expenses, track account credentials and billing cycles, project payment schedules, and visualize monthly spending analytics in one clean dashboard.
 
-## Philosophy
+---
 
-- **No shared code** - Each app is completely independent
-- **Each app lives alone** - Self-contained with own dependencies, build system, and configuration
-- **Language agnostic** - Use any framework or language per app
+## 📸 Project Screenshots
 
-## Project Structure
+<details>
+<summary>👉 <b>Click to expand / collapse project screenshots</b></summary>
+<br />
 
+| Landing Page | Main Dashboard |
+| :---: | :---: |
+| ![Landing Page](./apps/web/public/screenshot-landing.png) | ![Dashboard](./apps/web/public/screenshot-home.png) |
+
+| Calendar Billing Projections | Custom Subscription & Fast Icon Search |
+| :---: | :---: |
+| ![Calendar View](./apps/web/public/screenshot-calendar.png) | ![Custom Subscription](./apps/web/public/screenshot-create.png) |
+
+</details>
+
+---
+
+## 🚀 Applications & Structure
+
+This repository is structured as a self-contained monorepo:
+
+```text
+apps/
+└── web/        # SubKeep Web App (Next.js 16 + Convex + Clerk + Tailwind CSS v4)
 ```
-apps/           # All projects (web, mobile, desktop, backend, cli)
-├── web/        # Frontend applications
-├── mobile/     # Mobile applications
-├── desktop/    # Desktop applications
-├── backend/    # Backend services
-└── cli/        # Command-line tools
 
-docker/         # Docker configurations
-docs/           # Architecture documentation
-scripts/        # Utility scripts
-.github/        # CI/CD workflows
-```
+For full setup details, environment configuration, and features, see [apps/web/README.md](./apps/web/README.md).
 
-## Getting Started
+---
 
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (for JS/TS projects)
-- [Docker](https://www.docker.com/) (for containerization)
-- [Python](https://www.python.org/) (for Python projects)
-- [Go](https://go.dev/) (for Go projects)
-- [Rust](https://www.rust-lang.org/) (for Rust projects)
-
-### Creating a New App
-
-1. Navigate to the appropriate folder under `apps/`
-2. Initialize your project:
+## ⚡ Quick Start
 
 ```bash
-# Example: Creating a new web app
+# 1. Go to the web app
 cd apps/web
-npm create vite@latest my-app -- --template react
+
+# 2. Install dependencies
+npm install
+
+# 3. Start Convex backend & Next.js dev server
+npx convex dev
+npm run dev
 ```
 
-3. Update the CI workflow in `.github/workflows/ci.yml` if needed
+---
 
-### Running with Docker
-
-```bash
-# Start all services
-docker-compose -f docker/docker-compose.yml up
-
-# Start specific service
-docker-compose -f docker/docker-compose.yml up web
-```
-
-## CI/CD
-
-This repository uses GitHub Actions with path-based filtering:
-- Changes to `apps/web/**` trigger web app builds
-- Changes to `apps/backend/**` trigger backend builds
-- Each app category has its own job
-
-## License
+## 📄 License
 
 [MIT](LICENSE)
