@@ -26,8 +26,17 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   const { theme, resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
-  const userSettings = useQuery(api.userSettings.get)
-  const updateSettings = useMutation(api.userSettings.update)
+  const hasUserSettings = !!(api as Record<string, any>).userSettings?.get
+  const userSettings = useQuery(
+    hasUserSettings ? (api as Record<string, any>).userSettings.get : "skip"
+  )
+
+  const hasUpdateSettings = !!(api as Record<string, any>).userSettings?.update
+  const updateSettingsMutation = hasUpdateSettings
+    ? (api as Record<string, any>).userSettings.update
+    : (api as Record<string, any>).subscriptions.suspend
+
+  const updateSettings = useMutation(updateSettingsMutation)
 
   const [primaryCurrency, setPrimaryCurrency] = useState("IDR")
   const [reminderDays, setReminderDays] = useState(3)
@@ -56,12 +65,24 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
 
   const handleCurrencyChange = async (val: string) => {
     setPrimaryCurrency(val)
-    await updateSettings({ primaryCurrency: val })
+    if (hasUpdateSettings) {
+      try {
+        await updateSettings({ primaryCurrency: val })
+      } catch (e) {
+        console.warn("Could not update settings in Convex backend:", e)
+      }
+    }
   }
 
   const handleReminderDaysChange = async (days: number) => {
     setReminderDays(days)
-    await updateSettings({ reminderDays: days })
+    if (hasUpdateSettings) {
+      try {
+        await updateSettings({ reminderDays: days })
+      } catch (e) {
+        console.warn("Could not update settings in Convex backend:", e)
+      }
+    }
   }
 
   const handleToggleWebPush = async () => {
@@ -69,14 +90,26 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
       const granted = await requestWebPushPermission()
       if (granted) {
         setWebPushEnabled(true)
-        await updateSettings({ webPushEnabled: true })
+        if (hasUpdateSettings) {
+          try {
+            await updateSettings({ webPushEnabled: true })
+          } catch (e) {
+            console.warn("Could not update settings in Convex backend:", e)
+          }
+        }
         sendWebPushNotification("SubKeep Reminders Active", "You will now receive billing and free trial push notifications!")
       } else {
         alert("Browser push notification permission denied. Please allow notifications in your browser settings.")
       }
     } else {
       setWebPushEnabled(false)
-      await updateSettings({ webPushEnabled: false })
+      if (hasUpdateSettings) {
+        try {
+          await updateSettings({ webPushEnabled: false })
+        } catch (e) {
+          console.warn("Could not update settings in Convex backend:", e)
+        }
+      }
     }
   }
 

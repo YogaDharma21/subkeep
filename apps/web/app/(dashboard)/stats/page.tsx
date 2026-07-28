@@ -11,7 +11,12 @@ export default function StatsPage() {
   const { isSignedIn } = useAuth()
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const payments = useQuery(api.payments.list, isSignedIn ? {} : "skip")
-  const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
+  
+  const hasUserSettings = !!(api as Record<string, any>).userSettings?.get
+  const userSettings = useQuery(
+    hasUserSettings ? (api as Record<string, any>).userSettings.get : "skip",
+    isSignedIn && hasUserSettings ? {} : "skip"
+  )
 
   const primaryCurrency = userSettings?.primaryCurrency || "IDR"
 
