@@ -170,8 +170,6 @@ export default function HomePage() {
         <UpcomingReminders
           subscriptions={subscriptions}
           primaryCurrency={primaryCurrency}
-          telegramBotToken={userSettings?.telegramBotToken}
-          telegramChatId={userSettings?.telegramChatId}
           onMarkCanceled={handleMarkCanceled}
         />
       )}

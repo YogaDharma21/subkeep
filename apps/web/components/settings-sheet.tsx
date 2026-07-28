@@ -1,7 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Moon, Bell, DollarSign, X, Send, Check, ShieldAlert, Globe, MessageSquare } from "lucide-react"
+import { useTheme } from "next-themes"
+import { useQuery, useMutation } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { Moon, Globe, Bell, X } from "lucide-react"
 import {
   Sheet,
   SheetContent,
@@ -9,13 +12,9 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { useTheme } from "next-themes"
-import { useQuery, useMutation } from "convex/react"
-import { api } from "@/convex/_generated/api"
 import { currencies } from "@/lib/constants"
-import { requestWebPushPermission, sendTelegramNotification, sendWebPushNotification } from "@/lib/notifications"
+import { requestWebPushPermission, sendWebPushNotification } from "@/lib/notifications"
 
 interface SettingsSheetProps {
   open: boolean
@@ -41,10 +40,6 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   const [primaryCurrency, setPrimaryCurrency] = useState("IDR")
   const [reminderDays, setReminderDays] = useState(3)
   const [webPushEnabled, setWebPushEnabled] = useState(false)
-  const [telegramEnabled, setTelegramEnabled] = useState(false)
-  const [telegramBotToken, setTelegramBotToken] = useState("")
-  const [telegramChatId, setTelegramChatId] = useState("")
-  const [telegramTestStatus, setTelegramTestStatus] = useState<string | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -55,9 +50,6 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
       if (userSettings.primaryCurrency) setPrimaryCurrency(userSettings.primaryCurrency)
       if (userSettings.reminderDays) setReminderDays(userSettings.reminderDays)
       if (userSettings.webPushEnabled !== undefined) setWebPushEnabled(userSettings.webPushEnabled)
-      if (userSettings.telegramEnabled !== undefined) setTelegramEnabled(userSettings.telegramEnabled)
-      if (userSettings.telegramBotToken) setTelegramBotToken(userSettings.telegramBotToken)
-      if (userSettings.telegramChatId) setTelegramChatId(userSettings.telegramChatId)
     }
   }, [userSettings])
 
@@ -110,28 +102,6 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
           console.warn("Could not update settings in Convex backend:", e)
         }
       }
-    }
-  }
-
-  const handleSaveTelegram = async () => {
-    await updateSettings({
-      telegramEnabled,
-      telegramBotToken,
-      telegramChatId,
-    })
-  }
-
-  const handleTestTelegram = async () => {
-    setTelegramTestStatus("Sending test message...")
-    const res = await sendTelegramNotification(
-      telegramBotToken,
-      telegramChatId,
-      `🔔 <b>SubKeep Notification Test</b>\n\nYour Telegram bot integration is working properly! You will receive subscription due date & free trial alerts here.`
-    )
-    if (res.success) {
-      setTelegramTestStatus("Success! Check your Telegram app.")
-    } else {
-      setTelegramTestStatus(`Error: ${res.error}`)
     }
   }
 
@@ -257,77 +227,6 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* Telegram Bot Integration */}
-            <div className="space-y-3 rounded-xl border border-blue-500/30 bg-blue-500/5 p-3.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <MessageSquare className="size-4 text-blue-500" />
-                  <span className="text-sm font-semibold text-foreground">
-                    Telegram Bot Integration
-                  </span>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={telegramEnabled}
-                  onChange={(e) => {
-                    setTelegramEnabled(e.target.checked)
-                    updateSettings({ telegramEnabled: e.target.checked })
-                  }}
-                  className="size-4 rounded accent-blue-500 cursor-pointer"
-                />
-              </div>
-
-              {telegramEnabled && (
-                <div className="space-y-2.5 pt-1">
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-medium text-muted-foreground">
-                      Bot Token (from @BotFather)
-                    </label>
-                    <Input
-                      type="password"
-                      placeholder="e.g. 123456789:ABCdefGhIJK..."
-                      value={telegramBotToken}
-                      onChange={(e) => setTelegramBotToken(e.target.value)}
-                      onBlur={handleSaveTelegram}
-                      className="h-8 text-xs font-mono"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-medium text-muted-foreground">
-                      Chat ID (Your Telegram Chat ID)
-                    </label>
-                    <Input
-                      placeholder="e.g. 987654321"
-                      value={telegramChatId}
-                      onChange={(e) => setTelegramChatId(e.target.value)}
-                      onBlur={handleSaveTelegram}
-                      className="h-8 text-xs font-mono"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleTestTelegram}
-                      disabled={!telegramBotToken || !telegramChatId}
-                      className="h-7 text-xs gap-1.5 text-blue-600 dark:text-blue-400 border-blue-500/30"
-                    >
-                      <Send className="size-3" />
-                      Test Telegram Alert
-                    </Button>
-
-                    {telegramTestStatus && (
-                      <span className="text-[10px] text-muted-foreground">
-                        {telegramTestStatus}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
