@@ -664,6 +664,7 @@ export default function SubscriptionDetailPage({
         }}
         open={iconOpen}
         onClose={() => setIconOpen(false)}
+        defaultDomain={editWebsite || editName || sub.website || sub.name}
       />
     </div>
   )

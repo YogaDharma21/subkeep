@@ -398,6 +398,7 @@ export function AddSubscriptionSheet({
           }}
           open={iconOpen}
           onClose={() => setIconOpen(false)}
+          defaultDomain={website || name}
         />
       </SheetContent>
     </Sheet>
