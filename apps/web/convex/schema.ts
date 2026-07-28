@@ -21,6 +21,9 @@ export default defineSchema({
     trialEndDate: v.optional(v.string()),
     cancelUrl: v.optional(v.string()),
     reminderDays: v.optional(v.number()),
+    isShared: v.optional(v.boolean()),
+    totalPlanPrice: v.optional(v.number()),
+    totalMembers: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_user_and_active", ["userId", "isActive"]),

@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { convertCurrency, formatCurrencyAmount, fetchExchangeRates, fallbackRates } from "@/lib/currency"
 import { currencies } from "@/lib/constants"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
+import { SmartInsights } from "@/components/smart-insights"
 
 export default function HomePage() {
   const { isSignedIn } = useAuth()
@@ -157,6 +158,14 @@ export default function HomePage() {
           telegramBotToken={userSettings?.telegramBotToken}
           telegramChatId={userSettings?.telegramChatId}
           onMarkCanceled={handleMarkCanceled}
+        />
+      )}
+
+      {/* Smart Insights & Savings Recommendations */}
+      {subscriptions && (
+        <SmartInsights
+          subscriptions={subscriptions}
+          primaryCurrency={primaryCurrency}
         />
       )}
 
