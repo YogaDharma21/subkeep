@@ -56,5 +56,10 @@ export default defineSchema({
     primaryCurrency: v.string(),
     reminderDays: v.number(),
     webPushEnabled: v.boolean(),
+    emailEnabled: v.optional(v.boolean()),
+    emailAddress: v.optional(v.string()),
+    telegramEnabled: v.optional(v.boolean()),
+    telegramBotToken: v.optional(v.string()),
+    telegramChatId: v.optional(v.string()),
   }).index("by_user", ["userId"]),
 })
