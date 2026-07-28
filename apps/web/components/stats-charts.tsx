@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import {
   BarChart,
   Bar,
@@ -16,6 +16,7 @@ import {
 import { categoryColors, getSymbol } from "@/lib/constants"
 import { PieChart as PieChartIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { convertCurrency, formatCurrencyAmount, fetchExchangeRates, fallbackRates } from "@/lib/currency"
 
 interface StatsChartsProps {
   subscriptions: Array<{
@@ -39,6 +40,7 @@ interface StatsChartsProps {
     category: string
     date: string
   }>
+  primaryCurrency?: string
 }
 
 function parseLocalDate(dateStr: string): Date {
@@ -49,23 +51,31 @@ function parseLocalDate(dateStr: string): Date {
   return new Date(y, m, d)
 }
 
-export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) {
+export function StatsCharts({ subscriptions, payments = [], primaryCurrency = "IDR" }: StatsChartsProps) {
   const [breakdownMetric, setBreakdownMetric] = useState<"cost" | "count">("cost")
   const [breakdownFilter, setBreakdownFilter] = useState<"all" | "paid">("all")
+
+  const [rates, setRates] = useState<Record<string, number>>(fallbackRates)
+  useEffect(() => {
+    fetchExchangeRates().then(setRates)
+  }, [])
 
   const monthlyTotal = useMemo(() => {
     return subscriptions.reduce((sum, s) => {
       const cycle = (s.cycle || "monthly").toLowerCase()
-      if (cycle === "monthly") return sum + s.price
-      if (cycle === "quarterly") return sum + s.price / 3
-      if (cycle === "semi-annual") return sum + s.price / 6
-      if (cycle === "yearly") return sum + s.price / 12
-      if (cycle === "weekly") return sum + s.price * 4.33
-      if (cycle === "daily") return sum + s.price * 30
-      if (cycle === "none") return sum
-      return sum + s.price
+      let nativeMonthly = s.price
+      if (cycle === "monthly") nativeMonthly = s.price
+      else if (cycle === "quarterly") nativeMonthly = s.price / 3
+      else if (cycle === "semi-annual") nativeMonthly = s.price / 6
+      else if (cycle === "yearly") nativeMonthly = s.price / 12
+      else if (cycle === "weekly") nativeMonthly = s.price * 4.33
+      else if (cycle === "daily") nativeMonthly = s.price * 30
+      else if (cycle === "none") nativeMonthly = 0
+
+      const converted = convertCurrency(nativeMonthly, s.currency, primaryCurrency, rates)
+      return sum + converted
     }, 0)
-  }, [subscriptions])
+  }, [subscriptions, primaryCurrency, rates])
 
   const spendingData = useMemo(() => {
     const now = new Date()
@@ -85,30 +95,34 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
 
         if (subStart <= monthEnd && (!subEnd || subEnd >= monthStart)) {
           const cycle = (sub.cycle || "monthly").toLowerCase()
-          if (cycle === "monthly") monthSum += sub.price
-          else if (cycle === "quarterly") monthSum += sub.price / 3
-          else if (cycle === "semi-annual") monthSum += sub.price / 6
-          else if (cycle === "yearly") monthSum += sub.price / 12
-          else if (cycle === "weekly") monthSum += sub.price * 4.33
-          else if (cycle === "daily") monthSum += sub.price * 30
+          let nativeCost = sub.price
+          if (cycle === "monthly") nativeCost = sub.price
+          else if (cycle === "quarterly") nativeCost = sub.price / 3
+          else if (cycle === "semi-annual") nativeCost = sub.price / 6
+          else if (cycle === "yearly") nativeCost = sub.price / 12
+          else if (cycle === "weekly") nativeCost = sub.price * 4.33
+          else if (cycle === "daily") nativeCost = sub.price * 30
           else if (cycle === "none") {
             if (subStart >= monthStart && subStart <= monthEnd) {
-              monthSum += sub.price
+              nativeCost = sub.price
+            } else {
+              nativeCost = 0
             }
-          } else {
-            monthSum += sub.price
           }
+
+          const converted = convertCurrency(nativeCost, sub.currency, primaryCurrency, rates)
+          monthSum += converted
         }
       })
 
       months.push({
         month: monthLabel,
-        amount: Number(monthSum.toFixed(2)),
+        amount: Number(monthSum.toFixed(0)),
       })
     }
 
     return months
-  }, [subscriptions])
+  }, [subscriptions, primaryCurrency, rates])
 
   const filteredSubs = useMemo(() => {
     if (breakdownFilter === "paid") {
@@ -130,18 +144,20 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
       else if (cycle === "daily") monthlyCost = sub.price * 30
       else if (cycle === "none") monthlyCost = sub.price
 
-      cats[sub.category].cost += monthlyCost
+      const converted = convertCurrency(monthlyCost, sub.currency, primaryCurrency, rates)
+
+      cats[sub.category].cost += converted
       cats[sub.category].count += 1
     })
 
     return Object.entries(cats).map(([name, data]) => ({
       name: name.charAt(0).toUpperCase() + name.slice(1),
-      value: breakdownMetric === "cost" ? Number(data.cost.toFixed(2)) : data.count,
-      rawCost: Number(data.cost.toFixed(2)),
+      value: breakdownMetric === "cost" ? Number(data.cost.toFixed(0)) : data.count,
+      rawCost: Number(data.cost.toFixed(0)),
       rawCount: data.count,
       color: categoryColors[name] || "#8E8E93",
     }))
-  }, [filteredSubs, breakdownMetric])
+  }, [filteredSubs, breakdownMetric, primaryCurrency, rates])
 
   const total = categoryData.reduce((sum, c) => sum + c.value, 0)
 
@@ -153,17 +169,18 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
         color: p.color,
         amount: p.amount,
         currency: p.currency,
+        convertedAmount: convertCurrency(p.amount, p.currency, primaryCurrency, rates),
         date: new Date(p.date),
       }))
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, 10)
-  }, [payments])
+  }, [payments, primaryCurrency, rates])
 
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-border bg-background">
-        <div className="border-b border-border p-4">
-          <h3 className="text-sm font-semibold">Spending Trend</h3>
+        <div className="border-b border-border p-4 flex items-center justify-between">
+          <h3 className="text-sm font-semibold">Spending Trend ({primaryCurrency})</h3>
         </div>
         <div className="p-4">
           <div className="h-[200px]">
@@ -178,10 +195,12 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
                 <YAxis
                   tick={{ fontSize: 11 }}
                   stroke="var(--muted-foreground)"
-                  tickFormatter={(v) => `$${v}`}
                 />
                 <Tooltip
-                  formatter={(value) => [`$${Number(value).toFixed(2)}`, "Amount"]}
+                  formatter={(value) => [
+                    formatCurrencyAmount(Number(value), primaryCurrency),
+                    "Amount",
+                  ]}
                   contentStyle={{
                     backgroundColor: "var(--card)",
                     borderColor: "var(--border)",
@@ -196,27 +215,27 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
             </ResponsiveContainer>
           </div>
           <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
-            <div className="rounded-xl bg-muted p-4 text-center">
-              <div className="text-xl font-bold">
-                ${(monthlyTotal * 1.15).toFixed(2)}
+            <div className="rounded-xl bg-muted p-4 text-center min-w-0">
+              <div className="text-sm font-bold text-foreground truncate">
+                {formatCurrencyAmount(monthlyTotal * 1.15, primaryCurrency)}
               </div>
-              <div className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
+              <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
                 Highest
               </div>
             </div>
-            <div className="rounded-xl bg-muted p-4 text-center">
-              <div className="text-xl font-bold">
-                ${monthlyTotal.toFixed(2)}
+            <div className="rounded-xl bg-muted p-4 text-center min-w-0">
+              <div className="text-sm font-bold text-foreground truncate">
+                {formatCurrencyAmount(monthlyTotal, primaryCurrency)}
               </div>
-              <div className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
+              <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
                 Avg / Month
               </div>
             </div>
-            <div className="rounded-xl bg-muted p-4 text-center">
-              <div className="text-xl font-bold">
-                ${(monthlyTotal * 6).toFixed(2)}
+            <div className="rounded-xl bg-muted p-4 text-center min-w-0">
+              <div className="text-sm font-bold text-foreground truncate">
+                {formatCurrencyAmount(monthlyTotal * 6, primaryCurrency)}
               </div>
-              <div className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
+              <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
                 Total (YTD)
               </div>
             </div>
@@ -239,7 +258,7 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                By Cost ($)
+                By Cost ({primaryCurrency})
               </button>
               <button
                 type="button"
@@ -292,105 +311,105 @@ export function StatsCharts({ subscriptions, payments = [] }: StatsChartsProps) 
             </p>
           </div>
         ) : (
-        <div className="p-4">
-          {total > 0 && (
-            <div className="mb-4 flex justify-center">
-              <div className="h-[180px] w-[180px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={categoryData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={55}
-                      outerRadius={80}
-                      dataKey="value"
-                      strokeWidth={0}
-                    >
-                      {categoryData.map((entry, index) => (
-                        <Cell key={index} fill={entry.color} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-          <div className="space-y-2.5">
-            {categoryData.map((cat) => {
-              const pct = total > 0 ? ((cat.value / total) * 100).toFixed(1) : "0"
-              const detailText =
-                cat.rawCost > 0
-                  ? `$${cat.rawCost.toFixed(2)}/mo · ${cat.rawCount} sub${cat.rawCount > 1 ? "s" : ""}`
-                  : `Free · ${cat.rawCount} sub${cat.rawCount > 1 ? "s" : ""}`
-              return (
-                <div key={cat.name} className="flex items-center gap-3">
-                  <div
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: cat.color }}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium">{cat.name}</span>
-                      <span className="text-xs text-muted-foreground">{detailText}</span>
-                    </div>
-                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full transition-all"
-                        style={{
-                          width: `${pct}%`,
-                          backgroundColor: cat.color,
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div className="w-12 text-right text-xs font-semibold text-muted-foreground">
-                    {pct}%
-                  </div>
+          <div className="p-4">
+            {total > 0 && (
+              <div className="mb-4 flex justify-center">
+                <div className="h-[180px] w-[180px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={55}
+                        outerRadius={80}
+                        dataKey="value"
+                        strokeWidth={0}
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell key={index} fill={entry.color} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
-              )
-            })}
+              </div>
+            )}
+            <div className="space-y-2.5">
+              {categoryData.map((cat) => {
+                const pct = total > 0 ? ((cat.value / total) * 100).toFixed(1) : "0"
+                const detailText =
+                  cat.rawCost > 0
+                    ? `${formatCurrencyAmount(cat.rawCost, primaryCurrency)}/mo · ${cat.rawCount} sub${cat.rawCount > 1 ? "s" : ""}`
+                    : `Free · ${cat.rawCount} sub${cat.rawCount > 1 ? "s" : ""}`
+                return (
+                  <div key={cat.name} className="flex items-center gap-3">
+                    <div
+                      className="size-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: cat.color }}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium">{cat.name}</span>
+                        <span className="text-xs text-muted-foreground">{detailText}</span>
+                      </div>
+                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{
+                            width: `${pct}%`,
+                            backgroundColor: cat.color,
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="w-12 text-right text-xs font-semibold text-muted-foreground">
+                      {pct}%
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
-        </div>
         )}
       </div>
 
       {paymentHistory.length > 0 && (
-      <div className="rounded-xl border border-border bg-background">
-        <div className="border-b border-border p-4">
-          <h3 className="text-sm font-semibold">Payment History</h3>
-        </div>
-        <div>
-          {paymentHistory.map((p, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-3 border-b border-border px-4 py-3 last:border-b-0"
-            >
+        <div className="rounded-xl border border-border bg-background">
+          <div className="border-b border-border p-4">
+            <h3 className="text-sm font-semibold">Payment History</h3>
+          </div>
+          <div>
+            {paymentHistory.map((p, i) => (
               <div
-                className="flex size-10 shrink-0 items-center justify-center rounded-xl"
-                style={{ backgroundColor: p.color }}
+                key={i}
+                className="flex items-center gap-3 border-b border-border px-4 py-3 last:border-b-0"
               >
-                <span className="text-sm font-bold text-white">
-                  {p.name.charAt(0)}
-                </span>
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium">{p.name}</div>
-                <div className="text-xs text-muted-foreground">
-                  {p.date.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                <div
+                  className="flex size-10 shrink-0 items-center justify-center rounded-xl"
+                  style={{ backgroundColor: p.color }}
+                >
+                  <span className="text-sm font-bold text-white">
+                    {p.name.charAt(0)}
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium">{p.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {p.date.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </div>
+                </div>
+                <div className="text-sm font-semibold text-red-500">
+                  -{formatCurrencyAmount(p.convertedAmount, primaryCurrency)}
                 </div>
               </div>
-              <div className="text-sm font-semibold text-red-500">
-                -{getSymbol(p.currency)}{p.amount}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
       )}
     </div>
   )
