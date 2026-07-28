@@ -69,6 +69,10 @@ export const create = mutation({
     endDate: v.optional(v.string()),
     account: v.optional(v.string()),
     website: v.optional(v.string()),
+    isTrial: v.optional(v.boolean()),
+    trialEndDate: v.optional(v.string()),
+    cancelUrl: v.optional(v.string()),
+    reminderDays: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
@@ -87,6 +91,10 @@ export const create = mutation({
       endDate: args.endDate || undefined,
       account: args.account || undefined,
       website: args.website || undefined,
+      isTrial: args.isTrial || undefined,
+      trialEndDate: args.trialEndDate || undefined,
+      cancelUrl: args.cancelUrl || undefined,
+      reminderDays: args.reminderDays || undefined,
       isActive: true,
     })
   },
@@ -107,6 +115,10 @@ export const update = mutation({
     endDate: v.optional(v.string()),
     account: v.optional(v.string()),
     website: v.optional(v.string()),
+    isTrial: v.optional(v.boolean()),
+    trialEndDate: v.optional(v.string()),
+    cancelUrl: v.optional(v.string()),
+    reminderDays: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
@@ -117,10 +129,10 @@ export const update = mutation({
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id: _, ...updates } = args
-    const patchObj: Record<string, string | number | undefined> = {}
+    const patchObj: Record<string, string | number | boolean | undefined> = {}
     for (const [k, v] of Object.entries(updates)) {
       if (v !== undefined) {
-        if ((k === "endDate" || k === "account" || k === "website") && v === "") {
+        if ((k === "endDate" || k === "account" || k === "website" || k === "trialEndDate" || k === "cancelUrl") && v === "") {
           patchObj[k] = undefined
         } else {
           patchObj[k] = v
@@ -166,6 +178,10 @@ export const clone = mutation({
       endDate: sub.endDate,
       account: sub.account,
       website: sub.website,
+      isTrial: sub.isTrial,
+      trialEndDate: sub.trialEndDate,
+      cancelUrl: sub.cancelUrl,
+      reminderDays: sub.reminderDays,
       isActive: true,
     })
   },
@@ -221,6 +237,10 @@ export const restoreAll = mutation({
         endDate: v.optional(v.string()),
         account: v.optional(v.string()),
         website: v.optional(v.string()),
+        isTrial: v.optional(v.boolean()),
+        trialEndDate: v.optional(v.string()),
+        cancelUrl: v.optional(v.string()),
+        reminderDays: v.optional(v.number()),
         isActive: v.boolean(),
       })
     ),

@@ -17,6 +17,10 @@ export default defineSchema({
     account: v.optional(v.string()),
     website: v.optional(v.string()),
     isActive: v.boolean(),
+    isTrial: v.optional(v.boolean()),
+    trialEndDate: v.optional(v.string()),
+    cancelUrl: v.optional(v.string()),
+    reminderDays: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_user_and_active", ["userId", "isActive"]),
@@ -28,6 +32,8 @@ export default defineSchema({
     category: v.string(),
     defaultPrice: v.number(),
     defaultCurrency: v.string(),
+    cancelUrl: v.optional(v.string()),
+    cancellationSteps: v.optional(v.array(v.string())),
   }).index("by_category", ["category"]),
 
   payments: defineTable({
@@ -40,5 +46,17 @@ export default defineSchema({
     currency: v.string(),
     category: v.string(),
     date: v.string(),
+  }).index("by_user", ["userId"]),
+
+  userSettings: defineTable({
+    userId: v.string(),
+    primaryCurrency: v.string(),
+    reminderDays: v.number(),
+    webPushEnabled: v.boolean(),
+    emailEnabled: v.boolean(),
+    emailAddress: v.optional(v.string()),
+    telegramEnabled: v.boolean(),
+    telegramBotToken: v.optional(v.string()),
+    telegramChatId: v.optional(v.string()),
   }).index("by_user", ["userId"]),
 })

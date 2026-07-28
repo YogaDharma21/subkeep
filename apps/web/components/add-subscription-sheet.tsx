@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
-import { ArrowLeft, Plus, X } from "lucide-react"
+import { ArrowLeft, Plus, X, Sparkles, Link2 } from "lucide-react"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import {
   Sheet,
@@ -49,6 +49,11 @@ export function AddSubscriptionSheet({
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
   const [selectedColor, setSelectedColor] = useState("#000000")
 
+  // Trial & Cancellation additions
+  const [isTrial, setIsTrial] = useState(false)
+  const [trialEndDate, setTrialEndDate] = useState("")
+  const [cancelUrl, setCancelUrl] = useState("")
+
   const colorOptions = [
     "#000000", "#555555", "#E50914", "#1DB954", "#00A8E1",
     "#4285F4", "#0078D4", "#B535F6", "#F47D31", "#00C4CC",
@@ -68,6 +73,9 @@ export function AddSubscriptionSheet({
     setWebsite("")
     setSelectedIcon(null)
     setSelectedColor("#000000")
+    setIsTrial(false)
+    setTrialEndDate("")
+    setCancelUrl("")
   }
 
   const handleTemplateSelect = (template: {
@@ -77,6 +85,7 @@ export function AddSubscriptionSheet({
     category: string
     price: number
     currency: string
+    cancelUrl?: string
   }) => {
     setName(template.name)
     setPrice(template.price.toString())
@@ -84,6 +93,7 @@ export function AddSubscriptionSheet({
     setCategory(template.category)
     setSelectedIcon(template.icon)
     setSelectedColor(template.color)
+    if (template.cancelUrl) setCancelUrl(template.cancelUrl)
     setStep(2)
   }
 
@@ -92,20 +102,23 @@ export function AddSubscriptionSheet({
   }
 
   const handleSubmit = async () => {
-    if (!name || !price) return
+    if (!name || (!price && !isTrial)) return
     await create({
       name,
       icon: selectedIcon || "Receipt",
       color: selectedColor,
-      price: parseFloat(price),
+      price: price ? parseFloat(price) : 0,
       currency,
       cycle,
       category,
       startDate,
-      nextBilling: startDate,
+      nextBilling: isTrial && trialEndDate ? trialEndDate : startDate,
       endDate: endDate || undefined,
       account: account || undefined,
       website: website || undefined,
+      isTrial,
+      trialEndDate: trialEndDate || undefined,
+      cancelUrl: cancelUrl || undefined,
     })
     resetForm()
     onOpenChange(false)
@@ -157,7 +170,7 @@ export function AddSubscriptionSheet({
                 <div className="space-y-4 pb-4">
                   <button
                     onClick={() => setIconOpen(true)}
-                    className="flex items-center gap-3 rounded-xl bg-muted p-3.5"
+                    className="flex items-center gap-3 rounded-xl bg-muted p-3.5 w-full"
                   >
                     <div
                       className={cn(
@@ -201,6 +214,40 @@ export function AddSubscriptionSheet({
                     </div>
                   </div>
 
+                  {/* Free Trial Toggle */}
+                  <div className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="size-4 text-emerald-500" />
+                      <div>
+                        <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                          Free Trial Subscription
+                        </span>
+                        <p className="text-[11px] text-muted-foreground">
+                          Track trial expiration to cancel before auto-renewing
+                        </p>
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={isTrial}
+                      onChange={(e) => setIsTrial(e.target.checked)}
+                      className="size-4 rounded accent-emerald-500 cursor-pointer"
+                    />
+                  </div>
+
+                  {isTrial && (
+                    <div className="space-y-2 rounded-xl bg-muted/40 p-3 border border-border">
+                      <label className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                        Trial Expiration Date *
+                      </label>
+                      <Input
+                        type="date"
+                        value={trialEndDate}
+                        onChange={(e) => setTrialEndDate(e.target.value)}
+                      />
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Name</label>
                     <Input
@@ -212,7 +259,9 @@ export function AddSubscriptionSheet({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Price</label>
+                      <label className="text-sm font-medium">
+                        {isTrial ? "Price (After Trial)" : "Price"}
+                      </label>
                       <Input
                         type="number"
                         placeholder="0.00"
@@ -274,6 +323,21 @@ export function AddSubscriptionSheet({
                     </select>
                   </div>
 
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-1.5">
+                      <Link2 className="size-3.5 text-primary" />
+                      Direct Cancellation URL
+                    </label>
+                    <Input
+                      placeholder="e.g. https://www.netflix.com/youraccount"
+                      value={cancelUrl}
+                      onChange={(e) => setCancelUrl(e.target.value)}
+                    />
+                    <p className="text-[11px] text-muted-foreground">
+                      Direct link to your account cancellation page
+                    </p>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Account / Email (Optional)</label>
@@ -318,7 +382,7 @@ export function AddSubscriptionSheet({
                 <Button
                   className="w-full"
                   onClick={handleSubmit}
-                  disabled={!name || !price}
+                  disabled={!name || (!price && !isTrial)}
                 >
                   Add Subscription
                 </Button>
