@@ -18,6 +18,10 @@ SubKeep is a sleek, modern subscription tracker that helps you manage recurring 
 | :---: | :---: |
 | ![Calendar View](./apps/web/public/screenshot-calendar.png) | ![Custom Subscription](./apps/web/public/screenshot-create.png) |
 
+| Spending Analytics & Trends | Settings & Backups |
+| :---: | :---: |
+| ![Spending Analytics](./apps/web/public/screenshot-stats.png) | ![Settings](./apps/web/public/screenshot-settings.png) |
+
 </details>
 
 ---
