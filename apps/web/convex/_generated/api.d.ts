@@ -11,6 +11,7 @@
 import type * as payments from "../payments.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as templates from "../templates.js";
+import type * as userSettings from "../userSettings.js";
 
 import type {
   ApiFromModules,
@@ -22,6 +23,7 @@ declare const fullApi: ApiFromModules<{
   payments: typeof payments;
   subscriptions: typeof subscriptions;
   templates: typeof templates;
+  userSettings: typeof userSettings;
 }>;
 
 /**
