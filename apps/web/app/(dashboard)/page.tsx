@@ -16,8 +16,19 @@ import { SmartInsights } from "@/components/smart-insights"
 export default function HomePage() {
   const { isSignedIn } = useAuth()
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
-  const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
-  const updateSettings = useMutation(api.userSettings.update)
+  
+  const hasUserSettings = !!(api as Record<string, any>).userSettings?.get
+  const userSettings = useQuery(
+    hasUserSettings ? (api as Record<string, any>).userSettings.get : "skip",
+    isSignedIn && hasUserSettings ? {} : "skip"
+  )
+  
+  const hasUpdateSettings = !!(api as Record<string, any>).userSettings?.update
+  const updateSettingsMutation = hasUpdateSettings
+    ? (api as Record<string, any>).userSettings.update
+    : api.subscriptions.suspend
+
+  const updateSettings = useMutation(updateSettingsMutation)
   const suspendMutation = useMutation(api.subscriptions.suspend)
 
   const [sortAsc, setSortAsc] = useState(true)
@@ -37,8 +48,12 @@ export default function HomePage() {
 
   const handleCurrencyChange = async (newCurr: string) => {
     setPrimaryCurrency(newCurr)
-    if (isSignedIn) {
-      await updateSettings({ primaryCurrency: newCurr })
+    if (isSignedIn && hasUpdateSettings) {
+      try {
+        await updateSettings({ primaryCurrency: newCurr })
+      } catch (err) {
+        console.warn("Could not save settings to Convex backend:", err)
+      }
     }
   }
 
