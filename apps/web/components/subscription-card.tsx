@@ -42,55 +42,65 @@ export function SubscriptionCard({ sub, primaryCurrency = "IDR" }: SubscriptionC
     trialDaysLeft = Math.max(0, differenceInDays(tEnd, today))
   }
 
+  const tooltipText = sub.account ? `${sub.name} (${sub.account})` : sub.name
+
   return (
     <Link
       href={`/subscriptions/${sub._id}`}
-      className="flex items-center gap-3.5 rounded-xl border border-border bg-background p-3.5 transition-all hover:border-border/80 active:scale-[0.98] active:opacity-80 relative overflow-hidden group"
+      title={tooltipText}
+      className="flex items-center gap-3 rounded-xl border border-border bg-background p-3 transition-all hover:border-border/80 active:scale-[0.98] active:opacity-80 relative overflow-hidden group"
     >
       <div
-        className="flex size-11 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105"
+        className="flex size-11 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105 overflow-hidden"
         style={{ backgroundColor: sub.color }}
       >
         <DynamicIcon name={sub.icon} className="size-5 text-white" />
       </div>
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5 truncate">
-          <span className="truncate text-sm font-semibold">{sub.name}</span>
-          {sub.account && (
-            <span className="truncate text-xs font-normal text-muted-foreground">
-              ({sub.account})
-            </span>
-          )}
+        {/* Line 1: Service Name & Trial Badge */}
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="truncate text-sm font-bold text-foreground" title={sub.name}>
+            {sub.name}
+          </span>
           {isTrial && (
-            <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-wide shrink-0">
+            <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-wider shrink-0">
               TRIAL
             </span>
           )}
         </div>
 
-        <div className="text-xs text-muted-foreground mt-0.5">
-          <span>{sub.category}</span>
-          <span className="mx-1">&middot;</span>
+        {/* Line 2: Dedicated Account/Email Line if specified */}
+        {sub.account && (
+          <div className="text-[11px] font-normal text-muted-foreground/90 truncate max-w-full leading-snug" title={sub.account}>
+            {sub.account}
+          </div>
+        )}
+
+        {/* Line 3: Category & Billing Info */}
+        <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1 flex-wrap">
+          <span className="capitalize">{sub.category}</span>
+          <span>&middot;</span>
           {isTrial && sub.trialEndDate ? (
             <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-              Trial ends: {format(new Date(sub.trialEndDate), "MMM d")}
-              {trialDaysLeft !== null && ` (${trialDaysLeft}d left)`}
+              Ends {format(new Date(sub.trialEndDate), "MMM d")}
+              {trialDaysLeft !== null && ` (${trialDaysLeft}d)`}
             </span>
           ) : (
             <span>Next: {format(new Date(sub.nextBilling), "MMM d")}</span>
           )}
 
           {sub.endDate && !isTrial && (
-            <span className="ml-1 text-[11px] font-normal text-muted-foreground/80">
-              (Ends {format(new Date(sub.endDate), "MMM d, yyyy")})
+            <span className="text-[11px] text-muted-foreground/80">
+              (Ends {format(new Date(sub.endDate), "MMM d")})
             </span>
           )}
         </div>
       </div>
 
+      {/* Price Column */}
       <div className="shrink-0 text-right">
-        <div className="text-sm font-bold text-foreground">
+        <div className="text-sm font-extrabold text-foreground">
           {showConverted
             ? convertAndFormat(sub.price, sub.currency, primaryCurrency)
             : formatCurrencyAmount(sub.price, sub.currency)}
