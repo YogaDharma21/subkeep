@@ -73,6 +73,9 @@ export const create = mutation({
     trialEndDate: v.optional(v.string()),
     cancelUrl: v.optional(v.string()),
     reminderDays: v.optional(v.number()),
+    isShared: v.optional(v.boolean()),
+    totalPlanPrice: v.optional(v.number()),
+    totalMembers: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
@@ -95,6 +98,9 @@ export const create = mutation({
       trialEndDate: args.trialEndDate || undefined,
       cancelUrl: args.cancelUrl || undefined,
       reminderDays: args.reminderDays || undefined,
+      isShared: args.isShared || undefined,
+      totalPlanPrice: args.totalPlanPrice || undefined,
+      totalMembers: args.totalMembers || undefined,
       isActive: true,
     })
   },
@@ -119,6 +125,9 @@ export const update = mutation({
     trialEndDate: v.optional(v.string()),
     cancelUrl: v.optional(v.string()),
     reminderDays: v.optional(v.number()),
+    isShared: v.optional(v.boolean()),
+    totalPlanPrice: v.optional(v.number()),
+    totalMembers: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
@@ -182,6 +191,9 @@ export const clone = mutation({
       trialEndDate: sub.trialEndDate,
       cancelUrl: sub.cancelUrl,
       reminderDays: sub.reminderDays,
+      isShared: sub.isShared,
+      totalPlanPrice: sub.totalPlanPrice,
+      totalMembers: sub.totalMembers,
       isActive: true,
     })
   },
@@ -241,6 +253,9 @@ export const restoreAll = mutation({
         trialEndDate: v.optional(v.string()),
         cancelUrl: v.optional(v.string()),
         reminderDays: v.optional(v.number()),
+        isShared: v.optional(v.boolean()),
+        totalPlanPrice: v.optional(v.number()),
+        totalMembers: v.optional(v.number()),
         isActive: v.boolean(),
       })
     ),

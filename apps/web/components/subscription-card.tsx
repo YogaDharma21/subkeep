@@ -22,6 +22,9 @@ interface Subscription {
   isTrial?: boolean
   trialEndDate?: string
   cancelUrl?: string
+  isShared?: boolean
+  totalPlanPrice?: number
+  totalMembers?: number
 }
 
 interface SubscriptionCardProps {
@@ -31,6 +34,7 @@ interface SubscriptionCardProps {
 
 export function SubscriptionCard({ sub, primaryCurrency = "IDR" }: SubscriptionCardProps) {
   const isTrial = !!sub.isTrial
+  const isShared = !!sub.isShared
   const showConverted = primaryCurrency && primaryCurrency !== sub.currency
 
   let trialDaysLeft: number | null = null
@@ -58,14 +62,21 @@ export function SubscriptionCard({ sub, primaryCurrency = "IDR" }: SubscriptionC
       </div>
 
       <div className="min-w-0 flex-1">
-        {/* Line 1: Service Name & Trial Badge */}
+        {/* Line 1: Service Name & Badges */}
         <div className="flex items-center gap-1.5 min-w-0">
           <span className="truncate text-sm font-bold text-foreground" title={sub.name}>
             {sub.name}
           </span>
+
           {isTrial && (
             <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-wider shrink-0">
               TRIAL
+            </span>
+          )}
+
+          {isShared && (
+            <span className="rounded-full bg-blue-500/15 px-2 py-0.5 text-[9px] font-extrabold text-blue-600 dark:text-blue-400 border border-blue-500/30 uppercase tracking-wider shrink-0">
+              SPLIT {sub.totalMembers ? `(1/${sub.totalMembers})` : ""}
             </span>
           )}
         </div>

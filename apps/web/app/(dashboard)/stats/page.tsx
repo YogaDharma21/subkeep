@@ -4,6 +4,7 @@ import { useQuery } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
 import { StatsCharts } from "@/components/stats-charts"
+import { SmartInsights } from "@/components/smart-insights"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function StatsPage() {
@@ -15,7 +16,14 @@ export default function StatsPage() {
   const primaryCurrency = userSettings?.primaryCurrency || "IDR"
 
   return (
-    <div className="p-4">
+    <div className="p-4 space-y-4">
+      {subscriptions && (
+        <SmartInsights
+          subscriptions={subscriptions}
+          primaryCurrency={primaryCurrency}
+        />
+      )}
+
       {subscriptions ? (
         <StatsCharts
           subscriptions={subscriptions}

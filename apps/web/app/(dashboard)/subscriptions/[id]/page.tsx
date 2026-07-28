@@ -79,6 +79,9 @@ export default function SubscriptionDetailPage({
   const [editIsTrial, setEditIsTrial] = useState(false)
   const [editTrialEndDate, setEditTrialEndDate] = useState("")
   const [editCancelUrl, setEditCancelUrl] = useState("")
+  const [editIsShared, setEditIsShared] = useState(false)
+  const [editTotalPlanPrice, setEditTotalPlanPrice] = useState("")
+  const [editTotalMembers, setEditTotalMembers] = useState("4")
 
   const colorOptions = [
     "#000000", "#555555", "#E50914", "#1DB954", "#00A8E1",
@@ -101,6 +104,9 @@ export default function SubscriptionDetailPage({
     setEditIsTrial(!!sub.isTrial)
     setEditTrialEndDate(sub.trialEndDate || "")
     setEditCancelUrl(sub.cancelUrl || "")
+    setEditIsShared(!!sub.isShared)
+    setEditTotalPlanPrice(sub.totalPlanPrice?.toString() || "")
+    setEditTotalMembers(sub.totalMembers?.toString() || "4")
     setEditing(true)
   }
 
@@ -121,6 +127,9 @@ export default function SubscriptionDetailPage({
       isTrial: editIsTrial,
       trialEndDate: editTrialEndDate,
       cancelUrl: editCancelUrl,
+      isShared: editIsShared,
+      totalPlanPrice: editTotalPlanPrice ? parseFloat(editTotalPlanPrice) : undefined,
+      totalMembers: editTotalMembers ? parseInt(editTotalMembers) : undefined,
     })
     setEditing(false)
   }
@@ -293,6 +302,12 @@ export default function SubscriptionDetailPage({
               {sub.isTrial && (
                 <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold">
                   FREE TRIAL
+                </Badge>
+              )}
+
+              {sub.isShared && (
+                <Badge className="bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-xs font-bold">
+                  SPLIT PLAN {sub.totalMembers ? `(1/${sub.totalMembers})` : ""}
                 </Badge>
               )}
 
