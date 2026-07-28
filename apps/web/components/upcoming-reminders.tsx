@@ -1,11 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Bell, AlertTriangle, Send, Check, ExternalLink } from "lucide-react"
+import { Bell, Send, Check, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
-import { findUpcomingReminders, ReminderItem, sendTelegramNotification, sendWebPushNotification } from "@/lib/notifications"
+import { findUpcomingReminders, ReminderItem, sendWebPushNotification } from "@/lib/notifications"
 import { CancellationGuideModal } from "./cancellation-guide-modal"
 
 interface UpcomingRemindersProps {
@@ -24,26 +24,22 @@ interface UpcomingRemindersProps {
     isActive: boolean
   }>
   primaryCurrency?: string
-  telegramBotToken?: string
-  telegramChatId?: string
   onMarkCanceled?: (id: string) => Promise<void>
 }
 
 export function UpcomingReminders({
   subscriptions,
   primaryCurrency = "IDR",
-  telegramBotToken,
-  telegramChatId,
   onMarkCanceled,
 }: UpcomingRemindersProps) {
   const [selectedSubForCancel, setSelectedSubForCancel] = useState<ReminderItem | null>(null)
   const [sentAlerts, setSentAlerts] = useState<Record<string, boolean>>({})
 
-  const reminders = findUpcomingReminders(subscriptions, 3, primaryCurrency)
+  const reminders = findUpcomingReminders(subscriptions, 3)
 
   if (reminders.length === 0) return null
 
-  const handleSendTestNotification = async (item: ReminderItem) => {
+  const handleSendTestNotification = (item: ReminderItem) => {
     const isTrial = item.isTrial
     const title = isTrial ? `🎁 Trial Ending Soon: ${item.name}` : `⚠️ Billing Due: ${item.name}`
     const priceFormatted = convertAndFormat(item.price, item.currency, primaryCurrency)
@@ -51,14 +47,7 @@ export function UpcomingReminders({
       ? `Your free trial for ${item.name} ends in ${item.daysLeft} day(s). Cancel before auto-renewal!`
       : `Payment of ${priceFormatted} for ${item.name} is due in ${item.daysLeft} day(s).`
 
-    // Web Push
     sendWebPushNotification(title, body)
-
-    // Telegram
-    if (telegramBotToken && telegramChatId) {
-      await sendTelegramNotification(telegramBotToken, telegramChatId, `<b>${title}</b>\n${body}`)
-    }
-
     setSentAlerts((prev) => ({ ...prev, [item._id]: true }))
   }
 

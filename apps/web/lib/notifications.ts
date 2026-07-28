@@ -1,5 +1,3 @@
-import { convertAndFormat } from "./currency"
-
 export interface ReminderItem {
   _id: string
   name: string
@@ -48,48 +46,6 @@ export function sendWebPushNotification(title: string, body: string, iconUrl?: s
   }
 }
 
-export async function sendTelegramNotification(
-  botToken: string,
-  chatId: string,
-  message: string
-): Promise<{ success: boolean; error?: string }> {
-  if (!botToken || !chatId) {
-    return { success: false, error: "Missing Bot Token or Chat ID" }
-  }
-
-  try {
-    const url = `https://api.telegram.org/bot${botToken.trim()}/sendMessage`
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId.trim(),
-        text: message,
-        parse_mode: "HTML",
-      }),
-    })
-
-    const data = await res.json()
-    if (res.ok && data.ok) {
-      return { success: true }
-    } else {
-      return { success: false, error: data.description || "Telegram API error" }
-    }
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : "Failed to connect to Telegram"
-    return { success: false, error: msg }
-  }
-}
-
-export async function sendEmailNotification(
-  email: string,
-  subject: string,
-  body: string
-): Promise<{ success: boolean }> {
-  console.log(`[Email Simulation] To: ${email} | Subject: ${subject} | Body: ${body}`)
-  return { success: true }
-}
-
 export function findUpcomingReminders(
   subscriptions: Array<{
     _id: string
@@ -105,8 +61,7 @@ export function findUpcomingReminders(
     cancelUrl?: string
     isActive: boolean
   }>,
-  targetDays: number = 3,
-  primaryCurrency: string = "IDR"
+  targetDays: number = 3
 ): ReminderItem[] {
   if (!subscriptions || subscriptions.length === 0) return []
 
