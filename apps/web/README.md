@@ -18,6 +18,10 @@ A sleek, mobile-first subscription tracker built with Next.js 16, Convex, Clerk,
 | :---: | :---: |
 | ![Calendar View](./public/screenshot-calendar.png) | ![Custom Subscription](./public/screenshot-create.png) |
 
+| Spending Analytics & Trends | Settings & Backups |
+| :---: | :---: |
+| ![Spending Analytics](./public/screenshot-stats.png) | ![Settings](./public/screenshot-settings.png) |
+
 </details>
 
 ---
