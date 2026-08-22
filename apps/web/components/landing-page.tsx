@@ -1,114 +1,46 @@
 "use client"
 
-import Link from "next/link"
 import { SignInButton, SignUpButton } from "@clerk/nextjs"
-import { Receipt, BarChart3, Calendar, Shield, Smartphone, Globe } from "lucide-react"
+import { Receipt } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="flex items-center justify-between border-b border-border px-4 py-3">
-        <div className="flex items-center gap-2">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-foreground">
-            <Receipt className="size-4 text-background" />
-          </div>
-          <span className="text-lg font-bold">SubKeep</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <SignInButton mode="modal">
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
-          </SignInButton>
-          <SignUpButton mode="modal">
-            <Button size="sm">Get Started</Button>
-          </SignUpButton>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1.5 text-xs text-muted-foreground">
-          <span className="size-1.5 rounded-full bg-green-500" />
-          Track smarter, spend better
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background px-6 py-12 text-center select-none">
+      <div className="flex w-full max-w-sm flex-col items-center">
+        {/* App Icon Squircle */}
+        <div className="mb-6 flex size-24 items-center justify-center rounded-3xl bg-neutral-200 text-neutral-900 shadow-lg dark:bg-neutral-100">
+          <Receipt className="size-12 stroke-[2.2]" />
         </div>
 
-        <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
-          Never miss a
-          <br />
-          subscription payment
+        {/* Brand Name */}
+        <h1 className="mb-3 text-3xl font-extrabold tracking-widest text-foreground uppercase sm:text-4xl">
+          SUBKEEP
         </h1>
 
-        <p className="mb-8 text-lg text-muted-foreground">
-          SubKeep helps you track all your subscriptions in one place.
-          <br className="hidden sm:block" />
-          See what you're spending, when bills are due, and save money.
+        {/* Subtitle / Description */}
+        <p className="mb-8 max-w-xs text-sm font-medium leading-relaxed text-muted-foreground sm:text-base">
+          Track your subscriptions and never miss a payment! Manage recurring costs, trial deadlines, and smart insights.
         </p>
 
-        <div className="mb-16 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <SignUpButton mode="modal">
-            <Button size="lg" className="w-full sm:w-auto">
-              Start Tracking Free
-            </Button>
-          </SignUpButton>
+        {/* Action Buttons */}
+        <div className="w-full max-w-xs space-y-3">
           <SignInButton mode="modal">
-            <Button variant="outline" size="lg" className="w-full sm:w-auto">
-              Sign In
+            <Button className="h-12 w-full cursor-pointer rounded-full bg-foreground text-sm font-bold tracking-wider text-background shadow-xs transition-all hover:bg-foreground/90 active:scale-[0.98]">
+              LOG IN
             </Button>
           </SignInButton>
-        </div>
 
-        <div className="mb-16 rounded-2xl border border-border bg-muted/50 p-8">
-          <div className="mb-4 flex justify-center gap-4">
-            <div className="flex size-12 items-center justify-center rounded-xl bg-background">
-              <Receipt className="size-6" />
-            </div>
-            <div className="flex size-12 items-center justify-center rounded-xl bg-background">
-              <BarChart3 className="size-6" />
-            </div>
-            <div className="flex size-12 items-center justify-center rounded-xl bg-background">
-              <Calendar className="size-6" />
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Your subscriptions, analytics, and calendar — all in one app
-          </p>
+          <SignUpButton mode="modal">
+            <Button
+              variant="outline"
+              className="h-12 w-full cursor-pointer rounded-full border border-border bg-transparent text-sm font-bold tracking-wider text-foreground transition-all hover:bg-muted active:scale-[0.98]"
+            >
+              CREATE ACCOUNT
+            </Button>
+          </SignUpButton>
         </div>
-
-        <div className="grid gap-6 text-left sm:grid-cols-3">
-          <div className="rounded-xl border border-border p-5">
-            <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-muted">
-              <Smartphone className="size-5" />
-            </div>
-            <h3 className="mb-1 font-semibold">Mobile Friendly</h3>
-            <p className="text-sm text-muted-foreground">
-              Access your subscriptions anywhere, on any device
-            </p>
-          </div>
-          <div className="rounded-xl border border-border p-5">
-            <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-muted">
-              <BarChart3 className="size-5" />
-            </div>
-            <h3 className="mb-1 font-semibold">Spending Analytics</h3>
-            <p className="text-sm text-muted-foreground">
-              See where your money goes with detailed charts
-            </p>
-          </div>
-          <div className="rounded-xl border border-border p-5">
-            <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-muted">
-              <Shield className="size-5" />
-            </div>
-            <h3 className="mb-1 font-semibold">Secure & Private</h3>
-            <p className="text-sm text-muted-foreground">
-              Your data is encrypted and tied to your account
-            </p>
-          </div>
-        </div>
-      </main>
-
-      <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
-        SubKeep v1.0.0 — Track your subscriptions
-      </footer>
+      </div>
     </div>
   )
 }

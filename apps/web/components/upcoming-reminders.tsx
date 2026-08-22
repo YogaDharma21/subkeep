@@ -24,12 +24,14 @@ interface UpcomingRemindersProps {
     isActive: boolean
   }>
   primaryCurrency?: string
+  rates?: Record<string, number>
   onMarkCanceled?: (id: string) => Promise<void>
 }
 
 export function UpcomingReminders({
   subscriptions,
   primaryCurrency = "IDR",
+  rates,
   onMarkCanceled,
 }: UpcomingRemindersProps) {
   const [selectedSubForCancel, setSelectedSubForCancel] = useState<ReminderItem | null>(null)
@@ -42,7 +44,7 @@ export function UpcomingReminders({
   const handleSendTestNotification = (item: ReminderItem) => {
     const isTrial = item.isTrial
     const title = isTrial ? `🎁 Trial Ending Soon: ${item.name}` : `⚠️ Billing Due: ${item.name}`
-    const priceFormatted = convertAndFormat(item.price, item.currency, primaryCurrency)
+    const priceFormatted = convertAndFormat(item.price, item.currency, primaryCurrency, rates)
     const body = isTrial
       ? `Your free trial for ${item.name} ends in ${item.daysLeft} day(s). Cancel before auto-renewal!`
       : `Payment of ${priceFormatted} for ${item.name} is due in ${item.daysLeft} day(s).`
@@ -64,7 +66,7 @@ export function UpcomingReminders({
         {reminders.map((item) => {
           const isSent = !!sentAlerts[item._id]
           const isTrial = item.type === "trial"
-          const priceFormatted = convertAndFormat(item.price, item.currency, primaryCurrency)
+          const priceFormatted = convertAndFormat(item.price, item.currency, primaryCurrency, rates)
 
           return (
             <div

@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
-import { Sparkles, TrendingUp, PieChart, Users, AlertCircle, ShieldAlert, ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { Sparkles, TrendingUp, PieChart, Users } from "lucide-react"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 
 interface SmartInsightsProps {
@@ -19,9 +19,14 @@ interface SmartInsightsProps {
     totalMembers?: number
   }>
   primaryCurrency?: string
+  rates?: Record<string, number>
 }
 
-export function SmartInsights({ subscriptions, primaryCurrency = "IDR" }: SmartInsightsProps) {
+export function SmartInsights({
+  subscriptions,
+  primaryCurrency = "IDR",
+  rates,
+}: SmartInsightsProps) {
   const insights = useMemo(() => {
     if (!subscriptions || subscriptions.length === 0) return []
 
@@ -52,7 +57,7 @@ export function SmartInsights({ subscriptions, primaryCurrency = "IDR" }: SmartI
       else if (cycle === "daily") monthly = sub.price * 30
       else if (cycle === "none") monthly = 0
 
-      const converted = convertCurrency(monthly, sub.currency, primaryCurrency)
+      const converted = convertCurrency(monthly, sub.currency, primaryCurrency, rates)
       categoryTotals[sub.category] = (categoryTotals[sub.category] || 0) + converted
       grandMonthlyTotal += converted
     })
@@ -103,7 +108,7 @@ export function SmartInsights({ subscriptions, primaryCurrency = "IDR" }: SmartI
           const fullMonthly = s.totalPlanPrice
           const userPortion = s.price
           const savedNative = fullMonthly - userPortion
-          totalSavedMonthly += convertCurrency(savedNative, s.currency, primaryCurrency)
+          totalSavedMonthly += convertCurrency(savedNative, s.currency, primaryCurrency, rates)
         }
       })
 
@@ -125,7 +130,7 @@ export function SmartInsights({ subscriptions, primaryCurrency = "IDR" }: SmartI
     if (entertainmentSubs.length >= 3) {
       let entTotalMonthly = 0
       entertainmentSubs.forEach((s) => {
-        entTotalMonthly += convertCurrency(s.price, s.currency, primaryCurrency)
+        entTotalMonthly += convertCurrency(s.price, s.currency, primaryCurrency, rates)
       })
       const yearlyPotentialSavings = entTotalMonthly * 0.4 * 12
 
@@ -141,7 +146,7 @@ export function SmartInsights({ subscriptions, primaryCurrency = "IDR" }: SmartI
     }
 
     return list
-  }, [subscriptions, primaryCurrency])
+  }, [subscriptions, primaryCurrency, rates])
 
   if (insights.length === 0) return null
 
