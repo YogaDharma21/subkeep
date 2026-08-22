@@ -471,15 +471,17 @@ export function AddSubscriptionSheet({
           )}
         </div>
 
-        <IconPicker
-          selected={selectedIcon}
-          onSelect={(icon) => {
-            setSelectedIcon(icon)
-          }}
-          open={iconOpen}
-          onClose={() => setIconOpen(false)}
-          defaultDomain={website || name}
-        />
+        {iconOpen && (
+          <IconPicker
+            selected={selectedIcon}
+            onSelect={(icon) => {
+              setSelectedIcon(icon)
+            }}
+            open={iconOpen}
+            onClose={() => setIconOpen(false)}
+            defaultDomain={website || name}
+          />
+        )}
       </SheetContent>
     </Sheet>
   )
