@@ -30,9 +30,14 @@ interface Subscription {
 interface SubscriptionCardProps {
   sub: Subscription
   primaryCurrency?: string
+  rates?: Record<string, number>
 }
 
-export function SubscriptionCard({ sub, primaryCurrency = "IDR" }: SubscriptionCardProps) {
+export function SubscriptionCard({
+  sub,
+  primaryCurrency = "IDR",
+  rates,
+}: SubscriptionCardProps) {
   const isTrial = !!sub.isTrial
   const isShared = !!sub.isShared
   const showConverted = primaryCurrency && primaryCurrency !== sub.currency
@@ -113,7 +118,7 @@ export function SubscriptionCard({ sub, primaryCurrency = "IDR" }: SubscriptionC
       <div className="shrink-0 text-right">
         <div className="text-sm font-extrabold text-foreground">
           {showConverted
-            ? convertAndFormat(sub.price, sub.currency, primaryCurrency)
+            ? convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)
             : formatCurrencyAmount(sub.price, sub.currency)}
         </div>
 
