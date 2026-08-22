@@ -136,44 +136,52 @@ export default function MorePage() {
     setRestoreData(null)
   }
 
+  const handleItemClick = (id: string) => {
+    if (id === "settings") setSettingsOpen(true)
+    else if (id === "export") handleExportData()
+    else if (id === "backup") handleBackup()
+    else if (id === "restore") fileInputRef.current?.click()
+    else if (id === "about") setAboutOpen(true)
+  }
+
   const menuGroups = [
     [
       {
+        id: "settings",
         icon: Settings,
         label: "Settings",
         description: "Theme, notifications, currency",
         color: "bg-muted-foreground",
-        onClick: () => setSettingsOpen(true),
       },
       {
+        id: "export",
         icon: Download,
         label: "Export Data",
         description: "Download subscriptions as JSON",
         color: "bg-blue-500",
-        onClick: handleExportData,
       },
       {
+        id: "backup",
         icon: FileJson,
         label: "Backup",
         description: "Export all data including payments",
         color: "bg-green-500",
-        onClick: handleBackup,
       },
       {
+        id: "restore",
         icon: Upload,
         label: "Restore",
         description: "Import data from backup file",
         color: "bg-teal-500",
-        onClick: () => fileInputRef.current?.click(),
       },
     ],
     [
       {
+        id: "about",
         icon: Info,
         label: "About SubKeep",
         description: "Version 1.0.0",
         color: "bg-purple-500",
-        onClick: () => setAboutOpen(true),
       },
     ],
   ]
@@ -191,15 +199,15 @@ export default function MorePage() {
       {menuGroups.map((group, gi) => (
         <div
           key={gi}
-          className={`mb-3 overflow-hidden rounded-xl border border-border bg-background`}
+          className="mb-3 overflow-hidden rounded-xl border border-border bg-background divide-y divide-border"
         >
           {group.map((item, ii) => {
             const Icon = item.icon
             return (
               <button
                 key={ii}
-                onClick={item.onClick}
-                className="flex w-full items-center gap-3.5 p-4 text-left transition-colors hover:bg-muted active:bg-muted/80"
+                onClick={() => handleItemClick(item.id)}
+                className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
               >
                 <div
                   className={`flex size-9 items-center justify-center rounded-xl ${item.color}`}
@@ -207,7 +215,7 @@ export default function MorePage() {
                   <Icon className="size-4 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium">{item.label}</div>
+                  <div className="text-sm font-medium text-foreground">{item.label}</div>
                   <div className="text-xs text-muted-foreground">
                     {item.description}
                   </div>
@@ -222,18 +230,20 @@ export default function MorePage() {
       <div className="overflow-hidden rounded-xl border border-border bg-background">
         <button
           onClick={() => setDeleteConfirm(true)}
-          className="flex w-full items-center gap-3.5 p-4 text-left text-red-500 transition-colors hover:bg-muted active:bg-muted/80"
+          className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-red-500/10 dark:hover:bg-red-500/15 active:bg-red-500/20 group"
         >
           <div className="flex size-9 items-center justify-center rounded-xl bg-red-500">
             <Trash2 className="size-4 text-white" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium">Delete All Data</div>
+            <div className="text-sm font-medium text-red-600 dark:text-red-400">
+              Delete All Data
+            </div>
             <div className="text-xs text-muted-foreground">
               Remove all subscriptions
             </div>
           </div>
-          <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          <ChevronRight className="size-4 shrink-0 text-muted-foreground group-hover:text-red-500 transition-colors" />
         </button>
       </div>
 
