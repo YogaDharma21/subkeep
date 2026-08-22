@@ -67,6 +67,24 @@ export async function fetchExchangeRates(): Promise<Record<string, number>> {
         return cachedRates
       }
     }
+  } catch {
+    // try backup endpoint
+  }
+
+  try {
+    const res = await fetch("https://api.exchangerate-api.com/v4/latest/USD")
+    if (res.ok) {
+      const data = await res.json()
+      if (data && data.rates) {
+        cachedRates = { ...fallbackRates, ...data.rates }
+        lastFetchTime = Date.now()
+        localStorage.setItem(
+          "subkeep_exchange_rates",
+          JSON.stringify({ rates: cachedRates, timestamp: lastFetchTime })
+        )
+        return cachedRates
+      }
+    }
   } catch (e) {
     console.warn("Failed to fetch live exchange rates, using cached/fallback:", e)
   }

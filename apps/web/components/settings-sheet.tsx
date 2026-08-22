@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { currencies } from "@/lib/constants"
 import { requestWebPushPermission, sendWebPushNotification } from "@/lib/notifications"
+import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 
 interface SettingsSheetProps {
   open: boolean
@@ -37,7 +38,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
 
   const updateSettings = useMutation(updateSettingsMutation)
 
-  const [primaryCurrency, setPrimaryCurrency] = useState("IDR")
+  const { primaryCurrency, setPrimaryCurrency } = usePrimaryCurrency()
   const [reminderDays, setReminderDays] = useState(3)
   const [webPushEnabled, setWebPushEnabled] = useState(false)
 
@@ -47,7 +48,6 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
 
   useEffect(() => {
     if (userSettings) {
-      if (userSettings.primaryCurrency) setPrimaryCurrency(userSettings.primaryCurrency)
       if (userSettings.reminderDays) setReminderDays(userSettings.reminderDays)
       if (userSettings.webPushEnabled !== undefined) setWebPushEnabled(userSettings.webPushEnabled)
     }
@@ -56,14 +56,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   const isDark = mounted ? (resolvedTheme === "dark" || theme === "dark") : false
 
   const handleCurrencyChange = async (val: string) => {
-    setPrimaryCurrency(val)
-    if (hasUpdateSettings) {
-      try {
-        await updateSettings({ primaryCurrency: val })
-      } catch (e) {
-        console.warn("Could not update settings in Convex backend:", e)
-      }
-    }
+    await setPrimaryCurrency(val)
   }
 
   const handleReminderDaysChange = async (days: number) => {
