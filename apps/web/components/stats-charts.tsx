@@ -13,7 +13,7 @@ import {
   Pie,
   Cell,
 } from "recharts"
-import { categoryColors, getSymbol } from "@/lib/constants"
+import { categoryColors } from "@/lib/constants"
 import { PieChart as PieChartIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { convertCurrency, formatCurrencyAmount, fetchExchangeRates, fallbackRates } from "@/lib/currency"
@@ -41,6 +41,7 @@ interface StatsChartsProps {
     date: string
   }>
   primaryCurrency?: string
+  rates?: Record<string, number>
 }
 
 function parseLocalDate(dateStr: string): Date {
@@ -51,14 +52,23 @@ function parseLocalDate(dateStr: string): Date {
   return new Date(y, m, d)
 }
 
-export function StatsCharts({ subscriptions, payments = [], primaryCurrency = "IDR" }: StatsChartsProps) {
+export function StatsCharts({
+  subscriptions,
+  payments = [],
+  primaryCurrency = "IDR",
+  rates: propRates,
+}: StatsChartsProps) {
   const [breakdownMetric, setBreakdownMetric] = useState<"cost" | "count">("cost")
   const [breakdownFilter, setBreakdownFilter] = useState<"all" | "paid">("all")
 
-  const [rates, setRates] = useState<Record<string, number>>(fallbackRates)
+  const [internalRates, setInternalRates] = useState<Record<string, number>>(fallbackRates)
   useEffect(() => {
-    fetchExchangeRates().then(setRates)
-  }, [])
+    if (!propRates) {
+      fetchExchangeRates().then(setInternalRates)
+    }
+  }, [propRates])
+
+  const rates = propRates || internalRates
 
   const monthlyTotal = useMemo(() => {
     return subscriptions.reduce((sum, s) => {
