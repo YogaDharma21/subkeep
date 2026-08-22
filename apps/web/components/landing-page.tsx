@@ -1,8 +1,7 @@
 "use client"
 
-import Link from "next/link"
 import { SignInButton, SignUpButton } from "@clerk/nextjs"
-import { Receipt, BarChart3, Calendar, Shield, Smartphone, Globe } from "lucide-react"
+import { Receipt, BarChart3, Calendar, Shield, Smartphone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function LandingPage() {
@@ -18,11 +17,11 @@ export function LandingPage() {
         <div className="flex items-center gap-2">
           <SignInButton mode="modal">
             <Button variant="ghost" size="sm">
-              Sign In
+              LOG IN
             </Button>
           </SignInButton>
           <SignUpButton mode="modal">
-            <Button size="sm">Get Started</Button>
+            <Button size="sm">CREATE ACCOUNT</Button>
           </SignUpButton>
         </div>
       </header>
@@ -42,18 +41,18 @@ export function LandingPage() {
         <p className="mb-8 text-lg text-muted-foreground">
           SubKeep helps you track all your subscriptions in one place.
           <br className="hidden sm:block" />
-          See what you're spending, when bills are due, and save money.
+          See what you&apos;re spending, when bills are due, and save money.
         </p>
 
         <div className="mb-16 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           <SignUpButton mode="modal">
             <Button size="lg" className="w-full sm:w-auto">
-              Start Tracking Free
+              CREATE ACCOUNT
             </Button>
           </SignUpButton>
           <SignInButton mode="modal">
             <Button variant="outline" size="lg" className="w-full sm:w-auto">
-              Sign In
+              LOG IN
             </Button>
           </SignInButton>
         </div>
