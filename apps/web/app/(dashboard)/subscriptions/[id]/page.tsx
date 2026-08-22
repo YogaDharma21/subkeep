@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState, useEffect } from "react"
+import { use, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
@@ -15,7 +15,6 @@ import {
   DollarSign,
   ExternalLink,
   Sparkles,
-  ShieldAlert,
   Link2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -33,8 +32,9 @@ import {
   categoryColors,
 } from "@/lib/constants"
 import { format, differenceInDays } from "date-fns"
-import { convertAndFormat, convertCurrency, fetchExchangeRates, fallbackRates } from "@/lib/currency"
+import { convertAndFormat, convertCurrency } from "@/lib/currency"
 import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
+import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 
 export default function SubscriptionDetailPage({
   params,
@@ -52,19 +52,13 @@ export default function SubscriptionDetailPage({
     api.subscriptions.get,
     id ? { id: id as Id<"subscriptions"> } : "skip"
   )
-  const userSettings = useQuery(api.userSettings.get)
   const updateMutation = useMutation(api.subscriptions.update)
   const suspendMutation = useMutation(api.subscriptions.suspend)
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
   const recordPaymentMutation = useMutation(api.payments.create)
 
-  const [rates, setRates] = useState<Record<string, number>>(fallbackRates)
-  useEffect(() => {
-    fetchExchangeRates().then(setRates)
-  }, [])
-
-  const primaryCurrency = userSettings?.primaryCurrency || "IDR"
+  const { primaryCurrency, rates } = usePrimaryCurrency()
 
   const [editName, setEditName] = useState("")
   const [editPrice, setEditPrice] = useState("")
@@ -187,13 +181,6 @@ export default function SubscriptionDetailPage({
       : sub.cycle === "weekly"
       ? sub.price * 52
       : sub.price * 365
-
-  const convertedYearlyCost = convertCurrency(
-    nativeYearlyCost,
-    sub.currency,
-    primaryCurrency,
-    rates
-  )
 
   let trialDaysLeft: number | null = null
   if (sub.isTrial && sub.trialEndDate) {

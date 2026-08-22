@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useMemo } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
@@ -17,12 +17,11 @@ import { Skeleton } from "@/components/ui/skeleton"
 import {
   convertCurrency,
   formatCurrencyAmount,
-  fetchExchangeRates,
-  fallbackRates,
 } from "@/lib/currency"
 import { currencies } from "@/lib/constants"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
 import { SmartInsights } from "@/components/smart-insights"
+import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { differenceInDays } from "date-fns"
 import { cn } from "@/lib/utils"
 
@@ -39,31 +38,14 @@ export type SortOption =
 export default function HomePage() {
   const { isSignedIn } = useAuth()
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
-  const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
-
-  const updateSettings = useMutation(api.userSettings.update)
   const suspendMutation = useMutation(api.subscriptions.suspend)
 
+  const { primaryCurrency, setPrimaryCurrency, rates } = usePrimaryCurrency()
   const [filter, setFilter] = useState<FilterType>("all")
   const [sortBy, setSortBy] = useState<SortOption>("billing-asc")
-  const [rates, setRates] = useState<Record<string, number>>(fallbackRates)
-  const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null)
-
-  const primaryCurrency = selectedCurrency ?? userSettings?.primaryCurrency ?? "IDR"
-
-  useEffect(() => {
-    fetchExchangeRates().then(setRates)
-  }, [])
 
   const handleCurrencyChange = async (newCurr: string) => {
-    setSelectedCurrency(newCurr)
-    if (isSignedIn) {
-      try {
-        await updateSettings({ primaryCurrency: newCurr })
-      } catch (err) {
-        console.warn("Could not save settings to Convex backend:", err)
-      }
-    }
+    await setPrimaryCurrency(newCurr)
   }
 
   const handleMarkCanceled = async (id: string) => {
@@ -249,6 +231,7 @@ export default function HomePage() {
         <UpcomingReminders
           subscriptions={subscriptions}
           primaryCurrency={primaryCurrency}
+          rates={rates}
           onMarkCanceled={handleMarkCanceled}
         />
       )}
@@ -258,6 +241,7 @@ export default function HomePage() {
         <SmartInsights
           subscriptions={subscriptions}
           primaryCurrency={primaryCurrency}
+          rates={rates}
         />
       )}
 
@@ -342,6 +326,7 @@ export default function HomePage() {
                 key={sub._id}
                 sub={sub}
                 primaryCurrency={primaryCurrency}
+                rates={rates}
               />
             ))
           ) : (
