@@ -4,51 +4,60 @@ import { useState, useEffect, useMemo } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
-import { ArrowUpDown, Globe, SlidersHorizontal, Sparkles } from "lucide-react"
+import {
+  ArrowUpDown,
+  ChevronDown,
+  Clock,
+  Globe,
+  Sparkles,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SubscriptionCard } from "@/components/subscription-card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { convertCurrency, formatCurrencyAmount, fetchExchangeRates, fallbackRates } from "@/lib/currency"
+import {
+  convertCurrency,
+  formatCurrencyAmount,
+  fetchExchangeRates,
+  fallbackRates,
+} from "@/lib/currency"
 import { currencies } from "@/lib/constants"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
 import { SmartInsights } from "@/components/smart-insights"
+import { differenceInDays } from "date-fns"
+import { cn } from "@/lib/utils"
+
+export type FilterType = "all" | "due_soon" | "trial" | "regular"
+
+export type SortOption =
+  | "billing-asc"
+  | "billing-desc"
+  | "price-asc"
+  | "price-desc"
+  | "start-desc"
+  | "name-asc"
 
 export default function HomePage() {
   const { isSignedIn } = useAuth()
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
-  
-  const hasUserSettings = !!(api as Record<string, any>).userSettings?.get
-  const userSettings = useQuery(
-    hasUserSettings ? (api as Record<string, any>).userSettings.get : "skip",
-    isSignedIn && hasUserSettings ? {} : "skip"
-  )
-  
-  const hasUpdateSettings = !!(api as Record<string, any>).userSettings?.update
-  const updateSettingsMutation = hasUpdateSettings
-    ? (api as Record<string, any>).userSettings.update
-    : api.subscriptions.suspend
+  const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
 
-  const updateSettings = useMutation(updateSettingsMutation)
+  const updateSettings = useMutation(api.userSettings.update)
   const suspendMutation = useMutation(api.subscriptions.suspend)
 
-  const [sortAsc, setSortAsc] = useState(true)
-  const [filterTrial, setFilterTrial] = useState<"all" | "trial" | "regular">("all")
+  const [filter, setFilter] = useState<FilterType>("all")
+  const [sortBy, setSortBy] = useState<SortOption>("billing-asc")
   const [rates, setRates] = useState<Record<string, number>>(fallbackRates)
-  const [primaryCurrency, setPrimaryCurrency] = useState("IDR")
+  const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null)
+
+  const primaryCurrency = selectedCurrency ?? userSettings?.primaryCurrency ?? "IDR"
 
   useEffect(() => {
     fetchExchangeRates().then(setRates)
   }, [])
 
-  useEffect(() => {
-    if (userSettings?.primaryCurrency) {
-      setPrimaryCurrency(userSettings.primaryCurrency)
-    }
-  }, [userSettings?.primaryCurrency])
-
   const handleCurrencyChange = async (newCurr: string) => {
-    setPrimaryCurrency(newCurr)
-    if (isSignedIn && hasUpdateSettings) {
+    setSelectedCurrency(newCurr)
+    if (isSignedIn) {
       try {
         await updateSettings({ primaryCurrency: newCurr })
       } catch (err) {
@@ -89,20 +98,90 @@ export default function HomePage() {
     return { count, monthlyTotalConverted, yearlyTotalConverted }
   }, [subscriptions, primaryCurrency, rates])
 
+  // Filtered and Sorted Subscriptions
   const filteredSubs = useMemo(() => {
     if (!subscriptions) return []
     let list = [...subscriptions]
-    if (filterTrial === "trial") {
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // Filter logic
+    if (filter === "trial") {
       list = list.filter((s) => s.isTrial)
-    } else if (filterTrial === "regular") {
+    } else if (filter === "regular") {
       list = list.filter((s) => !s.isTrial)
+    } else if (filter === "due_soon") {
+      list = list.filter((s) => {
+        const dateStr = s.isTrial && s.trialEndDate ? s.trialEndDate : s.nextBilling
+        if (!dateStr) return false
+        const targetDate = new Date(dateStr)
+        targetDate.setHours(0, 0, 0, 0)
+        const diffDays = differenceInDays(targetDate, today)
+        return diffDays >= 0 && diffDays <= 7
+      })
     }
+
+    // Sort logic
     return list.sort((a, b) => {
-      const pA = convertCurrency(a.price, a.currency, primaryCurrency, rates)
-      const pB = convertCurrency(b.price, b.currency, primaryCurrency, rates)
-      return sortAsc ? pA - pB : pB - pA
+      switch (sortBy) {
+        case "billing-asc": {
+          const dateA = new Date(a.isTrial && a.trialEndDate ? a.trialEndDate : a.nextBilling || "9999-12-31").getTime()
+          const dateB = new Date(b.isTrial && b.trialEndDate ? b.trialEndDate : b.nextBilling || "9999-12-31").getTime()
+          return (isNaN(dateA) ? 0 : dateA) - (isNaN(dateB) ? 0 : dateB)
+        }
+        case "billing-desc": {
+          const dateA = new Date(a.isTrial && a.trialEndDate ? a.trialEndDate : a.nextBilling || "1970-01-01").getTime()
+          const dateB = new Date(b.isTrial && b.trialEndDate ? b.trialEndDate : b.nextBilling || "1970-01-01").getTime()
+          return (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA)
+        }
+        case "start-desc": {
+          const dateA = new Date(a.startDate || "1970-01-01").getTime()
+          const dateB = new Date(b.startDate || "1970-01-01").getTime()
+          return (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA)
+        }
+        case "price-asc": {
+          const pA = convertCurrency(a.price, a.currency, primaryCurrency, rates)
+          const pB = convertCurrency(b.price, b.currency, primaryCurrency, rates)
+          return pA - pB
+        }
+        case "price-desc": {
+          const pA = convertCurrency(a.price, a.currency, primaryCurrency, rates)
+          const pB = convertCurrency(b.price, b.currency, primaryCurrency, rates)
+          return pB - pA
+        }
+        case "name-asc":
+          return a.name.localeCompare(b.name)
+        default:
+          return 0
+      }
     })
-  }, [subscriptions, filterTrial, sortAsc, primaryCurrency, rates])
+  }, [subscriptions, filter, sortBy, primaryCurrency, rates])
+
+  const getEmptyMessage = () => {
+    switch (filter) {
+      case "due_soon":
+        return {
+          title: "No subscriptions due in the next 7 days",
+          subtitle: "All your upcoming payments are further out",
+        }
+      case "trial":
+        return {
+          title: "No active trial subscriptions",
+          subtitle: "Tap + to add a free trial subscription",
+        }
+      case "regular":
+        return {
+          title: "No regular subscriptions found",
+          subtitle: "Only trial subscriptions are currently added",
+        }
+      default:
+        return {
+          title: "No subscriptions yet",
+          subtitle: "Tap + to add your first subscription",
+        }
+    }
+  }
 
   return (
     <div className="p-4">
@@ -183,50 +262,75 @@ export default function HomePage() {
       )}
 
       {/* Filter and Sort Toolbar */}
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-1">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        {/* Filter Buttons */}
+        <div className="flex items-center gap-1 min-w-0 overflow-x-auto">
           <button
-            onClick={() => setFilterTrial("all")}
-            className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
-              filterTrial === "all"
+            onClick={() => setFilter("all")}
+            className={cn(
+              "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors shrink-0 cursor-pointer",
+              filter === "all"
                 ? "bg-foreground text-background"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            )}
           >
             All
           </button>
           <button
-            onClick={() => setFilterTrial("trial")}
-            className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors flex items-center gap-1 ${
-              filterTrial === "trial"
+            onClick={() => setFilter("due_soon")}
+            className={cn(
+              "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors flex items-center gap-1 shrink-0 cursor-pointer",
+              filter === "due_soon"
+                ? "bg-foreground text-background"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Clock className="size-3" />
+            Due Soon
+          </button>
+          <button
+            onClick={() => setFilter("trial")}
+            className={cn(
+              "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors flex items-center gap-1 shrink-0 cursor-pointer",
+              filter === "trial"
                 ? "bg-emerald-500 text-white"
                 : "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
-            }`}
+            )}
           >
             <Sparkles className="size-3" />
             Trials
           </button>
           <button
-            onClick={() => setFilterTrial("regular")}
-            className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
-              filterTrial === "regular"
+            onClick={() => setFilter("regular")}
+            className={cn(
+              "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors shrink-0 cursor-pointer",
+              filter === "regular"
                 ? "bg-foreground text-background"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+            )}
           >
             Regular
           </button>
         </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setSortAsc(!sortAsc)}
-          className="h-7 text-xs gap-1"
-        >
-          <ArrowUpDown className="size-3.5" />
-          {sortAsc ? "Price: Low to High" : "Price: High to Low"}
-        </Button>
+        {/* Sort Selector */}
+        <div className="relative inline-flex items-center shrink-0">
+          <ArrowUpDown className="pointer-events-none absolute left-2 size-3 text-muted-foreground" />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortOption)}
+            className="h-7 rounded-lg border border-border bg-background pl-6 pr-6 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer"
+            aria-label="Sort subscriptions"
+          >
+            <option value="billing-asc">Next Billing</option>
+            <option value="billing-desc">Billing: Furthest</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="start-desc">Start: Newest</option>
+            <option value="name-asc">Name: A to Z</option>
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-1.5 size-3 text-muted-foreground" />
+        </div>
       </div>
 
       {/* Subscriptions List */}
@@ -241,15 +345,23 @@ export default function HomePage() {
               />
             ))
           ) : (
-            <div className="rounded-xl border border-border bg-background py-12 text-center">
-              <p className="text-sm text-muted-foreground">
-                {filterTrial === "trial"
-                  ? "No active trial subscriptions"
-                  : "No subscriptions yet"}
+            <div className="rounded-xl border border-border bg-background py-10 px-4 text-center">
+              <p className="text-sm font-medium text-foreground">
+                {getEmptyMessage().title}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Tap + to add your first subscription
+                {getEmptyMessage().subtitle}
               </p>
+              {filter !== "all" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFilter("all")}
+                  className="mt-3 h-7 text-xs"
+                >
+                  Reset Filter
+                </Button>
+              ) : null}
             </div>
           )
         ) : (

@@ -496,8 +496,17 @@ function setupCommonListeners() {
     // Sort button
     const sortBtn = document.getElementById('sortBtn');
     if (sortBtn) {
+        let currentSort = 'price';
         sortBtn.addEventListener('click', () => {
-            subscriptions.sort((a, b) => a.price - b.price);
+            if (currentSort === 'price') {
+                subscriptions.sort((a, b) => new Date(a.nextBilling || '9999-12-31') - new Date(b.nextBilling || '9999-12-31'));
+                sortBtn.innerHTML = '<i class="fas fa-calendar-days"></i> Next Billing';
+                currentSort = 'date';
+            } else {
+                subscriptions.sort((a, b) => a.price - b.price);
+                sortBtn.innerHTML = '<i class="fas fa-arrow-down-short-wide"></i> Price';
+                currentSort = 'price';
+            }
             saveSubscriptions();
             renderSubscriptions();
         });
