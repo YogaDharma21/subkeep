@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Home, Calendar, BarChart3, MoreHorizontal, Plus } from "lucide-react"
-import { UserButton, useUser } from "@clerk/nextjs"
+import { UserButton } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -20,7 +20,6 @@ interface DesktopSidebarProps {
 
 export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
   const pathname = usePathname()
-  const { user } = useUser()
 
   return (
     <aside className="hidden md:flex md:w-64 lg:w-72 md:flex-col md:fixed md:inset-y-0 border-r border-border bg-background z-30">
@@ -73,18 +72,20 @@ export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
         })}
       </nav>
 
-      {/* User Profile at Bottom */}
+      {/* User Profile at Bottom via Clerk UserButton */}
       <div className="p-4 border-t border-border">
-        <div className="flex items-center gap-3 rounded-xl p-2 bg-muted/40 border border-border/50">
-          <UserButton />
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-xs font-semibold text-foreground">
-              {user?.fullName || user?.username || "Account"}
-            </div>
-            <div className="truncate text-[10px] text-muted-foreground">
-              {user?.primaryEmailAddress?.emailAddress || "User Profile"}
-            </div>
-          </div>
+        <div className="flex items-center gap-2 rounded-xl p-2 bg-muted/40 border border-border/50">
+          <UserButton
+            showName
+            appearance={{
+              elements: {
+                rootBox: "w-full",
+                userButtonTrigger: "w-full flex items-center justify-start gap-2.5 focus:outline-none focus:shadow-none",
+                userButtonBox: "flex-row-reverse justify-end gap-2.5 w-full",
+                userButtonOuterIdentifier: "text-xs font-semibold text-foreground truncate text-left",
+              },
+            }}
+          />
         </div>
       </div>
     </aside>
