@@ -124,7 +124,7 @@ export function CommandPalette({
       },
       {
         id: "nav-more",
-        label: "Settings & Backups",
+        label: "Settings",
         detail: "Export, restore, currency & preferences",
         icon: Settings,
         category: "Navigation",
