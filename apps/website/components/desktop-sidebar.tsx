@@ -2,8 +2,8 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Calendar, BarChart3, MoreHorizontal, Plus } from "lucide-react"
-import { UserButton } from "@clerk/nextjs"
+import { Home, Calendar, BarChart3, MoreHorizontal, Plus, Receipt, LogOut } from "lucide-react"
+import { useUser, useClerk } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -20,14 +20,16 @@ interface DesktopSidebarProps {
 
 export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
   const pathname = usePathname()
+  const { user } = useUser()
+  const { openUserProfile, signOut } = useClerk()
 
   return (
     <aside className="hidden md:flex md:w-64 lg:w-72 md:flex-col md:fixed md:inset-y-0 border-r border-border bg-background z-30">
       {/* Brand Header */}
       <div className="flex h-16 items-center justify-between px-6 border-b border-border">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-foreground text-background font-bold text-sm">
-            SK
+          <div className="flex size-8 items-center justify-center rounded-xl bg-foreground text-background shadow-xs">
+            <Receipt className="size-4.5 stroke-[2.2]" />
           </div>
           <span className="text-base font-bold text-foreground tracking-tight">SubKeep</span>
         </Link>
@@ -37,7 +39,7 @@ export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
       <div className="p-4">
         <Button
           onClick={onAddClick}
-          className="w-full justify-center gap-2 h-10 font-semibold shadow-xs"
+          className="w-full justify-center gap-2 h-10 font-semibold shadow-xs cursor-pointer"
         >
           <Plus className="size-4" />
           <span>Add Subscription</span>
@@ -72,23 +74,45 @@ export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
         })}
       </nav>
 
-      {/* User Profile at Bottom via Clerk UserButton */}
+      {/* User Profile at Bottom */}
       <div className="p-3 border-t border-border">
-        <UserButton
-          showName
-          appearance={{
-            elements: {
-              rootBox: "w-full",
-              userButtonTrigger:
-                "w-full flex items-center justify-start gap-3 p-2.5 rounded-xl bg-muted/40 hover:bg-muted/70 border border-border/60 transition-colors focus:shadow-none focus:outline-none cursor-pointer",
-              userButtonBox:
-                "flex-row-reverse items-center justify-start gap-3 w-full",
-              avatarBox: "size-9 shrink-0",
-              userButtonOuterIdentifier:
-                "text-sm font-semibold text-foreground truncate text-left flex-1",
-            },
-          }}
-        />
+        <div className="flex items-center justify-between gap-2.5 rounded-xl border border-border/60 bg-muted/40 p-2.5 transition-colors hover:bg-muted/70 w-full">
+          <button
+            type="button"
+            onClick={() => openUserProfile()}
+            className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer focus:outline-none"
+            title="Manage Account"
+          >
+            {user?.imageUrl ? (
+              <img
+                src={user.imageUrl}
+                alt={user.fullName || "User Avatar"}
+                className="size-9 rounded-full object-cover shrink-0 ring-1 ring-border"
+              />
+            ) : (
+              <div className="flex size-9 items-center justify-center rounded-full bg-foreground text-background text-sm font-bold shrink-0">
+                {(user?.fullName || user?.username || "U").charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground truncate">
+                {user?.fullName || user?.username || "My Account"}
+              </div>
+              <div className="text-[11px] text-muted-foreground truncate">
+                {user?.primaryEmailAddress?.emailAddress || "User Profile"}
+              </div>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => signOut()}
+            className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0 cursor-pointer"
+            title="Sign Out"
+          >
+            <LogOut className="size-4" />
+          </button>
+        </div>
       </div>
     </aside>
   )
