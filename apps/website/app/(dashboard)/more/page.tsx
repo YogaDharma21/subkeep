@@ -267,7 +267,7 @@ export default function MorePage() {
         id: "about",
         icon: Info,
         label: "About SubKeep",
-        description: "Version 1.0.0",
+        description: "Version 0.0.1",
       },
     ],
   ]
