@@ -1,15 +1,12 @@
 "use client"
 
-import { useState, useEffect, useMemo, useDeferredValue } from "react"
-import { useQuery, useMutation } from "convex/react"
-import { api } from "@/convex/_generated/api"
+import { useState, useMemo, useDeferredValue, memo, useCallback } from "react"
 import { Search, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { categories } from "@/lib/constants"
 import { DynamicIcon } from "@/components/dynamic-icon"
-import { Skeleton } from "@/components/ui/skeleton"
+import { DEFAULT_TEMPLATES, type SubscriptionTemplate } from "@/lib/default-templates"
 
 interface TemplateListProps {
   onSelect: (template: {
@@ -23,33 +20,67 @@ interface TemplateListProps {
   }) => void
 }
 
+const TemplateRow = memo(function TemplateRow({
+  template,
+  onSelect,
+}: {
+  template: SubscriptionTemplate
+  onSelect: (t: SubscriptionTemplate) => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(template)}
+      className="flex w-full cursor-pointer items-center gap-3 rounded-lg p-2.5 hover:bg-muted/70 active:bg-muted transition-colors text-left"
+    >
+      <div
+        className="flex size-10 shrink-0 items-center justify-center rounded-lg text-white shadow-xs"
+        style={{ backgroundColor: template.color }}
+      >
+        <DynamicIcon name={template.icon} className="size-5 text-white" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-semibold text-foreground truncate">
+          {template.name}
+        </div>
+        <div className="text-xs text-muted-foreground">
+          ${template.defaultPrice}/mo
+        </div>
+      </div>
+    </button>
+  )
+})
+
 export function TemplateList({ onSelect }: TemplateListProps) {
   const [search, setSearch] = useState("")
   const deferredSearch = useDeferredValue(search)
   const [activeCategory, setActiveCategory] = useState("all")
 
-  // Load all templates once and filter in memory for buttery smooth 60fps search
-  const allTemplates = useQuery(api.templates.list, {})
-  const seedTemplates = useMutation(api.templates.seedTemplates)
-
-  useEffect(() => {
-    if (allTemplates && allTemplates.length === 0) {
-      seedTemplates()
-    }
-  }, [allTemplates, seedTemplates])
-
   const filteredTemplates = useMemo(() => {
-    if (!allTemplates) return []
-
     const q = deferredSearch.trim().toLowerCase()
 
-    return allTemplates.filter((t) => {
+    return DEFAULT_TEMPLATES.filter((t) => {
       const matchesCategory =
         activeCategory === "all" || t.category === activeCategory
       const matchesSearch = !q || t.name.toLowerCase().includes(q)
       return matchesCategory && matchesSearch
     })
-  }, [allTemplates, deferredSearch, activeCategory])
+  }, [deferredSearch, activeCategory])
+
+  const handleSelect = useCallback(
+    (template: SubscriptionTemplate) => {
+      onSelect({
+        name: template.name,
+        icon: template.icon,
+        color: template.color,
+        category: template.category,
+        price: template.defaultPrice,
+        currency: template.defaultCurrency,
+        cancelUrl: template.cancelUrl,
+      })
+    },
+    [onSelect]
+  )
 
   return (
     <div className="flex flex-col h-full">
@@ -77,7 +108,7 @@ export function TemplateList({ onSelect }: TemplateListProps) {
           <Badge
             key={cat.value}
             variant={activeCategory === cat.value ? "default" : "outline"}
-            className="cursor-pointer shrink-0 rounded-full px-3 py-1 text-xs transition-colors"
+            className="cursor-pointer shrink-0 rounded-md px-3 py-1 text-xs transition-colors"
             onClick={() => setActiveCategory(cat.value)}
           >
             {cat.label}
@@ -85,61 +116,21 @@ export function TemplateList({ onSelect }: TemplateListProps) {
         ))}
       </div>
 
-      <ScrollArea className="h-[320px] pr-2">
-        <div className="flex flex-col gap-1.5 pb-2">
-          {!allTemplates ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 rounded-xl border border-border bg-background p-3"
-              >
-                <Skeleton className="size-10 rounded-xl shrink-0" />
-                <div className="space-y-1.5 flex-1">
-                  <Skeleton className="h-4 w-28" />
-                  <Skeleton className="h-3 w-16" />
-                </div>
-              </div>
-            ))
-          ) : filteredTemplates.length > 0 ? (
-            filteredTemplates.map((template) => (
-              <button
-                key={template._id}
-                onClick={() =>
-                  onSelect({
-                    name: template.name,
-                    icon: template.icon,
-                    color: template.color,
-                    category: template.category,
-                    price: template.defaultPrice,
-                    currency: template.defaultCurrency,
-                    cancelUrl: template.cancelUrl,
-                  })
-                }
-                className="flex cursor-pointer items-center gap-3 rounded-xl border border-transparent p-2.5 transition-colors hover:border-border hover:bg-accent/50 dark:hover:bg-accent/40 active:scale-[0.99]"
-              >
-                <div
-                  className="flex size-10 shrink-0 items-center justify-center rounded-xl shadow-xs"
-                  style={{ backgroundColor: template.color }}
-                >
-                  <DynamicIcon name={template.icon} className="size-5 text-white" />
-                </div>
-                <div className="min-w-0 flex-1 text-left">
-                  <div className="text-sm font-semibold text-foreground truncate">
-                    {template.name}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    ${template.defaultPrice}/mo
-                  </div>
-                </div>
-              </button>
-            ))
-          ) : (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              No services found for &quot;{search}&quot;
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+      <div className="h-[320px] overflow-y-auto overscroll-contain pr-1 flex flex-col gap-1 pb-2">
+        {filteredTemplates.length > 0 ? (
+          filteredTemplates.map((template) => (
+            <TemplateRow
+              key={template.name}
+              template={template}
+              onSelect={handleSelect}
+            />
+          ))
+        ) : (
+          <div className="py-12 text-center text-sm text-muted-foreground">
+            No services found for &quot;{search}&quot;
+          </div>
+        )}
+      </div>
     </div>
   )
 }

@@ -192,7 +192,7 @@ export default function SubscriptionDetailPage({
   }
 
   return (
-    <div className="p-4">
+    <div className="max-w-2xl mx-auto space-y-4">
       <div className="mb-4 flex items-center gap-2">
         <Button
           variant="ghost"
@@ -212,7 +212,7 @@ export default function SubscriptionDetailPage({
       </div>
 
       {sub.isTrial && (
-        <div className="mb-4 flex items-center justify-between rounded-xl bg-emerald-500/15 p-3 text-xs text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+        <div className="mb-4 flex items-center justify-between rounded-lg bg-emerald-500/15 p-3 text-xs text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
           <div className="flex items-center gap-2">
             <Sparkles className="size-4 shrink-0" />
             <div>
@@ -235,12 +235,12 @@ export default function SubscriptionDetailPage({
         </div>
       )}
 
-      <div className="mb-4 rounded-xl border border-border bg-background p-5">
+      <div className="mb-4 rounded-lg border border-border bg-background p-5">
         <div className="flex items-center gap-4">
           <button
             onClick={() => editing && setIconOpen(true)}
             className={cn(
-              "flex size-14 items-center justify-center rounded-2xl",
+              "flex size-14 items-center justify-center rounded-lg",
               editing && "cursor-pointer ring-2 ring-border ring-offset-2"
             )}
             style={{ backgroundColor: editing ? editColor : sub.color }}
@@ -276,7 +276,7 @@ export default function SubscriptionDetailPage({
               ) : (
                 <Badge
                   variant="secondary"
-                  className="text-xs"
+                  className="text-xs rounded-md"
                   style={{
                     backgroundColor: categoryColors[sub.category] + "20",
                     color: categoryColors[sub.category],
@@ -287,20 +287,20 @@ export default function SubscriptionDetailPage({
               )}
 
               {sub.isTrial && (
-                <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold">
+                <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold rounded-md">
                   FREE TRIAL
                 </Badge>
               )}
 
               {sub.isShared && (
-                <Badge className="bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-xs font-bold">
+                <Badge className="bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-xs font-bold rounded-md">
                   SPLIT PLAN {sub.totalMembers ? `(1/${sub.totalMembers})` : ""}
                 </Badge>
               )}
 
               <Badge
                 variant={sub.isActive ? "default" : "destructive"}
-                className="text-xs"
+                className="text-xs rounded-md"
               >
                 {sub.isActive ? "Active" : "Suspended"}
               </Badge>
@@ -310,7 +310,7 @@ export default function SubscriptionDetailPage({
       </div>
 
       <div className="mb-4 grid grid-cols-3 gap-2">
-        <div className="rounded-xl bg-muted p-3 text-center">
+        <div className="rounded-lg bg-muted p-3 text-center">
           <div className="text-sm font-extrabold text-foreground truncate">
             {convertAndFormat(
               editing ? parseFloat(editPrice || "0") : sub.price,
@@ -323,7 +323,7 @@ export default function SubscriptionDetailPage({
             Price ({primaryCurrency})
           </div>
         </div>
-        <div className="rounded-xl bg-muted p-3 text-center">
+        <div className="rounded-lg bg-muted p-3 text-center">
           <div className="text-sm font-bold truncate">
             {editing
               ? editCycle.charAt(0).toUpperCase() + editCycle.slice(1)
@@ -333,7 +333,7 @@ export default function SubscriptionDetailPage({
             Cycle
           </div>
         </div>
-        <div className="rounded-xl bg-muted p-3 text-center">
+        <div className="rounded-lg bg-muted p-3 text-center">
           <div className="text-sm font-extrabold text-foreground truncate">
             {convertAndFormat(
               nativeYearlyCost,
@@ -349,8 +349,8 @@ export default function SubscriptionDetailPage({
       </div>
 
       {editing ? (
-        <div className="space-y-4 rounded-xl border border-border bg-background p-4">
-          <div className="flex items-center justify-between rounded-xl bg-emerald-500/10 p-3 border border-emerald-500/30">
+        <div className="space-y-4 rounded-lg border border-border bg-background p-4">
+          <div className="flex items-center justify-between rounded-lg bg-emerald-500/10 p-3 border border-emerald-500/30">
             <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               Free Trial Subscription
             </span>
@@ -408,7 +408,7 @@ export default function SubscriptionDetailPage({
                   key={bc.value}
                   type="button"
                   onClick={() => setEditCycle(bc.value)}
-                  className={`flex items-center justify-center rounded-xl border-2 px-3 py-2 text-xs font-medium transition-all ${
+                  className={`flex items-center justify-center rounded-lg border-2 px-3 py-2 text-xs font-medium transition-all ${
                     editCycle === bc.value
                       ? "border-foreground bg-foreground text-background"
                       : "border-border bg-background text-foreground hover:border-foreground/50"
@@ -482,7 +482,7 @@ export default function SubscriptionDetailPage({
           </Button>
         </div>
       ) : (
-        <div className="rounded-xl border border-border bg-background">
+        <div className="rounded-lg border border-border bg-background">
           <div className="p-4">
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Details & Cancellation Guide
