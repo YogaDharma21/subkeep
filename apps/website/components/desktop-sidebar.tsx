@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -38,6 +39,14 @@ export function DesktopSidebar({
   const pathname = usePathname()
   const { user } = useUser()
   const { openUserProfile, signOut } = useClerk()
+  const [isMac, setIsMac] = useState(false)
+
+  useEffect(() => {
+    setIsMac(
+      typeof window !== "undefined" &&
+        /Mac|iPod|iPhone|iPad/i.test(navigator.userAgent || "")
+    )
+  }, [])
 
   return (
     <aside className="hidden md:flex md:w-64 lg:w-72 md:flex-col md:fixed md:inset-y-0 border-r border-border bg-background z-30">
@@ -70,7 +79,7 @@ export function DesktopSidebar({
             <span>Search & Commands...</span>
           </div>
           <kbd className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-mono">
-            ⌘K
+            {isMac ? "⌘K" : "Ctrl+K"}
           </kbd>
         </button>
       </div>
