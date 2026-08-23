@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useSyncExternalStore } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -17,6 +17,19 @@ import {
 import { useUser, useClerk } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+
+function getIsMacSnapshot(): boolean {
+  if (typeof window === "undefined") return false
+  return /Mac|iPod|iPhone|iPad/i.test(navigator.userAgent || "")
+}
+
+function subscribeToPlatform(): () => void {
+  return () => {}
+}
+
+function getServerSnapshot(): boolean {
+  return false
+}
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
@@ -39,14 +52,11 @@ export function DesktopSidebar({
   const pathname = usePathname()
   const { user } = useUser()
   const { openUserProfile, signOut } = useClerk()
-  const [isMac, setIsMac] = useState(false)
-
-  useEffect(() => {
-    setIsMac(
-      typeof window !== "undefined" &&
-        /Mac|iPod|iPhone|iPad/i.test(navigator.userAgent || "")
-    )
-  }, [])
+  const isMac = useSyncExternalStore(
+    subscribeToPlatform,
+    getIsMacSnapshot,
+    getServerSnapshot
+  )
 
   return (
     <aside className="hidden md:flex md:w-64 lg:w-72 md:flex-col md:fixed md:inset-y-0 border-r border-border bg-background z-30">
