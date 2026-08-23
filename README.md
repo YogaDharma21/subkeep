@@ -1,4 +1,4 @@
-# SubKeep (v1.0.0)
+# SubKeep (v0.0.1)
 
 SubKeep is a sleek, modern subscription tracker that helps you manage recurring expenses, track account credentials and billing cycles, project payment schedules, and visualize monthly spending analytics in one clean dashboard.
 
