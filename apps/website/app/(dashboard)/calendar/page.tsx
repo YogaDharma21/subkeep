@@ -16,8 +16,10 @@ export default function CalendarPage() {
         <CalendarGrid subscriptions={subscriptions} />
       ) : (
         <div className="space-y-4">
-          <Skeleton className="h-[350px] rounded-xl" />
-          <Skeleton className="h-[100px] rounded-xl" />
+          <div className="space-y-3">
+            <Skeleton className="h-[350px] rounded-lg" />
+            <Skeleton className="h-[100px] rounded-lg" />
+          </div>
         </div>
       )}
     </div>

@@ -9,7 +9,7 @@ export function LandingPage() {
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background px-6 py-12 text-center select-none">
       <div className="flex w-full max-w-sm flex-col items-center">
         {/* App Icon Squircle */}
-        <div className="mb-6 flex size-24 items-center justify-center rounded-3xl bg-neutral-200 text-neutral-900 shadow-lg dark:bg-neutral-100">
+        <div className="mb-6 flex size-24 items-center justify-center rounded-xl bg-neutral-200 text-neutral-900 shadow-lg dark:bg-neutral-100">
           <Receipt className="size-12 stroke-[2.2]" />
         </div>
 
@@ -26,7 +26,7 @@ export function LandingPage() {
         {/* Action Buttons */}
         <div className="w-full max-w-xs space-y-3">
           <SignInButton mode="modal">
-            <Button className="h-12 w-full cursor-pointer rounded-full bg-foreground text-sm font-bold tracking-wider text-background shadow-xs transition-all hover:bg-foreground/90 active:scale-[0.98]">
+            <Button className="h-12 w-full cursor-pointer rounded-lg bg-foreground text-sm font-bold tracking-wider text-background shadow-xs transition-all hover:bg-foreground/90 active:scale-[0.98]">
               LOG IN
             </Button>
           </SignInButton>
@@ -34,7 +34,7 @@ export function LandingPage() {
           <SignUpButton mode="modal">
             <Button
               variant="outline"
-              className="h-12 w-full cursor-pointer rounded-full border border-border bg-transparent text-sm font-bold tracking-wider text-foreground transition-all hover:bg-muted active:scale-[0.98]"
+              className="h-12 w-full cursor-pointer rounded-lg border border-border bg-transparent text-sm font-bold tracking-wider text-foreground transition-all hover:bg-muted active:scale-[0.98]"
             >
               CREATE ACCOUNT
             </Button>

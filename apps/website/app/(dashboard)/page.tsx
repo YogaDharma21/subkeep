@@ -168,7 +168,7 @@ export default function HomePage() {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Dynamic Summary Banner with Currency Converter */}
-      <div className="rounded-2xl border border-border bg-background p-4 sm:p-5 shadow-xs">
+      <div className="rounded-lg border border-border bg-background p-4 sm:p-5 shadow-xs">
         <div className="flex items-center justify-between border-b border-border/60 pb-3 mb-3 sm:mb-4">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
             <Globe className="size-3.5 text-primary" />
@@ -313,7 +313,7 @@ export default function HomePage() {
                   />
                 ))
               ) : (
-                <div className="col-span-full rounded-xl border border-border bg-background py-10 px-4 text-center">
+                <div className="col-span-full rounded-lg border border-border bg-background py-10 px-4 text-center">
                   <p className="text-sm font-medium text-foreground">
                     {getEmptyMessage().title}
                   </p>
@@ -334,7 +334,7 @@ export default function HomePage() {
               )
             ) : (
               Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-[72px] rounded-xl" />
+                <Skeleton key={i} className="h-[72px] rounded-lg" />
               ))
             )}
           </div>

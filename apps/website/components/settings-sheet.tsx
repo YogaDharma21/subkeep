@@ -196,7 +196,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
             </div>
 
             {/* Reminder Timing */}
-            <div className="space-y-2 rounded-xl bg-muted/40 p-3 border border-border">
+            <div className="space-y-2 rounded-lg bg-muted/40 p-3 border border-border">
               <label className="text-xs font-semibold text-foreground">
                 Reminder Timing
               </label>

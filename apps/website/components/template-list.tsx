@@ -31,10 +31,10 @@ const TemplateRow = memo(function TemplateRow({
     <button
       type="button"
       onClick={() => onSelect(template)}
-      className="flex w-full cursor-pointer items-center gap-3 rounded-xl p-2.5 hover:bg-muted/70 active:bg-muted transition-colors text-left"
+      className="flex w-full cursor-pointer items-center gap-3 rounded-lg p-2.5 hover:bg-muted/70 active:bg-muted transition-colors text-left"
     >
       <div
-        className="flex size-10 shrink-0 items-center justify-center rounded-xl text-white shadow-xs"
+        className="flex size-10 shrink-0 items-center justify-center rounded-lg text-white shadow-xs"
         style={{ backgroundColor: template.color }}
       >
         <DynamicIcon name={template.icon} className="size-5 text-white" />
@@ -108,7 +108,7 @@ export function TemplateList({ onSelect }: TemplateListProps) {
           <Badge
             key={cat.value}
             variant={activeCategory === cat.value ? "default" : "outline"}
-            className="cursor-pointer shrink-0 rounded-full px-3 py-1 text-xs transition-colors"
+            className="cursor-pointer shrink-0 rounded-md px-3 py-1 text-xs transition-colors"
             onClick={() => setActiveCategory(cat.value)}
           >
             {cat.label}

@@ -146,7 +146,7 @@ export function SmartInsights({
   if (insights.length === 0) return null
 
   return (
-    <div className="mb-4 rounded-2xl border border-border bg-background p-4 shadow-xs">
+    <div className="mb-4 rounded-lg border border-border bg-background p-4 shadow-xs">
       <div className="flex items-center gap-2 pb-3 mb-3 border-b border-border/60">
         <Sparkles className="size-4 text-muted-foreground" />
         <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
@@ -160,7 +160,7 @@ export function SmartInsights({
           return (
             <div
               key={item.id}
-              className="rounded-xl border border-border/80 bg-muted/30 p-3 text-xs transition-colors hover:bg-muted/50"
+              className="rounded-lg border border-border/80 bg-muted/30 p-3 text-xs transition-colors hover:bg-muted/50"
             >
               <div className="flex items-start gap-2.5">
                 <Icon className="size-4 shrink-0 mt-0.5 text-muted-foreground" />
@@ -168,7 +168,7 @@ export function SmartInsights({
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-semibold text-foreground">{item.title}</span>
                     {item.badge && (
-                      <span className="rounded-full bg-muted px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground border border-border shrink-0">
+                      <span className="rounded-md bg-muted px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground border border-border shrink-0">
                         {item.badge}
                       </span>
                     )}

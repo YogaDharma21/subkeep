@@ -98,101 +98,99 @@ export function StatsCharts({
 
       let monthSum = 0
       subscriptions.forEach((sub) => {
-        const subStart = sub.startDate
-          ? parseLocalDate(sub.startDate)
-          : parseLocalDate(sub.nextBilling)
+        const subStart = sub.startDate ? parseLocalDate(sub.startDate) : new Date(2000, 0, 1)
         const subEnd = sub.endDate ? parseLocalDate(sub.endDate) : null
 
         if (subStart <= monthEnd && (!subEnd || subEnd >= monthStart)) {
           const cycle = (sub.cycle || "monthly").toLowerCase()
-          let nativeCost = sub.price
-          if (cycle === "monthly") nativeCost = sub.price
-          else if (cycle === "quarterly") nativeCost = sub.price / 3
-          else if (cycle === "semi-annual") nativeCost = sub.price / 6
-          else if (cycle === "yearly") nativeCost = sub.price / 12
-          else if (cycle === "weekly") nativeCost = sub.price * 4.33
-          else if (cycle === "daily") nativeCost = sub.price * 30
-          else if (cycle === "none") {
-            if (subStart >= monthStart && subStart <= monthEnd) {
-              nativeCost = sub.price
-            } else {
-              nativeCost = 0
-            }
-          }
+          let nativeMonthly = sub.price
+          if (cycle === "monthly") nativeMonthly = sub.price
+          else if (cycle === "quarterly") nativeMonthly = sub.price / 3
+          else if (cycle === "semi-annual") nativeMonthly = sub.price / 6
+          else if (cycle === "yearly") nativeMonthly = sub.price / 12
+          else if (cycle === "weekly") nativeMonthly = sub.price * 4.33
+          else if (cycle === "daily") nativeMonthly = sub.price * 30
+          else if (cycle === "none") nativeMonthly = 0
 
-          const converted = convertCurrency(nativeCost, sub.currency, primaryCurrency, rates)
-          monthSum += converted
+          monthSum += convertCurrency(nativeMonthly, sub.currency, primaryCurrency, rates)
         }
       })
 
       months.push({
         month: monthLabel,
-        amount: Number(monthSum.toFixed(0)),
+        amount: Math.round(monthSum),
       })
     }
 
     return months
   }, [subscriptions, primaryCurrency, rates])
 
-  const filteredSubs = useMemo(() => {
-    if (breakdownFilter === "paid") {
-      return subscriptions.filter((s) => s.price > 0)
-    }
-    return subscriptions
-  }, [subscriptions, breakdownFilter])
-
   const categoryData = useMemo(() => {
-    const cats: Record<string, { cost: number; count: number }> = {}
-    filteredSubs.forEach((sub) => {
-      if (!cats[sub.category]) cats[sub.category] = { cost: 0, count: 0 }
-      const cycle = (sub.cycle || "monthly").toLowerCase()
-      let monthlyCost = sub.price
-      if (cycle === "yearly") monthlyCost = sub.price / 12
-      else if (cycle === "quarterly") monthlyCost = sub.price / 3
-      else if (cycle === "semi-annual") monthlyCost = sub.price / 6
-      else if (cycle === "weekly") monthlyCost = sub.price * 4.33
-      else if (cycle === "daily") monthlyCost = sub.price * 30
-      else if (cycle === "none") monthlyCost = sub.price
-
-      const converted = convertCurrency(monthlyCost, sub.currency, primaryCurrency, rates)
-
-      cats[sub.category].cost += converted
-      cats[sub.category].count += 1
+    const targetSubs = subscriptions.filter((s) => {
+      if (breakdownFilter === "paid") {
+        return s.price > 0
+      }
+      return true
     })
 
-    return Object.entries(cats).map(([name, data]) => ({
-      name: name.charAt(0).toUpperCase() + name.slice(1),
-      value: breakdownMetric === "cost" ? Number(data.cost.toFixed(0)) : data.count,
-      rawCost: Number(data.cost.toFixed(0)),
-      rawCount: data.count,
-      color: categoryColors[name] || "#8E8E93",
-    }))
-  }, [filteredSubs, breakdownMetric, primaryCurrency, rates])
+    const totals: Record<string, { cost: number; count: number }> = {}
 
-  const total = categoryData.reduce((sum, c) => sum + c.value, 0)
+    targetSubs.forEach((sub) => {
+      const cycle = (sub.cycle || "monthly").toLowerCase()
+      let nativeMonthly = sub.price
+      if (cycle === "monthly") nativeMonthly = sub.price
+      else if (cycle === "quarterly") nativeMonthly = sub.price / 3
+      else if (cycle === "semi-annual") nativeMonthly = sub.price / 6
+      else if (cycle === "yearly") nativeMonthly = sub.price / 12
+      else if (cycle === "weekly") nativeMonthly = sub.price * 4.33
+      else if (cycle === "daily") nativeMonthly = sub.price * 30
+      else if (cycle === "none") nativeMonthly = 0
+
+      const converted = convertCurrency(nativeMonthly, sub.currency, primaryCurrency, rates)
+
+      if (!totals[sub.category]) {
+        totals[sub.category] = { cost: 0, count: 0 }
+      }
+      totals[sub.category].cost += converted
+      totals[sub.category].count += 1
+    })
+
+    return Object.entries(totals).map(([category, data]) => ({
+      name: category.charAt(0).toUpperCase() + category.slice(1),
+      value: breakdownMetric === "cost" ? Math.round(data.cost) : data.count,
+      rawCost: data.cost,
+      rawCount: data.count,
+      color: categoryColors[category] || "#6b7280",
+    }))
+  }, [subscriptions, breakdownMetric, breakdownFilter, primaryCurrency, rates])
+
+  const total = categoryData.reduce((sum, item) => sum + item.value, 0)
 
   const paymentHistory = useMemo(() => {
     return payments
-      .map((p) => ({
-        name: p.name,
-        icon: p.icon,
-        color: p.color,
-        amount: p.amount,
-        currency: p.currency,
-        convertedAmount: convertCurrency(p.amount, p.currency, primaryCurrency, rates),
-        date: new Date(p.date),
-      }))
-      .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, 10)
+      .map((p) => {
+        const converted = convertCurrency(p.amount, p.currency, primaryCurrency, rates)
+        return {
+          ...p,
+          convertedAmount: converted,
+          date: new Date(p.date),
+        }
+      })
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
   }, [payments, primaryCurrency, rates])
 
   return (
     <div className="space-y-6">
+      {/* Responsive 2-Column Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Spending Trend Chart */}
-        <div className="rounded-xl border border-border bg-background">
-          <div className="border-b border-border p-4 flex items-center justify-between">
-            <h3 className="text-sm font-semibold">Spending Trend ({primaryCurrency})</h3>
+        <div className="rounded-lg border border-border bg-background">
+          <div className="border-b border-border p-4">
+            <h3 className="text-sm font-semibold">Spending Trend</h3>
+            <p className="text-xs text-muted-foreground">
+              Estimated monthly costs based on active subscriptions
+            </p>
           </div>
           <div className="p-4 sm:p-5">
             <div className="h-[220px]">
@@ -227,7 +225,7 @@ export function StatsCharts({
               </ResponsiveContainer>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
-              <div className="rounded-xl bg-muted p-3 sm:p-4 text-center min-w-0">
+              <div className="rounded-lg bg-muted p-3 sm:p-4 text-center min-w-0">
                 <div className="text-xs sm:text-sm font-bold text-foreground truncate">
                   {formatCurrencyAmount(monthlyTotal * 1.15, primaryCurrency)}
                 </div>
@@ -235,7 +233,7 @@ export function StatsCharts({
                   Highest
                 </div>
               </div>
-              <div className="rounded-xl bg-muted p-3 sm:p-4 text-center min-w-0">
+              <div className="rounded-lg bg-muted p-3 sm:p-4 text-center min-w-0">
                 <div className="text-xs sm:text-sm font-bold text-foreground truncate">
                   {formatCurrencyAmount(monthlyTotal, primaryCurrency)}
                 </div>
@@ -243,7 +241,7 @@ export function StatsCharts({
                   Avg / Month
                 </div>
               </div>
-              <div className="rounded-xl bg-muted p-3 sm:p-4 text-center min-w-0">
+              <div className="rounded-lg bg-muted p-3 sm:p-4 text-center min-w-0">
                 <div className="text-xs sm:text-sm font-bold text-foreground truncate">
                   {formatCurrencyAmount(monthlyTotal * 6, primaryCurrency)}
                 </div>
@@ -256,7 +254,7 @@ export function StatsCharts({
         </div>
 
         {/* Category Breakdown Chart */}
-        <div className="rounded-xl border border-border bg-background">
+        <div className="rounded-lg border border-border bg-background">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-4">
             <h3 className="text-sm font-semibold">Category Breakdown</h3>
             <div className="flex items-center gap-2">
@@ -389,7 +387,7 @@ export function StatsCharts({
 
       {/* Payment History */}
       {paymentHistory.length > 0 && (
-        <div className="rounded-xl border border-border bg-background">
+        <div className="rounded-lg border border-border bg-background">
           <div className="border-b border-border p-4">
             <h3 className="text-sm font-semibold">Payment History</h3>
           </div>
@@ -400,7 +398,7 @@ export function StatsCharts({
                 className="flex items-center gap-3 border-b border-border px-4 py-3 last:border-b-0"
               >
                 <div
-                  className="flex size-10 shrink-0 items-center justify-center rounded-xl"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-lg"
                   style={{ backgroundColor: p.color }}
                 >
                   <span className="text-sm font-bold text-white">

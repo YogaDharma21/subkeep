@@ -43,7 +43,7 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
         <div className="flex justify-center">
           <button
             onClick={onAddClick}
-            className="-mt-5 flex size-12 items-center justify-center rounded-2xl bg-foreground text-background shadow-lg transition-transform active:scale-95"
+            className="-mt-5 flex size-12 items-center justify-center rounded-lg bg-foreground text-background shadow-lg transition-transform active:scale-95"
           >
             <Plus className="size-6" />
           </button>

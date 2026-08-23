@@ -160,7 +160,7 @@ export function AddSubscriptionSheet({
 
   return (
     <Sheet open={open} onOpenChange={(o) => { if (!o) resetForm(); onOpenChange(o) }}>
-      <SheetContent side="bottom" className="rounded-t-2xl overflow-hidden" showCloseButton={false}>
+      <SheetContent side="bottom" className="rounded-t-lg overflow-hidden" showCloseButton={false}>
         <SheetHeader className="flex-row items-center gap-2 border-b border-border p-4">
           {step === 2 && (
             <Button
@@ -204,11 +204,11 @@ export function AddSubscriptionSheet({
                 <div className="space-y-4 pb-4">
                   <button
                     onClick={() => setIconOpen(true)}
-                    className="flex items-center gap-3 rounded-xl bg-muted p-3.5 w-full"
+                    className="flex items-center gap-3 rounded-lg bg-muted p-3.5 w-full"
                   >
                     <div
                       className={cn(
-                        "flex size-12 items-center justify-center rounded-xl border-2 border-dashed",
+                        "flex size-12 items-center justify-center rounded-lg border-2 border-dashed",
                         selectedIcon
                           ? "border-transparent"
                           : "border-border text-muted-foreground"
@@ -249,7 +249,7 @@ export function AddSubscriptionSheet({
                   </div>
 
                   {/* Free Trial Toggle */}
-                  <div className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3">
+                  <div className="flex items-center justify-between rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
                     <div className="flex items-center gap-2">
                       <Sparkles className="size-4 text-emerald-500" />
                       <div>
@@ -270,7 +270,7 @@ export function AddSubscriptionSheet({
                   </div>
 
                   {isTrial && (
-                    <div className="space-y-2 rounded-xl bg-muted/40 p-3 border border-border">
+                    <div className="space-y-2 rounded-lg bg-muted/40 p-3 border border-border">
                       <label className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
                         Trial Expiration Date *
                       </label>
@@ -283,7 +283,7 @@ export function AddSubscriptionSheet({
                   )}
 
                   {/* Shared / Split Subscription Toggle */}
-                  <div className="flex items-center justify-between rounded-xl border border-blue-500/30 bg-blue-500/10 p-3">
+                  <div className="flex items-center justify-between rounded-lg border border-blue-500/30 bg-blue-500/10 p-3">
                     <div className="flex items-center gap-2">
                       <Users className="size-4 text-blue-500" />
                       <div>
@@ -304,7 +304,7 @@ export function AddSubscriptionSheet({
                   </div>
 
                   {isShared && (
-                    <div className="grid grid-cols-2 gap-3 rounded-xl bg-blue-500/5 p-3 border border-blue-500/20">
+                    <div className="grid grid-cols-2 gap-3 rounded-lg bg-blue-500/5 p-3 border border-blue-500/20">
                       <div className="space-y-1">
                         <label className="text-xs font-semibold text-blue-600 dark:text-blue-400">
                           Total Plan Price
@@ -379,7 +379,7 @@ export function AddSubscriptionSheet({
                           key={bc.value}
                           type="button"
                           onClick={() => setCycle(bc.value)}
-                          className={`flex items-center justify-center rounded-xl border-2 px-3 py-2.5 text-xs font-medium transition-all ${
+                          className={`flex items-center justify-center rounded-lg border-2 px-3 py-2.5 text-xs font-medium transition-all ${
                             cycle === bc.value
                               ? "border-foreground bg-foreground text-background"
                               : "border-border bg-background text-foreground hover:border-foreground/50"

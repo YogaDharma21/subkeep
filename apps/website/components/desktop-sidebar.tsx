@@ -28,7 +28,7 @@ export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
       {/* Brand Header */}
       <div className="flex h-16 items-center justify-between px-6 border-b border-border">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex size-8 items-center justify-center rounded-xl bg-foreground text-background shadow-xs">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-foreground text-background shadow-xs">
             <Receipt className="size-4.5 stroke-[2.2]" />
           </div>
           <span className="text-base font-bold text-foreground tracking-tight">SubKeep</span>
@@ -76,7 +76,7 @@ export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
 
       {/* User Profile at Bottom */}
       <div className="p-3 border-t border-border">
-        <div className="flex items-center justify-between gap-2.5 rounded-xl border border-border/60 bg-muted/40 p-2.5 transition-colors hover:bg-muted/70 w-full">
+        <div className="flex items-center justify-between gap-2.5 rounded-lg border border-border/60 bg-muted/40 p-2.5 transition-colors hover:bg-muted/70 w-full">
           <button
             type="button"
             onClick={() => openUserProfile()}
