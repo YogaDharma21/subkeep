@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { UserButton, Show } from "@clerk/nextjs"
+import { Receipt } from "lucide-react"
 import { BottomNav } from "@/components/bottom-nav"
 import { DesktopSidebar } from "@/components/desktop-sidebar"
 import { AddSubscriptionSheet } from "@/components/add-subscription-sheet"
@@ -23,7 +24,12 @@ export default function DashboardLayout({
 
           {/* Mobile Top Header (hidden on desktop) */}
           <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background px-4 py-3 md:hidden">
-            <h1 className="text-lg font-bold">SubKeep</h1>
+            <div className="flex items-center gap-2">
+              <div className="flex size-7 items-center justify-center rounded-lg bg-foreground text-background shadow-xs">
+                <Receipt className="size-4 stroke-[2.2]" />
+              </div>
+              <h1 className="text-base font-bold text-foreground">SubKeep</h1>
+            </div>
             <UserButton />
           </header>
 
