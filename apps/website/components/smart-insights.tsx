@@ -39,7 +39,6 @@ export function SmartInsights({
       title: string
       description: string
       badge?: string
-      color: string
       icon: typeof Sparkles
     }> = []
 
@@ -81,7 +80,6 @@ export function SmartInsights({
           title: `${percent}% Spent on ${catLabel}`,
           description: `You spend ${percent}% of your total subscription budget on ${catLabel} alone (${formatCurrencyAmount(topCategoryAmount, primaryCurrency)}/mo).`,
           badge: "Budget Focus",
-          color: "border-purple-500/30 bg-purple-500/5 text-purple-600 dark:text-purple-400",
           icon: PieChart,
         })
       }
@@ -95,7 +93,6 @@ export function SmartInsights({
       title: `Spending Trend (+${randomTrendPct}% MoM)`,
       description: `Your monthly subscription spending increased by ${randomTrendPct}% compared to last month due to recent plan updates.`,
       badge: "Monthly Change",
-      color: "border-amber-500/30 bg-amber-500/5 text-amber-600 dark:text-amber-400",
       icon: TrendingUp,
     })
 
@@ -118,7 +115,6 @@ export function SmartInsights({
         title: `Shared Plans Saving You ${formatCurrencyAmount(totalSavedMonthly * 12, primaryCurrency)}/yr`,
         description: `You share ${sharedSubs.length} subscription(s) with family/friends, cutting your annual costs significantly!`,
         badge: "Family Savings",
-        color: "border-emerald-500/30 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400",
         icon: Users,
       })
     }
@@ -137,10 +133,9 @@ export function SmartInsights({
       list.push({
         id: "consolidation-recommendation",
         type: "recommendation",
-        title: `Smart Recommendation: Consolidate ${entertainmentSubs.length} Media Services`,
+        title: `Consolidate ${entertainmentSubs.length} Media Services`,
         description: `You have ${entertainmentSubs.length} active media services (${formatCurrencyAmount(entTotalMonthly, primaryCurrency)}/mo). Rotating services monthly could save up to ${formatCurrencyAmount(yearlyPotentialSavings, primaryCurrency)}/year!`,
         badge: "Potential Savings",
-        color: "border-blue-500/30 bg-blue-500/5 text-blue-600 dark:text-blue-400",
         icon: Sparkles,
       })
     }
@@ -153,9 +148,9 @@ export function SmartInsights({
   return (
     <div className="mb-4 rounded-2xl border border-border bg-background p-4 shadow-xs">
       <div className="flex items-center gap-2 pb-3 mb-3 border-b border-border/60">
-        <Sparkles className="size-4 text-primary animate-pulse" />
+        <Sparkles className="size-4 text-muted-foreground" />
         <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-          Smart Insights & Savings Recommendations
+          Savings Recommendations
         </h3>
       </div>
 
@@ -165,15 +160,15 @@ export function SmartInsights({
           return (
             <div
               key={item.id}
-              className={`rounded-xl border p-3 text-xs transition-all ${item.color}`}
+              className="rounded-xl border border-border/80 bg-muted/30 p-3 text-xs transition-colors hover:bg-muted/50"
             >
               <div className="flex items-start gap-2.5">
-                <Icon className="size-4 shrink-0 mt-0.5" />
+                <Icon className="size-4 shrink-0 mt-0.5 text-muted-foreground" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-bold text-foreground">{item.title}</span>
+                    <span className="font-semibold text-foreground">{item.title}</span>
                     {item.badge && (
-                      <span className="rounded-full bg-foreground/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider shrink-0">
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground border border-border shrink-0">
                         {item.badge}
                       </span>
                     )}
