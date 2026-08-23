@@ -165,9 +165,9 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
       <div
-        className="w-full sm:max-w-lg max-h-[85vh] flex flex-col rounded-t-lg sm:rounded-lg bg-background border border-border shadow-xl overflow-hidden"
+        className="w-full sm:max-w-lg max-h-[85vh] flex flex-col rounded-t-lg sm:rounded-lg bg-background border border-border shadow-xl overflow-hidden transform-gpu"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
