@@ -151,28 +151,24 @@ export default function MorePage() {
         icon: Settings,
         label: "Settings",
         description: "Theme, notifications, currency",
-        color: "bg-muted-foreground",
       },
       {
         id: "export",
         icon: Download,
         label: "Export Data",
         description: "Download subscriptions as JSON",
-        color: "bg-blue-500",
       },
       {
         id: "backup",
         icon: FileJson,
         label: "Backup",
         description: "Export all data including payments",
-        color: "bg-green-500",
       },
       {
         id: "restore",
         icon: Upload,
         label: "Restore",
         description: "Import data from backup file",
-        color: "bg-teal-500",
       },
     ],
     [
@@ -181,7 +177,6 @@ export default function MorePage() {
         icon: Info,
         label: "About SubKeep",
         description: "Version 1.0.0",
-        color: "bg-purple-500",
       },
     ],
   ]
@@ -209,10 +204,8 @@ export default function MorePage() {
                 onClick={() => handleItemClick(item.id)}
                 className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
               >
-                <div
-                  className={`flex size-9 items-center justify-center rounded-xl ${item.color}`}
-                >
-                  <Icon className="size-4 text-white" />
+                <div className="flex size-9 items-center justify-center rounded-xl bg-muted text-foreground/80">
+                  <Icon className="size-4 text-foreground/80" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium text-foreground">{item.label}</div>
@@ -230,20 +223,20 @@ export default function MorePage() {
       <div className="overflow-hidden rounded-xl border border-border bg-background">
         <button
           onClick={() => setDeleteConfirm(true)}
-          className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-red-500/10 dark:hover:bg-red-500/15 active:bg-red-500/20 group"
+          className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-destructive/10 active:bg-destructive/20 group"
         >
-          <div className="flex size-9 items-center justify-center rounded-xl bg-red-500">
-            <Trash2 className="size-4 text-white" />
+          <div className="flex size-9 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+            <Trash2 className="size-4 text-destructive" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium text-red-600 dark:text-red-400">
+            <div className="text-sm font-medium text-destructive">
               Delete All Data
             </div>
             <div className="text-xs text-muted-foreground">
               Remove all subscriptions
             </div>
           </div>
-          <ChevronRight className="size-4 shrink-0 text-muted-foreground group-hover:text-red-500 transition-colors" />
+          <ChevronRight className="size-4 shrink-0 text-muted-foreground group-hover:text-destructive transition-colors" />
         </button>
       </div>
 
@@ -251,8 +244,8 @@ export default function MorePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="mx-4 w-full max-w-sm rounded-2xl bg-background p-6">
             <div className="mb-4 flex justify-center">
-              <div className="flex size-12 items-center justify-center rounded-full bg-red-500/10">
-                <Trash2 className="size-6 text-red-500" />
+              <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10">
+                <Trash2 className="size-6 text-destructive" />
               </div>
             </div>
             <h3 className="mb-2 text-center text-lg font-semibold">
@@ -286,8 +279,8 @@ export default function MorePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="mx-4 w-full max-w-sm rounded-2xl bg-background p-6">
             <div className="mb-4 flex justify-center">
-              <div className="flex size-12 items-center justify-center rounded-full bg-green-500/10">
-                <Upload className="size-6 text-green-500" />
+              <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                <Upload className="size-6 text-foreground" />
               </div>
             </div>
             <h3 className="mb-2 text-center text-lg font-semibold">
@@ -313,7 +306,7 @@ export default function MorePage() {
                 Cancel
               </Button>
               <Button
-                className="flex-1 bg-green-500 hover:bg-green-600"
+                className="flex-1"
                 onClick={handleRestore}
               >
                 Restore
