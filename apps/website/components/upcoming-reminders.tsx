@@ -71,7 +71,7 @@ export function UpcomingReminders({
           return (
             <div
               key={item._id}
-              className={`flex flex-col gap-2 rounded-xl border p-3 text-xs transition-all ${
+              className={`flex flex-col gap-2 rounded-lg border p-3 text-xs transition-all ${
                 isTrial
                   ? "border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20"
                   : "border-amber-500/30 bg-amber-500/5 dark:bg-amber-950/20"
@@ -89,7 +89,7 @@ export function UpcomingReminders({
                     <div className="flex items-center gap-1.5">
                       <span className="font-semibold truncate text-foreground">{item.name}</span>
                       {isTrial && (
-                        <span className="rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                        <span className="rounded-md bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
                           TRIAL
                         </span>
                       )}

@@ -167,7 +167,7 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
   return (
     <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
       <div
-        className="w-full sm:max-w-lg max-h-[85vh] flex flex-col rounded-t-2xl sm:rounded-2xl bg-background border border-border shadow-xl overflow-hidden"
+        className="w-full sm:max-w-lg max-h-[85vh] flex flex-col rounded-t-lg sm:rounded-lg bg-background border border-border shadow-xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -249,7 +249,7 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
                     key={cat}
                     onClick={() => { setActiveCategory(cat); setVisibleCount(72) }}
                     className={cn(
-                      "px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-colors",
+                      "px-3 py-1.5 rounded-md font-medium whitespace-nowrap transition-colors",
                       activeCategory === cat
                         ? "bg-foreground text-background"
                         : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -280,7 +280,7 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
                             onClose()
                           }}
                           className={cn(
-                            "relative flex aspect-square flex-col items-center justify-center rounded-xl border p-2 transition-all hover:bg-muted active:scale-95",
+                            "relative flex aspect-square flex-col items-center justify-center rounded-lg border p-2 transition-all hover:bg-muted active:scale-95",
                             isSelected
                               ? "border-foreground bg-foreground text-background ring-2 ring-foreground/20"
                               : "border-border text-foreground hover:border-foreground/40"
@@ -301,7 +301,7 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
                       <button
                         type="button"
                         onClick={() => setVisibleCount((prev) => prev + 72)}
-                        className="rounded-xl border border-border bg-muted px-4 py-2 text-xs font-medium text-foreground transition-all hover:bg-muted/80 active:scale-95"
+                        className="rounded-lg border border-border bg-muted px-4 py-2 text-xs font-medium text-foreground transition-all hover:bg-muted/80 active:scale-95"
                       >
                         Load more icons ({filteredIcons.length - visibleCount} remaining)
                       </button>
@@ -347,9 +347,9 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
                       onSelect(googleFaviconUrl)
                       onClose()
                     }}
-                    className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-muted/30 p-4 cursor-pointer hover:border-foreground/50 transition-all active:scale-98"
+                    className="flex flex-col items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 p-4 cursor-pointer hover:border-foreground/50 transition-all active:scale-98"
                   >
-                    <div className="flex size-14 items-center justify-center rounded-xl bg-background border p-1">
+                    <div className="flex size-14 items-center justify-center rounded-lg bg-background border p-1">
                       <img
                         src={googleFaviconUrl}
                         alt="Google Favicon"
@@ -371,9 +371,9 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
                       onSelect(clearbitLogoUrl)
                       onClose()
                     }}
-                    className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-muted/30 p-4 cursor-pointer hover:border-foreground/50 transition-all active:scale-98"
+                    className="flex flex-col items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 p-4 cursor-pointer hover:border-foreground/50 transition-all active:scale-98"
                   >
-                    <div className="flex size-14 items-center justify-center rounded-xl bg-background border p-1">
+                    <div className="flex size-14 items-center justify-center rounded-lg bg-background border p-1">
                       <img
                         src={clearbitLogoUrl}
                         alt="Clearbit Logo"

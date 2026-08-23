@@ -86,11 +86,11 @@ export function CancellationGuideModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-2xl p-5">
+      <DialogContent className="max-w-md rounded-lg p-5">
         <DialogHeader className="space-y-2">
           <div className="flex items-center gap-3">
             <div
-              className="flex size-11 shrink-0 items-center justify-center rounded-xl"
+              className="flex size-11 shrink-0 items-center justify-center rounded-lg"
               style={{ backgroundColor: subscription.color }}
             >
               <DynamicIcon name={subscription.icon} className="size-5 text-white" />
@@ -120,7 +120,7 @@ export function CancellationGuideModal({
         </DialogHeader>
 
         {subscription.isTrial && (
-          <div className="flex items-start gap-2.5 rounded-xl bg-amber-500/10 p-3 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20">
+          <div className="flex items-start gap-2.5 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-600 dark:text-amber-400 border border-amber-500/20">
             <ShieldAlert className="size-4 shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold">Cancel before free trial ends!</p>
@@ -134,7 +134,7 @@ export function CancellationGuideModal({
         <div className="my-2 space-y-2">
           <Button
             onClick={handleOpenLink}
-            className="w-full gap-2 bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-10 rounded-xl"
+            className="w-full gap-2 bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-10 rounded-lg"
           >
             <ExternalLink className="size-3.5" />
             Open Direct Cancellation Page
@@ -145,7 +145,7 @@ export function CancellationGuideModal({
           </p>
         </div>
 
-        <div className="space-y-2.5 rounded-xl border border-border bg-muted/30 p-3 text-xs">
+        <div className="space-y-2.5 rounded-lg border border-border bg-muted/30 p-3 text-xs">
           <div className="flex items-center justify-between font-medium text-foreground pb-1 border-b border-border/50">
             <span className="flex items-center gap-1.5">
               <Sparkles className="size-3.5 text-primary" />

@@ -34,9 +34,9 @@ export default function StatsPage() {
         />
       ) : (
         <div className="space-y-4">
-          <Skeleton className="h-[250px] rounded-xl" />
-          <Skeleton className="h-[150px] rounded-xl" />
-          <Skeleton className="h-[250px] rounded-xl" />
+          <Skeleton className="h-[250px] rounded-lg" />
+          <Skeleton className="h-[150px] rounded-lg" />
+          <Skeleton className="h-[250px] rounded-lg" />
         </div>
       )}
     </div>

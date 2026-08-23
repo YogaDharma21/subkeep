@@ -194,7 +194,7 @@ export default function MorePage() {
       {menuGroups.map((group, gi) => (
         <div
           key={gi}
-          className="mb-3 overflow-hidden rounded-xl border border-border bg-background divide-y divide-border"
+          className="mb-3 overflow-hidden rounded-lg border border-border bg-background divide-y divide-border"
         >
           {group.map((item, ii) => {
             const Icon = item.icon
@@ -204,7 +204,7 @@ export default function MorePage() {
                 onClick={() => handleItemClick(item.id)}
                 className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
               >
-                <div className="flex size-9 items-center justify-center rounded-xl bg-muted text-foreground/80">
+                <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80">
                   <Icon className="size-4 text-foreground/80" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -220,12 +220,12 @@ export default function MorePage() {
         </div>
       ))}
 
-      <div className="overflow-hidden rounded-xl border border-border bg-background">
+      <div className="overflow-hidden rounded-lg border border-border bg-background">
         <button
           onClick={() => setDeleteConfirm(true)}
           className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-destructive/10 active:bg-destructive/20 group"
         >
-          <div className="flex size-9 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
             <Trash2 className="size-4 text-destructive" />
           </div>
           <div className="min-w-0 flex-1">
@@ -242,9 +242,9 @@ export default function MorePage() {
 
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-sm rounded-2xl bg-background p-6">
+          <div className="mx-4 w-full max-w-sm rounded-lg bg-background p-6">
             <div className="mb-4 flex justify-center">
-              <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10">
+              <div className="flex size-12 items-center justify-center rounded-lg bg-destructive/10">
                 <Trash2 className="size-6 text-destructive" />
               </div>
             </div>
@@ -277,9 +277,9 @@ export default function MorePage() {
 
       {restoreConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-sm rounded-2xl bg-background p-6">
+          <div className="mx-4 w-full max-w-sm rounded-lg bg-background p-6">
             <div className="mb-4 flex justify-center">
-              <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+              <div className="flex size-12 items-center justify-center rounded-lg bg-muted">
                 <Upload className="size-6 text-foreground" />
               </div>
             </div>
