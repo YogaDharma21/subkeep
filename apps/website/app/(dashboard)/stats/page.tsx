@@ -16,7 +16,7 @@ export default function StatsPage() {
   const { primaryCurrency, rates } = usePrimaryCurrency()
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="space-y-4 sm:space-y-6">
       {subscriptions && (
         <SmartInsights
           subscriptions={subscriptions}
