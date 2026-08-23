@@ -68,8 +68,14 @@ export function PaymentMethodsSheet({
 }: PaymentMethodsSheetProps) {
   const { isSignedIn } = useAuth()
   const { primaryCurrency, rates } = usePrimaryCurrency()
-  const paymentMethods = useQuery(api.paymentMethods.list, isSignedIn ? {} : "skip") as PaymentMethodItem[] | undefined
-  const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
+  const paymentMethods = useQuery(
+    api.paymentMethods.list,
+    isSignedIn && open ? {} : "skip"
+  ) as PaymentMethodItem[] | undefined
+  const subscriptions = useQuery(
+    api.subscriptions.list,
+    isSignedIn && open ? {} : "skip"
+  )
   const createMutation = useMutation(api.paymentMethods.create)
   const removeMutation = useMutation(api.paymentMethods.remove)
 

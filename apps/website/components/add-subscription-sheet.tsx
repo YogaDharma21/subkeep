@@ -42,7 +42,7 @@ export function AddSubscriptionSheet({
   const create = useMutation(api.subscriptions.create)
   const paymentMethods = useQuery(
     api.paymentMethods.list,
-    isSignedIn ? {} : "skip"
+    isSignedIn && open ? {} : "skip"
   ) as Array<{ _id: string; name: string; type: string; last4?: string }> | undefined
 
   const [step, setStep] = useState(1)
