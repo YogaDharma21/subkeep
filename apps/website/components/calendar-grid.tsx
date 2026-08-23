@@ -7,8 +7,12 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { getSymbol } from "@/lib/constants"
 import { DynamicIcon } from "@/components/dynamic-icon"
+import { convertAndFormat, formatCurrencyAmount } from "@/lib/currency"
+import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 
-interface SubscriptionItem {
+export type CalendarEventType = "start" | "renewal" | "trial_end" | "end"
+
+export interface SubscriptionItem {
   _id: string
   name: string
   icon: string
@@ -21,6 +25,16 @@ interface SubscriptionItem {
   endDate?: string
   category: string
   isActive?: boolean
+  isTrial?: boolean
+  trialEndDate?: string
+  account?: string
+  isShared?: boolean
+  totalMembers?: number
+}
+
+export interface CalendarDayEvent {
+  subscription: SubscriptionItem
+  eventType: CalendarEventType
 }
 
 interface CalendarGridProps {
@@ -37,6 +51,7 @@ function parseLocalDate(dateStr: string): Date {
 
 export function CalendarGrid({ subscriptions }: CalendarGridProps) {
   const router = useRouter()
+  const { primaryCurrency, rates } = usePrimaryCurrency()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDay, setSelectedDay] = useState<number | null>(new Date().getDate())
 
@@ -53,7 +68,21 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
   const daysInPrevMonth = new Date(year, month, 0).getDate()
 
   const billingDays = useMemo(() => {
-    const map: Record<number, SubscriptionItem[]> = {}
+    const map: Record<number, CalendarDayEvent[]> = {}
+
+    const addEvent = (d: number, event: CalendarDayEvent) => {
+      if (d < 1 || d > daysInMonth) return
+      if (!map[d]) map[d] = []
+      if (
+        !map[d].some(
+          (e) =>
+            e.subscription._id === event.subscription._id &&
+            e.eventType === event.eventType
+        )
+      ) {
+        map[d].push(event)
+      }
+    }
 
     subscriptions.forEach((sub) => {
       // Don't list inactive subscriptions in future projections if suspended
@@ -64,85 +93,108 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
         ? parseLocalDate(sub.startDate)
         : parseLocalDate(sub.nextBilling)
       const subEnd = sub.endDate ? parseLocalDate(sub.endDate) : null
+      const trialEnd =
+        sub.isTrial && sub.trialEndDate ? parseLocalDate(sub.trialEndDate) : null
 
       const monthStart = new Date(year, month, 1)
       const monthEnd = new Date(year, month, daysInMonth)
 
-      // Skip if subscription ended before this month or hasn't started yet
+      // 1. Subscription Start Date Event
+      if (subStart.getFullYear() === year && subStart.getMonth() === month) {
+        addEvent(subStart.getDate(), {
+          subscription: sub,
+          eventType: "start",
+        })
+      }
+
+      // 2. Trial End Date Event
+      if (trialEnd && trialEnd.getFullYear() === year && trialEnd.getMonth() === month) {
+        addEvent(trialEnd.getDate(), {
+          subscription: sub,
+          eventType: "trial_end",
+        })
+      }
+
+      // 3. Subscription End Date Event
+      if (subEnd && subEnd.getFullYear() === year && subEnd.getMonth() === month) {
+        addEvent(subEnd.getDate(), {
+          subscription: sub,
+          eventType: "end",
+        })
+      }
+
+      // 4. Recurring Billing / Renewal Dates (only after start date and before end date)
       if (subEnd && subEnd < monthStart) return
       if (subStart > monthEnd) return
-
-      const addSubToDay = (d: number) => {
-        if (!map[d]) map[d] = []
-        if (!map[d].some((item) => item._id === sub._id)) {
-          map[d].push(sub)
-        }
-      }
 
       if (cycle === "monthly") {
         const startDay = subStart.getDate()
         const targetDay = Math.min(startDay, daysInMonth)
         const candDate = new Date(year, month, targetDay)
-        if (candDate >= subStart && (!subEnd || candDate <= subEnd)) {
-          addSubToDay(targetDay)
+        if (candDate > subStart && (!subEnd || candDate <= subEnd)) {
+          addEvent(targetDay, { subscription: sub, eventType: "renewal" })
         }
       } else if (cycle === "quarterly") {
-        const monthDiff = (year - subStart.getFullYear()) * 12 + (month - subStart.getMonth())
-        if (monthDiff >= 0 && monthDiff % 3 === 0) {
+        const monthDiff =
+          (year - subStart.getFullYear()) * 12 + (month - subStart.getMonth())
+        if (monthDiff > 0 && monthDiff % 3 === 0) {
           const startDay = subStart.getDate()
           const targetDay = Math.min(startDay, daysInMonth)
           const candDate = new Date(year, month, targetDay)
-          if (candDate >= subStart && (!subEnd || candDate <= subEnd)) {
-            addSubToDay(targetDay)
+          if (!subEnd || candDate <= subEnd) {
+            addEvent(targetDay, { subscription: sub, eventType: "renewal" })
           }
         }
       } else if (cycle === "semi-annual") {
-        const monthDiff = (year - subStart.getFullYear()) * 12 + (month - subStart.getMonth())
-        if (monthDiff >= 0 && monthDiff % 6 === 0) {
+        const monthDiff =
+          (year - subStart.getFullYear()) * 12 + (month - subStart.getMonth())
+        if (monthDiff > 0 && monthDiff % 6 === 0) {
           const startDay = subStart.getDate()
           const targetDay = Math.min(startDay, daysInMonth)
           const candDate = new Date(year, month, targetDay)
-          if (candDate >= subStart && (!subEnd || candDate <= subEnd)) {
-            addSubToDay(targetDay)
+          if (!subEnd || candDate <= subEnd) {
+            addEvent(targetDay, { subscription: sub, eventType: "renewal" })
           }
         }
       } else if (cycle === "yearly") {
-        if (subStart.getMonth() === month) {
+        if (subStart.getMonth() === month && year > subStart.getFullYear()) {
           const startDay = subStart.getDate()
           const targetDay = Math.min(startDay, daysInMonth)
           const candDate = new Date(year, month, targetDay)
-          if (candDate >= subStart && (!subEnd || candDate <= subEnd)) {
-            addSubToDay(targetDay)
+          if (!subEnd || candDate <= subEnd) {
+            addEvent(targetDay, { subscription: sub, eventType: "renewal" })
           }
         }
       } else if (cycle === "weekly") {
         for (let d = 1; d <= daysInMonth; d++) {
           const candDate = new Date(year, month, d)
-          if (candDate >= subStart && (!subEnd || candDate <= subEnd)) {
+          if (candDate > subStart && (!subEnd || candDate <= subEnd)) {
             const diffDays = Math.round(
               (candDate.getTime() - subStart.getTime()) / (1000 * 60 * 60 * 24)
             )
-            if (diffDays >= 0 && diffDays % 7 === 0) {
-              addSubToDay(d)
+            if (diffDays > 0 && diffDays % 7 === 0) {
+              addEvent(d, { subscription: sub, eventType: "renewal" })
             }
           }
         }
       } else if (cycle === "daily") {
         for (let d = 1; d <= daysInMonth; d++) {
           const candDate = new Date(year, month, d)
-          if (candDate >= subStart && (!subEnd || candDate <= subEnd)) {
-            addSubToDay(d)
+          if (candDate > subStart && (!subEnd || candDate <= subEnd)) {
+            addEvent(d, { subscription: sub, eventType: "renewal" })
           }
         }
       } else if (cycle === "none") {
-        if (subStart.getFullYear() === year && subStart.getMonth() === month) {
-          addSubToDay(subStart.getDate())
-        }
+        // One-time subscription has no recurring renewals after subStart
       } else {
         // Fallback matching against nextBilling
         const nbDate = parseLocalDate(sub.nextBilling)
         if (nbDate.getFullYear() === year && nbDate.getMonth() === month) {
-          addSubToDay(nbDate.getDate())
+          if (nbDate.getTime() === subStart.getTime()) {
+            addEvent(nbDate.getDate(), { subscription: sub, eventType: "start" })
+          } else {
+            addEvent(nbDate.getDate(), { subscription: sub, eventType: "renewal" })
+          }
         }
       }
     })
@@ -178,7 +230,41 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
     days.push({ day: i, isCurrentMonth: false })
   }
 
-  const selectedSubs = selectedDay ? billingDays[selectedDay] || [] : []
+  const selectedEvents = selectedDay ? billingDays[selectedDay] || [] : []
+
+  const getHeaderTitle = () => {
+    if (selectedEvents.length === 0) {
+      return "No subscriptions"
+    }
+
+    const startCount = selectedEvents.filter((e) => e.eventType === "start").length
+    const renewalCount = selectedEvents.filter((e) => e.eventType === "renewal").length
+    const trialEndCount = selectedEvents.filter((e) => e.eventType === "trial_end").length
+    const endCount = selectedEvents.filter((e) => e.eventType === "end").length
+
+    if (startCount === selectedEvents.length) {
+      if (selectedEvents.length === 1) {
+        return selectedEvents[0].subscription.isTrial
+          ? "1 trial starts"
+          : "1 subscription starts"
+      }
+      return `${selectedEvents.length} subscriptions starting`
+    }
+
+    if (renewalCount === selectedEvents.length) {
+      return `${selectedEvents.length} subscription${selectedEvents.length > 1 ? "s" : ""} due`
+    }
+
+    if (trialEndCount === selectedEvents.length) {
+      return `${selectedEvents.length} trial${selectedEvents.length > 1 ? "s" : ""} ending`
+    }
+
+    if (endCount === selectedEvents.length) {
+      return `${selectedEvents.length} subscription${selectedEvents.length > 1 ? "s" : ""} ending`
+    }
+
+    return `${selectedEvents.length} subscriptions scheduled`
+  }
 
   return (
     <div className="space-y-4">
@@ -208,7 +294,8 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
 
         <div className="grid grid-cols-7 gap-1">
           {days.map((d, i) => {
-            const hasSub = d.isCurrentMonth && billingDays[d.day]
+            const dayEvents = d.isCurrentMonth ? billingDays[d.day] : undefined
+            const hasSub = !!(dayEvents && dayEvents.length > 0)
             const isSelected = selectedDay === d.day && d.isCurrentMonth
             return (
               <button
@@ -245,11 +332,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
       {selectedDay !== null && (
         <div className="rounded-xl border border-border bg-background">
           <div className="border-b border-border p-4">
-            <h3 className="text-sm font-semibold">
-              {selectedSubs.length > 0
-                ? `${selectedSubs.length} subscription${selectedSubs.length > 1 ? "s" : ""} due`
-                : "No subscriptions"}
-            </h3>
+            <h3 className="text-sm font-semibold">{getHeaderTitle()}</h3>
             <p className="text-xs text-muted-foreground">
               {new Date(year, month, selectedDay).toLocaleDateString("en-US", {
                 weekday: "long",
@@ -260,37 +343,97 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
             </p>
           </div>
           <div className="p-2">
-            {selectedSubs.length === 0 ? (
+            {selectedEvents.length === 0 ? (
               <div className="py-8 text-center text-sm text-muted-foreground">
-                No payments scheduled for this day
+                No events or payments scheduled for this day
               </div>
             ) : (
-              selectedSubs.map((sub) => (
-                <div
-                  key={sub._id}
-                  onClick={() => router.push(`/subscriptions/${sub._id}`)}
-                  className="flex cursor-pointer items-center gap-3 rounded-lg p-3 hover:bg-muted"
-                >
+              selectedEvents.map(({ subscription: sub, eventType }) => {
+                const isTrial = !!sub.isTrial
+                const showConverted =
+                  primaryCurrency && primaryCurrency !== sub.currency
+
+                return (
                   <div
-                    className="flex size-9 items-center justify-center rounded-lg"
-                    style={{ backgroundColor: sub.color }}
+                    key={`${sub._id}-${eventType}`}
+                    onClick={() => router.push(`/subscriptions/${sub._id}`)}
+                    className="flex cursor-pointer items-center gap-3 rounded-lg p-3 hover:bg-muted transition-colors"
                   >
-                    <DynamicIcon name={sub.icon} className="size-4 text-white" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">
-                      {sub.name}
+                    <div
+                      className="flex size-9 shrink-0 items-center justify-center rounded-lg"
+                      style={{ backgroundColor: sub.color }}
+                    >
+                      <DynamicIcon
+                        name={sub.icon}
+                        className="size-4 text-white"
+                      />
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {sub.category}
-                      {sub.cycle && ` · ${sub.cycle}`}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span
+                          className="truncate text-sm font-medium"
+                          title={sub.name}
+                        >
+                          {sub.name}
+                        </span>
+
+                        {eventType === "start" && (
+                          <span
+                            className={cn(
+                              "rounded-full px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider shrink-0 border",
+                              isTrial
+                                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                                : "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30"
+                            )}
+                          >
+                            {isTrial ? "Trial Starts" : "Starts"}
+                          </span>
+                        )}
+
+                        {eventType === "trial_end" && (
+                          <span className="rounded-full bg-purple-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-purple-600 dark:text-purple-400 border border-purple-500/30 uppercase tracking-wider shrink-0">
+                            Trial Ends
+                          </span>
+                        )}
+
+                        {eventType === "renewal" && (
+                          <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-amber-600 dark:text-amber-400 border border-amber-500/30 uppercase tracking-wider shrink-0">
+                            Due
+                          </span>
+                        )}
+
+                        {eventType === "end" && (
+                          <span className="rounded-full bg-rose-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-rose-600 dark:text-rose-400 border border-rose-500/30 uppercase tracking-wider shrink-0">
+                            Ends
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-0.5 truncate">
+                        <span className="capitalize">{sub.category}</span>
+                        {sub.cycle && ` · ${sub.cycle}`}
+                        {sub.account && ` · ${sub.account}`}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className="text-sm font-semibold">
+                        {showConverted
+                          ? convertAndFormat(
+                              sub.price,
+                              sub.currency,
+                              primaryCurrency,
+                              rates
+                            )
+                          : formatCurrencyAmount(sub.price, sub.currency)}
+                      </div>
+                      {showConverted && (
+                        <div className="text-[10px] text-muted-foreground">
+                          ({getSymbol(sub.currency)}{sub.price})
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="text-sm font-semibold">
-                    {getSymbol(sub.currency)}{sub.price}
-                  </div>
-                </div>
-              ))
+                )
+              })
             )}
           </div>
         </div>
