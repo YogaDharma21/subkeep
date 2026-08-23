@@ -21,7 +21,25 @@ export const get = query({
     if (!identity) throw new Error("Not authenticated")
     const sub = await ctx.db.get(args.id)
     if (!sub || sub.userId !== identity.subject) return null
-    return sub
+
+    let receiptUrl: string | null = null
+    if (sub.receiptStorageId) {
+      receiptUrl = await ctx.storage.getUrl(sub.receiptStorageId)
+    }
+
+    return {
+      ...sub,
+      receiptUrl,
+    }
+  },
+})
+
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Not authenticated")
+    return await ctx.storage.generateUploadUrl()
   },
 })
 
@@ -76,6 +94,18 @@ export const create = mutation({
     isShared: v.optional(v.boolean()),
     totalPlanPrice: v.optional(v.number()),
     totalMembers: v.optional(v.number()),
+    paymentMethodId: v.optional(v.string()),
+    splitMembers: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          shareAmount: v.number(),
+          isPaid: v.optional(v.boolean()),
+        })
+      )
+    ),
+    receiptStorageId: v.optional(v.id("_storage")),
+    receiptFileName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
@@ -101,6 +131,17 @@ export const create = mutation({
       isShared: args.isShared || undefined,
       totalPlanPrice: args.totalPlanPrice || undefined,
       totalMembers: args.totalMembers || undefined,
+      paymentMethodId: args.paymentMethodId || undefined,
+      splitMembers: args.splitMembers || undefined,
+      priceHistory: [
+        {
+          price: args.price,
+          currency: args.currency,
+          changedAt: new Date().toISOString().split("T")[0],
+        },
+      ],
+      receiptStorageId: args.receiptStorageId || undefined,
+      receiptFileName: args.receiptFileName || undefined,
       isActive: true,
     })
   },
@@ -128,6 +169,18 @@ export const update = mutation({
     isShared: v.optional(v.boolean()),
     totalPlanPrice: v.optional(v.number()),
     totalMembers: v.optional(v.number()),
+    paymentMethodId: v.optional(v.string()),
+    splitMembers: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          shareAmount: v.number(),
+          isPaid: v.optional(v.boolean()),
+        })
+      )
+    ),
+    receiptStorageId: v.optional(v.id("_storage")),
+    receiptFileName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
@@ -138,10 +191,31 @@ export const update = mutation({
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id: _, ...updates } = args
-    const patchObj: Record<string, string | number | boolean | undefined> = {}
+    const patchObj: Record<string, unknown> = {}
+
+    // Price change tracking
+    if (args.price !== undefined && args.price !== sub.price) {
+      const history = sub.priceHistory ? [...sub.priceHistory] : []
+      history.push({
+        price: args.price,
+        currency: args.currency || sub.currency,
+        changedAt: new Date().toISOString().split("T")[0],
+      })
+      patchObj.priceHistory = history
+    }
+
     for (const [k, v] of Object.entries(updates)) {
       if (v !== undefined) {
-        if ((k === "endDate" || k === "account" || k === "website" || k === "trialEndDate" || k === "cancelUrl") && v === "") {
+        if (
+          (k === "endDate" ||
+            k === "account" ||
+            k === "website" ||
+            k === "trialEndDate" ||
+            k === "cancelUrl" ||
+            k === "paymentMethodId" ||
+            k === "receiptFileName") &&
+          v === ""
+        ) {
           patchObj[k] = undefined
         } else {
           patchObj[k] = v
@@ -194,6 +268,15 @@ export const clone = mutation({
       isShared: sub.isShared,
       totalPlanPrice: sub.totalPlanPrice,
       totalMembers: sub.totalMembers,
+      paymentMethodId: sub.paymentMethodId,
+      splitMembers: sub.splitMembers,
+      priceHistory: [
+        {
+          price: sub.price,
+          currency: sub.currency,
+          changedAt: new Date().toISOString().split("T")[0],
+        },
+      ],
       isActive: true,
     })
   },
@@ -207,6 +290,16 @@ export const remove = mutation({
     const sub = await ctx.db.get(args.id)
     if (!sub) throw new Error("Subscription not found")
     if (sub.userId !== identity.subject) throw new Error("Unauthorized")
+
+    // Delete associated receipt storage file if present
+    if (sub.receiptStorageId) {
+      try {
+        await ctx.storage.delete(sub.receiptStorageId)
+      } catch {
+        // ignore delete failure
+      }
+    }
+
     await ctx.db.delete(args.id)
   },
 })
@@ -221,6 +314,13 @@ export const removeAll = mutation({
       .withIndex("by_user", (q) => q.eq("userId", identity.subject))
       .collect()
     for (const sub of subs) {
+      if (sub.receiptStorageId) {
+        try {
+          await ctx.storage.delete(sub.receiptStorageId)
+        } catch {
+          // ignore
+        }
+      }
       await ctx.db.delete(sub._id)
     }
     const payments = await ctx.db
@@ -256,6 +356,25 @@ export const restoreAll = mutation({
         isShared: v.optional(v.boolean()),
         totalPlanPrice: v.optional(v.number()),
         totalMembers: v.optional(v.number()),
+        paymentMethodId: v.optional(v.string()),
+        splitMembers: v.optional(
+          v.array(
+            v.object({
+              name: v.string(),
+              shareAmount: v.number(),
+              isPaid: v.optional(v.boolean()),
+            })
+          )
+        ),
+        priceHistory: v.optional(
+          v.array(
+            v.object({
+              price: v.number(),
+              currency: v.string(),
+              changedAt: v.string(),
+            })
+          )
+        ),
         isActive: v.boolean(),
       })
     ),

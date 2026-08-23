@@ -1,8 +1,9 @@
 "use client"
 
 import { useMemo } from "react"
-import { Sparkles, TrendingUp, PieChart, Users } from "lucide-react"
+import { Sparkles, TrendingUp, TrendingDown, Minus, PieChart, Users } from "lucide-react"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
+import { subMonths, endOfMonth } from "date-fns"
 
 interface SmartInsightsProps {
   subscriptions: Array<{
@@ -12,11 +13,14 @@ interface SmartInsightsProps {
     currency: string
     cycle: string
     category: string
+    startDate?: string
+    endDate?: string
     isActive: boolean
     isTrial?: boolean
     isShared?: boolean
     totalPlanPrice?: number
     totalMembers?: number
+    priceHistory?: Array<{ price: number; currency: string; changedAt: string }>
   }>
   primaryCurrency?: string
   rates?: Record<string, number>
@@ -85,16 +89,68 @@ export function SmartInsights({
       }
     }
 
-    // 2. Spending Trend Insight
-    const randomTrendPct = 12 // Realistic simulated metric
-    list.push({
-      id: "trend-insight",
-      type: "trend",
-      title: `Spending Trend (+${randomTrendPct}% MoM)`,
-      description: `Your monthly subscription spending increased by ${randomTrendPct}% compared to last month due to recent plan updates.`,
-      badge: "Monthly Change",
-      icon: TrendingUp,
-    })
+    // 2. Real Month-over-Month Spending Trend
+    const now = new Date()
+    const prevMonthDate = subMonths(now, 1)
+    const prevMonthEnd = endOfMonth(prevMonthDate)
+
+    const calcMonthCost = (targetMonthEnd: Date) => {
+      let sum = 0
+      subscriptions.forEach((s) => {
+        if (!s.isActive) return
+        const subStart = s.startDate ? new Date(s.startDate) : new Date(2000, 0, 1)
+        const subEnd = s.endDate ? new Date(s.endDate) : null
+        if (subStart <= targetMonthEnd && (!subEnd || subEnd >= targetMonthEnd)) {
+          const cycle = (s.cycle || "monthly").toLowerCase()
+          let m = s.price
+          if (cycle === "quarterly") m = s.price / 3
+          else if (cycle === "semi-annual") m = s.price / 6
+          else if (cycle === "yearly") m = s.price / 12
+          else if (cycle === "weekly") m = s.price * 4.33
+          else if (cycle === "daily") m = s.price * 30
+          else if (cycle === "none") m = 0
+          sum += convertCurrency(m, s.currency, primaryCurrency, rates)
+        }
+      })
+      return sum
+    }
+
+    const thisMonthSum = grandMonthlyTotal
+    const lastMonthSum = calcMonthCost(prevMonthEnd)
+
+    if (lastMonthSum > 0) {
+      const diffPct = Math.round(((thisMonthSum - lastMonthSum) / lastMonthSum) * 100)
+      const diffAbs = Math.abs(thisMonthSum - lastMonthSum)
+
+      if (diffPct > 0) {
+        list.push({
+          id: "trend-insight",
+          type: "trend",
+          title: `Spending Trend (+${diffPct}% MoM)`,
+          description: `Your monthly subscription spending increased by ${diffPct}% (+${formatCurrencyAmount(diffAbs, primaryCurrency)}/mo) compared to last month.`,
+          badge: "Monthly Increase",
+          icon: TrendingUp,
+        })
+      } else if (diffPct < 0) {
+        list.push({
+          id: "trend-insight",
+          type: "trend",
+          title: `Spending Trend (${diffPct}% MoM)`,
+          description: `Your monthly subscription spending decreased by ${Math.abs(diffPct)}% (-${formatCurrencyAmount(diffAbs, primaryCurrency)}/mo) compared to last month. Great job!`,
+          badge: "Monthly Savings",
+          icon: TrendingDown,
+        })
+      } else {
+        list.push({
+          id: "trend-insight",
+          type: "trend",
+          title: "Stable Spending (0% MoM)",
+          description: `Your recurring monthly commitments are consistent with last month at ${formatCurrencyAmount(thisMonthSum, primaryCurrency)}/mo.`,
+          badge: "Steady Budget",
+          icon: Minus,
+        })
+      }
+    }
 
     // 3. Shared Subscriptions Savings Insight
     const sharedSubs = activeSubs.filter((s) => s.isShared)
@@ -109,14 +165,16 @@ export function SmartInsights({
         }
       })
 
-      list.push({
-        id: "shared-savings",
-        type: "shared",
-        title: `Shared Plans Saving You ${formatCurrencyAmount(totalSavedMonthly * 12, primaryCurrency)}/yr`,
-        description: `You share ${sharedSubs.length} subscription(s) with family/friends, cutting your annual costs significantly!`,
-        badge: "Family Savings",
-        icon: Users,
-      })
+      if (totalSavedMonthly > 0) {
+        list.push({
+          id: "shared-savings",
+          type: "shared",
+          title: `Shared Plans Saving You ${formatCurrencyAmount(totalSavedMonthly * 12, primaryCurrency)}/yr`,
+          description: `You share ${sharedSubs.length} subscription(s) with family/friends, cutting your annual costs significantly!`,
+          badge: "Family Savings",
+          icon: Users,
+        })
+      }
     }
 
     // 4. Overlap & Consolidation Recommendation
@@ -150,7 +208,7 @@ export function SmartInsights({
       <div className="flex items-center gap-2 pb-3 mb-3 border-b border-border/60">
         <Sparkles className="size-4 text-muted-foreground" />
         <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-          Savings Recommendations
+          Savings Recommendations & Insights
         </h3>
       </div>
 

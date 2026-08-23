@@ -14,7 +14,6 @@ import {
   Cell,
 } from "recharts"
 import { categoryColors } from "@/lib/constants"
-import { PieChart as PieChartIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { convertCurrency, formatCurrencyAmount, fetchExchangeRates, fallbackRates } from "@/lib/currency"
 

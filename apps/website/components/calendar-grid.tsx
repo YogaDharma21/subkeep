@@ -85,7 +85,6 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
     }
 
     subscriptions.forEach((sub) => {
-      // Don't list inactive subscriptions in future projections if suspended
       if (sub.isActive === false) return
 
       const cycle = (sub.cycle || "monthly").toLowerCase()
@@ -97,7 +96,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
         sub.isTrial && sub.trialEndDate ? parseLocalDate(sub.trialEndDate) : null
 
       const monthStart = new Date(year, month, 1)
-      const monthEnd = new Date(year, month, daysInMonth)
+      const monthEnd = new Date(year, month, daysInMonth, 23, 59, 59)
 
       // 1. Subscription Start Date Event
       if (subStart.getFullYear() === year && subStart.getMonth() === month) {
@@ -123,34 +122,34 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
         })
       }
 
-      // 4. Recurring Billing / Renewal Dates (only after start date and before end date)
+      // 4. Recurring Billing / Renewal Dates
       if (subEnd && subEnd < monthStart) return
       if (subStart > monthEnd) return
 
+      const monthDiff = (year - subStart.getFullYear()) * 12 + (month - subStart.getMonth())
+
       if (cycle === "monthly") {
-        const startDay = subStart.getDate()
-        const targetDay = Math.min(startDay, daysInMonth)
-        const candDate = new Date(year, month, targetDay)
-        if (candDate > subStart && (!subEnd || candDate <= subEnd)) {
-          addEvent(targetDay, { subscription: sub, eventType: "renewal" })
+        if (monthDiff > 0) {
+          const originalDay = subStart.getDate()
+          const targetDay = Math.min(originalDay, daysInMonth)
+          const candDate = new Date(year, month, targetDay)
+          if (!subEnd || candDate <= subEnd) {
+            addEvent(targetDay, { subscription: sub, eventType: "renewal" })
+          }
         }
       } else if (cycle === "quarterly") {
-        const monthDiff =
-          (year - subStart.getFullYear()) * 12 + (month - subStart.getMonth())
         if (monthDiff > 0 && monthDiff % 3 === 0) {
-          const startDay = subStart.getDate()
-          const targetDay = Math.min(startDay, daysInMonth)
+          const originalDay = subStart.getDate()
+          const targetDay = Math.min(originalDay, daysInMonth)
           const candDate = new Date(year, month, targetDay)
           if (!subEnd || candDate <= subEnd) {
             addEvent(targetDay, { subscription: sub, eventType: "renewal" })
           }
         }
       } else if (cycle === "semi-annual") {
-        const monthDiff =
-          (year - subStart.getFullYear()) * 12 + (month - subStart.getMonth())
         if (monthDiff > 0 && monthDiff % 6 === 0) {
-          const startDay = subStart.getDate()
-          const targetDay = Math.min(startDay, daysInMonth)
+          const originalDay = subStart.getDate()
+          const targetDay = Math.min(originalDay, daysInMonth)
           const candDate = new Date(year, month, targetDay)
           if (!subEnd || candDate <= subEnd) {
             addEvent(targetDay, { subscription: sub, eventType: "renewal" })
@@ -158,8 +157,8 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
         }
       } else if (cycle === "yearly") {
         if (subStart.getMonth() === month && year > subStart.getFullYear()) {
-          const startDay = subStart.getDate()
-          const targetDay = Math.min(startDay, daysInMonth)
+          const originalDay = subStart.getDate()
+          const targetDay = Math.min(originalDay, daysInMonth)
           const candDate = new Date(year, month, targetDay)
           if (!subEnd || candDate <= subEnd) {
             addEvent(targetDay, { subscription: sub, eventType: "renewal" })
@@ -185,9 +184,8 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
           }
         }
       } else if (cycle === "none") {
-        // One-time subscription has no recurring renewals after subStart
+        // One-time subscription has no recurring renewals
       } else {
-        // Fallback matching against nextBilling
         const nbDate = parseLocalDate(sub.nextBilling)
         if (nbDate.getFullYear() === year && nbDate.getMonth() === month) {
           if (nbDate.getTime() === subStart.getTime()) {

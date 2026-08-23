@@ -10,8 +10,9 @@ import {
   Clock,
   Globe,
   Sparkles,
+  Target,
+  AlertTriangle,
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { SubscriptionCard } from "@/components/subscription-card"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -24,6 +25,7 @@ import { SmartInsights } from "@/components/smart-insights"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { differenceInDays } from "date-fns"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 export type FilterType = "all" | "due_soon" | "trial" | "regular"
 
@@ -38,6 +40,7 @@ export type SortOption =
 export default function HomePage() {
   const { isSignedIn } = useAuth()
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
+  const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
   const suspendMutation = useMutation(api.subscriptions.suspend)
 
   const { primaryCurrency, setPrimaryCurrency, rates } = usePrimaryCurrency()
@@ -46,10 +49,16 @@ export default function HomePage() {
 
   const handleCurrencyChange = async (newCurr: string) => {
     await setPrimaryCurrency(newCurr)
+    toast.success(`Primary currency set to ${newCurr}`)
   }
 
   const handleMarkCanceled = async (id: string) => {
-    await suspendMutation({ id: id as never })
+    try {
+      await suspendMutation({ id: id as never })
+      toast.success("Subscription status updated")
+    } catch {
+      toast.error("Failed to update status")
+    }
   }
 
   // Multi-Currency Converted Monthly & Yearly Totals
@@ -60,7 +69,6 @@ export default function HomePage() {
     const count = activeSubs.length
 
     const monthlyTotalConverted = activeSubs.reduce((sum, s) => {
-      // Calculate normalized monthly price in subscription's native currency
       const cycle = (s.cycle || "monthly").toLowerCase()
       let nativeMonthly = s.price
       if (cycle === "quarterly") nativeMonthly = s.price / 3
@@ -70,7 +78,6 @@ export default function HomePage() {
       else if (cycle === "daily") nativeMonthly = s.price * 30
       else if (cycle === "none") nativeMonthly = 0
 
-      // Convert to selected primary currency using live exchange rates
       const converted = convertCurrency(nativeMonthly, s.currency, primaryCurrency, rates)
       return sum + converted
     }, 0)
@@ -79,6 +86,11 @@ export default function HomePage() {
 
     return { count, monthlyTotalConverted, yearlyTotalConverted }
   }, [subscriptions, primaryCurrency, rates])
+
+  // Budget calculations
+  const budgetCap = userSettings?.monthlyBudgetCap
+  const budgetUsedPct = budgetCap && budgetCap > 0 ? Math.round((monthlyTotalConverted / budgetCap) * 100) : null
+  const isBudgetExceeded = budgetCap && monthlyTotalConverted > budgetCap
 
   // Filtered and Sorted Subscriptions
   const filteredSubs = useMemo(() => {
@@ -222,6 +234,42 @@ export default function HomePage() {
             <Skeleton className="h-10 w-full" />
           </div>
         )}
+
+        {/* Monthly Budget Cap Meter */}
+        {budgetCap && budgetCap > 0 && (
+          <div className="mt-4 pt-3 border-t border-border/60 space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1.5 font-medium text-foreground">
+                <Target className="size-3.5 text-primary" />
+                <span>Monthly Budget Cap</span>
+              </div>
+              <span className={cn("font-semibold", isBudgetExceeded ? "text-red-500" : "text-muted-foreground")}>
+                {formatCurrencyAmount(monthlyTotalConverted, primaryCurrency)} / {formatCurrencyAmount(budgetCap, primaryCurrency)} ({budgetUsedPct}%)
+              </span>
+            </div>
+
+            <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all duration-300",
+                  isBudgetExceeded
+                    ? "bg-red-500"
+                    : (budgetUsedPct || 0) >= 85
+                    ? "bg-amber-500"
+                    : "bg-primary"
+                )}
+                style={{ width: `${Math.min(100, budgetUsedPct || 0)}%` }}
+              />
+            </div>
+
+            {isBudgetExceeded && (
+              <div className="flex items-center gap-1.5 text-[11px] text-red-500 font-medium pt-0.5">
+                <AlertTriangle className="size-3 shrink-0" />
+                <span>Budget exceeded by {formatCurrencyAmount(monthlyTotalConverted - budgetCap, primaryCurrency)}! Review recurring costs to stay on track.</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Responsive Dashboard Grid */}
@@ -300,66 +348,49 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Subscriptions List */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2.5">
-            {subscriptions ? (
-              filteredSubs.length > 0 ? (
-                filteredSubs.map((sub) => (
-                  <SubscriptionCard
-                    key={sub._id}
-                    sub={sub}
-                    primaryCurrency={primaryCurrency}
-                    rates={rates}
-                  />
-                ))
-              ) : (
-                <div className="col-span-full rounded-lg border border-border bg-background py-10 px-4 text-center">
-                  <p className="text-sm font-medium text-foreground">
-                    {getEmptyMessage().title}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {getEmptyMessage().subtitle}
-                  </p>
-                  {filter !== "all" ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setFilter("all")}
-                      className="mt-3 h-7 text-xs"
-                    >
-                      Reset Filter
-                    </Button>
-                  ) : null}
-                </div>
-              )
+          {/* Subscriptions List / Empty State */}
+          <div className="space-y-3">
+            {subscriptions === undefined ? (
+              <div className="space-y-3">
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+              </div>
+            ) : filteredSubs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 text-center">
+                <p className="text-sm font-medium text-muted-foreground">
+                  {getEmptyMessage().title}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground/60">
+                  {getEmptyMessage().subtitle}
+                </p>
+              </div>
             ) : (
-              Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-[72px] rounded-lg" />
+              filteredSubs.map((sub) => (
+                <SubscriptionCard
+                  key={sub._id}
+                  sub={sub}
+                  primaryCurrency={primaryCurrency}
+                  rates={rates}
+                />
               ))
             )}
           </div>
         </div>
 
-        {/* Side Column: Reminders and Recommendations */}
-        <div className="lg:col-span-5 xl:col-span-4 space-y-4 lg:sticky lg:top-6 order-first lg:order-none">
-          {/* Upcoming Reminders Alert Banner */}
-          {subscriptions && (
-            <UpcomingReminders
-              subscriptions={subscriptions}
-              primaryCurrency={primaryCurrency}
-              rates={rates}
-              onMarkCanceled={handleMarkCanceled}
-            />
-          )}
-
-          {/* Savings Recommendations */}
-          {subscriptions && (
-            <SmartInsights
-              subscriptions={subscriptions}
-              primaryCurrency={primaryCurrency}
-              rates={rates}
-            />
-          )}
+        {/* Sidebar Column: Smart Insights & Upcoming Reminders */}
+        <div className="lg:col-span-5 xl:col-span-4 space-y-4">
+          <SmartInsights
+            subscriptions={subscriptions || []}
+            primaryCurrency={primaryCurrency}
+            rates={rates}
+          />
+          <UpcomingReminders
+            subscriptions={subscriptions || []}
+            primaryCurrency={primaryCurrency}
+            rates={rates}
+            onMarkCanceled={handleMarkCanceled}
+          />
         </div>
       </div>
     </div>

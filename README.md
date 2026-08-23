@@ -12,15 +12,15 @@ SubKeep is a sleek, modern subscription tracker that helps you manage recurring 
 
 | Landing Page | Main Dashboard |
 | :---: | :---: |
-| ![Landing Page](./apps/web/public/screenshot-landing.png) | ![Dashboard](./apps/web/public/screenshot-home.png) |
+| ![Landing Page](./apps/website/public/screenshot-landing.png) | ![Dashboard](./apps/website/public/screenshot-home.png) |
 
 | Calendar Billing Projections | Custom Subscription & Fast Icon Search |
 | :---: | :---: |
-| ![Calendar View](./apps/web/public/screenshot-calendar.png) | ![Custom Subscription](./apps/web/public/screenshot-create.png) |
+| ![Calendar View](./apps/website/public/screenshot-calendar.png) | ![Custom Subscription](./apps/website/public/screenshot-create.png) |
 
 | Spending Analytics & Trends | Settings & Backups |
 | :---: | :---: |
-| ![Spending Analytics](./apps/web/public/screenshot-stats.png) | ![Settings](./apps/web/public/screenshot-settings.png) |
+| ![Spending Analytics](./apps/website/public/screenshot-stats.png) | ![Settings](./apps/website/public/screenshot-settings.png) |
 
 </details>
 
@@ -28,27 +28,36 @@ SubKeep is a sleek, modern subscription tracker that helps you manage recurring 
 
 ## Applications & Structure
 
-This repository is structured as a self-contained monorepo:
+This repository is structured as a monorepo workspace:
 
 ```text
-apps/
-└── web/        # SubKeep Web App (Next.js 16 + Convex + Clerk + Tailwind CSS v4)
+subkeep/
+├── apps/
+│   └── website/    # SubKeep Web App (Next.js 16 + Convex + Clerk + Tailwind CSS v4)
+├── docker/         # Docker orchestration configurations
+├── docs/           # Architecture & technical documentation
+└── scripts/        # Utility automation scripts
 ```
 
-For full setup details, environment configuration, and features, see [apps/web/README.md](./apps/web/README.md).
+For full setup details, environment configuration, and features, see [apps/website/README.md](./apps/website/README.md).
 
 ---
 
 ## Quick Start
 
 ```bash
-# 1. Go to the web app
-cd apps/web
-
-# 2. Install dependencies
+# 1. Install root workspace dependencies
 npm install
 
-# 3. Start Convex backend & Next.js dev server
+# 2. Start Convex backend & Next.js web application
+npm run dev
+```
+
+Or navigate directly to the web app:
+
+```bash
+cd apps/website
+npm install
 npx convex dev
 npm run dev
 ```
