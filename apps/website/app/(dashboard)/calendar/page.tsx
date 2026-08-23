@@ -11,7 +11,7 @@ export default function CalendarPage() {
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
 
   return (
-    <div className="p-4">
+    <div>
       {subscriptions ? (
         <CalendarGrid subscriptions={subscriptions} />
       ) : (
