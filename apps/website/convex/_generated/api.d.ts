@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as paymentMethods from "../paymentMethods.js";
 import type * as payments from "../payments.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as templates from "../templates.js";
@@ -20,6 +21,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  paymentMethods: typeof paymentMethods;
   payments: typeof payments;
   subscriptions: typeof subscriptions;
   templates: typeof templates;

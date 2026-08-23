@@ -1,8 +1,9 @@
 "use client"
 
-import { use, useState } from "react"
+import { use, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery, useMutation } from "convex/react"
+import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
 import {
@@ -16,6 +17,14 @@ import {
   ExternalLink,
   Sparkles,
   Link2,
+  CreditCard,
+  Users,
+  Check,
+  TrendingUp,
+  FileText,
+  Upload,
+  MessageSquare,
+  Paperclip,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,6 +32,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { IconPicker } from "@/components/icon-picker"
 import { DynamicIcon } from "@/components/dynamic-icon"
+import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import {
   categories,
@@ -32,7 +42,7 @@ import {
   categoryColors,
 } from "@/lib/constants"
 import { format, differenceInDays } from "date-fns"
-import { convertAndFormat, convertCurrency } from "@/lib/currency"
+import { convertAndFormat } from "@/lib/currency"
 import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 
@@ -43,20 +53,29 @@ export default function SubscriptionDetailPage({
 }) {
   const { id } = use(params)
   const router = useRouter()
+  const { isSignedIn } = useAuth()
   const [editing, setEditing] = useState(false)
   const [iconOpen, setIconOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
+  const [uploadingReceipt, setUploadingReceipt] = useState(false)
+  const receiptInputRef = useRef<HTMLInputElement>(null)
 
   const sub = useQuery(
     api.subscriptions.get,
     id ? { id: id as Id<"subscriptions"> } : "skip"
   )
+  const paymentMethods = useQuery(
+    api.paymentMethods.list,
+    isSignedIn ? {} : "skip"
+  ) as Array<{ _id: string; name: string; type: string; last4?: string }> | undefined
+
   const updateMutation = useMutation(api.subscriptions.update)
   const suspendMutation = useMutation(api.subscriptions.suspend)
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
   const recordPaymentMutation = useMutation(api.payments.create)
+  const generateUploadUrl = useMutation(api.subscriptions.generateUploadUrl)
 
   const { primaryCurrency, rates } = usePrimaryCurrency()
 
@@ -76,6 +95,10 @@ export default function SubscriptionDetailPage({
   const [editIsShared, setEditIsShared] = useState(false)
   const [editTotalPlanPrice, setEditTotalPlanPrice] = useState("")
   const [editTotalMembers, setEditTotalMembers] = useState("4")
+  const [editPaymentMethodId, setEditPaymentMethodId] = useState("")
+  const [editSplitMembers, setEditSplitMembers] = useState<
+    Array<{ name: string; shareAmount: number; isPaid?: boolean }>
+  >([])
 
   const colorOptions = [
     "#000000", "#555555", "#E50914", "#1DB954", "#00A8E1",
@@ -101,62 +124,157 @@ export default function SubscriptionDetailPage({
     setEditIsShared(!!sub.isShared)
     setEditTotalPlanPrice(sub.totalPlanPrice?.toString() || "")
     setEditTotalMembers(sub.totalMembers?.toString() || "4")
+    setEditPaymentMethodId(sub.paymentMethodId || "")
+    setEditSplitMembers(sub.splitMembers ? [...sub.splitMembers] : [])
     setEditing(true)
   }
 
   const saveEdit = async () => {
     if (!sub || !id) return
-    await updateMutation({
-      id: id as Id<"subscriptions">,
-      name: editName,
-      price: parseFloat(editPrice || "0"),
-      currency: editCurrency,
-      cycle: editCycle,
-      category: editCategory,
-      icon: editIcon || sub.icon,
-      color: editColor,
-      endDate: editEndDate,
-      account: editAccount,
-      website: editWebsite,
-      isTrial: editIsTrial,
-      trialEndDate: editTrialEndDate,
-      cancelUrl: editCancelUrl,
-      isShared: editIsShared,
-      totalPlanPrice: editTotalPlanPrice ? parseFloat(editTotalPlanPrice) : undefined,
-      totalMembers: editTotalMembers ? parseInt(editTotalMembers) : undefined,
-    })
-    setEditing(false)
+    try {
+      await updateMutation({
+        id: id as Id<"subscriptions">,
+        name: editName,
+        price: parseFloat(editPrice || "0"),
+        currency: editCurrency,
+        cycle: editCycle,
+        category: editCategory,
+        icon: editIcon || sub.icon,
+        color: editColor,
+        endDate: editEndDate,
+        account: editAccount,
+        website: editWebsite,
+        isTrial: editIsTrial,
+        trialEndDate: editTrialEndDate,
+        cancelUrl: editCancelUrl,
+        isShared: editIsShared,
+        totalPlanPrice: editTotalPlanPrice ? parseFloat(editTotalPlanPrice) : undefined,
+        totalMembers: editTotalMembers ? parseInt(editTotalMembers) : undefined,
+        paymentMethodId: editPaymentMethodId || undefined,
+        splitMembers: editIsShared && editSplitMembers.length > 0 ? editSplitMembers : undefined,
+      })
+      toast.success("Subscription updated successfully")
+      setEditing(false)
+    } catch {
+      toast.error("Failed to update subscription")
+    }
   }
 
   const handleSuspend = async () => {
-    if (!id) return
-    await suspendMutation({ id: id as Id<"subscriptions"> })
+    if (!id || !sub) return
+    try {
+      await suspendMutation({ id: id as Id<"subscriptions"> })
+      toast.success(sub.isActive ? "Subscription paused" : "Subscription resumed")
+    } catch {
+      toast.error("Failed to change subscription state")
+    }
   }
 
   const handleClone = async () => {
     if (!id) return
-    const newId = await cloneMutation({ id: id as Id<"subscriptions"> })
-    router.push(`/subscriptions/${newId}`)
+    try {
+      const newId = await cloneMutation({ id: id as Id<"subscriptions"> })
+      toast.success("Subscription cloned!")
+      router.push(`/subscriptions/${newId}`)
+    } catch {
+      toast.error("Failed to clone subscription")
+    }
   }
 
   const handleDelete = async () => {
     if (!id) return
-    await removeMutation({ id: id as Id<"subscriptions"> })
-    router.push("/")
+    try {
+      await removeMutation({ id: id as Id<"subscriptions"> })
+      toast.success("Subscription deleted")
+      router.push("/")
+    } catch {
+      toast.error("Failed to delete subscription")
+    }
   }
 
   const handleRecordPayment = async () => {
     if (!sub || !id) return
-    await recordPaymentMutation({
-      subscriptionId: id as Id<"subscriptions">,
-      name: sub.name,
-      icon: sub.icon,
-      color: sub.color,
-      amount: sub.price,
-      currency: sub.currency,
-      category: sub.category,
-      date: new Date().toISOString().split("T")[0],
+    try {
+      await recordPaymentMutation({
+        subscriptionId: id as Id<"subscriptions">,
+        name: sub.name,
+        icon: sub.icon,
+        color: sub.color,
+        amount: sub.price,
+        currency: sub.currency,
+        category: sub.category,
+        date: new Date().toISOString().split("T")[0],
+      })
+      toast.success(`Recorded payment of ${convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)}`)
+    } catch {
+      toast.error("Failed to record payment")
+    }
+  }
+
+  // SplitKeep Member toggle paid status
+  const handleToggleMemberPaid = async (idx: number) => {
+    if (!sub || !sub.splitMembers || !id) return
+    const updated = [...sub.splitMembers]
+    updated[idx] = {
+      ...updated[idx],
+      isPaid: !updated[idx].isPaid,
+    }
+    await updateMutation({
+      id: id as Id<"subscriptions">,
+      splitMembers: updated,
     })
+    toast.success(`Updated status for ${updated[idx].name}`)
+  }
+
+  // SplitKeep copy payment reminder
+  const handleCopyPaymentReminder = (member: { name: string; shareAmount: number }) => {
+    const formattedAmount = `${getSymbol(sub?.currency || "USD")}${member.shareAmount}`
+    const text = `Hey ${member.name}, your share for ${sub?.name || "our subscription"} this month is ${formattedAmount}. Please transfer when convenient. Thank you!`
+    navigator.clipboard.writeText(text)
+    toast.success(`Copied reminder for ${member.name}!`)
+  }
+
+  // Receipt File Upload
+  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !id) return
+
+    setUploadingReceipt(true)
+    try {
+      const postUrl = await generateUploadUrl()
+      const result = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      })
+      const { storageId } = await result.json()
+
+      await updateMutation({
+        id: id as Id<"subscriptions">,
+        receiptStorageId: storageId,
+        receiptFileName: file.name,
+      })
+      toast.success("Receipt invoice uploaded successfully")
+    } catch {
+      toast.error("Failed to upload invoice file")
+    } finally {
+      setUploadingReceipt(false)
+      if (e.target) e.target.value = ""
+    }
+  }
+
+  const handleRemoveReceipt = async () => {
+    if (!id) return
+    try {
+      await updateMutation({
+        id: id as Id<"subscriptions">,
+        receiptStorageId: undefined,
+        receiptFileName: "",
+      })
+      toast.success("Receipt invoice removed")
+    } catch {
+      toast.error("Failed to remove receipt")
+    }
   }
 
   if (sub === null) {
@@ -191,13 +309,35 @@ export default function SubscriptionDetailPage({
     trialDaysLeft = Math.max(0, differenceInDays(tEnd, today))
   }
 
+  const linkedCard = paymentMethods?.find((pm) => pm._id === sub.paymentMethodId)
+
+  // Price Hike Calculation
+  const priceHistory = sub.priceHistory || []
+  const originalPriceEntry = priceHistory[0]
+  const hasPriceHike =
+    originalPriceEntry &&
+    priceHistory.length > 1 &&
+    sub.price > originalPriceEntry.price
+  const priceHikeDiff = hasPriceHike
+    ? Math.round(((sub.price - originalPriceEntry.price) / originalPriceEntry.price) * 100)
+    : 0
+
   return (
     <div className="max-w-2xl mx-auto space-y-4">
+      <input
+        ref={receiptInputRef}
+        type="file"
+        accept="image/*,application/pdf"
+        className="hidden"
+        onChange={handleReceiptUpload}
+      />
+
       <div className="mb-4 flex items-center gap-2">
         <Button
           variant="ghost"
           size="icon-sm"
           onClick={() => router.back()}
+          className="cursor-pointer"
         >
           <ArrowLeft className="size-4" />
         </Button>
@@ -206,6 +346,7 @@ export default function SubscriptionDetailPage({
           variant="ghost"
           size="icon-sm"
           onClick={editing ? () => setEditing(false) : startEditing}
+          className="cursor-pointer"
         >
           <Pencil className="size-4" />
         </Button>
@@ -227,7 +368,7 @@ export default function SubscriptionDetailPage({
           <Button
             size="sm"
             onClick={() => setCancelModalOpen(true)}
-            className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1"
+            className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1 cursor-pointer"
           >
             <ExternalLink className="size-3.5" />
             Cancel Guide
@@ -235,6 +376,7 @@ export default function SubscriptionDetailPage({
         </div>
       )}
 
+      {/* Main Card Header */}
       <div className="mb-4 rounded-lg border border-border bg-background p-5">
         <div className="flex items-center gap-4">
           <button
@@ -298,6 +440,12 @@ export default function SubscriptionDetailPage({
                 </Badge>
               )}
 
+              {hasPriceHike && (
+                <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold rounded-md">
+                  +{priceHikeDiff}% PRICE HIKE
+                </Badge>
+              )}
+
               <Badge
                 variant={sub.isActive ? "default" : "destructive"}
                 className="text-xs rounded-md"
@@ -309,6 +457,7 @@ export default function SubscriptionDetailPage({
         </div>
       </div>
 
+      {/* Quick Metrics */}
       <div className="mb-4 grid grid-cols-3 gap-2">
         <div className="rounded-lg bg-muted p-3 text-center">
           <div className="text-sm font-extrabold text-foreground truncate">
@@ -348,6 +497,7 @@ export default function SubscriptionDetailPage({
         </div>
       </div>
 
+      {/* Editing Form */}
       {editing ? (
         <div className="space-y-4 rounded-lg border border-border bg-background p-4">
           <div className="flex items-center justify-between rounded-lg bg-emerald-500/10 p-3 border border-emerald-500/30">
@@ -400,6 +550,27 @@ export default function SubscriptionDetailPage({
               </select>
             </div>
           </div>
+
+          {/* Payment Method Selector */}
+          <div className="space-y-1">
+            <label className="text-xs font-medium flex items-center gap-1">
+              <CreditCard className="size-3.5 text-primary" />
+              Linked Payment Method
+            </label>
+            <select
+              value={editPaymentMethodId}
+              onChange={(e) => setEditPaymentMethodId(e.target.value)}
+              className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+            >
+              <option value="">No linked payment method</option>
+              {paymentMethods?.map((pm) => (
+                <option key={pm._id} value={pm._id}>
+                  {pm.name} {pm.last4 ? `(•••• ${pm.last4})` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="space-y-1">
             <label className="text-xs font-medium">Billing Cycle</label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -408,7 +579,7 @@ export default function SubscriptionDetailPage({
                   key={bc.value}
                   type="button"
                   onClick={() => setEditCycle(bc.value)}
-                  className={`flex items-center justify-center rounded-lg border-2 px-3 py-2 text-xs font-medium transition-all ${
+                  className={`flex items-center justify-center rounded-lg border-2 px-3 py-2 text-xs font-medium transition-all cursor-pointer ${
                     editCycle === bc.value
                       ? "border-foreground bg-foreground text-background"
                       : "border-border bg-background text-foreground hover:border-foreground/50"
@@ -450,6 +621,7 @@ export default function SubscriptionDetailPage({
               />
             </div>
           </div>
+
           <div className="space-y-1">
             <label className="text-xs font-medium">End Date (Optional)</label>
             <Input
@@ -458,6 +630,7 @@ export default function SubscriptionDetailPage({
               onChange={(e) => setEditEndDate(e.target.value)}
             />
           </div>
+
           <div className="space-y-1">
             <label className="text-xs font-medium">Icon Color</label>
             <div className="flex flex-wrap gap-2">
@@ -467,7 +640,7 @@ export default function SubscriptionDetailPage({
                   type="button"
                   onClick={() => setEditColor(c)}
                   className={cn(
-                    "size-8 rounded-full border-2 transition-all",
+                    "size-8 rounded-full border-2 transition-all cursor-pointer",
                     editColor === c
                       ? "border-foreground scale-110"
                       : "border-transparent"
@@ -477,16 +650,19 @@ export default function SubscriptionDetailPage({
               ))}
             </div>
           </div>
-          <Button className="w-full" onClick={saveEdit}>
+
+          <Button className="w-full cursor-pointer" onClick={saveEdit}>
             Save Changes
           </Button>
         </div>
       ) : (
-        <div className="rounded-lg border border-border bg-background">
-          <div className="p-4">
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Details & Cancellation Guide
+        <div className="space-y-4">
+          {/* Details Block */}
+          <div className="rounded-lg border border-border bg-background p-4 space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Subscription Information
             </h3>
+
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
@@ -496,13 +672,15 @@ export default function SubscriptionDetailPage({
                   size="sm"
                   variant="outline"
                   onClick={() => setCancelModalOpen(true)}
-                  className="h-7 text-xs gap-1 font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                  className="h-7 text-xs gap-1 font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 cursor-pointer"
                 >
                   <ExternalLink className="size-3" />
                   Direct Cancel Link & Checklist
                 </Button>
               </div>
+
               <Separator />
+
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Original Price
@@ -511,7 +689,28 @@ export default function SubscriptionDetailPage({
                   {getSymbol(sub.currency)}{sub.price} ({sub.currency})
                 </span>
               </div>
+
               <Separator />
+
+              {/* Linked Card */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Payment Method
+                </span>
+                {linkedCard ? (
+                  <span className="text-sm font-medium flex items-center gap-1.5">
+                    <CreditCard className="size-3.5 text-primary" />
+                    {linkedCard.name} {linkedCard.last4 ? `(•••• ${linkedCard.last4})` : ""}
+                  </span>
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    None linked
+                  </span>
+                )}
+              </div>
+
+              <Separator />
+
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Next Billing
@@ -520,17 +719,9 @@ export default function SubscriptionDetailPage({
                   {format(new Date(sub.nextBilling), "MMMM d, yyyy")}
                 </span>
               </div>
+
               <Separator />
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Billing Cycle
-                </span>
-                <span className="text-sm font-medium">
-                  {billingCycles.find((bc) => bc.value === sub.cycle)?.label ||
-                    sub.cycle.charAt(0).toUpperCase() + sub.cycle.slice(1)}
-                </span>
-              </div>
-              <Separator />
+
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Account / Email
@@ -539,7 +730,9 @@ export default function SubscriptionDetailPage({
                   {sub.account || "Not specified"}
                 </span>
               </div>
+
               <Separator />
+
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Direct Cancel Page
@@ -560,35 +753,165 @@ export default function SubscriptionDetailPage({
                   )}
                 </span>
               </div>
-              <Separator />
+            </div>
+          </div>
+
+          {/* SplitKeep Household Splitting Section */}
+          {sub.isShared && sub.splitMembers && sub.splitMembers.length > 0 && (
+            <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Start Date
-                </span>
-                <span className="text-sm font-medium">
-                  {format(new Date(sub.startDate), "MMMM d, yyyy")}
+                <div className="flex items-center gap-2">
+                  <Users className="size-4 text-blue-500" />
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">
+                    SplitKeep: Household Split Tracker
+                  </h3>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  Total: {getSymbol(sub.currency)}{sub.totalPlanPrice || sub.price * (sub.totalMembers || 1)}
                 </span>
               </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  End Date
-                </span>
-                <span className="text-sm font-medium">
-                  {sub.endDate
-                    ? format(new Date(sub.endDate), "MMMM d, yyyy")
-                    : "Ongoing"}
-                </span>
+
+              <div className="space-y-2">
+                {sub.splitMembers.map((member, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between rounded-lg bg-background p-2.5 border border-border text-xs"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <button
+                        onClick={() => handleToggleMemberPaid(idx)}
+                        className={cn(
+                          "size-5 rounded flex items-center justify-center border transition-all cursor-pointer",
+                          member.isPaid
+                            ? "bg-emerald-500 text-white border-emerald-600"
+                            : "border-border hover:border-foreground/50"
+                        )}
+                        title={member.isPaid ? "Mark as unpaid" : "Mark as paid"}
+                      >
+                        {member.isPaid && <Check className="size-3.5" />}
+                      </button>
+                      <div>
+                        <span className={cn("font-medium", member.isPaid && "line-through text-muted-foreground")}>
+                          {member.name}
+                        </span>
+                        <p className="text-[10px] text-muted-foreground">
+                          {getSymbol(sub.currency)}{member.shareAmount} · {member.isPaid ? "Paid this month" : "Pending transfer"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleCopyPaymentReminder(member)}
+                      className="h-7 text-[11px] gap-1 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 cursor-pointer"
+                    >
+                      <MessageSquare className="size-3" />
+                      Copy Reminder
+                    </Button>
+                  </div>
+                ))}
               </div>
             </div>
+          )}
+
+          {/* Price Hike History */}
+          {priceHistory.length > 0 && (
+            <div className="rounded-lg border border-border bg-background p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="size-4 text-primary" />
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Price History & Inflation Log
+                  </h3>
+                </div>
+                {hasPriceHike && (
+                  <span className="text-xs font-bold text-amber-500">
+                    +{priceHikeDiff}% overall increase
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                {priceHistory.map((ph, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between text-xs py-1 border-b border-border/40 last:border-b-0"
+                  >
+                    <span className="text-muted-foreground">
+                      {format(new Date(ph.changedAt), "MMM d, yyyy")}
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      {getSymbol(ph.currency)}{ph.price} ({ph.currency})
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Invoice / Receipt Attachment */}
+          <div className="rounded-lg border border-border bg-background p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Paperclip className="size-4 text-primary" />
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Invoice & Warranty Receipt
+                </h3>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => receiptInputRef.current?.click()}
+                disabled={uploadingReceipt}
+                className="h-7 text-xs gap-1 cursor-pointer"
+              >
+                <Upload className="size-3" />
+                {uploadingReceipt ? "Uploading..." : sub.receiptStorageId ? "Replace File" : "Attach File"}
+              </Button>
+            </div>
+
+            {sub.receiptUrl ? (
+              <div className="flex items-center justify-between rounded-lg bg-muted/40 p-3 border border-border text-xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <FileText className="size-5 text-primary shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground truncate">
+                      {sub.receiptFileName || "Attached Invoice"}
+                    </p>
+                    <a
+                      href={sub.receiptUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-blue-500 hover:underline flex items-center gap-1"
+                    >
+                      <ExternalLink className="size-3" /> View / Download Document
+                    </a>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={handleRemoveReceipt}
+                  className="size-7 text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                No invoice attached yet. Upload a PDF or image receipt to keep tax and warranty records safe.
+              </p>
+            )}
           </div>
         </div>
       )}
 
+      {/* Action Buttons */}
       <div className="mt-4 flex gap-3">
         <Button
           variant="outline"
-          className="flex-1"
+          className="flex-1 cursor-pointer"
           onClick={handleSuspend}
         >
           {sub.isActive ? (
@@ -601,7 +924,7 @@ export default function SubscriptionDetailPage({
             </>
           )}
         </Button>
-        <Button variant="outline" className="flex-1" onClick={handleClone}>
+        <Button variant="outline" className="flex-1 cursor-pointer" onClick={handleClone}>
           <Copy className="size-4" /> Clone
         </Button>
       </div>
@@ -609,7 +932,7 @@ export default function SubscriptionDetailPage({
       <div className="mt-3">
         <Button
           variant="outline"
-          className="w-full"
+          className="w-full cursor-pointer"
           onClick={handleRecordPayment}
         >
           <DollarSign className="size-4" /> Record Payment
@@ -625,14 +948,14 @@ export default function SubscriptionDetailPage({
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={() => setDeleteConfirm(false)}
               >
                 Cancel
               </Button>
               <Button
                 variant="destructive"
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={handleDelete}
               >
                 <Trash2 className="size-4" /> Delete
@@ -642,7 +965,7 @@ export default function SubscriptionDetailPage({
         ) : (
           <Button
             variant="destructive"
-            className="w-full"
+            className="w-full cursor-pointer"
             onClick={() => setDeleteConfirm(true)}
           >
             <Trash2 className="size-4" /> Delete Subscription

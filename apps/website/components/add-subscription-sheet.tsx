@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { useMutation } from "convex/react"
+import { useMutation, useQuery } from "convex/react"
+import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
-import { ArrowLeft, Plus, X, Sparkles, Link2, Users } from "lucide-react"
+import { ArrowLeft, Plus, X, Sparkles, Link2, Users, CreditCard, UserPlus, Trash2 } from "lucide-react"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import {
   Sheet,
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import dynamic from "next/dynamic"
 import { TemplateList } from "@/components/template-list"
+import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
 const IconPicker = dynamic(
@@ -36,7 +38,13 @@ export function AddSubscriptionSheet({
   open,
   onOpenChange,
 }: AddSubscriptionSheetProps) {
+  const { isSignedIn } = useAuth()
   const create = useMutation(api.subscriptions.create)
+  const paymentMethods = useQuery(
+    api.paymentMethods.list,
+    isSignedIn ? {} : "skip"
+  ) as Array<{ _id: string; name: string; type: string; last4?: string }> | undefined
+
   const [step, setStep] = useState(1)
   const [iconOpen, setIconOpen] = useState(false)
 
@@ -53,16 +61,18 @@ export function AddSubscriptionSheet({
   const [website, setWebsite] = useState("")
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
   const [selectedColor, setSelectedColor] = useState("#000000")
+  const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<string>("")
 
   // Trial additions
   const [isTrial, setIsTrial] = useState(false)
   const [trialEndDate, setTrialEndDate] = useState("")
   const [cancelUrl, setCancelUrl] = useState("")
 
-  // Shared / Split plan additions
+  // Shared / Split plan additions (SplitKeep)
   const [isShared, setIsShared] = useState(false)
   const [totalPlanPrice, setTotalPlanPrice] = useState("")
   const [totalMembers, setTotalMembers] = useState("4")
+  const [splitMembersList, setSplitMembersList] = useState<Array<{ name: string; shareAmount: number }>>([])
 
   const colorOptions = [
     "#000000", "#555555", "#E50914", "#1DB954", "#00A8E1",
@@ -83,12 +93,14 @@ export function AddSubscriptionSheet({
     setWebsite("")
     setSelectedIcon(null)
     setSelectedColor("#000000")
+    setSelectedPaymentMethodId("")
     setIsTrial(false)
     setTrialEndDate("")
     setCancelUrl("")
     setIsShared(false)
     setTotalPlanPrice("")
     setTotalMembers("4")
+    setSplitMembersList([])
   }
 
   const handleTemplateSelect = useCallback((template: {
@@ -119,7 +131,8 @@ export function AddSubscriptionSheet({
     const total = parseFloat(val)
     const members = parseInt(totalMembers) || 1
     if (!isNaN(total) && members > 0) {
-      setPrice((total / members).toFixed(2))
+      const share = parseFloat((total / members).toFixed(2))
+      setPrice(share.toString())
     }
   }
 
@@ -128,39 +141,65 @@ export function AddSubscriptionSheet({
     const total = parseFloat(totalPlanPrice)
     const members = parseInt(val) || 1
     if (!isNaN(total) && members > 0) {
-      setPrice((total / members).toFixed(2))
+      const share = parseFloat((total / members).toFixed(2))
+      setPrice(share.toString())
     }
+  }
+
+  const addSplitMember = () => {
+    const total = parseFloat(totalPlanPrice) || parseFloat(price) || 0
+    const count = splitMembersList.length + 1
+    const share = count > 0 ? parseFloat((total / count).toFixed(2)) : 0
+    setSplitMembersList([...splitMembersList, { name: `Member ${count}`, shareAmount: share }])
+  }
+
+  const removeSplitMember = (index: number) => {
+    const updated = splitMembersList.filter((_, i) => i !== index)
+    setSplitMembersList(updated)
+  }
+
+  const updateSplitMemberName = (index: number, val: string) => {
+    const updated = [...splitMembersList]
+    updated[index].name = val
+    setSplitMembersList(updated)
   }
 
   const handleSubmit = async () => {
     if (!name || (!price && !isTrial)) return
-    await create({
-      name,
-      icon: selectedIcon || "Receipt",
-      color: selectedColor,
-      price: price ? parseFloat(price) : 0,
-      currency,
-      cycle,
-      category,
-      startDate,
-      nextBilling: isTrial && trialEndDate ? trialEndDate : startDate,
-      endDate: endDate || undefined,
-      account: account || undefined,
-      website: website || undefined,
-      isTrial,
-      trialEndDate: trialEndDate || undefined,
-      cancelUrl: cancelUrl || undefined,
-      isShared,
-      totalPlanPrice: totalPlanPrice ? parseFloat(totalPlanPrice) : undefined,
-      totalMembers: totalMembers ? parseInt(totalMembers) : undefined,
-    })
-    resetForm()
-    onOpenChange(false)
+    try {
+      await create({
+        name,
+        icon: selectedIcon || "Receipt",
+        color: selectedColor,
+        price: price ? parseFloat(price) : 0,
+        currency,
+        cycle,
+        category,
+        startDate,
+        nextBilling: isTrial && trialEndDate ? trialEndDate : startDate,
+        endDate: endDate || undefined,
+        account: account || undefined,
+        website: website || undefined,
+        isTrial,
+        trialEndDate: trialEndDate || undefined,
+        cancelUrl: cancelUrl || undefined,
+        isShared,
+        totalPlanPrice: totalPlanPrice ? parseFloat(totalPlanPrice) : undefined,
+        totalMembers: totalMembers ? parseInt(totalMembers) : undefined,
+        paymentMethodId: selectedPaymentMethodId || undefined,
+        splitMembers: isShared && splitMembersList.length > 0 ? splitMembersList : undefined,
+      })
+      toast.success(`Added ${name} to your subscriptions!`)
+      resetForm()
+      onOpenChange(false)
+    } catch {
+      toast.error("Failed to add subscription. Please try again.")
+    }
   }
 
   return (
     <Sheet open={open} onOpenChange={(o) => { if (!o) resetForm(); onOpenChange(o) }}>
-      <SheetContent side="bottom" className="rounded-t-lg overflow-hidden" showCloseButton={false}>
+      <SheetContent side="bottom" className="rounded-t-lg overflow-hidden max-h-[90vh]" showCloseButton={false}>
         <SheetHeader className="flex-row items-center gap-2 border-b border-border p-4">
           {step === 2 && (
             <Button
@@ -204,7 +243,7 @@ export function AddSubscriptionSheet({
                 <div className="space-y-4 pb-4">
                   <button
                     onClick={() => setIconOpen(true)}
-                    className="flex items-center gap-3 rounded-lg bg-muted p-3.5 w-full"
+                    className="flex items-center gap-3 rounded-lg bg-muted p-3.5 w-full cursor-pointer"
                   >
                     <div
                       className={cn(
@@ -237,7 +276,7 @@ export function AddSubscriptionSheet({
                           type="button"
                           onClick={() => setSelectedColor(c)}
                           className={cn(
-                            "size-8 rounded-full border-2 transition-all",
+                            "size-8 rounded-full border-2 transition-all cursor-pointer",
                             selectedColor === c
                               ? "border-foreground scale-110"
                               : "border-transparent"
@@ -282,16 +321,16 @@ export function AddSubscriptionSheet({
                     </div>
                   )}
 
-                  {/* Shared / Split Subscription Toggle */}
+                  {/* Shared / Split Subscription Toggle (SplitKeep) */}
                   <div className="flex items-center justify-between rounded-lg border border-blue-500/30 bg-blue-500/10 p-3">
                     <div className="flex items-center gap-2">
                       <Users className="size-4 text-blue-500" />
                       <div>
                         <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-                          Shared / Split Plan (Family)
+                          Shared / Split Plan (SplitKeep)
                         </span>
                         <p className="text-[11px] text-muted-foreground">
-                          Split total plan price across members to track your actual share
+                          Split total plan across members and track individual shares
                         </p>
                       </div>
                     </div>
@@ -304,31 +343,72 @@ export function AddSubscriptionSheet({
                   </div>
 
                   {isShared && (
-                    <div className="grid grid-cols-2 gap-3 rounded-lg bg-blue-500/5 p-3 border border-blue-500/20">
-                      <div className="space-y-1">
-                        <label className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                          Total Plan Price
-                        </label>
-                        <Input
-                          type="number"
-                          placeholder="e.g. 22.99"
-                          step="0.01"
-                          value={totalPlanPrice}
-                          onChange={(e) => handleTotalPlanPriceChange(e.target.value)}
-                        />
+                    <div className="space-y-3 rounded-lg bg-blue-500/5 p-3 border border-blue-500/20">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                            Total Plan Price
+                          </label>
+                          <Input
+                            type="number"
+                            placeholder="e.g. 22.99"
+                            step="0.01"
+                            value={totalPlanPrice}
+                            onChange={(e) => handleTotalPlanPriceChange(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                            Total Members
+                          </label>
+                          <Input
+                            type="number"
+                            placeholder="e.g. 4"
+                            min="1"
+                            value={totalMembers}
+                            onChange={(e) => handleTotalMembersChange(e.target.value)}
+                          />
+                        </div>
                       </div>
 
-                      <div className="space-y-1">
-                        <label className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                          Sharing Members
-                        </label>
-                        <Input
-                          type="number"
-                          placeholder="e.g. 4"
-                          min="1"
-                          value={totalMembers}
-                          onChange={(e) => handleTotalMembersChange(e.target.value)}
-                        />
+                      {/* Split members detail names */}
+                      <div className="space-y-2 pt-1 border-t border-blue-500/20">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                            Member Names & Split List
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={addSplitMember}
+                            className="h-6 text-xs text-blue-500 gap-1 px-2"
+                          >
+                            <UserPlus className="size-3" />
+                            Add Member
+                          </Button>
+                        </div>
+
+                        {splitMembersList.map((m, idx) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <Input
+                              placeholder={`Member ${idx + 1} Name`}
+                              value={m.name}
+                              onChange={(e) => updateSplitMemberName(idx, e.target.value)}
+                              className="h-8 text-xs flex-1"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              onClick={() => removeSplitMember(idx)}
+                              className="size-8 text-muted-foreground hover:text-destructive"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
@@ -371,6 +451,26 @@ export function AddSubscriptionSheet({
                     </div>
                   </div>
 
+                  {/* Payment Method Selector (Card Vault) */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-1.5">
+                      <CreditCard className="size-4 text-primary" />
+                      Linked Payment Method (Card / Wallet)
+                    </label>
+                    <select
+                      value={selectedPaymentMethodId}
+                      onChange={(e) => setSelectedPaymentMethodId(e.target.value)}
+                      className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                    >
+                      <option value="">No linked payment method (Default)</option>
+                      {paymentMethods?.map((pm) => (
+                        <option key={pm._id} value={pm._id}>
+                          {pm.name} {pm.last4 ? `(•••• ${pm.last4})` : ""} - {pm.type.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Billing Cycle</label>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -379,7 +479,7 @@ export function AddSubscriptionSheet({
                           key={bc.value}
                           type="button"
                           onClick={() => setCycle(bc.value)}
-                          className={`flex items-center justify-center rounded-lg border-2 px-3 py-2.5 text-xs font-medium transition-all ${
+                          className={`flex items-center justify-center rounded-lg border-2 px-3 py-2.5 text-xs font-medium transition-all cursor-pointer ${
                             cycle === bc.value
                               ? "border-foreground bg-foreground text-background"
                               : "border-border bg-background text-foreground hover:border-foreground/50"
@@ -418,9 +518,6 @@ export function AddSubscriptionSheet({
                       value={cancelUrl}
                       onChange={(e) => setCancelUrl(e.target.value)}
                     />
-                    <p className="text-[11px] text-muted-foreground">
-                      Direct link to your account cancellation page
-                    </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -465,7 +562,7 @@ export function AddSubscriptionSheet({
 
               <div className="shrink-0 border-t border-border p-4">
                 <Button
-                  className="w-full"
+                  className="w-full cursor-pointer"
                   onClick={handleSubmit}
                   disabled={!name || (!price && !isTrial)}
                 >

@@ -2,54 +2,38 @@
 
 ## Project Structure
 
-```
-starter-kit/
-├── apps/           # Individual projects (web, mobile, desktop, backend, cli)
+```text
+subkeep/
+├── apps/
+│   ├── website/    # SubKeep Next.js 16 App Router (React 19, Convex, Clerk, Tailwind CSS v4)
+│   ├── mobile/     # Reserved for mobile client
+│   ├── desktop/    # Reserved for desktop client
+│   ├── extension/  # Reserved for browser extension
+│   ├── backend/    # Reserved for standalone API / services
+│   └── cli/        # Reserved for command-line tools
 ├── docker/         # Docker configurations
 ├── docs/           # Documentation
 ├── scripts/        # Utility scripts
-└── .github/        # GitHub workflows
+└── .github/        # GitHub Actions workflows
 ```
 
-## Polyglot Monorepo Principles
+## Monorepo Principles
 
-### No Shared Code
-Each app in `/apps` is completely independent:
-- No shared components
-- No shared utilities
-- No shared libraries
-- Each app has its own dependencies
+### Self-Contained Applications
+Each application in `apps/` is self-contained:
+- Independent dependencies and build configurations
+- Shared type definitions can be imported or generated via Convex
+- Polyglot flexibility for mobile, desktop, or extension apps
 
-### Each App Lives Alone
-Every project in `/apps/*` is self-contained:
-- Own package manager (npm, pip, cargo, go mod, etc.)
-- Own dependencies
-- Own build system
-- Own configuration files
+### Workspace Scripts
+Root `package.json` coordinates common commands across the workspace:
+- `npm run dev`: Starts the Next.js dev server for `apps/website`
+- `npm run build`: Compiles and produces production assets for `apps/website`
+- `npm run lint`: Runs ESLint across `apps/website`
+- `npm run typecheck`: Validates TypeScript types across `apps/website`
 
-### Language Freedom
-Apps can use any language/framework:
-- `/apps/web` - React, Vue, Svelte, Next.js, Nuxt, etc.
-- `/apps/mobile` - React Native, Flutter, Swift, Kotlin, etc.
-- `/apps/desktop` - Electron, Tauri, Qt, etc.
-- `/apps/backend` - Express, FastAPI, Go, Rust, etc.
-- `/apps/cli` - Any CLI framework
+## CI/CD Workflow
 
-## Adding a New App
-
-1. Create a new folder under `/apps/<category>/`
-2. Initialize the project with its own package manager
-3. Add the appropriate CI job in `.github/workflows/`
-4. Update `docker/docker-compose.yml` if needed
-
-## CI/CD
-
-The monorepo uses path-based filtering to run only relevant jobs:
-- Changes to `apps/web/**` trigger the web build
-- Changes to `apps/backend/**` trigger the backend build
-- etc.
-
-## Docker
-
-Use `/docker/docker-compose.yml` to orchestrate multiple apps locally.
-Each app should have its own `Dockerfile` if containerization is needed.
+The monorepo uses path-based filtering in GitHub Actions:
+- Changes to `apps/website/**` trigger the website build, lint, and typecheck jobs.
+- Path-based triggers ensure fast pipeline execution.

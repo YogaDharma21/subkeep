@@ -12,7 +12,9 @@ import {
   Trash2,
   ChevronRight,
   FileJson,
+  FileSpreadsheet,
   ExternalLink,
+  CreditCard,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,19 +24,24 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { SettingsSheet } from "@/components/settings-sheet"
-
+import { PaymentMethodsSheet } from "@/components/payment-methods-sheet"
+import { exportSubscriptionsToCSV, parseCSVToSubscriptions } from "@/lib/csv"
+import { toast } from "sonner"
 
 export default function MorePage() {
   const { isSignedIn } = useAuth()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [restoreConfirm, setRestoreConfirm] = useState(false)
   const [restoreData, setRestoreData] = useState<{
     subscriptions: Array<Record<string, unknown>>
-    payments: Array<Record<string, unknown>>
+    payments?: Array<Record<string, unknown>>
   } | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const jsonFileInputRef = useRef<HTMLInputElement>(null)
+  const csvFileInputRef = useRef<HTMLInputElement>(null)
 
   const removeAll = useMutation(api.subscriptions.removeAll)
   const restoreSubscriptions = useMutation(api.subscriptions.restoreAll)
@@ -44,12 +51,17 @@ export default function MorePage() {
   const payments = useQuery(api.payments.list, isSignedIn ? {} : "skip")
 
   const handleDeleteAll = async () => {
-    await removeAll()
-    setDeleteConfirm(false)
+    try {
+      await removeAll()
+      setDeleteConfirm(false)
+      toast.success("All subscription data deleted")
+    } catch {
+      toast.error("Failed to delete data")
+    }
   }
 
-  const downloadJson = (data: Record<string, unknown>, filename: string) => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
+  const downloadFile = (content: string, filename: string, mimeType: string) => {
+    const blob = new Blob([content], { type: mimeType })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
@@ -58,8 +70,22 @@ export default function MorePage() {
     URL.revokeObjectURL(url)
   }
 
-  const handleExportData = () => {
-    if (!subscriptions) return
+  const handleExportCSV = () => {
+    if (!subscriptions || subscriptions.length === 0) {
+      toast.error("No subscriptions available to export")
+      return
+    }
+    const csvContent = exportSubscriptionsToCSV(subscriptions)
+    const date = new Date().toISOString().split("T")[0]
+    downloadFile(csvContent, `subkeep-subscriptions-${date}.csv`, "text/csv;charset=utf-8;")
+    toast.success("Exported subscriptions to CSV")
+  }
+
+  const handleExportJSON = () => {
+    if (!subscriptions || subscriptions.length === 0) {
+      toast.error("No subscriptions available to export")
+      return
+    }
     const data = subscriptions.map((s) => ({
       name: s.name,
       icon: s.icon,
@@ -71,9 +97,16 @@ export default function MorePage() {
       startDate: s.startDate,
       nextBilling: s.nextBilling,
       isActive: s.isActive,
+      isTrial: s.isTrial,
+      trialEndDate: s.trialEndDate,
+      cancelUrl: s.cancelUrl,
+      isShared: s.isShared,
+      totalPlanPrice: s.totalPlanPrice,
+      totalMembers: s.totalMembers,
     }))
     const date = new Date().toISOString().split("T")[0]
-    downloadJson({ subscriptions: data }, `subkeep-export-${date}.json`)
+    downloadFile(JSON.stringify({ subscriptions: data }, null, 2), `subkeep-export-${date}.json`, "application/json")
+    toast.success("Exported subscriptions to JSON")
   }
 
   const handleBackup = () => {
@@ -92,6 +125,12 @@ export default function MorePage() {
         startDate: s.startDate,
         nextBilling: s.nextBilling,
         isActive: s.isActive,
+        isTrial: s.isTrial,
+        trialEndDate: s.trialEndDate,
+        cancelUrl: s.cancelUrl,
+        isShared: s.isShared,
+        totalPlanPrice: s.totalPlanPrice,
+        totalMembers: s.totalMembers,
       })),
       payments: payments.map((p) => ({
         name: p.name,
@@ -104,10 +143,11 @@ export default function MorePage() {
       })),
     }
     const date = new Date().toISOString().split("T")[0]
-    downloadJson(data, `subkeep-backup-${date}.json`)
+    downloadFile(JSON.stringify(data, null, 2), `subkeep-backup-${date}.json`, "application/json")
+    toast.success("Full system backup exported")
   }
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleJsonFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
@@ -117,9 +157,32 @@ export default function MorePage() {
         if (data.subscriptions && Array.isArray(data.subscriptions)) {
           setRestoreData(data)
           setRestoreConfirm(true)
+        } else {
+          toast.error("Invalid backup file structure")
         }
       } catch {
-        alert("Invalid backup file")
+        toast.error("Invalid JSON file")
+      }
+    }
+    reader.readAsText(file)
+    e.target.value = ""
+  }
+
+  const handleCsvFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      try {
+        const parsedRows = parseCSVToSubscriptions(event.target?.result as string)
+        if (parsedRows.length > 0) {
+          setRestoreData({ subscriptions: parsedRows as never[] })
+          setRestoreConfirm(true)
+        } else {
+          toast.error("No valid subscription rows found in CSV")
+        }
+      } catch {
+        toast.error("Failed to parse CSV file")
       }
     }
     reader.readAsText(file)
@@ -128,19 +191,27 @@ export default function MorePage() {
 
   const handleRestore = async () => {
     if (!restoreData) return
-    await restoreSubscriptions({ subscriptions: restoreData.subscriptions as never[] })
-    if (restoreData.payments && restoreData.payments.length > 0) {
-      await restorePayments({ payments: restoreData.payments as never[] })
+    try {
+      await restoreSubscriptions({ subscriptions: restoreData.subscriptions as never[] })
+      if (restoreData.payments && restoreData.payments.length > 0) {
+        await restorePayments({ payments: restoreData.payments as never[] })
+      }
+      setRestoreConfirm(false)
+      setRestoreData(null)
+      toast.success(`Successfully restored ${restoreData.subscriptions.length} subscriptions!`)
+    } catch {
+      toast.error("Failed to restore data")
     }
-    setRestoreConfirm(false)
-    setRestoreData(null)
   }
 
   const handleItemClick = (id: string) => {
     if (id === "settings") setSettingsOpen(true)
-    else if (id === "export") handleExportData()
+    else if (id === "cards") setPaymentMethodsOpen(true)
+    else if (id === "export-csv") handleExportCSV()
+    else if (id === "export-json") handleExportJSON()
+    else if (id === "import-csv") csvFileInputRef.current?.click()
     else if (id === "backup") handleBackup()
-    else if (id === "restore") fileInputRef.current?.click()
+    else if (id === "restore") jsonFileInputRef.current?.click()
     else if (id === "about") setAboutOpen(true)
   }
 
@@ -149,26 +220,46 @@ export default function MorePage() {
       {
         id: "settings",
         icon: Settings,
-        label: "Settings",
-        description: "Theme, notifications, currency",
+        label: "Settings & Budget Cap",
+        description: "Dark mode, primary currency, monthly budget limit",
       },
       {
-        id: "export",
+        id: "cards",
+        icon: CreditCard,
+        label: "Payment Methods & Card Vault",
+        description: "Track credit cards, card expiry alerts & spend breakdown",
+      },
+    ],
+    [
+      {
+        id: "export-csv",
+        icon: FileSpreadsheet,
+        label: "Export as CSV",
+        description: "Download spreadsheet formatted for Excel / Sheets",
+      },
+      {
+        id: "import-csv",
+        icon: Upload,
+        label: "Import from CSV",
+        description: "Upload spreadsheet to restore or migrate subscriptions",
+      },
+      {
+        id: "export-json",
         icon: Download,
-        label: "Export Data",
-        description: "Download subscriptions as JSON",
+        label: "Export JSON",
+        description: "Download raw JSON subscription records",
       },
       {
         id: "backup",
         icon: FileJson,
-        label: "Backup",
-        description: "Export all data including payments",
+        label: "Full Backup",
+        description: "Export full backup including payment history",
       },
       {
         id: "restore",
         icon: Upload,
-        label: "Restore",
-        description: "Import data from backup file",
+        label: "Restore JSON Backup",
+        description: "Import from a previous SubKeep JSON backup",
       },
     ],
     [
@@ -184,11 +275,18 @@ export default function MorePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-4">
       <input
-        ref={fileInputRef}
+        ref={jsonFileInputRef}
         type="file"
         accept=".json"
         className="hidden"
-        onChange={handleFileSelect}
+        onChange={handleJsonFileSelect}
+      />
+      <input
+        ref={csvFileInputRef}
+        type="file"
+        accept=".csv,text/csv"
+        className="hidden"
+        onChange={handleCsvFileSelect}
       />
 
       {menuGroups.map((group, gi) => (
@@ -233,7 +331,7 @@ export default function MorePage() {
               Delete All Data
             </div>
             <div className="text-xs text-muted-foreground">
-              Remove all subscriptions
+              Remove all subscriptions and payment logs
             </div>
           </div>
           <ChevronRight className="size-4 shrink-0 text-muted-foreground group-hover:text-destructive transition-colors" />
@@ -241,8 +339,8 @@ export default function MorePage() {
       </div>
 
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-sm rounded-lg bg-background p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-lg bg-background p-6 border border-border shadow-xl">
             <div className="mb-4 flex justify-center">
               <div className="flex size-12 items-center justify-center rounded-lg bg-destructive/10">
                 <Trash2 className="size-6 text-destructive" />
@@ -252,20 +350,20 @@ export default function MorePage() {
               Delete All Data?
             </h3>
             <p className="mb-6 text-center text-sm text-muted-foreground">
-              This will permanently remove all your subscriptions. This action
+              This will permanently remove all your subscriptions and payment records. This action
               cannot be undone.
             </p>
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={() => setDeleteConfirm(false)}
               >
                 Cancel
               </Button>
               <Button
                 variant="destructive"
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={handleDeleteAll}
               >
                 Delete All
@@ -276,28 +374,29 @@ export default function MorePage() {
       )}
 
       {restoreConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-sm rounded-lg bg-background p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-lg bg-background p-6 border border-border shadow-xl">
             <div className="mb-4 flex justify-center">
               <div className="flex size-12 items-center justify-center rounded-lg bg-muted">
                 <Upload className="size-6 text-foreground" />
               </div>
             </div>
             <h3 className="mb-2 text-center text-lg font-semibold">
-              Restore Data?
+              Restore Subscriptions?
             </h3>
             <p className="mb-6 text-center text-sm text-muted-foreground">
-              This will replace all your current data with the backup. This
-              action cannot be undone.
+              This will replace your current subscription records with the imported file.
             </p>
             <div className="mb-4 rounded-lg bg-muted p-3 text-xs text-muted-foreground">
-              <div>{restoreData?.subscriptions?.length || 0} subscriptions</div>
-              <div>{restoreData?.payments?.length || 0} payments</div>
+              <div>{restoreData?.subscriptions?.length || 0} subscriptions ready to import</div>
+              {restoreData?.payments && (
+                <div>{restoreData.payments.length} payments included</div>
+              )}
             </div>
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={() => {
                   setRestoreConfirm(false)
                   setRestoreData(null)
@@ -306,7 +405,7 @@ export default function MorePage() {
                 Cancel
               </Button>
               <Button
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={handleRestore}
               >
                 Restore
@@ -317,6 +416,7 @@ export default function MorePage() {
       )}
 
       <SettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <PaymentMethodsSheet open={paymentMethodsOpen} onOpenChange={setPaymentMethodsOpen} />
 
       <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
         <DialogContent className="max-w-sm">
@@ -325,12 +425,10 @@ export default function MorePage() {
           </DialogHeader>
           <div className="space-y-4 text-sm text-muted-foreground">
             <p>
-              SubKeep is a subscription tracker that helps you manage and visualize
-              all your recurring payments in one place.
+              SubKeep is a sleek subscription management and analytics platform designed to keep your recurring expenses organized.
             </p>
             <p>
-              Track monthly costs, view upcoming billing dates on a calendar, and
-              get insights into your spending habits.
+              Track monthly costs, view upcoming billing dates on a calendar, manage household group split plans with SplitKeep, track credit card vaults, and prevent unexpected charges.
             </p>
             <a
               href="https://github.com/YogaDharma21/subkeep"

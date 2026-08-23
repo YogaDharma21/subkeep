@@ -2,7 +2,17 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Calendar, BarChart3, MoreHorizontal, Plus, Receipt, LogOut } from "lucide-react"
+import {
+  Home,
+  Calendar,
+  BarChart3,
+  MoreHorizontal,
+  Plus,
+  Receipt,
+  LogOut,
+  Search,
+  CreditCard,
+} from "lucide-react"
 import { useUser, useClerk } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -16,9 +26,15 @@ const navItems = [
 
 interface DesktopSidebarProps {
   onAddClick?: () => void
+  onSearchClick?: () => void
+  onCardsClick?: () => void
 }
 
-export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
+export function DesktopSidebar({
+  onAddClick,
+  onSearchClick,
+  onCardsClick,
+}: DesktopSidebarProps) {
   const pathname = usePathname()
   const { user } = useUser()
   const { openUserProfile, signOut } = useClerk()
@@ -35,8 +51,8 @@ export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
         </Link>
       </div>
 
-      {/* Add Subscription Action Button */}
-      <div className="p-4">
+      {/* Add Subscription Action Button & Command Palette Search */}
+      <div className="p-4 space-y-2">
         <Button
           onClick={onAddClick}
           className="w-full justify-center gap-2 h-10 font-semibold shadow-xs cursor-pointer"
@@ -44,6 +60,19 @@ export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
           <Plus className="size-4" />
           <span>Add Subscription</span>
         </Button>
+
+        <button
+          onClick={onSearchClick}
+          className="flex w-full items-center justify-between rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            <Search className="size-3.5" />
+            <span>Search & Commands...</span>
+          </div>
+          <kbd className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-mono">
+            ⌘K
+          </kbd>
+        </button>
       </div>
 
       {/* Navigation Links */}
@@ -72,6 +101,15 @@ export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
             </Link>
           )
         })}
+
+        {/* Card Vault Quick Link */}
+        <button
+          onClick={onCardsClick}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground cursor-pointer"
+        >
+          <CreditCard className="size-4.5 shrink-0 text-muted-foreground" />
+          <span>Card Vault</span>
+        </button>
       </nav>
 
       {/* User Profile at Bottom */}

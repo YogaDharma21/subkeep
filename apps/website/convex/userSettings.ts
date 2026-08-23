@@ -16,6 +16,7 @@ export const get = query({
         primaryCurrency: "IDR",
         reminderDays: 3,
         webPushEnabled: false,
+        monthlyBudgetCap: undefined,
       }
     }
     return settings
@@ -27,6 +28,7 @@ export const update = mutation({
     primaryCurrency: v.optional(v.string()),
     reminderDays: v.optional(v.number()),
     webPushEnabled: v.optional(v.boolean()),
+    monthlyBudgetCap: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
@@ -44,6 +46,7 @@ export const update = mutation({
         primaryCurrency: args.primaryCurrency || "IDR",
         reminderDays: args.reminderDays ?? 3,
         webPushEnabled: args.webPushEnabled ?? false,
+        monthlyBudgetCap: args.monthlyBudgetCap,
       })
     }
   },
