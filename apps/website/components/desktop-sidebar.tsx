@@ -6,7 +6,7 @@ import {
   Home,
   Calendar,
   BarChart3,
-  MoreHorizontal,
+  Settings,
   Plus,
   Receipt,
   LogOut,
@@ -21,7 +21,7 @@ const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
   { href: "/calendar", label: "Calendar", icon: Calendar },
   { href: "/stats", label: "Statistics", icon: BarChart3 },
-  { href: "/more", label: "Settings & More", icon: MoreHorizontal },
+  { href: "/more", label: "Settings", icon: Settings },
 ]
 
 interface DesktopSidebarProps {
