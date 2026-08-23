@@ -80,11 +80,12 @@ export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
             elements: {
               rootBox: "w-full",
               userButtonTrigger:
-                "w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-foreground hover:bg-accent/50 transition-colors focus:shadow-none focus:outline-none",
-              userButtonBox: "flex items-center gap-3",
+                "w-full flex items-center justify-start gap-3 p-2.5 rounded-xl bg-muted/40 hover:bg-muted/70 border border-border/60 transition-colors focus:shadow-none focus:outline-none cursor-pointer",
+              userButtonBox:
+                "flex-row-reverse items-center justify-start gap-3 w-full",
+              avatarBox: "size-9 shrink-0",
               userButtonOuterIdentifier:
-                "text-sm font-medium text-foreground truncate",
-              avatarBox: "size-8",
+                "text-sm font-semibold text-foreground truncate text-left flex-1",
             },
           }}
         />
