@@ -2,10 +2,12 @@
 
 import { useState } from "react"
 import { UserButton, Show } from "@clerk/nextjs"
-import { Receipt } from "lucide-react"
+import { Receipt, Search } from "lucide-react"
 import { BottomNav } from "@/components/bottom-nav"
 import { DesktopSidebar } from "@/components/desktop-sidebar"
 import { AddSubscriptionSheet } from "@/components/add-subscription-sheet"
+import { PaymentMethodsSheet } from "@/components/payment-methods-sheet"
+import { CommandPalette } from "@/components/command-palette"
 import { LandingPage } from "@/components/landing-page"
 
 export default function DashboardLayout({
@@ -14,15 +16,21 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const [addOpen, setAddOpen] = useState(false)
+  const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false)
+  const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false)
 
   return (
     <>
       <Show when="signed-in">
         <div className="min-h-screen bg-muted/20">
-          {/* Desktop Sidebar (hidden on mobile, fixed on desktop) */}
-          <DesktopSidebar onAddClick={() => setAddOpen(true)} />
+          {/* Desktop Sidebar */}
+          <DesktopSidebar
+            onAddClick={() => setAddOpen(true)}
+            onSearchClick={() => setCmdPaletteOpen(true)}
+            onCardsClick={() => setPaymentMethodsOpen(true)}
+          />
 
-          {/* Mobile Top Header (hidden on desktop) */}
+          {/* Mobile Top Header */}
           <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background px-4 py-3 md:hidden">
             <div className="flex items-center gap-2">
               <div className="flex size-7 items-center justify-center rounded-lg bg-foreground text-background shadow-xs">
@@ -30,7 +38,17 @@ export default function DashboardLayout({
               </div>
               <h1 className="text-base font-bold text-foreground">SubKeep</h1>
             </div>
-            <UserButton />
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCmdPaletteOpen(true)}
+                className="flex size-8 items-center justify-center rounded-lg border border-border bg-muted/50 text-muted-foreground hover:text-foreground cursor-pointer"
+                title="Search & Commands"
+              >
+                <Search className="size-4" />
+              </button>
+              <UserButton />
+            </div>
           </header>
 
           {/* Main Content Area */}
@@ -40,11 +58,25 @@ export default function DashboardLayout({
             </main>
           </div>
 
-          {/* Mobile Bottom Navigation (hidden on desktop) */}
+          {/* Mobile Bottom Navigation */}
           <BottomNav onAddClick={() => setAddOpen(true)} />
 
           {/* Add Subscription Modal/Sheet */}
           <AddSubscriptionSheet open={addOpen} onOpenChange={setAddOpen} />
+
+          {/* Card Vault / Payment Methods Sheet */}
+          <PaymentMethodsSheet
+            open={paymentMethodsOpen}
+            onOpenChange={setPaymentMethodsOpen}
+          />
+
+          {/* Command Palette */}
+          <CommandPalette
+            open={cmdPaletteOpen}
+            onOpenChange={setCmdPaletteOpen}
+            onAddSubscription={() => setAddOpen(true)}
+            onOpenPaymentMethods={() => setPaymentMethodsOpen(true)}
+          />
         </div>
       </Show>
       <Show when="signed-out">
@@ -53,4 +85,3 @@ export default function DashboardLayout({
     </>
   )
 }
-
