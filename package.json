@@ -1,0 +1,27 @@
+{
+  "name": "subkeep",
+  "version": "0.0.1",
+  "private": true,
+  "description": "SubKeep - Sleek & modern subscription tracker",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --prefix apps/website",
+    "build": "npm run build --prefix apps/website",
+    "start": "npm run start --prefix apps/website",
+    "lint": "npm run lint --prefix apps/website",
+    "typecheck": "npm run typecheck --prefix apps/website",
+    "format": "npm run format --prefix apps/website"
+  },
+  "keywords": [
+    "subscription-tracker",
+    "finance",
+    "nextjs",
+    "convex",
+    "clerk",
+    "tailwind"
+  ],
+  "author": "Yoga Dharma",
+  "license": "MIT"
+}

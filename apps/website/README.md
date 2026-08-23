@@ -1,4 +1,4 @@
-# SubKeep (v1.0.0)
+# SubKeep (v0.0.1)
 
 A sleek, mobile-first subscription tracker built with Next.js 16, Convex, Clerk, and Tailwind CSS v4.
 

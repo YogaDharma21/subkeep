@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useTheme } from "next-themes"
 import { useQuery, useMutation } from "convex/react"
+import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
-import { Moon, Globe, Bell, X } from "lucide-react"
+import { Moon, Globe, Bell, X, Target } from "lucide-react"
 import {
   Sheet,
   SheetContent,
@@ -12,10 +13,12 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { currencies } from "@/lib/constants"
+import { currencies, getSymbol } from "@/lib/constants"
 import { requestWebPushPermission, sendWebPushNotification } from "@/lib/notifications"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
+import { toast } from "sonner"
 
 interface SettingsSheetProps {
   open: boolean
@@ -24,49 +27,44 @@ interface SettingsSheetProps {
 
 export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
   const { theme, resolvedTheme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
+  const { isSignedIn } = useAuth()
 
-  const hasUserSettings = !!(api as Record<string, any>).userSettings?.get
-  const userSettings = useQuery(
-    hasUserSettings ? (api as Record<string, any>).userSettings.get : "skip"
-  )
-
-  const hasUpdateSettings = !!(api as Record<string, any>).userSettings?.update
-  const updateSettingsMutation = hasUpdateSettings
-    ? (api as Record<string, any>).userSettings.update
-    : (api as Record<string, any>).subscriptions.suspend
-
-  const updateSettings = useMutation(updateSettingsMutation)
+  const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
+  const updateSettings = useMutation(api.userSettings.update)
 
   const { primaryCurrency, setPrimaryCurrency } = usePrimaryCurrency()
-  const [reminderDays, setReminderDays] = useState(3)
-  const [webPushEnabled, setWebPushEnabled] = useState(false)
+  const [localReminderDays, setLocalReminderDays] = useState<number | null>(null)
+  const [localWebPush, setLocalWebPush] = useState<boolean | null>(null)
+  const [localBudgetCap, setLocalBudgetCap] = useState<string | null>(null)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const reminderDays = localReminderDays ?? userSettings?.reminderDays ?? 3
+  const webPushEnabled = localWebPush ?? userSettings?.webPushEnabled ?? false
+  const budgetCap = localBudgetCap ?? (userSettings?.monthlyBudgetCap !== undefined ? String(userSettings.monthlyBudgetCap) : "")
 
-  useEffect(() => {
-    if (userSettings) {
-      if (userSettings.reminderDays) setReminderDays(userSettings.reminderDays)
-      if (userSettings.webPushEnabled !== undefined) setWebPushEnabled(userSettings.webPushEnabled)
-    }
-  }, [userSettings])
-
-  const isDark = mounted ? (resolvedTheme === "dark" || theme === "dark") : false
+  const isDark = resolvedTheme === "dark" || theme === "dark"
 
   const handleCurrencyChange = async (val: string) => {
     await setPrimaryCurrency(val)
+    toast.success(`Primary currency changed to ${val}`)
   }
 
   const handleReminderDaysChange = async (days: number) => {
-    setReminderDays(days)
-    if (hasUpdateSettings) {
-      try {
-        await updateSettings({ reminderDays: days })
-      } catch (e) {
-        console.warn("Could not update settings in Convex backend:", e)
-      }
+    setLocalReminderDays(days)
+    try {
+      await updateSettings({ reminderDays: days })
+      toast.success(`Reminder alert set to ${days === 0 ? "due date" : `${days} days before`}`)
+    } catch {
+      toast.error("Failed to update reminder timing")
+    }
+  }
+
+  const handleSaveBudgetCap = async () => {
+    const val = budgetCap.trim() ? parseFloat(budgetCap.trim()) : undefined
+    try {
+      await updateSettings({ monthlyBudgetCap: val })
+      toast.success(val ? `Monthly budget cap set to ${getSymbol(primaryCurrency)}${val}` : "Budget cap removed")
+    } catch {
+      toast.error("Failed to save budget cap")
     }
   }
 
@@ -74,26 +72,24 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
     if (!webPushEnabled) {
       const granted = await requestWebPushPermission()
       if (granted) {
-        setWebPushEnabled(true)
-        if (hasUpdateSettings) {
-          try {
-            await updateSettings({ webPushEnabled: true })
-          } catch (e) {
-            console.warn("Could not update settings in Convex backend:", e)
-          }
+        setLocalWebPush(true)
+        try {
+          await updateSettings({ webPushEnabled: true })
+          toast.success("Web push notifications enabled!")
+          sendWebPushNotification("SubKeep Reminders Active", "You will now receive billing and free trial push notifications!")
+        } catch {
+          toast.error("Failed to save notification preference")
         }
-        sendWebPushNotification("SubKeep Reminders Active", "You will now receive billing and free trial push notifications!")
       } else {
-        alert("Browser push notification permission denied. Please allow notifications in your browser settings.")
+        toast.error("Browser push notification permission denied. Please enable in browser settings.")
       }
     } else {
-      setWebPushEnabled(false)
-      if (hasUpdateSettings) {
-        try {
-          await updateSettings({ webPushEnabled: false })
-        } catch (e) {
-          console.warn("Could not update settings in Convex backend:", e)
-        }
+      setLocalWebPush(false)
+      try {
+        await updateSettings({ webPushEnabled: false })
+        toast.success("Web push notifications disabled")
+      } catch {
+        toast.error("Failed to update notification settings")
       }
     }
   }
@@ -102,21 +98,22 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto" showCloseButton={false}>
         <SheetHeader className="flex-row items-center justify-between border-b border-border p-4">
-          <SheetTitle>Settings</SheetTitle>
+          <SheetTitle>Settings & Preferences</SheetTitle>
           <Button
             variant="ghost"
             size="icon-sm"
             onClick={() => onOpenChange(false)}
+            className="cursor-pointer"
           >
             <X className="size-4" />
           </Button>
         </SheetHeader>
 
         <div className="p-4 space-y-5">
-          {/* Appearance */}
+          {/* Preferences */}
           <div className="space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Preferences
+              General & Display
             </h3>
 
             <div className="flex items-center justify-between py-1">
@@ -126,7 +123,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
               </div>
               <button
                 onClick={() => setTheme(isDark ? "light" : "dark")}
-                className="relative h-7 w-12 rounded-full bg-muted transition-colors data-[state=on]:bg-foreground"
+                className="relative h-7 w-12 rounded-full bg-muted transition-colors data-[state=on]:bg-foreground cursor-pointer"
                 data-state={isDark ? "on" : "off"}
               >
                 <span
@@ -166,10 +163,43 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
 
           <Separator />
 
+          {/* Monthly Budget Cap Setting */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Target className="size-4 text-primary" />
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Monthly Spending Budget Cap
+              </h3>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Set a monthly spending limit in your primary currency ({primaryCurrency}). You will receive progress and threshold warnings.
+            </p>
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-semibold">
+                  {getSymbol(primaryCurrency)}
+                </span>
+                <Input
+                  type="number"
+                  placeholder="e.g. 150"
+                  step="0.01"
+                  value={budgetCap}
+                  onChange={(e) => setLocalBudgetCap(e.target.value)}
+                  className="pl-8 text-xs h-9"
+                />
+              </div>
+              <Button size="sm" onClick={handleSaveBudgetCap} className="text-xs h-9 cursor-pointer">
+                Save Cap
+              </Button>
+            </div>
+          </div>
+
+          <Separator />
+
           {/* Notifications & Reminders */}
           <div className="space-y-4">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Notifications & Reminders
+              Notifications & Alerts
             </h3>
 
             {/* Web Push */}
@@ -185,7 +215,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
               </div>
               <button
                 onClick={handleToggleWebPush}
-                className="relative h-7 w-12 rounded-full bg-muted transition-colors data-[state=on]:bg-foreground"
+                className="relative h-7 w-12 rounded-full bg-muted transition-colors data-[state=on]:bg-foreground cursor-pointer"
                 data-state={webPushEnabled ? "on" : "off"}
               >
                 <span
@@ -210,7 +240,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
                     key={item.days}
                     type="button"
                     onClick={() => handleReminderDaysChange(item.days)}
-                    className={`rounded-lg py-2 text-xs font-medium border transition-all ${
+                    className={`rounded-lg py-2 text-xs font-medium border transition-all cursor-pointer ${
                       reminderDays === item.days
                         ? "border-foreground bg-foreground text-background"
                         : "border-border bg-background text-foreground hover:border-foreground/50"

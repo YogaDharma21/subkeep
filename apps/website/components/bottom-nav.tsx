@@ -2,14 +2,14 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Calendar, Plus, BarChart3, MoreHorizontal } from "lucide-react"
+import { Home, Calendar, Plus, BarChart3, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/calendar", label: "Calendar", icon: Calendar },
   { href: "/stats", label: "Stats", icon: BarChart3 },
-  { href: "/more", label: "More", icon: MoreHorizontal },
+  { href: "/more", label: "Settings", icon: Settings },
 ]
 
 interface BottomNavProps {
