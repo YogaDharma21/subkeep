@@ -13,9 +13,14 @@ import {
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import dynamic from "next/dynamic"
 import { TemplateList } from "@/components/template-list"
-import { IconPicker } from "@/components/icon-picker"
 import { cn } from "@/lib/utils"
+
+const IconPicker = dynamic(
+  () => import("@/components/icon-picker").then((m) => m.IconPicker),
+  { ssr: false }
+)
 import {
   categories,
   currencies,

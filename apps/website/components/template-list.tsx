@@ -1,12 +1,9 @@
 "use client"
 
 import { useState, useMemo, useDeferredValue, memo, useCallback } from "react"
-import { useQuery } from "convex/react"
-import { api } from "@/convex/_generated/api"
 import { Search, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { categories } from "@/lib/constants"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { DEFAULT_TEMPLATES, type SubscriptionTemplate } from "@/lib/default-templates"
@@ -30,18 +27,14 @@ const TemplateRow = memo(function TemplateRow({
   template: SubscriptionTemplate
   onSelect: (t: SubscriptionTemplate) => void
 }) {
-  const handleClick = useCallback(() => {
-    onSelect(template)
-  }, [template, onSelect])
-
   return (
     <button
       type="button"
-      onClick={handleClick}
-      className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-transparent p-2.5 transition-colors hover:border-border hover:bg-accent/50 dark:hover:bg-accent/40 text-left"
+      onClick={() => onSelect(template)}
+      className="flex w-full cursor-pointer items-center gap-3 rounded-xl p-2.5 hover:bg-muted/70 active:bg-muted transition-colors text-left"
     >
       <div
-        className="flex size-10 shrink-0 items-center justify-center rounded-xl shadow-xs"
+        className="flex size-10 shrink-0 items-center justify-center rounded-xl text-white shadow-xs"
         style={{ backgroundColor: template.color }}
       >
         <DynamicIcon name={template.icon} className="size-5 text-white" />
@@ -63,25 +56,16 @@ export function TemplateList({ onSelect }: TemplateListProps) {
   const deferredSearch = useDeferredValue(search)
   const [activeCategory, setActiveCategory] = useState("all")
 
-  // Load custom templates if available, otherwise immediately use instant DEFAULT_TEMPLATES
-  const convexTemplates = useQuery(api.templates.list, {})
-  const allTemplates: SubscriptionTemplate[] = useMemo(() => {
-    if (convexTemplates && convexTemplates.length > 0) {
-      return convexTemplates
-    }
-    return DEFAULT_TEMPLATES
-  }, [convexTemplates])
-
   const filteredTemplates = useMemo(() => {
     const q = deferredSearch.trim().toLowerCase()
 
-    return allTemplates.filter((t) => {
+    return DEFAULT_TEMPLATES.filter((t) => {
       const matchesCategory =
         activeCategory === "all" || t.category === activeCategory
       const matchesSearch = !q || t.name.toLowerCase().includes(q)
       return matchesCategory && matchesSearch
     })
-  }, [allTemplates, deferredSearch, activeCategory])
+  }, [deferredSearch, activeCategory])
 
   const handleSelect = useCallback(
     (template: SubscriptionTemplate) => {
@@ -132,23 +116,21 @@ export function TemplateList({ onSelect }: TemplateListProps) {
         ))}
       </div>
 
-      <ScrollArea className="h-[320px] pr-2">
-        <div className="flex flex-col gap-1 pb-2">
-          {filteredTemplates.length > 0 ? (
-            filteredTemplates.map((template) => (
-              <TemplateRow
-                key={template.name}
-                template={template}
-                onSelect={handleSelect}
-              />
-            ))
-          ) : (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              No services found for &quot;{search}&quot;
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+      <div className="h-[320px] overflow-y-auto overscroll-contain pr-1 flex flex-col gap-1 pb-2">
+        {filteredTemplates.length > 0 ? (
+          filteredTemplates.map((template) => (
+            <TemplateRow
+              key={template.name}
+              template={template}
+              onSelect={handleSelect}
+            />
+          ))
+        ) : (
+          <div className="py-12 text-center text-sm text-muted-foreground">
+            No services found for &quot;{search}&quot;
+          </div>
+        )}
+      </div>
     </div>
   )
 }
