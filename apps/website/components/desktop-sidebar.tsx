@@ -73,20 +73,21 @@ export function DesktopSidebar({ onAddClick }: DesktopSidebarProps) {
       </nav>
 
       {/* User Profile at Bottom via Clerk UserButton */}
-      <div className="p-4 border-t border-border">
-        <div className="flex items-center gap-2 rounded-xl p-2 bg-muted/40 border border-border/50">
-          <UserButton
-            showName
-            appearance={{
-              elements: {
-                rootBox: "w-full",
-                userButtonTrigger: "w-full flex items-center justify-start gap-2.5 focus:outline-none focus:shadow-none",
-                userButtonBox: "flex-row-reverse justify-end gap-2.5 w-full",
-                userButtonOuterIdentifier: "text-xs font-semibold text-foreground truncate text-left",
-              },
-            }}
-          />
-        </div>
+      <div className="p-3 border-t border-border">
+        <UserButton
+          showName
+          appearance={{
+            elements: {
+              rootBox: "w-full",
+              userButtonTrigger:
+                "w-full flex items-center justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-foreground hover:bg-accent/50 transition-colors focus:shadow-none focus:outline-none",
+              userButtonBox: "flex items-center gap-3",
+              userButtonOuterIdentifier:
+                "text-sm font-medium text-foreground truncate",
+              avatarBox: "size-8",
+            },
+          }}
+        />
       </div>
     </aside>
   )
