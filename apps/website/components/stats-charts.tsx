@@ -187,203 +187,207 @@ export function StatsCharts({
   }, [payments, primaryCurrency, rates])
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-xl border border-border bg-background">
-        <div className="border-b border-border p-4 flex items-center justify-between">
-          <h3 className="text-sm font-semibold">Spending Trend ({primaryCurrency})</h3>
-        </div>
-        <div className="p-4">
-          <div className="h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={spendingData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis
-                  dataKey="month"
-                  tick={{ fontSize: 11 }}
-                  stroke="var(--muted-foreground)"
-                />
-                <YAxis
-                  tick={{ fontSize: 11 }}
-                  stroke="var(--muted-foreground)"
-                />
-                <Tooltip
-                  formatter={(value) => [
-                    formatCurrencyAmount(Number(value), primaryCurrency),
-                    "Amount",
-                  ]}
-                  contentStyle={{
-                    backgroundColor: "var(--card)",
-                    borderColor: "var(--border)",
-                    color: "var(--card-foreground)",
-                    borderRadius: "8px",
-                    fontSize: "12px",
-                  }}
-                  itemStyle={{ color: "var(--card-foreground)" }}
-                />
-                <Bar dataKey="amount" fill="var(--foreground)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* Spending Trend Chart */}
+        <div className="rounded-xl border border-border bg-background">
+          <div className="border-b border-border p-4 flex items-center justify-between">
+            <h3 className="text-sm font-semibold">Spending Trend ({primaryCurrency})</h3>
           </div>
-          <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
-            <div className="rounded-xl bg-muted p-4 text-center min-w-0">
-              <div className="text-sm font-bold text-foreground truncate">
-                {formatCurrencyAmount(monthlyTotal * 1.15, primaryCurrency)}
-              </div>
-              <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
-                Highest
-              </div>
+          <div className="p-4 sm:p-5">
+            <div className="h-[220px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={spendingData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                  <XAxis
+                    dataKey="month"
+                    tick={{ fontSize: 11 }}
+                    stroke="var(--muted-foreground)"
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11 }}
+                    stroke="var(--muted-foreground)"
+                  />
+                  <Tooltip
+                    formatter={(value) => [
+                      formatCurrencyAmount(Number(value), primaryCurrency),
+                      "Amount",
+                    ]}
+                    contentStyle={{
+                      backgroundColor: "var(--card)",
+                      borderColor: "var(--border)",
+                      color: "var(--card-foreground)",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                    }}
+                    itemStyle={{ color: "var(--card-foreground)" }}
+                  />
+                  <Bar dataKey="amount" fill="var(--foreground)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-            <div className="rounded-xl bg-muted p-4 text-center min-w-0">
-              <div className="text-sm font-bold text-foreground truncate">
-                {formatCurrencyAmount(monthlyTotal, primaryCurrency)}
-              </div>
-              <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
-                Avg / Month
-              </div>
-            </div>
-            <div className="rounded-xl bg-muted p-4 text-center min-w-0">
-              <div className="text-sm font-bold text-foreground truncate">
-                {formatCurrencyAmount(monthlyTotal * 6, primaryCurrency)}
-              </div>
-              <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
-                Total (YTD)
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-border bg-background">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-4">
-          <h3 className="text-sm font-semibold">Category Breakdown</h3>
-          <div className="flex items-center gap-2">
-            <div className="flex rounded-lg border border-border bg-muted p-0.5 text-xs font-medium">
-              <button
-                type="button"
-                onClick={() => setBreakdownMetric("cost")}
-                className={cn(
-                  "rounded-md px-2.5 py-1 transition-all",
-                  breakdownMetric === "cost"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                By Cost ({primaryCurrency})
-              </button>
-              <button
-                type="button"
-                onClick={() => setBreakdownMetric("count")}
-                className={cn(
-                  "rounded-md px-2.5 py-1 transition-all",
-                  breakdownMetric === "count"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                By Count (#)
-              </button>
-            </div>
-            <div className="flex rounded-lg border border-border bg-muted p-0.5 text-xs font-medium">
-              <button
-                type="button"
-                onClick={() => setBreakdownFilter("all")}
-                className={cn(
-                  "rounded-md px-2 py-1 transition-all",
-                  breakdownFilter === "all"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                All
-              </button>
-              <button
-                type="button"
-                onClick={() => setBreakdownFilter("paid")}
-                className={cn(
-                  "rounded-md px-2 py-1 transition-all",
-                  breakdownFilter === "paid"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Paid Only
-              </button>
-            </div>
-          </div>
-        </div>
-        {categoryData.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-8">
-            <div className="mb-3 flex size-16 items-center justify-center rounded-full bg-muted">
-              <PieChartIcon className="size-8 text-muted-foreground/50" />
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {breakdownFilter === "paid" ? "No paid subscriptions found" : "No subscriptions yet"}
-            </p>
-          </div>
-        ) : (
-          <div className="p-4">
-            {total > 0 && (
-              <div className="mb-4 flex justify-center">
-                <div className="h-[180px] w-[180px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={categoryData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={55}
-                        outerRadius={80}
-                        dataKey="value"
-                        strokeWidth={0}
-                      >
-                        {categoryData.map((entry, index) => (
-                          <Cell key={index} fill={entry.color} />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
+            <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
+              <div className="rounded-xl bg-muted p-3 sm:p-4 text-center min-w-0">
+                <div className="text-xs sm:text-sm font-bold text-foreground truncate">
+                  {formatCurrencyAmount(monthlyTotal * 1.15, primaryCurrency)}
+                </div>
+                <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground font-medium truncate">
+                  Highest
                 </div>
               </div>
-            )}
-            <div className="space-y-2.5">
-              {categoryData.map((cat) => {
-                const pct = total > 0 ? ((cat.value / total) * 100).toFixed(1) : "0"
-                const detailText =
-                  cat.rawCost > 0
-                    ? `${formatCurrencyAmount(cat.rawCost, primaryCurrency)}/mo · ${cat.rawCount} sub${cat.rawCount > 1 ? "s" : ""}`
-                    : `Free · ${cat.rawCount} sub${cat.rawCount > 1 ? "s" : ""}`
-                return (
-                  <div key={cat.name} className="flex items-center gap-3">
-                    <div
-                      className="size-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: cat.color }}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium">{cat.name}</span>
-                        <span className="text-xs text-muted-foreground">{detailText}</span>
-                      </div>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{
-                            width: `${pct}%`,
-                            backgroundColor: cat.color,
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className="w-12 text-right text-xs font-semibold text-muted-foreground">
-                      {pct}%
-                    </div>
-                  </div>
-                )
-              })}
+              <div className="rounded-xl bg-muted p-3 sm:p-4 text-center min-w-0">
+                <div className="text-xs sm:text-sm font-bold text-foreground truncate">
+                  {formatCurrencyAmount(monthlyTotal, primaryCurrency)}
+                </div>
+                <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground font-medium truncate">
+                  Avg / Month
+                </div>
+              </div>
+              <div className="rounded-xl bg-muted p-3 sm:p-4 text-center min-w-0">
+                <div className="text-xs sm:text-sm font-bold text-foreground truncate">
+                  {formatCurrencyAmount(monthlyTotal * 6, primaryCurrency)}
+                </div>
+                <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground font-medium truncate">
+                  Total (YTD)
+                </div>
+              </div>
             </div>
           </div>
-        )}
+        </div>
+
+        {/* Category Breakdown Chart */}
+        <div className="rounded-xl border border-border bg-background">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-4">
+            <h3 className="text-sm font-semibold">Category Breakdown</h3>
+            <div className="flex items-center gap-2">
+              <div className="flex rounded-lg border border-border bg-muted p-0.5 text-xs font-medium">
+                <button
+                  type="button"
+                  onClick={() => setBreakdownMetric("cost")}
+                  className={cn(
+                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    breakdownMetric === "cost"
+                      ? "bg-background text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  By Cost
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBreakdownMetric("count")}
+                  className={cn(
+                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    breakdownMetric === "count"
+                      ? "bg-background text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  By Count
+                </button>
+              </div>
+
+              <div className="flex rounded-lg border border-border bg-muted p-0.5 text-xs font-medium">
+                <button
+                  type="button"
+                  onClick={() => setBreakdownFilter("all")}
+                  className={cn(
+                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    breakdownFilter === "all"
+                      ? "bg-background text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBreakdownFilter("paid")}
+                  className={cn(
+                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    breakdownFilter === "paid"
+                      ? "bg-background text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Paid Only
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {categoryData.length === 0 ? (
+            <div className="py-12 text-center">
+              <p className="text-xs text-muted-foreground">
+                {breakdownFilter === "paid" ? "No paid subscriptions found" : "No subscriptions yet"}
+              </p>
+            </div>
+          ) : (
+            <div className="p-4 sm:p-5">
+              {total > 0 && (
+                <div className="mb-4 flex justify-center">
+                  <div className="h-[180px] w-[180px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={categoryData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={55}
+                          outerRadius={80}
+                          dataKey="value"
+                          strokeWidth={0}
+                        >
+                          {categoryData.map((entry, index) => (
+                            <Cell key={index} fill={entry.color} />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+              <div className="space-y-2.5">
+                {categoryData.map((cat) => {
+                  const pct = total > 0 ? ((cat.value / total) * 100).toFixed(1) : "0"
+                  const detailText =
+                    cat.rawCost > 0
+                      ? `${formatCurrencyAmount(cat.rawCost, primaryCurrency)}/mo · ${cat.rawCount} sub${cat.rawCount > 1 ? "s" : ""}`
+                      : `Free · ${cat.rawCount} sub${cat.rawCount > 1 ? "s" : ""}`
+                  return (
+                    <div key={cat.name} className="flex items-center gap-3">
+                      <div
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: cat.color }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-medium">{cat.name}</span>
+                          <span className="text-xs text-muted-foreground">{detailText}</span>
+                        </div>
+                        <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full transition-all"
+                            style={{
+                              width: `${pct}%`,
+                              backgroundColor: cat.color,
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="w-12 text-right text-xs font-semibold text-muted-foreground">
+                        {pct}%
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* Payment History */}
       {paymentHistory.length > 0 && (
         <div className="rounded-xl border border-border bg-background">
           <div className="border-b border-border p-4">
