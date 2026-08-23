@@ -54,8 +54,6 @@ export function CommandPalette({
   // Focus input smoothly on open without synchronous layout reflow
   useEffect(() => {
     if (open) {
-      setQuery("")
-      setSelectedIndex(0)
       const timer = requestAnimationFrame(() => {
         inputRef.current?.focus()
       })
