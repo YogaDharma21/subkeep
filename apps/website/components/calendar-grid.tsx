@@ -267,8 +267,8 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-xl border border-border bg-background p-4">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="lg:col-span-7 rounded-xl border border-border bg-background p-4 sm:p-5">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-base font-semibold">{monthName}</h3>
           <div className="flex gap-2">
@@ -303,7 +303,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                 onClick={() => d.isCurrentMonth && setSelectedDay(d.day)}
                 disabled={!d.isCurrentMonth}
                 className={cn(
-                  "relative flex aspect-square items-center justify-center rounded-lg text-sm transition-all",
+                  "relative flex aspect-square items-center justify-center rounded-lg text-sm transition-all cursor-pointer",
                   !d.isCurrentMonth && "text-muted-foreground/40",
                   d.isCurrentMonth && "hover:bg-muted",
                   isToday(d.day) &&
@@ -330,7 +330,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
       </div>
 
       {selectedDay !== null && (
-        <div className="rounded-xl border border-border bg-background">
+        <div className="lg:col-span-5 rounded-xl border border-border bg-background lg:sticky lg:top-6">
           <div className="border-b border-border p-4">
             <h3 className="text-sm font-semibold">{getHeaderTitle()}</h3>
             <p className="text-xs text-muted-foreground">

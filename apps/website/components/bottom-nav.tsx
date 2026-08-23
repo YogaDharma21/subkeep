@@ -20,7 +20,7 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background md:hidden">
       <div className="mx-auto grid max-w-[480px] grid-cols-5 items-center py-2">
         {navItems.slice(0, 2).map((item) => {
           const Icon = item.icon

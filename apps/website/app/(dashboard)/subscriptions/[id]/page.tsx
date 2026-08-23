@@ -192,7 +192,7 @@ export default function SubscriptionDetailPage({
   }
 
   return (
-    <div className="p-4">
+    <div className="max-w-2xl mx-auto space-y-4">
       <div className="mb-4 flex items-center gap-2">
         <Button
           variant="ghost"

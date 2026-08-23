@@ -182,7 +182,7 @@ export default function MorePage() {
   ]
 
   return (
-    <div className="p-4">
+    <div className="max-w-2xl mx-auto space-y-4">
       <input
         ref={fileInputRef}
         type="file"
