@@ -1,8 +1,6 @@
 "use client"
 
 import React, { memo, useState } from "react"
-import dynamic from "next/dynamic"
-import dynamicIconImports from "lucide-react/dynamicIconImports"
 import {
   Activity,
   Apple,
@@ -23,6 +21,7 @@ import {
   Cake,
   Calendar,
   Camera,
+  Car,
   Check,
   CheckCircle,
   Clapperboard,
@@ -31,9 +30,11 @@ import {
   CloudDownload,
   CloudUpload,
   Code,
+  Coffee,
   Coins,
   CreditCard,
   Crosshair,
+  CupSoda,
   Database,
   Dice5,
   Disc,
@@ -91,6 +92,7 @@ import {
   Podcast,
   Plus,
   Popcorn,
+  Presentation,
   Puzzle,
   Radio,
   Receipt,
@@ -112,6 +114,7 @@ import {
   Sword,
   Tag,
   Terminal,
+  ThumbsUp,
   Ticket,
   TrendingUp,
   Trophy,
@@ -136,7 +139,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
-// Static map for synchronous 0ms render of all common and template icons
+// Static map for synchronous 0ms render of all icons with zero dynamic chunk overhead
 const STATIC_ICONS: Record<string, LucideIcon> = {
   activity: Activity,
   apple: Apple,
@@ -158,6 +161,7 @@ const STATIC_ICONS: Record<string, LucideIcon> = {
   cake: Cake,
   calendar: Calendar,
   camera: Camera,
+  car: Car,
   check: Check,
   "check-circle": CheckCircle,
   clapperboard: Clapperboard,
@@ -166,9 +170,11 @@ const STATIC_ICONS: Record<string, LucideIcon> = {
   "cloud-download": CloudDownload,
   "cloud-upload": CloudUpload,
   code: Code,
+  coffee: Coffee,
   coins: Coins,
   "credit-card": CreditCard,
   crosshair: Crosshair,
+  "cup-soda": CupSoda,
   database: Database,
   dice5: Dice5,
   disc: Disc,
@@ -226,9 +232,11 @@ const STATIC_ICONS: Record<string, LucideIcon> = {
   podcast: Podcast,
   plus: Plus,
   popcorn: Popcorn,
+  presentation: Presentation,
   puzzle: Puzzle,
   radio: Radio,
   receipt: Receipt,
+  robot: Bot,
   rocket: Rocket,
   search: Search,
   send: Send,
@@ -247,6 +255,7 @@ const STATIC_ICONS: Record<string, LucideIcon> = {
   sword: Sword,
   tag: Tag,
   terminal: Terminal,
+  "thumbs-up": ThumbsUp,
   ticket: Ticket,
   "trending-up": TrendingUp,
   trophy: Trophy,
@@ -271,8 +280,6 @@ const STATIC_ICONS: Record<string, LucideIcon> = {
   zap: Zap,
 }
 
-const iconCache = new Map<string, React.ComponentType<{ className?: string }>>()
-
 function isImageUrl(url: string): boolean {
   if (!url) return false
   const trimmed = url.trim()
@@ -291,38 +298,6 @@ function normalizeIconName(name: string): string {
     .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
     .replace(/[\s_]+/g, "-")
     .toLowerCase()
-}
-
-function getIconComponent(name: string): React.ComponentType<{ className?: string }> {
-  if (!name) return Receipt
-
-  const kebabName = normalizeIconName(name)
-
-  // 1. Instant static lookup (0ms overhead)
-  const StaticComp = STATIC_ICONS[kebabName]
-  if (StaticComp) {
-    return StaticComp
-  }
-
-  // 2. Memory cache lookup
-  if (iconCache.has(kebabName)) {
-    return iconCache.get(kebabName)!
-  }
-
-  // 3. Fallback to dynamic import for rare icons
-  const importFn = dynamicIconImports[kebabName as keyof typeof dynamicIconImports]
-  if (!importFn) {
-    iconCache.set(kebabName, Receipt)
-    return Receipt
-  }
-
-  const Component = dynamic(importFn, {
-    loading: () => <span className="inline-block size-4 animate-pulse rounded bg-muted/40" />,
-    ssr: false,
-  })
-
-  iconCache.set(kebabName, Component)
-  return Component
 }
 
 export const DynamicIcon = memo(function DynamicIcon({
@@ -345,6 +320,8 @@ export const DynamicIcon = memo(function DynamicIcon({
     )
   }
 
-  const Component = getIconComponent(name)
+  const kebabName = normalizeIconName(name)
+  const Component = STATIC_ICONS[kebabName] || Receipt
+
   return <Component className={className} />
 })

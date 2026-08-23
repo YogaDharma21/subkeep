@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { ArrowLeft, Plus, X, Sparkles, Link2, Users } from "lucide-react"
@@ -86,7 +86,7 @@ export function AddSubscriptionSheet({
     setTotalMembers("4")
   }
 
-  const handleTemplateSelect = (template: {
+  const handleTemplateSelect = useCallback((template: {
     name: string
     icon: string
     color: string
@@ -103,7 +103,7 @@ export function AddSubscriptionSheet({
     setSelectedColor(template.color)
     if (template.cancelUrl) setCancelUrl(template.cancelUrl)
     setStep(2)
-  }
+  }, [])
 
   const handleCustomCreate = () => {
     setStep(2)

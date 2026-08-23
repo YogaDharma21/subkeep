@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useMemo, useDeferredValue, useRef } from "react"
-import dynamicIconImports from "lucide-react/dynamicIconImports"
 import { Search, X, Check, Globe, Upload, Image as ImageIcon, Sparkles } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -17,7 +16,7 @@ const SEARCH_ALIASES: Record<string, string[]> = {
   messaging: ["MessageSquare", "MessageCircle", "MessagesSquare", "Mail", "Send"],
   social: ["Users", "UserCheck", "UserPlus", "Share2", "Globe", "MessageCircle", "Heart", "ThumbsUp"],
   video: ["Film", "Tv", "Video", "Clapperboard", "Play", "Monitor", "Camera", "Youtube", "Tv2", "Presentation"],
-  stream: ["Tv", "Film", "Video", "Radio", "Wifi", "Play", "Monitor", "Youtube", "Cast"],
+  stream: ["Tv", "Film", "Video", "Radio", "Wifi", "Play", "Monitor", "Youtube"],
   streaming: ["Tv", "Film", "Video", "Radio", "Wifi", "Play", "Monitor", "Youtube"],
   music: ["Music", "Headphones", "Radio", "Mic", "Podcast", "Volume2", "Music2", "Disc", "Guitar"],
   audio: ["Headphones", "Radio", "Mic", "Podcast", "Volume2", "Volume", "Music"],
@@ -28,14 +27,14 @@ const SEARCH_ALIASES: Record<string, string[]> = {
   finance: ["Wallet", "CreditCard", "Receipt", "BarChart3", "DollarSign", "Coins", "Briefcase", "Banknote", "PiggyBank", "Landmark", "TrendingUp"],
   pay: ["CreditCard", "Wallet", "Receipt", "DollarSign", "Coins", "Banknote"],
   payment: ["CreditCard", "Wallet", "Receipt", "DollarSign", "Coins", "Banknote"],
-  cloud: ["Cloud", "HardDrive", "Database", "Server", "Folder", "CloudDownload", "CloudUpload", "Cpu"],
-  ai: ["Brain", "Robot", "Bot", "Sparkles", "Cpu", "Zap", "Wand2", "WandSparkles"],
+  cloud: ["Cloud", "HardDrive", "Database", "Server", "Folder", "CloudDownload", "CloudUpload"],
+  ai: ["Brain", "Bot", "Sparkles", "Zap", "Wand2", "WandSparkles"],
   health: ["Dumbbell", "HeartPulse", "Activity", "Footprints", "Bicycle", "Heart", "Stethoscope", "Pill"],
   fitness: ["Dumbbell", "HeartPulse", "Activity", "Footprints", "Bicycle", "Flame", "Trophy"],
   store: ["ShoppingCart", "ShoppingBag", "Store", "Tag", "Gift", "Box", "Package", "Percent"],
   shop: ["ShoppingCart", "ShoppingBag", "Store", "Tag", "Gift", "Box", "Package"],
-  code: ["Code", "Terminal", "Cpu", "Laptop", "GitBranch", "FileCode", "FolderGit2"],
-  dev: ["Code", "Terminal", "Cpu", "Laptop", "GitBranch", "FileCode", "FolderGit2"],
+  code: ["Code", "Terminal", "Laptop", "GitBranch", "FileCode", "FolderGit2"],
+  dev: ["Code", "Terminal", "Laptop", "GitBranch", "FileCode", "FolderGit2"],
   work: ["Briefcase", "Building2", "Laptop", "Folder", "FileText", "Calendar", "Clock"],
   food: ["Utensils", "Coffee", "Pizza", "Apple", "Cake", "Beer", "Wine", "CupSoda"],
 }
@@ -43,7 +42,7 @@ const SEARCH_ALIASES: Record<string, string[]> = {
 const ICON_CATEGORIES: Record<string, string[]> = {
   Popular: [
     "Tv", "Music", "Film", "MessageSquare", "MessageCircle", "CreditCard", "Wallet", "Cloud",
-    "Gamepad2", "Laptop", "Phone", "Mail", "Globe", "Dumbbell", "Brain", "Robot",
+    "Gamepad2", "Laptop", "Phone", "Mail", "Globe", "Dumbbell", "Brain",
     "Sparkles", "ShoppingCart", "Zap", "Heart", "Briefcase", "BookOpen", "Receipt", "BarChart3"
   ],
   "Chat & Social": [
@@ -59,8 +58,8 @@ const ICON_CATEGORIES: Record<string, string[]> = {
     "Banknote", "PiggyBank", "Landmark", "ShoppingCart", "ShoppingBag", "Store", "Tag", "Gift", "Percent"
   ],
   "Tech & Tools": [
-    "Laptop", "Monitor", "Cloud", "Shield", "Robot", "Brain", "Rocket", "Zap",
-    "HardDrive", "Database", "Server", "Code", "Terminal", "Cpu", "WandSparkles", "Folder"
+    "Laptop", "Monitor", "Cloud", "Shield", "Brain", "Rocket", "Zap",
+    "HardDrive", "Database", "Server", "Code", "Terminal", "WandSparkles", "Folder"
   ],
   "Lifestyle": [
     "Dumbbell", "HeartPulse", "Footprints", "Bicycle", "Flower2", "Moon", "Sun", "Globe",
@@ -68,14 +67,12 @@ const ICON_CATEGORIES: Record<string, string[]> = {
   ]
 }
 
-function kebabToPascal(str: string): string {
-  return str
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join("")
-}
-
-const ALL_LUCIDE_ICONS: string[] = Object.keys(dynamicIconImports).map(kebabToPascal)
+const ALL_LUCIDE_ICONS: string[] = Array.from(
+  new Set([
+    ...Object.values(ICON_CATEGORIES).flat(),
+    ...Object.values(SEARCH_ALIASES).flat(),
+  ])
+).sort()
 
 const INDEXED_ALIASES = Object.entries(SEARCH_ALIASES).map(([alias, names]) => ({
   alias: alias.toLowerCase(),
