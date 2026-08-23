@@ -57,10 +57,10 @@ export function SubscriptionCard({
     <Link
       href={`/subscriptions/${sub._id}`}
       title={tooltipText}
-      className="flex items-center gap-3 rounded-xl border border-border bg-background p-3 transition-all hover:border-border/80 active:scale-[0.98] active:opacity-80 relative overflow-hidden group"
+      className="flex items-center gap-3 rounded-lg border border-border bg-background p-3 transition-all hover:border-border/80 active:scale-[0.98] active:opacity-80 relative overflow-hidden group"
     >
       <div
-        className="flex size-11 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105 overflow-hidden"
+        className="flex size-11 shrink-0 items-center justify-center rounded-lg transition-transform group-hover:scale-105 overflow-hidden"
         style={{ backgroundColor: sub.color }}
       >
         <DynamicIcon name={sub.icon} className="size-5 text-white" />
@@ -74,13 +74,13 @@ export function SubscriptionCard({
           </span>
 
           {isTrial && (
-            <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-wider shrink-0">
+            <span className="rounded-md bg-emerald-500/15 px-2 py-0.5 text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-wider shrink-0">
               TRIAL
             </span>
           )}
 
           {isShared && (
-            <span className="rounded-full bg-blue-500/15 px-2 py-0.5 text-[9px] font-extrabold text-blue-600 dark:text-blue-400 border border-blue-500/30 uppercase tracking-wider shrink-0">
+            <span className="rounded-md bg-blue-500/15 px-2 py-0.5 text-[9px] font-extrabold text-blue-600 dark:text-blue-400 border border-blue-500/30 uppercase tracking-wider shrink-0">
               SPLIT {sub.totalMembers ? `(1/${sub.totalMembers})` : ""}
             </span>
           )}

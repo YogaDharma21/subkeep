@@ -11,13 +11,15 @@ export default function CalendarPage() {
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
 
   return (
-    <div className="p-4">
+    <div>
       {subscriptions ? (
         <CalendarGrid subscriptions={subscriptions} />
       ) : (
         <div className="space-y-4">
-          <Skeleton className="h-[350px] rounded-xl" />
-          <Skeleton className="h-[100px] rounded-xl" />
+          <div className="space-y-3">
+            <Skeleton className="h-[350px] rounded-lg" />
+            <Skeleton className="h-[100px] rounded-lg" />
+          </div>
         </div>
       )}
     </div>
