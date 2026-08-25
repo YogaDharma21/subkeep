@@ -43,6 +43,7 @@ import { format, differenceInDays } from "date-fns"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/components/custom-alert-provider"
+import { SubscriptionDetailSkeleton } from "@/components/subscription-detail-skeleton"
 
 export default function SubscriptionDetailPage() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -302,11 +303,7 @@ export default function SubscriptionDetailPage() {
   }
 
   if (sub === undefined) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ color: colors.mutedText }}>Loading subscription details...</Text>
-      </SafeAreaView>
-    )
+    return <SubscriptionDetailSkeleton />
   }
 
   if (sub === null) {
