@@ -403,7 +403,7 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
               }}
             >
               <Text style={{ fontSize: 11, fontWeight: "700", color: colors.primary }}>
-                v0.0.1 (Mobile)
+                v0.0.1
               </Text>
             </View>
 
