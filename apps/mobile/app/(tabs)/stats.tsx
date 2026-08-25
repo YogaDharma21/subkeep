@@ -6,15 +6,12 @@ import { useAuth } from "@clerk/clerk-expo"
 import { api } from "@/convex/_generated/api"
 import { StatsCharts } from "@/components/stats-charts"
 import { SmartInsights } from "@/components/smart-insights"
-import { SearchBar } from "@/components/search-bar"
-import { useAlert } from "@/components/custom-alert-provider"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 
 export default function StatsScreen() {
   const { colors } = useThemeColor()
   const { isSignedIn } = useAuth()
-  const { showSearchModal } = useAlert()
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const payments = useQuery(api.payments.list, isSignedIn ? {} : "skip")
 
@@ -23,8 +20,6 @@ export default function StatsScreen() {
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40 }}>
-        <SearchBar onPress={showSearchModal} placeholder="Search statistics, insights..." />
-
         {subscriptions && (
           <SmartInsights
             subscriptions={subscriptions}

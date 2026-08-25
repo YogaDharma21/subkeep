@@ -27,12 +27,10 @@ import {
 import { SubscriptionCard } from "@/components/subscription-card"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
 import { SmartInsights } from "@/components/smart-insights"
-import { SearchBar } from "@/components/search-bar"
 import { currencies } from "@/constants/currencies"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
-import { useAlert } from "@/components/custom-alert-provider"
 import { differenceInDays } from "date-fns"
 
 export type FilterType = "all" | "due_soon" | "trial" | "regular"
@@ -49,7 +47,6 @@ export default function DashboardScreen() {
   const router = useRouter()
   const { colors } = useThemeColor()
   const { isSignedIn } = useAuth()
-  const { showSearchModal } = useAlert()
 
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
@@ -182,9 +179,6 @@ export default function DashboardScreen() {
           paddingBottom: 90,
         }}
       >
-        {/* Search Bar */}
-        <SearchBar onPress={showSearchModal} placeholder="Search..." />
-
         {/* Dynamic Summary Banner */}
         <View
           style={{
