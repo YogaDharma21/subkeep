@@ -384,6 +384,13 @@ export default function DashboardScreen() {
           ) : null}
         </View>
 
+        {/* Savings Recommendations & Insights */}
+        <SmartInsights
+          subscriptions={subscriptions || []}
+          primaryCurrency={primaryCurrency}
+          rates={rates}
+        />
+
         {/* Upcoming Reminders Banner */}
         <UpcomingReminders
           subscriptions={subscriptions || []}
@@ -547,13 +554,6 @@ export default function DashboardScreen() {
             ))}
           </View>
         )}
-
-        {/* Smart Insights widget */}
-        <SmartInsights
-          subscriptions={subscriptions || []}
-          primaryCurrency={primaryCurrency}
-          rates={rates}
-        />
       </ScrollView>
 
       {/* Floating Action Button for Add Subscription */}
