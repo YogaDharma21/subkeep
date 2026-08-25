@@ -10,7 +10,7 @@ import { View, ActivityIndicator } from "react-native"
 import { tokenCache } from "@/lib/token-cache"
 import { LandingScreen } from "@/components/landing-screen"
 import { CustomAlertProvider } from "@/components/custom-alert-provider"
-import { useThemeColor } from "@/hooks/use-theme-color"
+import { AppThemeProvider, useThemeColor } from "@/hooks/use-theme-color"
 import "react-native-reanimated"
 
 const convexUrl =
@@ -80,6 +80,10 @@ function InitialLayout() {
         options={{ presentation: "pageSheet", headerShown: false }}
       />
       <Stack.Screen
+        name="modal/preferences"
+        options={{ presentation: "pageSheet", headerShown: false }}
+      />
+      <Stack.Screen
         name="subscriptions/[id]"
         options={{ headerShown: false }}
       />
@@ -87,19 +91,27 @@ function InitialLayout() {
   )
 }
 
-export default function RootLayout() {
+function ThemedApp() {
   const { isDark } = useThemeColor()
 
+  return (
+    <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+      <InitialLayout />
+      <StatusBar style={isDark ? "light" : "dark"} />
+    </ThemeProvider>
+  )
+}
+
+export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
         <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-          <CustomAlertProvider>
-            <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
-              <InitialLayout />
-              <StatusBar style={isDark ? "light" : "dark"} />
-            </ThemeProvider>
-          </CustomAlertProvider>
+          <AppThemeProvider>
+            <CustomAlertProvider>
+              <ThemedApp />
+            </CustomAlertProvider>
+          </AppThemeProvider>
         </ConvexProviderWithClerk>
       </ClerkProvider>
     </SafeAreaProvider>

@@ -299,9 +299,11 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
                         style={{
                           fontSize: 13,
                           fontWeight: "700",
-                          color: isDestructive || !isCancel
+                          color: isDestructive
                             ? "#ffffff"
-                            : colors.text,
+                            : isCancel
+                            ? colors.text
+                            : colors.primaryForeground,
                         }}
                       >
                         {btn.text}
@@ -488,7 +490,7 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
                   borderRadius: 12,
                 }}
               >
-                <Text style={{ fontSize: 13, fontWeight: "700", color: "#ffffff" }}>
+                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.primaryForeground }}>
                   Done
                 </Text>
               </TouchableOpacity>

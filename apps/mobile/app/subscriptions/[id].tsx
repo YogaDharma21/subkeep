@@ -36,7 +36,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { IconPickerModal } from "@/components/icon-picker-modal"
-import { convertAndFormat } from "@/lib/currency"
+import { convertAndFormat, formatCycleLabel } from "@/lib/currency"
 import { getSymbol } from "@/constants/currencies"
 import { categoryColors } from "@/constants/categories"
 import { format, differenceInDays } from "date-fns"
@@ -293,8 +293,7 @@ export default function SubscriptionDetailPage() {
   const handleShareSplitReminder = async (member: { name: string; shareAmount: number }) => {
     if (!sub) return
     const symbol = getSymbol(sub.currency)
-    const cycleLabel = sub.cycle === "monthly" ? "month" : sub.cycle === "yearly" ? "year" : sub.cycle
-    const text = `Hey ${member.name}! Friendly reminder for your share of our ${sub.name} subscription (${symbol}${member.shareAmount} per ${cycleLabel}). Thanks!`
+    const text = `Hey ${member.name}! Friendly reminder for your share of our ${sub.name} subscription (${symbol}${member.shareAmount} ${formatCycleLabel(sub.cycle)}). Thanks!`
     try {
       await Share.share({ message: text })
     } catch (e) {

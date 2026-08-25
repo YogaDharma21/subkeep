@@ -18,7 +18,7 @@ import {
 } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { Button } from "@/components/ui/button"
-import { convertAndFormat } from "@/lib/currency"
+import { convertAndFormat, formatCycleLabel } from "@/lib/currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/components/custom-alert-provider"
 
@@ -151,7 +151,7 @@ export function CancellationGuideModal({
                     subscription.currency,
                     primaryCurrency,
                     rates
-                  )} per ${subscription.cycle === "monthly" ? "month" : subscription.cycle === "yearly" ? "year" : subscription.cycle}`
+                  )} ${formatCycleLabel(subscription.cycle)}`
                 )}
               </Text>
             </View>

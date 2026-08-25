@@ -11,9 +11,7 @@ import { useQuery, useMutation } from "convex/react"
 import { useAuth, useUser } from "@clerk/clerk-expo"
 import { api } from "@/convex/_generated/api"
 import {
-  Globe,
-  Bell,
-  Target,
+  SlidersHorizontal,
   CreditCard,
   FileSpreadsheet,
   Upload,
@@ -23,72 +21,31 @@ import {
   LogOut,
   Trash2,
   ChevronRight,
-  Check,
-  X,
 } from "lucide-react-native"
 import * as DocumentPicker from "expo-document-picker"
 import * as FileSystem from "expo-file-system/legacy"
 import * as Sharing from "expo-sharing"
-import { currencies, getSymbol } from "@/constants/currencies"
+import { getSymbol } from "@/constants/currencies"
 import { exportSubscriptionsToCSV, parseCSVToSubscriptions } from "@/lib/csv"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/components/custom-alert-provider"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 
 export default function SettingsScreen() {
   const router = useRouter()
-  const { colors } = useThemeColor()
+  const { colors, isDark } = useThemeColor()
   const { isSignedIn, signOut } = useAuth()
   const { user } = useUser()
   const { showAlert, showToast, showAboutModal } = useAlert()
 
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const payments = useQuery(api.payments.list, isSignedIn ? {} : "skip")
-  const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
 
-  const updateSettings = useMutation(api.userSettings.update)
   const removeAll = useMutation(api.subscriptions.removeAll)
   const restoreSubscriptions = useMutation(api.subscriptions.restoreAll)
   const restorePayments = useMutation(api.payments.restoreAll)
 
-  const { primaryCurrency, setPrimaryCurrency } = usePrimaryCurrency()
-  const [currencyModalOpen, setCurrencyModalOpen] = useState(false)
-  const [localReminderDays, setLocalReminderDays] = useState<number | null>(null)
-  const [budgetCapInput, setBudgetCapInput] = useState<string>(
-    userSettings?.monthlyBudgetCap !== undefined ? String(userSettings.monthlyBudgetCap) : ""
-  )
-  const [savingBudget, setSavingBudget] = useState(false)
-
-  const reminderDays = localReminderDays ?? userSettings?.reminderDays ?? 3
-
-  const handleReminderDaysChange = async (days: number) => {
-    setLocalReminderDays(days)
-    if (isSignedIn) {
-      try {
-        await updateSettings({ reminderDays: days })
-        showToast(`Reminders set to ${days === 0 ? "due date" : `${days} days before`}`, "success")
-      } catch {
-        showToast("Failed to update reminder timing", "error")
-      }
-    }
-  }
-
-  const handleSaveBudgetCap = async () => {
-    setSavingBudget(true)
-    const val = budgetCapInput.trim() ? parseFloat(budgetCapInput.trim()) : undefined
-    if (isSignedIn) {
-      try {
-        await updateSettings({ monthlyBudgetCap: val })
-        showToast(val ? `Monthly budget cap set to ${getSymbol(primaryCurrency)}${val}` : "Budget cap removed", "success")
-      } catch {
-        showToast("Failed to save budget cap", "error")
-      } finally {
-        setSavingBudget(false)
-      }
-    }
-  }
+  const { primaryCurrency } = usePrimaryCurrency()
 
   const handleExportCSV = async () => {
     if (!subscriptions || subscriptions.length === 0) {
@@ -411,7 +368,7 @@ export default function SettingsScreen() {
           </View>
         ) : null}
 
-        {/* Preferences Section */}
+        {/* Preferences & Payment Methods Section */}
         <View style={{ gap: 8 }}>
           <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
             GENERAL & PREFERENCES
@@ -426,10 +383,10 @@ export default function SettingsScreen() {
               overflow: "hidden",
             }}
           >
-            {/* Primary Currency Row */}
+            {/* Preferences Row (Dark Mode, Primary Currency, Alerts) */}
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => setCurrencyModalOpen(true)}
+              onPress={() => router.push("/modal/preferences" as never)}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
@@ -449,38 +406,22 @@ export default function SettingsScreen() {
                   justifyContent: "center",
                 }}
               >
-                <Globe size={18} color={colors.text} />
+                <SlidersHorizontal size={18} color={colors.text} />
               </View>
 
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
-                  Primary Currency
+                  Preferences
                 </Text>
                 <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
-                  Convert dashboard & stats to {primaryCurrency}
+                  {isDark ? "Dark" : "Light"} mode · {primaryCurrency} ({getSymbol(primaryCurrency)}) · Alerts
                 </Text>
               </View>
 
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                <View
-                  style={{
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
-                    borderRadius: 6,
-                    backgroundColor: colors.surface,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
-                >
-                  <Text style={{ fontSize: 12, fontWeight: "700", color: colors.text }}>
-                    {primaryCurrency} ({getSymbol(primaryCurrency)})
-                  </Text>
-                </View>
-                <ChevronRight size={16} color={colors.mutedText} />
-              </View>
+              <ChevronRight size={16} color={colors.mutedText} />
             </TouchableOpacity>
 
-            {/* Payment Methods & Card Vault */}
+            {/* Payment Methods & Card Vault Row */}
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => router.push("/modal/cards" as never)}
@@ -515,115 +456,6 @@ export default function SettingsScreen() {
 
               <ChevronRight size={16} color={colors.mutedText} />
             </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Alerts & Reminders */}
-        <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
-            ALERTS & REMINDERS
-          </Text>
-
-          <View
-            style={{
-              backgroundColor: colors.card,
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: 14,
-              padding: 14,
-              gap: 12,
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Bell size={18} color={colors.mutedText} />
-              <View>
-                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
-                  Reminder Timing
-                </Text>
-                <Text style={{ fontSize: 11, color: colors.mutedText }}>
-                  How many days in advance to highlight upcoming bills
-                </Text>
-              </View>
-            </View>
-
-            <View style={{ flexDirection: "row", gap: 6, paddingTop: 4 }}>
-              {[0, 1, 3, 5, 7].map((days) => {
-                const isSelected = reminderDays === days
-                return (
-                  <TouchableOpacity
-                    key={days}
-                    onPress={() => handleReminderDaysChange(days)}
-                    style={{
-                      flex: 1,
-                      paddingVertical: 8,
-                      borderRadius: 8,
-                      backgroundColor: isSelected ? colors.primary : colors.surface,
-                      borderWidth: 1,
-                      borderColor: isSelected ? colors.primary : colors.border,
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 11,
-                        fontWeight: "700",
-                        color: isSelected ? colors.primaryForeground : colors.mutedText,
-                      }}
-                    >
-                      {days === 0 ? "Same Day" : `${days}d`}
-                    </Text>
-                  </TouchableOpacity>
-                )
-              })}
-            </View>
-          </View>
-        </View>
-
-        {/* Monthly Budget Cap */}
-        <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
-            MONTHLY SPENDING BUDGET CAP
-          </Text>
-
-          <View
-            style={{
-              backgroundColor: colors.card,
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: 14,
-              padding: 14,
-              gap: 10,
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Target size={18} color={colors.primary} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
-                  Monthly Budget Limit
-                </Text>
-                <Text style={{ fontSize: 11, color: colors.mutedText }}>
-                  Shows visual warning progress bar on dashboard
-                </Text>
-              </View>
-            </View>
-
-            <View style={{ flexDirection: "row", gap: 8, alignItems: "center", paddingTop: 4 }}>
-              <View style={{ flex: 1 }}>
-                <Input
-                  placeholder={`e.g. 200 (${getSymbol(primaryCurrency)})`}
-                  value={budgetCapInput}
-                  onChangeText={setBudgetCapInput}
-                  keyboardType="numeric"
-                />
-              </View>
-              <Button
-                onPress={handleSaveBudgetCap}
-                loading={savingBudget}
-                style={{ height: 44, paddingHorizontal: 16 }}
-              >
-                Save
-              </Button>
-            </View>
           </View>
         </View>
 
@@ -871,77 +703,6 @@ export default function SettingsScreen() {
         </View>
       </ScrollView>
 
-      {/* Currency Selector Modal */}
-      {currencyModalOpen && (
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: "rgba(0,0,0,0.6)",
-            justifyContent: "flex-end",
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: colors.background,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              maxHeight: "75%",
-              paddingBottom: 24,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: 16,
-                borderBottomWidth: 1,
-                borderBottomColor: colors.border,
-              }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>
-                Select Primary Currency
-              </Text>
-              <TouchableOpacity onPress={() => setCurrencyModalOpen(false)}>
-                <X size={18} color={colors.text} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView contentContainerStyle={{ padding: 12, gap: 6 }}>
-              {currencies.map((c) => {
-                const isSelected = primaryCurrency === c.value
-                return (
-                  <TouchableOpacity
-                    key={c.value}
-                    onPress={async () => {
-                      await setPrimaryCurrency(c.value)
-                      setCurrencyModalOpen(false)
-                    }}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      paddingHorizontal: 14,
-                      paddingVertical: 12,
-                      borderRadius: 10,
-                      backgroundColor: isSelected ? colors.surfaceHover : "transparent",
-                    }}
-                  >
-                    <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
-                      {c.label}
-                    </Text>
-                    {isSelected ? <Check size={16} color={colors.primary} /> : null}
-                  </TouchableOpacity>
-                )
-              })}
-            </ScrollView>
-          </View>
-        </View>
-      )}
     </SafeAreaView>
   )
 }
