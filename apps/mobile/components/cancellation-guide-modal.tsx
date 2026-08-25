@@ -151,7 +151,7 @@ export function CancellationGuideModal({
                     subscription.currency,
                     primaryCurrency,
                     rates
-                  )} / ${subscription.cycle}`
+                  )} per ${subscription.cycle === "monthly" ? "month" : subscription.cycle === "yearly" ? "year" : subscription.cycle}`
                 )}
               </Text>
             </View>

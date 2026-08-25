@@ -324,7 +324,7 @@ export function SearchModal({
                             {convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)}
                           </Text>
                           <Text style={{ fontSize: 10, color: colors.mutedText }}>
-                            /{sub.cycle}
+                            per {sub.cycle === "monthly" ? "month" : sub.cycle === "yearly" ? "year" : sub.cycle}
                           </Text>
                         </View>
 

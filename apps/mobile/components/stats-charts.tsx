@@ -331,7 +331,7 @@ export function StatsCharts({
               {formatCurrencyAmount(monthlyTotal, primaryCurrency)}
             </Text>
             <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
-              AVG / MONTH
+              AVG PER MONTH
             </Text>
           </View>
 
@@ -534,7 +534,7 @@ export function StatsCharts({
               {categoryData.map((cat, idx) => {
                 const detailText =
                   cat.rawCost > 0
-                    ? `${formatCurrencyAmount(cat.rawCost, primaryCurrency)}/mo · ${cat.rawCount} sub${cat.rawCount > 1 ? "s" : ""}`
+                    ? `${formatCurrencyAmount(cat.rawCost, primaryCurrency)} per month · ${cat.rawCount} sub${cat.rawCount > 1 ? "s" : ""}`
                     : `Free · ${cat.rawCount} sub${cat.rawCount > 1 ? "s" : ""}`
 
                 return (

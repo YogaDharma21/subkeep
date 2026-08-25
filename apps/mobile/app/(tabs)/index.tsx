@@ -257,7 +257,7 @@ export default function DashboardScreen() {
                   {formatCurrencyAmount(monthlyTotalConverted, primaryCurrency)}
                 </Text>
                 <Text style={{ fontSize: 10, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                  / Month
+                  Per Month
                 </Text>
               </View>
 
@@ -271,7 +271,7 @@ export default function DashboardScreen() {
                   {formatCurrencyAmount(yearlyTotalConverted, primaryCurrency)}
                 </Text>
                 <Text style={{ fontSize: 10, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                  / Year
+                  Per Year
                 </Text>
               </View>
             </View>
