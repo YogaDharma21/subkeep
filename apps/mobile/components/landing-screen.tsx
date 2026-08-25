@@ -4,17 +4,18 @@ import {
   Text,
   ScrollView,
   SafeAreaView,
+  TouchableOpacity,
 } from "react-native"
 import { useRouter } from "expo-router"
 import {
   Receipt,
-  ArrowRight,
   Sparkles,
   CreditCard,
   Users,
   Check,
+  Mail,
 } from "lucide-react-native"
-import { Button } from "@/components/ui/button"
+import { GoogleOAuthButton } from "@/components/google-oauth-button"
 import { useThemeColor } from "@/hooks/use-theme-color"
 
 export function LandingScreen() {
@@ -305,23 +306,29 @@ export function LandingScreen() {
           </View>
         </View>
 
-        {/* Action CTAs */}
-        <View style={{ gap: 10, paddingTop: 6, paddingBottom: 20 }}>
-          <Button
-            size="lg"
-            onPress={() => router.push("/(auth)/sign-in" as never)}
-            icon={<ArrowRight size={18} color={colors.primaryForeground} />}
-          >
-            LOG IN
-          </Button>
+        {/* Action CTAs: 1-Tap Google Sign In */}
+        <View style={{ gap: 12, paddingTop: 6, paddingBottom: 20 }}>
+          <GoogleOAuthButton
+            title="Continue with Google"
+            onSuccess={() => router.replace("/(tabs)" as never)}
+          />
 
-          <Button
-            variant="outline"
-            size="lg"
-            onPress={() => router.push("/(auth)/sign-up" as never)}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => router.push("/(auth)/sign-in" as never)}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              paddingVertical: 8,
+            }}
           >
-            CREATE ACCOUNT
-          </Button>
+            <Mail size={14} color={colors.mutedText} />
+            <Text style={{ fontSize: 12, fontWeight: "600", color: colors.mutedText }}>
+              Sign in with Email
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>

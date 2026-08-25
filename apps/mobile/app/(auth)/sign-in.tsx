@@ -11,6 +11,7 @@ import {
 import { useRouter } from "expo-router"
 import { useSignIn } from "@clerk/clerk-expo"
 import { Lock, Mail, ArrowRight, Receipt } from "lucide-react-native"
+import { GoogleOAuthButton } from "@/components/google-oauth-button"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useThemeColor } from "@/hooks/use-theme-color"
@@ -94,7 +95,22 @@ export default function SignInScreen() {
             </Text>
           </View>
 
-          {/* Form */}
+          {/* Primary Google Auth */}
+          <GoogleOAuthButton
+            title="Continue with Google"
+            onSuccess={() => router.replace("/(tabs)" as never)}
+          />
+
+          {/* Divider */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginVertical: 4 }}>
+            <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+            <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
+              or with email
+            </Text>
+            <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+          </View>
+
+          {/* Email/Password Form */}
           <View style={{ gap: 14 }}>
             <Input
               label="Email Address"
@@ -136,7 +152,7 @@ export default function SignInScreen() {
               icon={<ArrowRight size={18} color={colors.primaryForeground} />}
               style={{ marginTop: 6 }}
             >
-              LOG IN
+              LOG IN WITH EMAIL
             </Button>
           </View>
 
