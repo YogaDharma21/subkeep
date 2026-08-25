@@ -202,10 +202,6 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
     return sum
   }, [billingDays, primaryCurrency, rates])
 
-  const totalRenewals = Object.values(billingDays).reduce((cnt, dayEvents) => {
-    return cnt + dayEvents.filter((e) => e.eventType === "renewal").length
-  }, 0)
-
   const prevMonth = () => {
     setCurrentDate(new Date(year, month - 1, 1))
     setSelectedDay(1)
@@ -359,34 +355,21 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
       {/* Month Summary Banner */}
       <View
         style={{
-          flexDirection: "row",
           backgroundColor: colors.card,
           borderWidth: 1,
           borderColor: colors.border,
           borderRadius: 12,
-          padding: 12,
-          justifyContent: "space-around",
+          padding: 14,
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        <View style={{ alignItems: "center" }}>
-          <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
-            {formatCurrencyAmount(monthTotal, primaryCurrency)}
-          </Text>
-          <Text style={{ fontSize: 10, color: colors.mutedText, textTransform: "uppercase" }}>
-            Total Projected Spend
-          </Text>
-        </View>
-
-        <View style={{ width: 1, backgroundColor: colors.border }} />
-
-        <View style={{ alignItems: "center" }}>
-          <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
-            {totalRenewals}
-          </Text>
-          <Text style={{ fontSize: 10, color: colors.mutedText, textTransform: "uppercase" }}>
-            Billing Events
-          </Text>
-        </View>
+        <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>
+          {formatCurrencyAmount(monthTotal, primaryCurrency)}
+        </Text>
+        <Text style={{ fontSize: 10, color: colors.mutedText, textTransform: "uppercase", marginTop: 2 }}>
+          Total Projected Spend
+        </Text>
       </View>
 
       {/* Selected Day Events List */}
