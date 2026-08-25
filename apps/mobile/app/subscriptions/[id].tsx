@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Linking,
   Share,
 } from "react-native"
@@ -43,6 +42,7 @@ import { categoryColors } from "@/constants/categories"
 import { format, differenceInDays } from "date-fns"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { useAlert } from "@/components/custom-alert-provider"
 
 export default function SubscriptionDetailPage() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -50,6 +50,7 @@ export default function SubscriptionDetailPage() {
   const { colors } = useThemeColor()
   const { isSignedIn } = useAuth()
   const { primaryCurrency, rates } = usePrimaryCurrency()
+  const { showAlert, showToast } = useAlert()
 
   const [editing, setEditing] = useState(false)
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
@@ -148,9 +149,9 @@ export default function SubscriptionDetailPage() {
         splitMembers: editIsShared && editSplitMembers.length > 0 ? editSplitMembers : undefined,
       })
       setEditing(false)
-      Alert.alert("Success", "Subscription updated successfully")
+      showToast("Subscription updated successfully", "success")
     } catch {
-      Alert.alert("Error", "Failed to update subscription")
+      showToast("Failed to update subscription", "error")
     }
   }
 
@@ -158,9 +159,9 @@ export default function SubscriptionDetailPage() {
     if (!id || !sub) return
     try {
       await suspendMutation({ id: id as Id<"subscriptions"> })
-      Alert.alert("Success", sub.isActive ? "Subscription suspended" : "Subscription resumed")
+      showToast(sub.isActive ? "Subscription suspended" : "Subscription resumed", "info")
     } catch {
-      Alert.alert("Error", "Failed to change subscription state")
+      showToast("Failed to change subscription state", "error")
     }
   }
 
@@ -168,18 +169,19 @@ export default function SubscriptionDetailPage() {
     if (!id) return
     try {
       const newId = await cloneMutation({ id: id as Id<"subscriptions"> })
-      Alert.alert("Success", "Subscription cloned")
+      showToast("Subscription cloned", "success")
       router.push(`/subscriptions/${newId}` as never)
     } catch {
-      Alert.alert("Error", "Failed to clone subscription")
+      showToast("Failed to clone subscription", "error")
     }
   }
 
   const handleDelete = () => {
-    Alert.alert(
-      "Delete Subscription",
-      `Are you sure you want to permanently remove ${sub?.name}?`,
-      [
+    showAlert({
+      title: "Delete Subscription",
+      message: `Are you sure you want to permanently remove ${sub?.name}?`,
+      icon: "warning",
+      buttons: [
         { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
@@ -188,14 +190,15 @@ export default function SubscriptionDetailPage() {
             if (!id) return
             try {
               await removeMutation({ id: id as Id<"subscriptions"> })
+              showToast("Subscription deleted", "info")
               router.replace("/(tabs)" as never)
             } catch {
-              Alert.alert("Error", "Failed to delete subscription")
+              showToast("Failed to delete subscription", "error")
             }
           },
         },
-      ]
-    )
+      ],
+    })
   }
 
   const handleRecordPayment = async () => {
@@ -211,12 +214,12 @@ export default function SubscriptionDetailPage() {
         category: sub.category,
         date: new Date().toISOString().split("T")[0],
       })
-      Alert.alert(
-        "Payment Recorded",
-        `Recorded payment of ${convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)} for ${sub.name}`
+      showToast(
+        `Recorded payment of ${convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)} for ${sub.name}`,
+        "success"
       )
     } catch {
-      Alert.alert("Error", "Failed to record payment")
+      showToast("Failed to record payment", "error")
     }
   }
 
@@ -249,10 +252,10 @@ export default function SubscriptionDetailPage() {
         receiptStorageId: storageId,
         receiptFileName: asset.name,
       })
-      Alert.alert("Success", "Receipt invoice uploaded successfully")
+      showToast("Receipt invoice uploaded successfully", "success")
     } catch (e) {
       console.error("Receipt upload error:", e)
-      Alert.alert("Error", "Failed to attach receipt")
+      showToast("Failed to attach receipt", "error")
     } finally {
       setUploadingReceipt(false)
     }
@@ -266,9 +269,9 @@ export default function SubscriptionDetailPage() {
         receiptStorageId: undefined,
         receiptFileName: "",
       })
-      Alert.alert("Success", "Receipt invoice removed")
+      showToast("Receipt invoice removed", "info")
     } catch {
-      Alert.alert("Error", "Failed to remove receipt")
+      showToast("Failed to remove receipt", "error")
     }
   }
 
@@ -283,7 +286,7 @@ export default function SubscriptionDetailPage() {
         splitMembers: updated,
       })
     } catch {
-      Alert.alert("Error", "Failed to update member status")
+      showToast("Failed to update member status", "error")
     }
   }
 

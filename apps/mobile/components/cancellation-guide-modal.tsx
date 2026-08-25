@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Linking,
-  Alert,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import {
@@ -21,6 +20,7 @@ import { DynamicIcon } from "@/components/dynamic-icon"
 import { Button } from "@/components/ui/button"
 import { convertAndFormat } from "@/lib/currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { useAlert } from "@/components/custom-alert-provider"
 
 export interface CancellationGuideSub {
   _id: string
@@ -53,6 +53,7 @@ export function CancellationGuideModal({
   rates,
 }: CancellationGuideModalProps) {
   const { colors } = useThemeColor()
+  const { showToast } = useAlert()
   const [checkedSteps, setCheckedSteps] = useState<Record<number, boolean>>({})
 
   if (!subscription) return null
@@ -98,7 +99,7 @@ export function CancellationGuideModal({
       await Linking.openURL(directUrl)
       setCheckedSteps((prev) => ({ ...prev, 0: true }))
     } catch {
-      Alert.alert("Unable to open URL", directUrl)
+      showToast("Unable to open cancellation URL", "error")
     }
   }
 

@@ -1,11 +1,12 @@
 import React, { useState } from "react"
-import { View, Text, TouchableOpacity, Alert } from "react-native"
+import { View, Text, TouchableOpacity } from "react-native"
 import { Bell, Send, Check, ExternalLink } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
 import { findUpcomingReminders, ReminderItem } from "@/lib/notifications"
 import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { useAlert } from "@/components/custom-alert-provider"
 
 interface UpcomingRemindersProps {
   subscriptions: {
@@ -34,6 +35,7 @@ export function UpcomingReminders({
   onMarkCanceled,
 }: UpcomingRemindersProps) {
   const { colors } = useThemeColor()
+  const { showAlert } = useAlert()
   const [selectedSubForCancel, setSelectedSubForCancel] = useState<ReminderItem | null>(null)
   const [sentAlerts, setSentAlerts] = useState<Record<string, boolean>>({})
 
@@ -49,7 +51,11 @@ export function UpcomingReminders({
       ? `Your trial for ${item.name} ends in ${item.daysLeft === 0 ? "today" : `${item.daysLeft} day(s)`}. Cancel before auto-renewal!`
       : `Payment of ${priceFormatted} for ${item.name} is due in ${item.daysLeft === 0 ? "today" : `${item.daysLeft} day(s)`}.`
 
-    Alert.alert(title, msg)
+    showAlert({
+      title,
+      message: msg,
+      icon: isTrial ? "warning" : "info",
+    })
     setSentAlerts((prev) => ({ ...prev, [item._id]: true }))
   }
 

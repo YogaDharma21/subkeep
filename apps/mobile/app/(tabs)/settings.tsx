@@ -4,8 +4,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Alert,
-  Linking,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
@@ -35,6 +33,7 @@ import { currencies, getSymbol } from "@/constants/currencies"
 import { exportSubscriptionsToCSV, parseCSVToSubscriptions } from "@/lib/csv"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { useAlert } from "@/components/custom-alert-provider"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
@@ -43,6 +42,7 @@ export default function SettingsScreen() {
   const { colors } = useThemeColor()
   const { isSignedIn, signOut } = useAuth()
   const { user } = useUser()
+  const { showAlert, showToast, showAboutModal } = useAlert()
 
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const payments = useQuery(api.payments.list, isSignedIn ? {} : "skip")
@@ -68,9 +68,9 @@ export default function SettingsScreen() {
     if (isSignedIn) {
       try {
         await updateSettings({ reminderDays: days })
-        Alert.alert("Success", `Reminders set to ${days === 0 ? "due date" : `${days} days before`}`)
+        showToast(`Reminders set to ${days === 0 ? "due date" : `${days} days before`}`, "success")
       } catch {
-        Alert.alert("Error", "Failed to update reminder timing")
+        showToast("Failed to update reminder timing", "error")
       }
     }
   }
@@ -81,9 +81,9 @@ export default function SettingsScreen() {
     if (isSignedIn) {
       try {
         await updateSettings({ monthlyBudgetCap: val })
-        Alert.alert("Success", val ? `Monthly budget cap set to ${getSymbol(primaryCurrency)}${val}` : "Budget cap removed")
+        showToast(val ? `Monthly budget cap set to ${getSymbol(primaryCurrency)}${val}` : "Budget cap removed", "success")
       } catch {
-        Alert.alert("Error", "Failed to save budget cap")
+        showToast("Failed to save budget cap", "error")
       } finally {
         setSavingBudget(false)
       }
@@ -92,7 +92,7 @@ export default function SettingsScreen() {
 
   const handleExportCSV = async () => {
     if (!subscriptions || subscriptions.length === 0) {
-      Alert.alert("Export", "No subscriptions available to export.")
+      showAlert({ title: "Export", message: "No subscriptions available to export.", icon: "info" })
       return
     }
 
@@ -111,17 +111,17 @@ export default function SettingsScreen() {
           dialogTitle: "Export Subscriptions CSV",
         })
       } else {
-        Alert.alert("Success", "CSV generated at " + fileUri)
+        showToast("CSV generated successfully", "success")
       }
     } catch (e) {
       console.error(e)
-      Alert.alert("Error", "Failed to export CSV")
+      showToast("Failed to export CSV", "error")
     }
   }
 
   const handleExportJSON = async () => {
     if (!subscriptions || subscriptions.length === 0) {
-      Alert.alert("Export", "No subscriptions available to export.")
+      showAlert({ title: "Export", message: "No subscriptions available to export.", icon: "info" })
       return
     }
 
@@ -162,7 +162,7 @@ export default function SettingsScreen() {
       }
     } catch (e) {
       console.error(e)
-      Alert.alert("Error", "Failed to export JSON")
+      showToast("Failed to export JSON", "error")
     }
   }
 
@@ -219,7 +219,7 @@ export default function SettingsScreen() {
       }
     } catch (e) {
       console.error(e)
-      Alert.alert("Error", "Failed to create full backup")
+      showToast("Failed to create full backup", "error")
     }
   }
 
@@ -239,31 +239,36 @@ export default function SettingsScreen() {
 
       const rows = parseCSVToSubscriptions(content)
       if (rows.length === 0) {
-        Alert.alert("Import Failed", "No valid subscription records found in CSV file.")
+        showAlert({
+          title: "Import Failed",
+          message: "No valid subscription records found in CSV file.",
+          icon: "warning",
+        })
         return
       }
 
-      Alert.alert(
-        "Restore Subscriptions?",
-        `Found ${rows.length} subscriptions in CSV. This will import them to your SubKeep account.`,
-        [
+      showAlert({
+        title: "Restore Subscriptions?",
+        message: `Found ${rows.length} subscriptions in CSV. This will import them to your SubKeep account.`,
+        icon: "info",
+        buttons: [
           { text: "Cancel", style: "cancel" },
           {
             text: "Import",
             onPress: async () => {
               try {
                 await restoreSubscriptions({ subscriptions: rows as never[] })
-                Alert.alert("Success", `Successfully imported ${rows.length} subscriptions!`)
+                showToast(`Successfully imported ${rows.length} subscriptions!`, "success")
               } catch {
-                Alert.alert("Error", "Failed to import CSV records")
+                showToast("Failed to import CSV records", "error")
               }
             },
           },
-        ]
-      )
+        ],
+      })
     } catch (e) {
       console.error(e)
-      Alert.alert("Error", "Failed to read CSV file")
+      showToast("Failed to read CSV file", "error")
     }
   }
 
@@ -283,17 +288,22 @@ export default function SettingsScreen() {
 
       const data = JSON.parse(content)
       if (!data.subscriptions || !Array.isArray(data.subscriptions)) {
-        Alert.alert("Invalid Backup", "The JSON file does not contain a valid subscription list.")
+        showAlert({
+          title: "Invalid Backup",
+          message: "The JSON file does not contain a valid subscription list.",
+          icon: "error",
+        })
         return
       }
 
       const count = data.subscriptions.length
       const payCount = data.payments?.length || 0
 
-      Alert.alert(
-        "Restore Backup?",
-        `Ready to restore ${count} subscriptions${payCount > 0 ? ` and ${payCount} payments` : ""}.`,
-        [
+      showAlert({
+        title: "Restore Backup?",
+        message: `Ready to restore ${count} subscriptions${payCount > 0 ? ` and ${payCount} payments` : ""}.`,
+        icon: "info",
+        buttons: [
           { text: "Cancel", style: "cancel" },
           {
             text: "Restore",
@@ -303,25 +313,26 @@ export default function SettingsScreen() {
                 if (data.payments && data.payments.length > 0) {
                   await restorePayments({ payments: data.payments })
                 }
-                Alert.alert("Success", `Successfully restored ${count} subscriptions!`)
+                showToast(`Successfully restored ${count} subscriptions!`, "success")
               } catch {
-                Alert.alert("Error", "Failed to restore backup")
+                showToast("Failed to restore backup", "error")
               }
             },
           },
-        ]
-      )
+        ],
+      })
     } catch (e) {
       console.error(e)
-      Alert.alert("Error", "Invalid JSON backup file")
+      showToast("Invalid JSON backup file", "error")
     }
   }
 
   const handleDeleteAll = () => {
-    Alert.alert(
-      "Delete All Data?",
-      "This will permanently delete all your subscriptions and payment logs. This action cannot be undone.",
-      [
+    showAlert({
+      title: "Delete All Data?",
+      message: "This will permanently delete all your subscriptions and payment logs. This action cannot be undone.",
+      icon: "warning",
+      buttons: [
         { text: "Cancel", style: "cancel" },
         {
           text: "Delete All",
@@ -329,27 +340,32 @@ export default function SettingsScreen() {
           onPress: async () => {
             try {
               await removeAll()
-              Alert.alert("Deleted", "All your subscription records have been deleted.")
+              showToast("All subscription records have been deleted.", "info")
             } catch {
-              Alert.alert("Error", "Failed to delete data")
+              showToast("Failed to delete data", "error")
             }
           },
         },
-      ]
-    )
+      ],
+    })
   }
 
   const handleSignOut = () => {
-    Alert.alert("Log Out", "Are you sure you want to sign out?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Log Out",
-        style: "destructive",
-        onPress: async () => {
-          await signOut()
+    showAlert({
+      title: "Log Out",
+      message: "Are you sure you want to sign out?",
+      icon: "info",
+      buttons: [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Log Out",
+          style: "destructive",
+          onPress: async () => {
+            await signOut()
+          },
         },
-      },
-    ])
+      ],
+    })
   }
 
   return (
@@ -748,19 +764,7 @@ export default function SettingsScreen() {
         >
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => {
-              Alert.alert(
-                "About SubKeep",
-                "SubKeep is a sleek subscription management and analytics platform designed to keep recurring expenses organized.\n\nOpen Source on GitHub.",
-                [
-                  { text: "Close", style: "cancel" },
-                  {
-                    text: "GitHub",
-                    onPress: () => Linking.openURL("https://github.com/YogaDharma21/subkeep"),
-                  },
-                ]
-              )
-            }}
+            onPress={showAboutModal}
             style={{
               flexDirection: "row",
               alignItems: "center",
