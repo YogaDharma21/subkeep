@@ -2,6 +2,7 @@ import { ClerkProvider, useAuth } from "@clerk/clerk-expo"
 import { ConvexProviderWithClerk } from "convex/react-clerk"
 import { ConvexReactClient } from "convex/react"
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native"
+import { SafeAreaProvider } from "react-native-safe-area-context"
 import { Stack, useRouter, useSegments } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import React, { useEffect } from "react"
@@ -89,13 +90,15 @@ export default function RootLayout() {
   const { isDark } = useThemeColor()
 
   return (
-    <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
-      <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-        <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
-          <InitialLayout />
-          <StatusBar style={isDark ? "light" : "dark"} />
-        </ThemeProvider>
-      </ConvexProviderWithClerk>
-    </ClerkProvider>
+    <SafeAreaProvider>
+      <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
+        <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+          <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+            <InitialLayout />
+            <StatusBar style={isDark ? "light" : "dark"} />
+          </ThemeProvider>
+        </ConvexProviderWithClerk>
+      </ClerkProvider>
+    </SafeAreaProvider>
   )
 }

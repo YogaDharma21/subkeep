@@ -3,11 +3,11 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
 } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { useSignUp } from "@clerk/clerk-expo"
 import { Lock, Mail, ArrowRight, CheckCircle, Receipt } from "lucide-react-native"

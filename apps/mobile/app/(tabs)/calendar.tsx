@@ -1,5 +1,6 @@
 import React from "react"
-import { ScrollView, SafeAreaView, ActivityIndicator } from "react-native"
+import { ScrollView, ActivityIndicator } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { useQuery } from "convex/react"
 import { useAuth } from "@clerk/clerk-expo"
 import { api } from "@/convex/_generated/api"
@@ -12,7 +13,7 @@ export default function CalendarScreen() {
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         {subscriptions ? (
           <CalendarGrid subscriptions={subscriptions} />

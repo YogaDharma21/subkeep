@@ -3,11 +3,11 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
   TouchableOpacity,
   ActivityIndicator,
   Modal,
 } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/clerk-expo"
@@ -170,7 +170,7 @@ export default function DashboardScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,

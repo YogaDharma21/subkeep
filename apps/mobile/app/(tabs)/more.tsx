@@ -3,11 +3,11 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
   TouchableOpacity,
   Alert,
   Linking,
 } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth, useUser } from "@clerk/clerk-expo"
@@ -383,7 +383,7 @@ export default function MoreScreen() {
   ]
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 40 }}>
         {/* User profile card */}
         {user ? (

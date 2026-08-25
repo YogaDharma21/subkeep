@@ -5,10 +5,10 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
   FlatList,
 } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import { Search, X, Globe } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { useThemeColor } from "@/hooks/use-theme-color"
