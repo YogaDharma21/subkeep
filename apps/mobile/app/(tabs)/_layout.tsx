@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router"
-import { TouchableOpacity } from "react-native"
+import { View, Text, TouchableOpacity } from "react-native"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/components/custom-alert-provider"
 import { Receipt, Calendar, BarChart3, Settings, Search } from "lucide-react-native"
@@ -22,11 +22,27 @@ export default function TabLayout() {
           backgroundColor: colors.background,
         },
         headerTintColor: colors.text,
-        headerTitleStyle: {
-          fontWeight: "800",
-          fontSize: 18,
-        },
         headerShadowVisible: false,
+        headerTitle: "",
+        headerLeft: () => (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginLeft: 16 }}>
+            <View
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 8,
+                backgroundColor: colors.primary,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Receipt size={16} color="#ffffff" strokeWidth={2.4} />
+            </View>
+            <Text style={{ fontSize: 18, fontWeight: "900", color: colors.text, letterSpacing: -0.4 }}>
+              SubKeep
+            </Text>
+          </View>
+        ),
         headerRight: () => (
           <TouchableOpacity
             activeOpacity={0.7}
@@ -41,28 +57,28 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Dashboard",
+          tabBarLabel: "Dashboard",
           tabBarIcon: ({ color, size }) => <Receipt size={size || 22} color={color} />,
         }}
       />
       <Tabs.Screen
         name="calendar"
         options={{
-          title: "Calendar",
+          tabBarLabel: "Calendar",
           tabBarIcon: ({ color, size }) => <Calendar size={size || 22} color={color} />,
         }}
       />
       <Tabs.Screen
         name="stats"
         options={{
-          title: "Statistics",
+          tabBarLabel: "Statistics",
           tabBarIcon: ({ color, size }) => <BarChart3 size={size || 22} color={color} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
+          tabBarLabel: "Settings",
           tabBarIcon: ({ color, size }) => <Settings size={size || 22} color={color} />,
         }}
       />
