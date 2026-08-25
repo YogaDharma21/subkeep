@@ -5,21 +5,16 @@ import { useQuery } from "convex/react"
 import { useAuth } from "@clerk/clerk-expo"
 import { api } from "@/convex/_generated/api"
 import { CalendarGrid } from "@/components/calendar-grid"
-import { SearchBar } from "@/components/search-bar"
-import { useAlert } from "@/components/custom-alert-provider"
 import { useThemeColor } from "@/hooks/use-theme-color"
 
 export default function CalendarScreen() {
   const { colors } = useThemeColor()
   const { isSignedIn } = useAuth()
-  const { showSearchModal } = useAlert()
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
 
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40 }}>
-        <SearchBar onPress={showSearchModal} placeholder="Search subscriptions, renewal dates..." />
-
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         {subscriptions ? (
           <CalendarGrid subscriptions={subscriptions} />
         ) : (
