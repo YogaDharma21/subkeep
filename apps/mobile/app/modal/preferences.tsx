@@ -330,7 +330,7 @@ export default function PreferencesModal() {
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Bell size={18} color={colors.amber} />
+              <Bell size={18} color={colors.text} />
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
                   Renewal & Trial Alerts
@@ -412,7 +412,7 @@ export default function PreferencesModal() {
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Target size={18} color={colors.primary} />
+              <Target size={18} color={colors.text} />
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
                   Monthly Budget Limit
