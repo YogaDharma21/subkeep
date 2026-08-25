@@ -14,6 +14,7 @@ import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/clerk-expo"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
+import * as DocumentPicker from "expo-document-picker"
 import {
   ArrowLeft,
   Pencil,
@@ -22,20 +23,24 @@ import {
   Copy,
   Trash2,
   ExternalLink,
-  Link2,
   Users,
   Check,
-  Share2,
+  Sparkles,
+  Paperclip,
+  Upload,
+  DollarSign,
+  FileText,
+  MessageSquare,
 } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { IconPickerModal } from "@/components/icon-picker-modal"
-import { convertAndFormat, formatCurrencyAmount } from "@/lib/currency"
+import { convertAndFormat } from "@/lib/currency"
 import { getSymbol } from "@/constants/currencies"
-import { format } from "date-fns"
+import { categoryColors } from "@/constants/categories"
+import { format, differenceInDays } from "date-fns"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 
@@ -49,6 +54,7 @@ export default function SubscriptionDetailPage() {
   const [editing, setEditing] = useState(false)
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [iconPickerOpen, setIconPickerOpen] = useState(false)
+  const [uploadingReceipt, setUploadingReceipt] = useState(false)
 
   const sub = useQuery(
     api.subscriptions.get,
@@ -63,6 +69,8 @@ export default function SubscriptionDetailPage() {
   const suspendMutation = useMutation(api.subscriptions.suspend)
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
+  const recordPaymentMutation = useMutation(api.payments.create)
+  const generateUploadUrl = useMutation(api.subscriptions.generateUploadUrl)
 
   // Edit form state
   const [editName, setEditName] = useState("")
@@ -85,6 +93,12 @@ export default function SubscriptionDetailPage() {
   const [editSplitMembers, setEditSplitMembers] = useState<
     { name: string; shareAmount: number; isPaid?: boolean }[]
   >([])
+
+  const colorOptions = [
+    "#000000", "#555555", "#E50914", "#1DB954", "#00A8E1",
+    "#4285F4", "#0078D4", "#B535F6", "#F47D31", "#00C4CC",
+    "#E60023", "#107C10", "#003087", "#58CC02", "#FF0000",
+  ]
 
   const startEditing = () => {
     if (!sub) return
@@ -134,27 +148,28 @@ export default function SubscriptionDetailPage() {
         splitMembers: editIsShared && editSplitMembers.length > 0 ? editSplitMembers : undefined,
       })
       setEditing(false)
-      Alert.alert("Success", "Subscription updated")
+      Alert.alert("Success", "Subscription updated successfully")
     } catch {
       Alert.alert("Error", "Failed to update subscription")
     }
   }
 
   const handleToggleActive = async () => {
-    if (!id) return
+    if (!id || !sub) return
     try {
       await suspendMutation({ id: id as Id<"subscriptions"> })
+      Alert.alert("Success", sub.isActive ? "Subscription suspended" : "Subscription resumed")
     } catch {
-      Alert.alert("Error", "Failed to change status")
+      Alert.alert("Error", "Failed to change subscription state")
     }
   }
 
   const handleClone = async () => {
     if (!id) return
     try {
-      await cloneMutation({ id: id as Id<"subscriptions"> })
+      const newId = await cloneMutation({ id: id as Id<"subscriptions"> })
       Alert.alert("Success", "Subscription cloned")
-      router.back()
+      router.push(`/subscriptions/${newId}` as never)
     } catch {
       Alert.alert("Error", "Failed to clone subscription")
     }
@@ -173,7 +188,7 @@ export default function SubscriptionDetailPage() {
             if (!id) return
             try {
               await removeMutation({ id: id as Id<"subscriptions"> })
-              router.back()
+              router.replace("/(tabs)" as never)
             } catch {
               Alert.alert("Error", "Failed to delete subscription")
             }
@@ -181,6 +196,80 @@ export default function SubscriptionDetailPage() {
         },
       ]
     )
+  }
+
+  const handleRecordPayment = async () => {
+    if (!sub || !id) return
+    try {
+      await recordPaymentMutation({
+        subscriptionId: id as Id<"subscriptions">,
+        name: sub.name,
+        icon: sub.icon,
+        color: sub.color,
+        amount: sub.price,
+        currency: sub.currency,
+        category: sub.category,
+        date: new Date().toISOString().split("T")[0],
+      })
+      Alert.alert(
+        "Payment Recorded",
+        `Recorded payment of ${convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)} for ${sub.name}`
+      )
+    } catch {
+      Alert.alert("Error", "Failed to record payment")
+    }
+  }
+
+  const handlePickReceipt = async () => {
+    if (!id) return
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["image/*", "application/pdf"],
+        copyToCacheDirectory: true,
+      })
+
+      if (result.canceled || !result.assets || result.assets.length === 0) return
+
+      const asset = result.assets[0]
+      setUploadingReceipt(true)
+
+      const postUrl = await generateUploadUrl()
+      const response = await fetch(asset.uri)
+      const blob = await response.blob()
+
+      const uploadRes = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": asset.mimeType || "application/octet-stream" },
+        body: blob,
+      })
+      const { storageId } = await uploadRes.json()
+
+      await updateMutation({
+        id: id as Id<"subscriptions">,
+        receiptStorageId: storageId,
+        receiptFileName: asset.name,
+      })
+      Alert.alert("Success", "Receipt invoice uploaded successfully")
+    } catch (e) {
+      console.error("Receipt upload error:", e)
+      Alert.alert("Error", "Failed to attach receipt")
+    } finally {
+      setUploadingReceipt(false)
+    }
+  }
+
+  const handleRemoveReceipt = async () => {
+    if (!id) return
+    try {
+      await updateMutation({
+        id: id as Id<"subscriptions">,
+        receiptStorageId: undefined,
+        receiptFileName: "",
+      })
+      Alert.alert("Success", "Receipt invoice removed")
+    } catch {
+      Alert.alert("Error", "Failed to remove receipt")
+    }
   }
 
   const handleToggleMemberPaid = async (memberIndex: number) => {
@@ -230,8 +319,32 @@ export default function SubscriptionDetailPage() {
   const isShared = !!sub.isShared
   const matchedPaymentMethod = paymentMethods?.find((pm) => pm._id === sub.paymentMethodId)
 
+  // Trial Days Left
+  let trialDaysLeft: number | null = null
+  if (sub.isTrial && sub.trialEndDate) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tEnd = new Date(sub.trialEndDate)
+    tEnd.setHours(0, 0, 0, 0)
+    trialDaysLeft = Math.max(0, differenceInDays(tEnd, today))
+  }
+
+  // Yearly Total Calculation
+  const nativeYearlyCost =
+    sub.cycle === "monthly"
+      ? sub.price * 12
+      : sub.cycle === "yearly"
+      ? sub.price
+      : sub.cycle === "weekly"
+      ? sub.price * 52
+      : sub.cycle === "quarterly"
+      ? sub.price * 4
+      : sub.cycle === "none"
+      ? 0
+      : sub.price * 365
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView edges={["top", "bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
       {/* Header Bar */}
       <View
         style={{
@@ -240,16 +353,14 @@ export default function SubscriptionDetailPage() {
           justifyContent: "space-between",
           paddingHorizontal: 16,
           paddingVertical: 12,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
         }}
       >
         <TouchableOpacity
           onPress={() => router.back()}
           style={{
-            width: 34,
-            height: 34,
-            borderRadius: 8,
+            width: 36,
+            height: 36,
+            borderRadius: 18,
             backgroundColor: colors.surface,
             alignItems: "center",
             justifyContent: "center",
@@ -258,423 +369,766 @@ export default function SubscriptionDetailPage() {
           <ArrowLeft size={18} color={colors.text} />
         </TouchableOpacity>
 
-        <View style={{ flexDirection: "row", gap: 6 }}>
-          {!editing ? (
-            <>
-              <TouchableOpacity
-                onPress={startEditing}
-                style={{
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  borderRadius: 8,
-                  backgroundColor: colors.surface,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 4,
-                }}
-              >
-                <Pencil size={14} color={colors.text} />
-                <Text style={{ fontSize: 12, fontWeight: "600", color: colors.text }}>Edit</Text>
-              </TouchableOpacity>
+        <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
+          Subscription Details
+        </Text>
 
-              <TouchableOpacity
-                onPress={handleToggleActive}
-                style={{
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  borderRadius: 8,
-                  backgroundColor: colors.surface,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 4,
-                }}
-              >
-                {sub.isActive ? (
-                  <>
-                    <Pause size={14} color={colors.amber} />
-                    <Text style={{ fontSize: 12, fontWeight: "600", color: colors.amber }}>Suspend</Text>
-                  </>
-                ) : (
-                  <>
-                    <Play size={14} color={colors.emerald} />
-                    <Text style={{ fontSize: 12, fontWeight: "600", color: colors.emerald }}>Resume</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={handleClone}
-                style={{
-                  paddingHorizontal: 8,
-                  paddingVertical: 6,
-                  borderRadius: 8,
-                  backgroundColor: colors.surface,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Copy size={14} color={colors.text} />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={handleDelete}
-                style={{
-                  paddingHorizontal: 8,
-                  paddingVertical: 6,
-                  borderRadius: 8,
-                  backgroundColor: colors.destructiveBackground,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Trash2 size={14} color={colors.destructive} />
-              </TouchableOpacity>
-            </>
-          ) : (
-            <TouchableOpacity
-              onPress={() => setEditing(false)}
-              style={{
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 8,
-                backgroundColor: colors.surface,
-              }}
-            >
-              <Text style={{ fontSize: 12, fontWeight: "600", color: colors.text }}>Cancel</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        <TouchableOpacity
+          onPress={editing ? () => setEditing(false) : startEditing}
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            backgroundColor: colors.surface,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Pencil size={16} color={colors.text} />
+        </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
-        {!editing ? (
-          <>
-            {/* Hero Card */}
-            <View
-              style={{
-                backgroundColor: colors.card,
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderRadius: 16,
-                padding: 16,
-                gap: 14,
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-                <View
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 14,
-                    backgroundColor: sub.color || "#000000",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <DynamicIcon name={sub.icon} size={28} color="#ffffff" />
-                </View>
-
-                <View style={{ flex: 1, gap: 4 }}>
-                  <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>
-                    {sub.name}
-                  </Text>
-                  {sub.account ? (
-                    <Text style={{ fontSize: 12, color: colors.mutedText }}>
-                      {sub.account}
-                    </Text>
-                  ) : null}
-
-                  <View style={{ flexDirection: "row", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
-                    <Badge variant="secondary">{sub.category}</Badge>
-                    {isTrial && <Badge variant="emerald">FREE TRIAL</Badge>}
-                    {isShared && (
-                      <Badge variant="blue">
-                        SPLIT {sub.totalMembers ? `(1/${sub.totalMembers})` : ""}
-                      </Badge>
-                    )}
-                    {!sub.isActive && <Badge variant="destructive">SUSPENDED</Badge>}
-                  </View>
-                </View>
-              </View>
-
-              <View
-                style={{
-                  borderTopWidth: 1,
-                  borderTopColor: colors.border,
-                  paddingTop: 12,
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "flex-end",
-                }}
-              >
-                <View>
-                  <Text style={{ fontSize: 11, color: colors.mutedText, textTransform: "uppercase" }}>
-                    Recurring Cost
-                  </Text>
-                  <Text style={{ fontSize: 20, fontWeight: "800", color: colors.text }}>
-                    {formatCurrencyAmount(sub.price, sub.currency)}
-                    <Text style={{ fontSize: 12, color: colors.mutedText }}>/{sub.cycle}</Text>
-                  </Text>
-                </View>
-
-                <Text style={{ fontSize: 12, fontWeight: "600", color: colors.mutedText }}>
-                  ≈ {convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)}/mo
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40, gap: 14 }}>
+        {/* Active Free Trial Banner */}
+        {isTrial && (
+          <View
+            style={{
+              backgroundColor: "rgba(16, 185, 129, 0.12)",
+              borderWidth: 1,
+              borderColor: "rgba(16, 185, 129, 0.3)",
+              borderRadius: 12,
+              padding: 12,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 10,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, flex: 1 }}>
+              <Sparkles size={18} color={colors.emerald} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: "800", color: colors.emerald }}>
+                  Active Free Trial
+                </Text>
+                <Text style={{ fontSize: 11, color: colors.emerald, opacity: 0.9, marginTop: 1 }}>
+                  {sub.trialEndDate
+                    ? `Expires on ${format(new Date(sub.trialEndDate), "MMM d, yyyy")} (${trialDaysLeft ?? 0} days left)`
+                    : "Trial subscription active"}
                 </Text>
               </View>
             </View>
 
-            {/* Provider Website */}
-            {sub.website ? (
-              <TouchableOpacity
-                onPress={() => Linking.openURL(sub.website!)}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  backgroundColor: colors.card,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  borderRadius: 12,
-                  padding: 14,
-                }}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                  <Link2 size={16} color={colors.primary} />
-                  <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
-                    {sub.website}
-                  </Text>
-                </View>
-                <ExternalLink size={14} color={colors.mutedText} />
-              </TouchableOpacity>
-            ) : null}
-
-            {/* Billing Details */}
-            <View
+            <TouchableOpacity
+              onPress={() => setCancelModalOpen(true)}
+              activeOpacity={0.7}
               style={{
-                backgroundColor: colors.card,
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderRadius: 14,
-                padding: 14,
-                gap: 10,
+                backgroundColor: colors.emerald,
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 8,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 4,
               }}
             >
-              <Text style={{ fontSize: 12, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
-                Payment & Renewal Schedule
+              <ExternalLink size={12} color="#ffffff" />
+              <Text style={{ fontSize: 11, fontWeight: "700", color: "#ffffff" }}>
+                Cancel Guide
               </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-              <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 }}>
-                <Text style={{ fontSize: 13, color: colors.mutedText }}>Billing Cycle</Text>
-                <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text, textTransform: "capitalize" }}>
-                  {sub.cycle}
+        {/* Hero Card Header */}
+        <View
+          style={{
+            backgroundColor: colors.card,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: 14,
+            padding: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 14,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => editing && setIconPickerOpen(true)}
+            disabled={!editing}
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 12,
+              backgroundColor: editing ? editColor : sub.color,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <DynamicIcon name={editing ? editIcon || sub.icon : sub.icon} size={26} color="#ffffff" />
+          </TouchableOpacity>
+
+          <View style={{ flex: 1, gap: 6 }}>
+            <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>
+              {sub.name}
+            </Text>
+
+            <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+              {/* Category badge */}
+              <View
+                style={{
+                  backgroundColor: (categoryColors[sub.category] || "#6b7280") + "20",
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                  borderRadius: 6,
+                }}
+              >
+                <Text style={{ fontSize: 11, fontWeight: "600", color: categoryColors[sub.category] || colors.text }}>
+                  {sub.category}
                 </Text>
               </View>
 
-              <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 }}>
-                <Text style={{ fontSize: 13, color: colors.mutedText }}>Next Billing Date</Text>
-                <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
-                  {sub.nextBilling ? format(new Date(sub.nextBilling), "MMM d, yyyy") : "N/A"}
-                </Text>
-              </View>
-
-              {sub.startDate ? (
-                <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 }}>
-                  <Text style={{ fontSize: 13, color: colors.mutedText }}>Start Date</Text>
-                  <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
-                    {format(new Date(sub.startDate), "MMM d, yyyy")}
-                  </Text>
-                </View>
-              ) : null}
-
-              {sub.endDate ? (
-                <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 }}>
-                  <Text style={{ fontSize: 13, color: colors.mutedText }}>End Date</Text>
-                  <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
-                    {format(new Date(sub.endDate), "MMM d, yyyy")}
-                  </Text>
-                </View>
-              ) : null}
-
-              {matchedPaymentMethod && (
-                <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 4 }}>
-                  <Text style={{ fontSize: 13, color: colors.mutedText }}>Payment Card</Text>
-                  <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
-                    {matchedPaymentMethod.name} {matchedPaymentMethod.last4 ? `(•• ${matchedPaymentMethod.last4})` : ""}
+              {/* Free trial badge */}
+              {sub.isTrial && (
+                <View
+                  style={{
+                    backgroundColor: "rgba(16, 185, 129, 0.2)",
+                    borderWidth: 1,
+                    borderColor: "rgba(16, 185, 129, 0.3)",
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    borderRadius: 6,
+                  }}
+                >
+                  <Text style={{ fontSize: 10, fontWeight: "800", color: colors.emerald }}>
+                    FREE TRIAL
                   </Text>
                 </View>
               )}
-            </View>
 
-            {/* SplitKeep Breakdown */}
-            {isShared && (
-              <View
-                style={{
-                  backgroundColor: colors.card,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  borderRadius: 14,
-                  padding: 14,
-                  gap: 12,
-                }}
-              >
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                    <Users size={16} color={colors.blue} />
-                    <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
-                      SplitKeep Group Tracking
-                    </Text>
-                  </View>
-                  <Text style={{ fontSize: 12, color: colors.mutedText }}>
-                    Total: {formatCurrencyAmount(sub.totalPlanPrice || sub.price, sub.currency)}
+              {/* Split plan badge */}
+              {sub.isShared && (
+                <View
+                  style={{
+                    backgroundColor: "rgba(59, 130, 246, 0.2)",
+                    borderWidth: 1,
+                    borderColor: "rgba(59, 130, 246, 0.3)",
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    borderRadius: 6,
+                  }}
+                >
+                  <Text style={{ fontSize: 10, fontWeight: "800", color: colors.blue }}>
+                    SPLIT {sub.totalMembers ? `(1/${sub.totalMembers})` : ""}
                   </Text>
                 </View>
+              )}
 
-                {sub.splitMembers && sub.splitMembers.length > 0 ? (
-                  <View style={{ gap: 8 }}>
-                    {sub.splitMembers.map((m, idx) => (
-                      <View
-                        key={idx}
+              {/* Active / Suspended badge */}
+              <View
+                style={{
+                  backgroundColor: sub.isActive ? colors.text : colors.destructive,
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                  borderRadius: 6,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 10,
+                    fontWeight: "800",
+                    color: sub.isActive ? colors.background : "#ffffff",
+                  }}
+                >
+                  {sub.isActive ? "Active" : "Suspended"}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* 3 KPI Summary Cards */}
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: colors.surface,
+              borderRadius: 10,
+              paddingVertical: 12,
+              paddingHorizontal: 8,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              style={{ fontSize: 14, fontWeight: "800", color: colors.text, textAlign: "center" }}
+            >
+              {convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)}
+            </Text>
+            <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
+              PRICE ({primaryCurrency})
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: colors.surface,
+              borderRadius: 10,
+              paddingVertical: 12,
+              paddingHorizontal: 8,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              style={{ fontSize: 14, fontWeight: "800", color: colors.text, textAlign: "center" }}
+            >
+              {sub.cycle ? sub.cycle.charAt(0).toUpperCase() + sub.cycle.slice(1) : "None"}
+            </Text>
+            <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
+              CYCLE
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: colors.surface,
+              borderRadius: 10,
+              paddingVertical: 12,
+              paddingHorizontal: 8,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              style={{ fontSize: 14, fontWeight: "800", color: colors.text, textAlign: "center" }}
+            >
+              {convertAndFormat(nativeYearlyCost, sub.currency, primaryCurrency, rates)}
+            </Text>
+            <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
+              YEARLY TOTAL
+            </Text>
+          </View>
+        </View>
+
+        {/* Editing Mode Form */}
+        {editing ? (
+          <View
+            style={{
+              backgroundColor: colors.card,
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: 14,
+              padding: 16,
+              gap: 14,
+            }}
+          >
+            <Text style={{ fontSize: 14, fontWeight: "800", color: colors.text }}>
+              Edit Subscription
+            </Text>
+
+            <Input
+              label="Service Name"
+              value={editName}
+              onChangeText={setEditName}
+            />
+
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <View style={{ flex: 1.5 }}>
+                <Input
+                  label="Price"
+                  value={editPrice}
+                  onChangeText={setEditPrice}
+                  keyboardType="numeric"
+                />
+              </View>
+              <View style={{ flex: 1, gap: 6 }}>
+                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+                  Currency
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 4 }}>
+                  {["USD", "EUR", "GBP", "IDR", "SGD", "AUD", "CAD"].map((curr) => (
+                    <TouchableOpacity
+                      key={curr}
+                      onPress={() => setEditCurrency(curr)}
+                      style={{
+                        paddingHorizontal: 8,
+                        paddingVertical: 8,
+                        borderRadius: 8,
+                        backgroundColor: editCurrency === curr ? colors.primary : colors.surface,
+                      }}
+                    >
+                      <Text
                         style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          backgroundColor: colors.surface,
-                          borderRadius: 10,
-                          padding: 10,
+                          fontSize: 11,
+                          fontWeight: "700",
+                          color: editCurrency === curr ? colors.primaryForeground : colors.mutedText,
                         }}
                       >
-                        <TouchableOpacity
-                          onPress={() => handleToggleMemberPaid(idx)}
-                          style={{ flexDirection: "row", alignItems: "center", gap: 10, flex: 1 }}
-                        >
-                          <View
-                            style={{
-                              width: 20,
-                              height: 20,
-                              borderRadius: 4,
-                              backgroundColor: m.isPaid ? colors.emerald : colors.card,
-                              borderWidth: 1,
-                              borderColor: m.isPaid ? colors.emerald : colors.border,
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            {m.isPaid && <Check size={14} color="#ffffff" />}
-                          </View>
-
-                          <View>
-                            <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
-                              {m.name}
-                            </Text>
-                            <Text style={{ fontSize: 10, color: m.isPaid ? colors.emerald : colors.amber }}>
-                              {m.isPaid ? "Paid" : "Pending Share"}
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-
-                        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                          <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
-                            {formatCurrencyAmount(m.shareAmount, sub.currency)}
-                          </Text>
-
-                          <TouchableOpacity
-                            onPress={() => handleShareSplitReminder(m)}
-                            style={{
-                              padding: 6,
-                              borderRadius: 6,
-                              backgroundColor: colors.card,
-                              borderWidth: 1,
-                              borderColor: colors.border,
-                            }}
-                          >
-                            <Share2 size={12} color={colors.text} />
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    ))}
-                  </View>
-                ) : (
-                  <Text style={{ fontSize: 12, color: colors.mutedText }}>
-                    {sub.totalMembers || 2} members split evenly.
-                  </Text>
-                )}
+                        {curr}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
-            )}
+            </View>
 
-            {/* Cancellation Guide CTA */}
-            <Button
-              variant="outline"
-              size="lg"
-              onPress={() => setCancelModalOpen(true)}
-              icon={<ExternalLink size={16} color={colors.text} />}
-            >
-              How to Cancel / Cancellation Guide
+            <Input
+              label="Account / Email"
+              placeholder="e.g. user@gmail.com"
+              value={editAccount}
+              onChangeText={setEditAccount}
+            />
+
+            <Input
+              label="Direct Cancellation Link"
+              placeholder="https://service.com/account"
+              value={editCancelUrl}
+              onChangeText={setEditCancelUrl}
+            />
+
+            {/* Color Circles */}
+            <View style={{ gap: 6 }}>
+              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+                Icon Color
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8 }}>
+                {colorOptions.map((c) => (
+                  <TouchableOpacity
+                    key={c}
+                    onPress={() => setEditColor(c)}
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 14,
+                      backgroundColor: c,
+                      borderWidth: editColor === c ? 2 : 0,
+                      borderColor: colors.text,
+                    }}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+
+            <Button onPress={saveEdit} style={{ marginTop: 6 }}>
+              Save Changes
             </Button>
-          </>
+          </View>
         ) : (
-          /* Edit Form */
-          <View style={{ gap: 16 }}>
+          <>
+            {/* SUBSCRIPTION INFORMATION Section Card */}
             <View
               style={{
                 backgroundColor: colors.card,
                 borderWidth: 1,
                 borderColor: colors.border,
                 borderRadius: 14,
-                padding: 14,
+                padding: 16,
                 gap: 12,
               }}
             >
-              <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>
-                Edit Subscription
+              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8 }}>
+                SUBSCRIPTION INFORMATION
               </Text>
 
-              <Input label="Name" value={editName} onChangeText={setEditName} />
-              <Input label="Price" value={editPrice} onChangeText={setEditPrice} keyboardType="numeric" />
-              <Input label="Account" value={editAccount} onChangeText={setEditAccount} />
-              <Input label="Website URL" value={editWebsite} onChangeText={setEditWebsite} />
-
-              <View style={{ flexDirection: "row", gap: 10 }}>
-                <View style={{ flex: 1 }}>
-                  <Input label="End Date" value={editEndDate} onChangeText={setEditEndDate} />
+              <View style={{ gap: 10 }}>
+                {/* Cancellation Guide */}
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
+                  <Text style={{ fontSize: 13, color: colors.mutedText }}>
+                    Cancellation Guide
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setCancelModalOpen(true)}
+                    activeOpacity={0.7}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 4,
+                      backgroundColor: "rgba(16, 185, 129, 0.1)",
+                      borderWidth: 1,
+                      borderColor: "rgba(16, 185, 129, 0.3)",
+                      paddingHorizontal: 8,
+                      paddingVertical: 4,
+                      borderRadius: 6,
+                    }}
+                  >
+                    <ExternalLink size={11} color={colors.emerald} />
+                    <Text style={{ fontSize: 11, fontWeight: "700", color: colors.emerald }}>
+                      Direct Cancel Link & Checklist
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Input label="Trial End Date" value={editTrialEndDate} onChangeText={setEditTrialEndDate} />
+                <View style={{ height: 1, backgroundColor: colors.border }} />
+
+                {/* Original Price */}
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
+                  <Text style={{ fontSize: 13, color: colors.mutedText }}>
+                    Original Price
+                  </Text>
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                    {getSymbol(sub.currency)}{sub.price} ({sub.currency})
+                  </Text>
                 </View>
-              </View>
+                <View style={{ height: 1, backgroundColor: colors.border }} />
 
-              <Input label="Direct Cancel URL" value={editCancelUrl} onChangeText={setEditCancelUrl} />
+                {/* Payment Method */}
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
+                  <Text style={{ fontSize: 13, color: colors.mutedText }}>
+                    Payment Method
+                  </Text>
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: matchedPaymentMethod ? colors.text : colors.mutedText }}>
+                    {matchedPaymentMethod ? matchedPaymentMethod.name : "None linked"}
+                  </Text>
+                </View>
+                <View style={{ height: 1, backgroundColor: colors.border }} />
 
-              {/* Save / Cancel buttons */}
-              <View style={{ flexDirection: "row", gap: 10, marginTop: 6 }}>
-                <Button variant="outline" onPress={() => setEditing(false)} style={{ flex: 1 }}>
-                  Cancel
-                </Button>
-                <Button onPress={saveEdit} style={{ flex: 1 }}>
-                  Save Changes
-                </Button>
+                {/* Next Billing */}
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
+                  <Text style={{ fontSize: 13, color: colors.mutedText }}>
+                    Next Billing
+                  </Text>
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
+                    {format(new Date(sub.nextBilling), "MMMM d, yyyy")}
+                  </Text>
+                </View>
+                <View style={{ height: 1, backgroundColor: colors.border }} />
+
+                {/* Account / Email */}
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
+                  <Text style={{ fontSize: 13, color: colors.mutedText }}>
+                    Account / Email
+                  </Text>
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
+                    {sub.account || "Not specified"}
+                  </Text>
+                </View>
+                <View style={{ height: 1, backgroundColor: colors.border }} />
+
+                {/* Direct Cancel Page */}
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
+                  <Text style={{ fontSize: 13, color: colors.mutedText }}>
+                    Direct Cancel Page
+                  </Text>
+                  {sub.cancelUrl ? (
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL(sub.cancelUrl!)}
+                      style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+                    >
+                      <ExternalLink size={12} color={colors.blue} />
+                      <Text style={{ fontSize: 12, fontWeight: "600", color: colors.blue }}>
+                        Cancellation Page
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <Text style={{ fontSize: 13, fontWeight: "600", color: colors.mutedText }}>
+                      Standard URL search
+                    </Text>
+                  )}
+                </View>
               </View>
             </View>
-          </View>
+
+            {/* SplitKeep Section (if shared) */}
+            {isShared && sub.splitMembers && sub.splitMembers.length > 0 && (
+              <View
+                style={{
+                  backgroundColor: "rgba(59, 130, 246, 0.06)",
+                  borderWidth: 1,
+                  borderColor: "rgba(59, 130, 246, 0.2)",
+                  borderRadius: 14,
+                  padding: 16,
+                  gap: 12,
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <Users size={16} color={colors.blue} />
+                    <Text style={{ fontSize: 12, fontWeight: "700", color: colors.blue, textTransform: "uppercase" }}>
+                      SplitKeep Tracker
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 11, color: colors.mutedText }}>
+                    Total: {getSymbol(sub.currency)}{sub.totalPlanPrice || sub.price * (sub.totalMembers || 1)}
+                  </Text>
+                </View>
+
+                <View style={{ gap: 8 }}>
+                  {sub.splitMembers.map((member, idx) => (
+                    <View
+                      key={idx}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        backgroundColor: colors.surface,
+                        borderRadius: 10,
+                        padding: 10,
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                      }}
+                    >
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                        <TouchableOpacity
+                          onPress={() => handleToggleMemberPaid(idx)}
+                          style={{
+                            width: 22,
+                            height: 22,
+                            borderRadius: 6,
+                            backgroundColor: member.isPaid ? colors.emerald : "transparent",
+                            borderWidth: 1,
+                            borderColor: member.isPaid ? colors.emerald : colors.border,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {member.isPaid && <Check size={14} color="#ffffff" />}
+                        </TouchableOpacity>
+                        <View>
+                          <Text
+                            style={{
+                              fontSize: 13,
+                              fontWeight: "600",
+                              color: colors.text,
+                              textDecorationLine: member.isPaid ? "line-through" : "none",
+                              opacity: member.isPaid ? 0.6 : 1,
+                            }}
+                          >
+                            {member.name}
+                          </Text>
+                          <Text style={{ fontSize: 10, color: colors.mutedText }}>
+                            {getSymbol(sub.currency)}{member.shareAmount} · {member.isPaid ? "Paid this month" : "Pending transfer"}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <TouchableOpacity
+                        onPress={() => handleShareSplitReminder(member)}
+                        style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 4 }}
+                      >
+                        <MessageSquare size={12} color={colors.blue} />
+                        <Text style={{ fontSize: 11, fontWeight: "600", color: colors.blue }}>
+                          Reminder
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* INVOICE & WARRANTY RECEIPT Section Card */}
+            <View
+              style={{
+                backgroundColor: colors.card,
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 14,
+                padding: 16,
+                gap: 10,
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <Paperclip size={14} color={colors.text} />
+                  <Text style={{ fontSize: 11, fontWeight: "700", color: colors.text, textTransform: "uppercase", letterSpacing: 0.8 }}>
+                    INVOICE & WARRANTY RECEIPT
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  onPress={handlePickReceipt}
+                  disabled={uploadingReceipt}
+                  activeOpacity={0.7}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 4,
+                    backgroundColor: colors.surface,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 6,
+                  }}
+                >
+                  <Upload size={11} color={colors.text} />
+                  <Text style={{ fontSize: 11, fontWeight: "600", color: colors.text }}>
+                    {uploadingReceipt ? "Uploading..." : sub.receiptStorageId ? "Replace File" : "Attach File"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {sub.receiptUrl ? (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    backgroundColor: colors.surface,
+                    borderRadius: 10,
+                    padding: 10,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
+                    <FileText size={18} color={colors.primary} />
+                    <View style={{ flex: 1 }}>
+                      <Text numberOfLines={1} style={{ fontSize: 12, fontWeight: "600", color: colors.text }}>
+                        {sub.receiptFileName || "Attached Invoice"}
+                      </Text>
+                      <TouchableOpacity onPress={() => Linking.openURL(sub.receiptUrl!)}>
+                        <Text style={{ fontSize: 11, color: colors.blue }}>
+                          View / Download Document
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  <TouchableOpacity onPress={handleRemoveReceipt} style={{ padding: 4 }}>
+                    <Trash2 size={14} color={colors.destructive} />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <Text style={{ fontSize: 11, color: colors.mutedText, lineHeight: 16 }}>
+                  No invoice attached yet. Upload a PDF or image receipt to keep tax and warranty records safe.
+                </Text>
+              )}
+            </View>
+
+            {/* Action Buttons */}
+            <View style={{ gap: 10, paddingTop: 4 }}>
+              {/* Suspend & Clone Row */}
+              <View style={{ flexDirection: "row", gap: 10 }}>
+                <TouchableOpacity
+                  onPress={handleToggleActive}
+                  activeOpacity={0.7}
+                  style={{
+                    flex: 1,
+                    height: 44,
+                    backgroundColor: colors.surface,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 12,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                  }}
+                >
+                  {sub.isActive ? (
+                    <>
+                      <Pause size={15} color={colors.text} />
+                      <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>Suspend</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Play size={15} color={colors.text} />
+                      <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>Resume</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={handleClone}
+                  activeOpacity={0.7}
+                  style={{
+                    flex: 1,
+                    height: 44,
+                    backgroundColor: colors.surface,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 12,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                  }}
+                >
+                  <Copy size={15} color={colors.text} />
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>Clone</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Record Payment Button */}
+              <TouchableOpacity
+                onPress={handleRecordPayment}
+                activeOpacity={0.7}
+                style={{
+                  height: 44,
+                  backgroundColor: colors.surface,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 12,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                }}
+              >
+                <DollarSign size={15} color={colors.text} />
+                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                  Record Payment
+                </Text>
+              </TouchableOpacity>
+
+              {/* Delete Subscription Button */}
+              <TouchableOpacity
+                onPress={handleDelete}
+                activeOpacity={0.7}
+                style={{
+                  height: 44,
+                  backgroundColor: "rgba(239, 68, 68, 0.12)",
+                  borderWidth: 1,
+                  borderColor: "rgba(239, 68, 68, 0.3)",
+                  borderRadius: 12,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                }}
+              >
+                <Trash2 size={15} color={colors.destructive} />
+                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.destructive }}>
+                  Delete Subscription
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>
         )}
       </ScrollView>
 
       {/* Cancellation Guide Modal */}
-      <CancellationGuideModal
-        visible={cancelModalOpen}
-        onClose={() => setCancelModalOpen(false)}
-        subscription={sub}
-        onMarkCanceled={async () => {
-          await handleToggleActive()
-        }}
-        primaryCurrency={primaryCurrency}
-        rates={rates}
-      />
+      {sub && (
+        <CancellationGuideModal
+          visible={cancelModalOpen}
+          onClose={() => setCancelModalOpen(false)}
+          subscription={{
+            _id: sub._id,
+            name: sub.name,
+            icon: sub.icon,
+            color: sub.color,
+            price: sub.price,
+            currency: sub.currency,
+            cycle: sub.cycle,
+            cancelUrl: sub.cancelUrl,
+            isTrial: sub.isTrial,
+            trialEndDate: sub.trialEndDate,
+          }}
+          primaryCurrency={primaryCurrency}
+          rates={rates}
+        />
+      )}
 
+      {/* Icon Picker Modal for editing */}
       <IconPickerModal
         visible={iconPickerOpen}
         selected={editIcon || sub?.icon || null}
-        onSelect={(icon) => setEditIcon(icon)}
         onClose={() => setIconPickerOpen(false)}
+        onSelect={(iconName) => setEditIcon(iconName)}
       />
     </SafeAreaView>
   )
