@@ -37,15 +37,15 @@ export function TemplateList({ onSelect, onCustomCreate }: TemplateListProps) {
   return (
     <View style={{ flex: 1 }}>
       {/* Search Bar */}
-      <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 }}>
+      <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 6 }}>
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
             backgroundColor: colors.surface,
-            borderRadius: 10,
+            borderRadius: 12,
             paddingHorizontal: 12,
-            height: 42,
+            height: 44,
             gap: 8,
             borderWidth: 1,
             borderColor: colors.border,
@@ -57,61 +57,65 @@ export function TemplateList({ onSelect, onCustomCreate }: TemplateListProps) {
             placeholderTextColor={colors.subtleText}
             value={search}
             onChangeText={setSearch}
-            style={{ flex: 1, color: colors.text, fontSize: 13 }}
+            style={{ flex: 1, color: colors.text, fontSize: 13, paddingVertical: 0 }}
           />
           {search ? (
-            <TouchableOpacity onPress={() => setSearch("")}>
-              <X size={14} color={colors.mutedText} />
+            <TouchableOpacity onPress={() => setSearch("")} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <X size={16} color={colors.mutedText} />
             </TouchableOpacity>
           ) : null}
         </View>
       </View>
 
-      {/* Category Pills */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingVertical: 6,
-          gap: 6,
-        }}
-      >
-        {categories.map((cat) => (
-          <TouchableOpacity
-            key={cat.value}
-            onPress={() => setActiveCategory(cat.value)}
-            style={{
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-              borderRadius: 16,
-              backgroundColor:
-                activeCategory === cat.value ? colors.primary : colors.surface,
-              borderWidth: 1,
-              borderColor:
-                activeCategory === cat.value ? colors.primary : colors.border,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 12,
-                fontWeight: "600",
-                color:
-                  activeCategory === cat.value
-                    ? colors.primaryForeground
-                    : colors.mutedText,
-              }}
-            >
-              {cat.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      {/* Category Pills (fixed height container so it never squishes) */}
+      <View style={{ height: 46, justifyContent: "center", flexGrow: 0 }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            gap: 8,
+            alignItems: "center",
+          }}
+        >
+          {categories.map((cat) => {
+            const isSelected = activeCategory === cat.value
+            return (
+              <TouchableOpacity
+                key={cat.value}
+                onPress={() => setActiveCategory(cat.value)}
+                activeOpacity={0.7}
+                style={{
+                  height: 32,
+                  paddingHorizontal: 14,
+                  borderRadius: 16,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: isSelected ? colors.primary : colors.surface,
+                  borderWidth: 1,
+                  borderColor: isSelected ? colors.primary : colors.border,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: "600",
+                    color: isSelected ? colors.primaryForeground : colors.mutedText,
+                  }}
+                >
+                  {cat.label}
+                </Text>
+              </TouchableOpacity>
+            )
+          })}
+        </ScrollView>
+      </View>
 
       {/* Custom Subscription banner */}
-      <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
+      <View style={{ paddingHorizontal: 16, paddingTop: 4, paddingBottom: 8 }}>
         <TouchableOpacity
           onPress={onCustomCreate}
+          activeOpacity={0.7}
           style={{
             flexDirection: "row",
             alignItems: "center",
@@ -139,7 +143,7 @@ export function TemplateList({ onSelect, onCustomCreate }: TemplateListProps) {
             <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
               Custom Subscription
             </Text>
-            <Text style={{ fontSize: 11, color: colors.mutedText }}>
+            <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
               Create a blank subscription with custom price, cycle & icon
             </Text>
           </View>
@@ -150,7 +154,7 @@ export function TemplateList({ onSelect, onCustomCreate }: TemplateListProps) {
       <FlatList
         data={filteredTemplates}
         keyExtractor={(item) => item.name}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24, gap: 8 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, gap: 8 }}
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() => onSelect(item)}
@@ -182,7 +186,7 @@ export function TemplateList({ onSelect, onCustomCreate }: TemplateListProps) {
               <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
                 {item.name}
               </Text>
-              <Text style={{ fontSize: 11, color: colors.mutedText, textTransform: "capitalize" }}>
+              <Text style={{ fontSize: 11, color: colors.mutedText, textTransform: "capitalize", marginTop: 1 }}>
                 {item.category}
               </Text>
             </View>

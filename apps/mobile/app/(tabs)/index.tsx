@@ -349,7 +349,8 @@ export default function DashboardScreen() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 6 }}
+            style={{ flex: 1, height: 36 }}
+            contentContainerStyle={{ gap: 6, alignItems: "center" }}
           >
             <TouchableOpacity
               onPress={() => setFilter("all")}
