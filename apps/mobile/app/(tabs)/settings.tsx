@@ -774,7 +774,7 @@ export default function SettingsScreen() {
 
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>About SubKeep</Text>
-              <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>Version 1.0.0 (Mobile)</Text>
+              <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>Version 0.0.1 (Mobile)</Text>
             </View>
 
             <ChevronRight size={16} color={colors.mutedText} />
