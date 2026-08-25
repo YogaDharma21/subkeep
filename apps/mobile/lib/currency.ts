@@ -141,3 +141,16 @@ export function convertAndFormat(
   const converted = convertCurrency(amount, fromCurrency, toCurrency, rates)
   return formatCurrencyAmount(converted, toCurrency)
 }
+
+export function formatCycleLabel(cycle?: string): string {
+  const c = (cycle || "").toLowerCase()
+  if (c === "monthly" || c === "month") return "per month"
+  if (c === "yearly" || c === "year") return "per year"
+  if (c === "weekly" || c === "week") return "per week"
+  if (c === "daily" || c === "day") return "per day"
+  if (c === "quarterly") return "per quarter"
+  if (c === "semi-annual") return "per 6 mo"
+  if (c === "none" || !c) return "one-time"
+  return `per ${c}`
+}
+

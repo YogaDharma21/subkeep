@@ -28,7 +28,7 @@ import {
 } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
-import { convertAndFormat } from "@/lib/currency"
+import { convertAndFormat, formatCycleLabel } from "@/lib/currency"
 import { currencies } from "@/constants/currencies"
 import { useThemeColor } from "@/hooks/use-theme-color"
 
@@ -324,7 +324,7 @@ export function SearchModal({
                             {convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)}
                           </Text>
                           <Text style={{ fontSize: 10, color: colors.mutedText }}>
-                            per {sub.cycle === "monthly" ? "month" : sub.cycle === "yearly" ? "year" : sub.cycle}
+                            {formatCycleLabel(sub.cycle)}
                           </Text>
                         </View>
 

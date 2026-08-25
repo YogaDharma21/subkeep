@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from "react-native"
 import { useRouter } from "expo-router"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { Badge } from "@/components/ui/badge"
-import { convertAndFormat, formatCurrencyAmount } from "@/lib/currency"
+import { convertAndFormat, formatCurrencyAmount, formatCycleLabel } from "@/lib/currency"
 import { getSymbol } from "@/constants/currencies"
 import { format, differenceInDays } from "date-fns"
 import { useThemeColor } from "@/hooks/use-theme-color"
@@ -167,7 +167,7 @@ export function SubscriptionCard({
         </Text>
         <Text style={{ fontSize: 10, color: colors.mutedText }}>
           {showConverted ? `(${getSymbol(sub.currency)}${sub.price}) ` : ""}
-          per {sub.cycle === "monthly" ? "month" : sub.cycle === "yearly" ? "year" : sub.cycle}
+          {formatCycleLabel(sub.cycle)}
         </Text>
       </View>
     </TouchableOpacity>

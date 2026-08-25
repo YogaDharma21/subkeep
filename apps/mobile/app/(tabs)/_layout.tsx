@@ -36,7 +36,7 @@ export default function TabLayout() {
                 justifyContent: "center",
               }}
             >
-              <Receipt size={16} color="#ffffff" strokeWidth={2.4} />
+              <Receipt size={16} color={colors.primaryForeground} strokeWidth={2.4} />
             </View>
             <Text style={{ fontSize: 18, fontWeight: "900", color: colors.text, letterSpacing: -0.4 }}>
               SubKeep
