@@ -258,41 +258,46 @@ export function IconPickerModal({
 
             {/* Category pills */}
             {!q && (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 6, gap: 6 }}
-              >
-                {Object.keys(ICON_CATEGORIES).map((cat) => (
-                  <TouchableOpacity
-                    key={cat}
-                    onPress={() => setActiveCategory(cat)}
-                    style={{
-                      paddingHorizontal: 12,
-                      paddingVertical: 5,
-                      borderRadius: 16,
-                      backgroundColor:
-                        activeCategory === cat ? colors.primary : colors.surface,
-                      borderWidth: 1,
-                      borderColor:
-                        activeCategory === cat ? colors.primary : colors.border,
-                    }}
-                  >
-                    <Text
+              <View style={{ height: 46, justifyContent: "center", flexGrow: 0 }}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingHorizontal: 16, gap: 8, alignItems: "center" }}
+                >
+                  {Object.keys(ICON_CATEGORIES).map((cat) => (
+                    <TouchableOpacity
+                      key={cat}
+                      onPress={() => setActiveCategory(cat)}
+                      activeOpacity={0.7}
                       style={{
-                        fontSize: 11,
-                        fontWeight: "600",
-                        color:
-                          activeCategory === cat
-                            ? colors.primaryForeground
-                            : colors.mutedText,
+                        height: 30,
+                        paddingHorizontal: 12,
+                        borderRadius: 15,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor:
+                          activeCategory === cat ? colors.primary : colors.surface,
+                        borderWidth: 1,
+                        borderColor:
+                          activeCategory === cat ? colors.primary : colors.border,
                       }}
                     >
-                      {cat}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontWeight: "600",
+                          color:
+                            activeCategory === cat
+                              ? colors.primaryForeground
+                              : colors.mutedText,
+                        }}
+                      >
+                        {cat}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
             )}
 
             {/* Icon grid */}

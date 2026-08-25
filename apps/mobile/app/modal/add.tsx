@@ -254,7 +254,7 @@ export default function AddSubscriptionModal() {
               <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
                 Brand Color
               </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8 }}>
                 {colorOptions.map((c) => (
                   <TouchableOpacity
                     key={c}
@@ -296,7 +296,7 @@ export default function AddSubscriptionModal() {
               <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
                 Category
               </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 6 }}>
                 {categories.filter((c) => c.value !== "all").map((cat) => (
                   <TouchableOpacity
                     key={cat.value}
@@ -339,7 +339,7 @@ export default function AddSubscriptionModal() {
                 <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
                   Currency
                 </Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 4 }}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 4 }}>
                   {["USD", "EUR", "GBP", "IDR", "SGD", "AUD", "CAD"].map((curr) => (
                     <TouchableOpacity
                       key={curr}
@@ -373,7 +373,7 @@ export default function AddSubscriptionModal() {
               <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
                 Billing Cycle
               </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 6 }}>
                 {billingCycles.map((bc) => (
                   <TouchableOpacity
                     key={bc.value}
@@ -614,7 +614,7 @@ export default function AddSubscriptionModal() {
               <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
                 Linked Payment Card
               </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8 }}>
                 <TouchableOpacity
                   onPress={() => setSelectedPaymentMethodId("")}
                   style={{

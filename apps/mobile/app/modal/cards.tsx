@@ -236,7 +236,7 @@ export default function CardsModal() {
               <Text style={{ fontSize: 12, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
                 Type
               </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 6 }}>
                 {CARD_TYPES.map((t) => (
                   <TouchableOpacity
                     key={t.value}
