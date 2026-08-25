@@ -5,10 +5,10 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
   Linking,
   Alert,
 } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import {
   ExternalLink,
   CheckSquare,
