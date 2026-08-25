@@ -1,8 +1,8 @@
 import React from "react"
-import { View, Text, TouchableOpacity } from "react-native"
+import { View, Text } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
-import { Receipt, Mail } from "lucide-react-native"
+import { Receipt } from "lucide-react-native"
 import { GoogleOAuthButton } from "@/components/google-oauth-button"
 import { useThemeColor } from "@/hooks/use-theme-color"
 
@@ -81,28 +81,11 @@ export function LandingScreen() {
         </Text>
 
         {/* Action Button: Continue with Google */}
-        <View style={{ width: "100%", marginTop: 34, gap: 12 }}>
+        <View style={{ width: "100%", marginTop: 34 }}>
           <GoogleOAuthButton
             title="CONTINUE WITH GOOGLE"
             onSuccess={() => router.replace("/(tabs)" as never)}
           />
-
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => router.push("/(auth)/sign-in" as never)}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              paddingVertical: 10,
-            }}
-          >
-            <Mail size={13} color={colors.mutedText} />
-            <Text style={{ fontSize: 12, fontWeight: "600", color: colors.mutedText }}>
-              Sign in with Email
-            </Text>
-          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
