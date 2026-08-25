@@ -34,6 +34,7 @@ import { exportSubscriptionsToCSV, parseCSVToSubscriptions } from "@/lib/csv"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/components/custom-alert-provider"
+import { SearchBar } from "@/components/search-bar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
@@ -42,7 +43,7 @@ export default function SettingsScreen() {
   const { colors } = useThemeColor()
   const { isSignedIn, signOut } = useAuth()
   const { user } = useUser()
-  const { showAlert, showToast, showAboutModal } = useAlert()
+  const { showAlert, showToast, showAboutModal, showSearchModal } = useAlert()
 
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const payments = useQuery(api.payments.list, isSignedIn ? {} : "skip")
@@ -371,6 +372,9 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40 }}>
+        {/* Search Bar */}
+        <SearchBar onPress={showSearchModal} placeholder="Search settings, subscriptions..." />
+
         {/* User profile card */}
         {user ? (
           <View
