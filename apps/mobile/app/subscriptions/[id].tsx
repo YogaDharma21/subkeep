@@ -293,7 +293,8 @@ export default function SubscriptionDetailPage() {
   const handleShareSplitReminder = async (member: { name: string; shareAmount: number }) => {
     if (!sub) return
     const symbol = getSymbol(sub.currency)
-    const text = `Hey ${member.name}! Friendly reminder for your share of our ${sub.name} subscription (${symbol}${member.shareAmount}/${sub.cycle}). Thanks!`
+    const cycleLabel = sub.cycle === "monthly" ? "month" : sub.cycle === "yearly" ? "year" : sub.cycle
+    const text = `Hey ${member.name}! Friendly reminder for your share of our ${sub.name} subscription (${symbol}${member.shareAmount} per ${cycleLabel}). Thanks!`
     try {
       await Share.share({ message: text })
     } catch (e) {

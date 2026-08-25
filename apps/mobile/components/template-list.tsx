@@ -191,7 +191,7 @@ export function TemplateList({ onSelect, onCustomCreate }: TemplateListProps) {
               </Text>
             </View>
             <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
-              ${item.defaultPrice}/mo
+              ${item.defaultPrice} per month
             </Text>
           </TouchableOpacity>
         )}

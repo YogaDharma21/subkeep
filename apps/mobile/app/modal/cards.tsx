@@ -436,7 +436,7 @@ export default function CardsModal() {
                       {stats.subCount} active subscription{stats.subCount === 1 ? "" : "s"}
                     </Text>
                     <Text style={{ fontSize: 13, fontWeight: "800", color: "#ffffff" }}>
-                      {convertAndFormat(stats.totalMonthly, "USD", primaryCurrency, rates)}/mo
+                      {convertAndFormat(stats.totalMonthly, "USD", primaryCurrency, rates)} per month
                     </Text>
                   </View>
                 </View>
