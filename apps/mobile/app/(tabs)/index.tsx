@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Modal,
-  Platform,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
@@ -14,7 +13,6 @@ import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/clerk-expo"
 import { api } from "@/convex/_generated/api"
 import {
-  Search,
   Globe,
   Plus,
   Clock,
@@ -29,11 +27,12 @@ import {
 import { SubscriptionCard } from "@/components/subscription-card"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
 import { SmartInsights } from "@/components/smart-insights"
-import { CommandPalette } from "@/components/command-palette"
+import { SearchBar } from "@/components/search-bar"
 import { currencies } from "@/constants/currencies"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { useAlert } from "@/components/custom-alert-provider"
 import { differenceInDays } from "date-fns"
 
 export type FilterType = "all" | "due_soon" | "trial" | "regular"
@@ -50,6 +49,7 @@ export default function DashboardScreen() {
   const router = useRouter()
   const { colors } = useThemeColor()
   const { isSignedIn } = useAuth()
+  const { showSearchModal } = useAlert()
 
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
@@ -60,7 +60,6 @@ export default function DashboardScreen() {
   const [sortBy, setSortBy] = useState<SortOption>("billing-asc")
   const [currencyModalOpen, setCurrencyModalOpen] = useState(false)
   const [sortModalOpen, setSortModalOpen] = useState(false)
-  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 
   const handleMarkCanceled = async (id: string) => {
     try {
@@ -183,50 +182,8 @@ export default function DashboardScreen() {
           paddingBottom: 90,
         }}
       >
-        {/* Search & Command Bar */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => setCommandPaletteOpen(true)}
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 12,
-            paddingHorizontal: 14,
-            paddingVertical: 11,
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <Search size={16} color={colors.mutedText} />
-            <Text style={{ fontSize: 13, color: colors.mutedText }}>
-              Search or type a command...
-            </Text>
-          </View>
-          <View
-            style={{
-              backgroundColor: colors.surface,
-              borderWidth: 1,
-              borderColor: colors.border,
-              paddingHorizontal: 6,
-              paddingVertical: 2,
-              borderRadius: 6,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 10,
-                fontWeight: "700",
-                color: colors.mutedText,
-                fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
-              }}
-            >
-              ⌘K
-            </Text>
-          </View>
-        </TouchableOpacity>
+        {/* Search Bar */}
+        <SearchBar onPress={showSearchModal} placeholder="Search..." />
 
         {/* Dynamic Summary Banner */}
         <View
@@ -741,12 +698,6 @@ export default function DashboardScreen() {
           </TouchableOpacity>
         </Modal>
       )}
-      {/* Command Palette Modal */}
-      <CommandPalette
-        visible={commandPaletteOpen}
-        onClose={() => setCommandPaletteOpen(false)}
-        onAddSubscription={() => router.push("/modal/add" as never)}
-      />
     </SafeAreaView>
   )
 }

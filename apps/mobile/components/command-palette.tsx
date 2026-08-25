@@ -32,17 +32,17 @@ import { convertAndFormat } from "@/lib/currency"
 import { currencies } from "@/constants/currencies"
 import { useThemeColor } from "@/hooks/use-theme-color"
 
-interface CommandPaletteProps {
+export interface SearchModalProps {
   visible: boolean
   onClose: () => void
   onAddSubscription?: () => void
 }
 
-export function CommandPalette({
+export function SearchModal({
   visible,
   onClose,
   onAddSubscription,
-}: CommandPaletteProps) {
+}: SearchModalProps) {
   const router = useRouter()
   const { colors } = useThemeColor()
   const { isSignedIn } = useAuth()
@@ -69,7 +69,7 @@ export function CommandPalette({
   const filteredSubs = useMemo(() => {
     if (!subscriptions) return []
     const q = query.trim().toLowerCase()
-    if (!q) return subscriptions.slice(0, 5)
+    if (!q) return subscriptions.slice(0, 6)
     return subscriptions
       .filter(
         (s) =>
@@ -77,7 +77,7 @@ export function CommandPalette({
           s.category.toLowerCase().includes(q) ||
           (s.account && s.account.toLowerCase().includes(q))
       )
-      .slice(0, 8)
+      .slice(0, 10)
   }, [subscriptions, query])
 
   // Quick Navigation & Feature Actions
@@ -101,7 +101,7 @@ export function CommandPalette({
       },
       {
         id: "cards",
-        label: "Manage Payment Methods & Cards",
+        label: "Payment Methods & Cards",
         detail: "View credit cards, spend breakdown & expiry",
         icon: CreditCard,
         category: "Actions",
@@ -112,7 +112,7 @@ export function CommandPalette({
       },
       {
         id: "nav-calendar",
-        label: "Go to Calendar",
+        label: "Calendar",
         detail: "View billing projections and renewal dates",
         icon: Calendar,
         category: "Navigation",
@@ -123,7 +123,7 @@ export function CommandPalette({
       },
       {
         id: "nav-stats",
-        label: "Go to Statistics",
+        label: "Statistics",
         detail: "View charts, category breakdown & insights",
         icon: BarChart3,
         category: "Navigation",
@@ -134,7 +134,7 @@ export function CommandPalette({
       },
       {
         id: "nav-settings",
-        label: "Go to Settings",
+        label: "Settings",
         detail: "Export, restore, currency & preferences",
         icon: Settings,
         category: "Navigation",
@@ -238,7 +238,7 @@ export function CommandPalette({
                 ref={inputRef}
                 value={query}
                 onChangeText={setQuery}
-                placeholder="Search subscriptions, actions, commands..."
+                placeholder="Search..."
                 placeholderTextColor={colors.mutedText}
                 style={{
                   flex: 1,
@@ -257,16 +257,12 @@ export function CommandPalette({
               <TouchableOpacity
                 onPress={onClose}
                 style={{
-                  backgroundColor: colors.surface,
                   paddingHorizontal: 8,
                   paddingVertical: 4,
-                  borderRadius: 6,
-                  borderWidth: 1,
-                  borderColor: colors.border,
                 }}
               >
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>
-                  ESC
+                <Text style={{ fontSize: 13, fontWeight: "600", color: colors.primary }}>
+                  Cancel
                 </Text>
               </TouchableOpacity>
             </View>
@@ -396,7 +392,7 @@ export function CommandPalette({
               {currencyActions.length > 0 && (
                 <View style={{ gap: 6 }}>
                   <Text style={{ fontSize: 10, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 6 }}>
-                    CURRENCY SHORTCUTS
+                    CURRENCIES
                   </Text>
                   <View style={{ gap: 4 }}>
                     {currencyActions.map((action) => (
@@ -445,7 +441,7 @@ export function CommandPalette({
               {filteredSubs.length === 0 && quickActions.length === 0 && (
                 <View style={{ paddingVertical: 24, alignItems: "center" }}>
                   <Text style={{ fontSize: 12, color: colors.mutedText }}>
-                    No matching subscriptions or actions found for &quot;{query}&quot;
+                    No matching subscriptions found for &quot;{query}&quot;
                   </Text>
                 </View>
               )}
@@ -467,7 +463,7 @@ export function CommandPalette({
               <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                 <Sparkles size={13} color={colors.primary} />
                 <Text style={{ fontSize: 11, fontWeight: "600", color: colors.text }}>
-                  SubKeep Command Palette
+                  SubKeep Search
                 </Text>
               </View>
               <Text style={{ fontSize: 10, color: colors.mutedText }}>
@@ -480,3 +476,5 @@ export function CommandPalette({
     </Modal>
   )
 }
+
+export const CommandPalette = SearchModal

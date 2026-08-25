@@ -20,6 +20,7 @@ import {
   Sparkles,
 } from "lucide-react-native"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { SearchModal } from "@/components/command-palette"
 
 export interface AlertButton {
   text: string
@@ -43,6 +44,7 @@ interface AlertContextType {
   showAlert: (options: AlertOptions | string, message?: string, buttons?: AlertButton[]) => void
   showToast: (message: string, type?: "success" | "error" | "info") => void
   showAboutModal: () => void
+  showSearchModal: () => void
 }
 
 const AlertContext = createContext<AlertContextType | null>(null)
@@ -66,6 +68,9 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
 
   // About Modal State
   const [aboutModalOpen, setAboutModalOpen] = useState(false)
+
+  // Search Modal State
+  const [searchModalOpen, setSearchModalOpen] = useState(false)
 
   const showAlert = useCallback(
     (options: AlertOptions | string, message?: string, buttons?: AlertButton[]) => {
@@ -91,6 +96,10 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
 
   const showAboutModal = useCallback(() => {
     setAboutModalOpen(true)
+  }, [])
+
+  const showSearchModal = useCallback(() => {
+    setSearchModalOpen(true)
   }, [])
 
   const closeAlert = () => {
@@ -128,7 +137,7 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AlertContext.Provider value={{ showAlert, showToast, showAboutModal }}>
+    <AlertContext.Provider value={{ showAlert, showToast, showAboutModal, showSearchModal }}>
       {children}
 
       {/* Custom Global Toast */}
@@ -487,6 +496,12 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
           </View>
         </View>
       </Modal>
+
+      {/* Global Search Modal */}
+      <SearchModal
+        visible={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+      />
     </AlertContext.Provider>
   )
 }
