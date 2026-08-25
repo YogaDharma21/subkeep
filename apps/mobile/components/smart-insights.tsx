@@ -36,7 +36,7 @@ interface SmartInsightsProps {
 
 export function SmartInsights({
   subscriptions,
-  primaryCurrency = "USD",
+  primaryCurrency = "IDR",
   rates,
 }: SmartInsightsProps) {
   const { colors } = useThemeColor()
@@ -49,7 +49,7 @@ export function SmartInsights({
 
     const list: {
       id: string
-      type: "category" | "trend" | "shared"
+      type: "category" | "trend" | "recommendation" | "shared" | "trial"
       title: string
       description: string
       badge?: string
@@ -93,15 +93,15 @@ export function SmartInsights({
           id: "cat-dominance",
           type: "category",
           title: `${percent}% Spent on ${catLabel}`,
-          description: `You spend ${percent}% of your total budget on ${catLabel} (${formatCurrencyAmount(topCategoryAmount, primaryCurrency)}/mo).`,
-          badge: "Budget Focus",
+          description: `You spend ${percent}% of your total subscription budget on ${catLabel} alone (${formatCurrencyAmount(topCategoryAmount, primaryCurrency)}/mo).`,
+          badge: "BUDGET FOCUS",
           icon: PieChart,
           iconColor: colors.blue,
         })
       }
     }
 
-    // 2. Month-over-Month Trend
+    // 2. Real Month-over-Month Spending Trend
     const now = new Date()
     const prevMonthDate = subMonths(now, 1)
     const prevMonthEnd = endOfMonth(prevMonthDate)
@@ -139,8 +139,8 @@ export function SmartInsights({
           id: "trend-insight",
           type: "trend",
           title: `Spending Trend (+${diffPct}% MoM)`,
-          description: `Your monthly commitments increased by +${formatCurrencyAmount(diffAbs, primaryCurrency)}/mo compared to last month.`,
-          badge: "Monthly Increase",
+          description: `Your monthly subscription spending increased by ${diffPct}% (+${formatCurrencyAmount(diffAbs, primaryCurrency)}/mo) compared to last month.`,
+          badge: "MONTHLY INCREASE",
           icon: TrendingUp,
           iconColor: colors.amber,
         })
@@ -149,8 +149,8 @@ export function SmartInsights({
           id: "trend-insight",
           type: "trend",
           title: `Spending Trend (${diffPct}% MoM)`,
-          description: `Your monthly subscriptions decreased by -${formatCurrencyAmount(diffAbs, primaryCurrency)}/mo compared to last month.`,
-          badge: "Monthly Savings",
+          description: `Your monthly subscription spending decreased by ${Math.abs(diffPct)}% (-${formatCurrencyAmount(diffAbs, primaryCurrency)}/mo) compared to last month. Great job!`,
+          badge: "MONTHLY SAVINGS",
           icon: TrendingDown,
           iconColor: colors.emerald,
         })
@@ -159,36 +159,60 @@ export function SmartInsights({
           id: "trend-insight",
           type: "trend",
           title: "Stable Spending (0% MoM)",
-          description: `Your commitments are consistent with last month at ${formatCurrencyAmount(thisMonthSum, primaryCurrency)}/mo.`,
-          badge: "Steady Budget",
+          description: `Your recurring monthly commitments are consistent with last month at ${formatCurrencyAmount(thisMonthSum, primaryCurrency)}/mo.`,
+          badge: "STEADY BUDGET",
           icon: Minus,
           iconColor: colors.mutedText,
         })
       }
     }
 
-    // 3. SplitKeep Savings
-    const sharedSubs = activeSubs.filter((s) => s.isShared && s.totalPlanPrice && s.totalPlanPrice > s.price)
+    // 3. Shared Subscriptions Savings Insight
+    const sharedSubs = activeSubs.filter((s) => s.isShared)
     if (sharedSubs.length > 0) {
-      let savedAmount = 0
+      let totalSavedMonthly = 0
       sharedSubs.forEach((s) => {
-        const fullPrice = s.totalPlanPrice || 0
-        const myShare = s.price
-        const saved = Math.max(0, fullPrice - myShare)
-        savedAmount += convertCurrency(saved, s.currency, primaryCurrency, rates)
+        if (s.totalPlanPrice && s.totalMembers && s.totalMembers > 1) {
+          const fullMonthly = s.totalPlanPrice
+          const userPortion = s.price
+          const savedNative = Math.max(0, fullMonthly - userPortion)
+          totalSavedMonthly += convertCurrency(savedNative, s.currency, primaryCurrency, rates)
+        }
       })
 
-      if (savedAmount > 0) {
+      if (totalSavedMonthly > 0) {
         list.push({
-          id: "split-savings",
+          id: "shared-savings",
           type: "shared",
-          title: `SplitKeep Savings (${formatCurrencyAmount(savedAmount, primaryCurrency)}/mo)`,
-          description: `You save ${formatCurrencyAmount(savedAmount, primaryCurrency)} each month by sharing ${sharedSubs.length} subscription plan(s).`,
-          badge: "Group Split",
+          title: `Shared Plans Saving You ${formatCurrencyAmount(totalSavedMonthly * 12, primaryCurrency)}/yr`,
+          description: `You share ${sharedSubs.length} subscription(s) with family/friends, cutting your annual costs significantly!`,
+          badge: "FAMILY SAVINGS",
           icon: Users,
           iconColor: colors.blue,
         })
       }
+    }
+
+    // 4. Overlap & Consolidation Recommendation
+    const entertainmentSubs = activeSubs.filter(
+      (s) => s.category === "entertainment" || s.category === "music"
+    )
+    if (entertainmentSubs.length >= 3) {
+      let entTotalMonthly = 0
+      entertainmentSubs.forEach((s) => {
+        entTotalMonthly += convertCurrency(s.price, s.currency, primaryCurrency, rates)
+      })
+      const yearlyPotentialSavings = entTotalMonthly * 0.4 * 12
+
+      list.push({
+        id: "consolidation-recommendation",
+        type: "recommendation",
+        title: `Consolidate ${entertainmentSubs.length} Media Services`,
+        description: `You have ${entertainmentSubs.length} active media services (${formatCurrencyAmount(entTotalMonthly, primaryCurrency)}/mo). Rotating services monthly could save up to ${formatCurrencyAmount(yearlyPotentialSavings, primaryCurrency)}/year!`,
+        badge: "POTENTIAL SAVINGS",
+        icon: Sparkles,
+        iconColor: colors.amber,
+      })
     }
 
     return list
@@ -197,11 +221,20 @@ export function SmartInsights({
   if (insights.length === 0) return null
 
   return (
-    <View style={{ gap: 8 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 4 }}>
-        <Sparkles size={14} color={colors.primary} />
-        <Text style={{ fontSize: 12, fontWeight: "700", color: colors.text }}>
-          Smart Spending Insights
+    <View
+      style={{
+        backgroundColor: colors.card,
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderRadius: 14,
+        padding: 16,
+        gap: 12,
+      }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingBottom: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+        <Sparkles size={14} color={colors.mutedText} />
+        <Text style={{ fontSize: 11, fontWeight: "700", color: colors.text, textTransform: "uppercase", letterSpacing: 0.8 }}>
+          SAVINGS RECOMMENDATIONS & INSIGHTS
         </Text>
       </View>
 
@@ -212,7 +245,7 @@ export function SmartInsights({
             <View
               key={item.id}
               style={{
-                backgroundColor: colors.card,
+                backgroundColor: colors.surface,
                 borderWidth: 1,
                 borderColor: colors.border,
                 borderRadius: 12,
@@ -222,28 +255,28 @@ export function SmartInsights({
                 alignItems: "flex-start",
               }}
             >
-              <View
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  backgroundColor: colors.surface,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Icon size={16} color={item.iconColor} />
-              </View>
+              <Icon size={16} color={item.iconColor} style={{ marginTop: 2 }} />
 
-              <View style={{ flex: 1, gap: 2 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+              <View style={{ flex: 1, gap: 4 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text, flex: 1 }}>
                     {item.title}
                   </Text>
                   {item.badge ? (
-                    <Text style={{ fontSize: 10, fontWeight: "600", color: colors.mutedText }}>
-                      {item.badge}
-                    </Text>
+                    <View
+                      style={{
+                        backgroundColor: colors.surfaceHover,
+                        paddingHorizontal: 6,
+                        paddingVertical: 2,
+                        borderRadius: 4,
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                      }}
+                    >
+                      <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+                        {item.badge}
+                      </Text>
+                    </View>
                   ) : null}
                 </View>
                 <Text style={{ fontSize: 11, color: colors.mutedText, lineHeight: 16 }}>

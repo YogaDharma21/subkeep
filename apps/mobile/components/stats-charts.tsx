@@ -1,11 +1,13 @@
 import React, { useMemo, useState } from "react"
 import { View, Text, TouchableOpacity } from "react-native"
+import Svg, { Circle, G, Line, Rect, Text as SvgText } from "react-native-svg"
 import { categoryColors } from "@/constants/categories"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 
 interface StatsChartsProps {
   subscriptions: {
+    _id?: string
     name: string
     price: number
     currency: string
@@ -43,7 +45,7 @@ function parseLocalDate(dateStr: string): Date {
 export function StatsCharts({
   subscriptions,
   payments = [],
-  primaryCurrency = "USD",
+  primaryCurrency = "IDR",
   rates,
 }: StatsChartsProps) {
   const { colors } = useThemeColor()
@@ -108,13 +110,11 @@ export function StatsCharts({
     return months
   }, [subscriptions, primaryCurrency, rates])
 
-  const maxAmount = Math.max(...spendingData.map((d) => d.amount), 1)
+  const maxAmount = Math.max(...spendingData.map((d) => d.amount), 4)
 
-  // 3. Category Breakdown
+  // 3. Category Breakdown Data
   const categoryData = useMemo(() => {
-    const map: Record<string, { value: number; count: number; name: string; color: string }> = {}
-
-    const filtered = subscriptions.filter((s) => {
+    const targetSubs = subscriptions.filter((s) => {
       if (s.isActive === false) return false
       if (breakdownFilter === "paid") {
         return s.price > 0 && !s.isTrial
@@ -122,16 +122,9 @@ export function StatsCharts({
       return true
     })
 
-    filtered.forEach((sub) => {
-      const cat = sub.category || "other"
-      if (!map[cat]) {
-        map[cat] = {
-          name: cat.charAt(0).toUpperCase() + cat.slice(1),
-          value: 0,
-          count: 0,
-          color: categoryColors[cat] || "#8E8E93",
-        }
-      }
+    const totals: Record<string, { cost: number; count: number }> = {}
+
+    targetSubs.forEach((sub) => {
       const cycle = (sub.cycle || "monthly").toLowerCase()
       let nativeMonthly = sub.price
       if (cycle === "quarterly") nativeMonthly = sub.price / 3
@@ -141,33 +134,74 @@ export function StatsCharts({
       else if (cycle === "daily") nativeMonthly = sub.price * 30
       else if (cycle === "none") nativeMonthly = 0
 
-      map[cat].value += convertCurrency(nativeMonthly, sub.currency, primaryCurrency, rates)
-      map[cat].count += 1
+      const converted = convertCurrency(nativeMonthly, sub.currency, primaryCurrency, rates)
+      const cat = sub.category || "other"
+
+      if (!totals[cat]) {
+        totals[cat] = { cost: 0, count: 0 }
+      }
+      totals[cat].cost += converted
+      totals[cat].count += 1
     })
 
-    const totalVal = Object.values(map).reduce((sum, item) => sum + item.value, 0)
-    const totalCount = Object.values(map).reduce((sum, item) => sum + item.count, 0)
+    const items = Object.entries(totals).map(([category, data]) => ({
+      name: category.charAt(0).toUpperCase() + category.slice(1),
+      value: breakdownMetric === "cost" ? Math.round(data.cost) : data.count,
+      rawCost: data.cost,
+      rawCount: data.count,
+      color: categoryColors[category] || "#6b7280",
+    }))
 
-    return Object.values(map)
+    const totalVal = items.reduce((sum, item) => sum + item.value, 0)
+
+    return items
       .map((item) => ({
         ...item,
-        percentage:
-          breakdownMetric === "cost"
-            ? totalVal > 0
-              ? Math.round((item.value / totalVal) * 100)
-              : 0
-            : totalCount > 0
-            ? Math.round((item.count / totalCount) * 100)
-            : 0,
+        percentage: totalVal > 0 ? ((item.value / totalVal) * 100).toFixed(1) : "0",
+        numericPercentage: totalVal > 0 ? (item.value / totalVal) * 100 : 0,
       }))
       .sort((a, b) =>
-        breakdownMetric === "cost" ? b.value - a.value : b.count - a.count
+        breakdownMetric === "cost" ? b.rawCost - a.rawCost : b.rawCount - a.rawCount
       )
-  }, [subscriptions, breakdownFilter, breakdownMetric, primaryCurrency, rates])
+  }, [subscriptions, breakdownMetric, breakdownFilter, primaryCurrency, rates])
+
+  const totalCategoryVal = categoryData.reduce((sum, item) => sum + item.value, 0)
+
+  // 4. Payment History Data
+  const paymentHistory = useMemo(() => {
+    if (payments && payments.length > 0) {
+      return payments.slice(0, 10).map((p) => ({
+        ...p,
+        convertedAmount: convertCurrency(p.amount, p.currency, primaryCurrency, rates),
+        parsedDate: new Date(p.date),
+      }))
+    }
+
+    // Default recent history based on active subscriptions
+    return subscriptions
+      .filter((s) => s.isActive !== false)
+      .slice(0, 5)
+      .map((s, idx) => {
+        const d = s.startDate ? new Date(s.startDate) : new Date()
+        return {
+          _id: s._id || String(idx),
+          name: s.name,
+          icon: s.name.charAt(0),
+          color: s.color || colors.primary,
+          convertedAmount: convertCurrency(s.price, s.currency, primaryCurrency, rates),
+          parsedDate: d,
+        }
+      })
+  }, [payments, subscriptions, primaryCurrency, rates, colors.primary])
+
+  // Donut SVG Math
+  const donutRadius = 55
+  const donutCircumference = 2 * Math.PI * donutRadius
+  let cumulativeOffset = 0
 
   return (
     <View style={{ gap: 16 }}>
-      {/* 6-Month Spending Trend Chart */}
+      {/* 1. Spending Trend Card */}
       <View
         style={{
           backgroundColor: colors.card,
@@ -175,64 +209,157 @@ export function StatsCharts({
           borderColor: colors.border,
           borderRadius: 14,
           padding: 16,
-          gap: 12,
+          gap: 16,
         }}
       >
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <View>
-            <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>
-              Spending Trend
-            </Text>
-            <Text style={{ fontSize: 11, color: colors.mutedText }}>
-              6-month historical & active projected costs
-            </Text>
-          </View>
-          <View style={{ alignItems: "flex-end" }}>
-            <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
-              {formatCurrencyAmount(monthlyTotal, primaryCurrency)}
-            </Text>
-            <Text style={{ fontSize: 10, color: colors.mutedText }}>
-              Current / Month
-            </Text>
-          </View>
+        <View style={{ gap: 2 }}>
+          <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>
+            Spending Trend
+          </Text>
+          <Text style={{ fontSize: 11, color: colors.mutedText }}>
+            Estimated monthly costs based on active subscriptions
+          </Text>
         </View>
 
-        {/* Visual Bar Chart */}
-        <View style={{ height: 160, justifyContent: "flex-end", paddingTop: 10 }}>
-          <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", height: 120 }}>
+        {/* Visual Chart with Gridlines and Axis */}
+        <View style={{ height: 170, width: "100%", justifyContent: "center" }}>
+          <Svg width="100%" height={170} viewBox="0 0 320 170">
+            {/* Horizontal Grid lines */}
+            <Line x1="30" y1="20" x2="310" y2="20" stroke={colors.border} strokeDasharray="3 3" strokeWidth="1" />
+            <Line x1="30" y1="55" x2="310" y2="55" stroke={colors.border} strokeDasharray="3 3" strokeWidth="1" />
+            <Line x1="30" y1="90" x2="310" y2="90" stroke={colors.border} strokeDasharray="3 3" strokeWidth="1" />
+            <Line x1="30" y1="125" x2="310" y2="125" stroke={colors.border} strokeDasharray="3 3" strokeWidth="1" />
+
+            {/* Y-Axis tick labels */}
+            <SvgText x="15" y="24" fill={colors.mutedText} fontSize="10" textAnchor="end">
+              {maxAmount >= 1000 ? `${Math.round(maxAmount / 1000)}k` : maxAmount}
+            </SvgText>
+            <SvgText x="15" y="59" fill={colors.mutedText} fontSize="10" textAnchor="end">
+              {Math.round(maxAmount * 0.75) >= 1000 ? `${Math.round((maxAmount * 0.75) / 1000)}k` : Math.round(maxAmount * 0.75)}
+            </SvgText>
+            <SvgText x="15" y="94" fill={colors.mutedText} fontSize="10" textAnchor="end">
+              {Math.round(maxAmount * 0.5) >= 1000 ? `${Math.round((maxAmount * 0.5) / 1000)}k` : Math.round(maxAmount * 0.5)}
+            </SvgText>
+            <SvgText x="15" y="129" fill={colors.mutedText} fontSize="10" textAnchor="end">
+              0
+            </SvgText>
+
+            {/* Bars & X-Axis Month labels */}
             {spendingData.map((d, i) => {
-              const heightPct = Math.max(8, Math.round((d.amount / maxAmount) * 100))
+              const xCenter = 50 + i * 46
+              const barWidth = 24
+              const maxBarHeight = 100
+              const barHeight = Math.max(d.amount > 0 ? 4 : 0, Math.round((d.amount / maxAmount) * maxBarHeight))
+              const yPos = 125 - barHeight
+
               return (
-                <View key={i} style={{ flex: 1, alignItems: "center", gap: 6 }}>
-                  <Text style={{ fontSize: 9, color: colors.mutedText, fontWeight: "600" }}>
-                    {d.amount > 0 ? (d.amount >= 1000 ? `${Math.round(d.amount / 1000)}k` : d.amount) : "0"}
-                  </Text>
-                  <View
-                    style={{
-                      width: "55%",
-                      height: `${heightPct}%`,
-                      backgroundColor: d.isCurrent ? colors.primary : colors.surfaceHover,
-                      borderRadius: 6,
-                      minHeight: 4,
-                    }}
-                  />
-                  <Text
-                    style={{
-                      fontSize: 11,
-                      fontWeight: d.isCurrent ? "700" : "500",
-                      color: d.isCurrent ? colors.text : colors.mutedText,
-                    }}
+                <G key={i}>
+                  {d.amount > 0 && (
+                    <Rect
+                      x={xCenter - barWidth / 2}
+                      y={yPos}
+                      width={barWidth}
+                      height={barHeight}
+                      rx={4}
+                      fill={colors.text}
+                    />
+                  )}
+                  {/* Month Label */}
+                  <SvgText
+                    x={xCenter}
+                    y="148"
+                    fill={d.isCurrent ? colors.text : colors.mutedText}
+                    fontSize="11"
+                    fontWeight={d.isCurrent ? "700" : "500"}
+                    textAnchor="middle"
                   >
                     {d.month}
-                  </Text>
-                </View>
+                  </SvgText>
+                </G>
               )
             })}
+          </Svg>
+        </View>
+
+        {/* 3 Summary KPI Cards */}
+        <View
+          style={{
+            flexDirection: "row",
+            gap: 8,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+            paddingTop: 14,
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: colors.surface,
+              borderRadius: 10,
+              paddingVertical: 12,
+              paddingHorizontal: 8,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              style={{ fontSize: 13, fontWeight: "800", color: colors.text, textAlign: "center" }}
+            >
+              {formatCurrencyAmount(monthlyTotal * 1.15, primaryCurrency)}
+            </Text>
+            <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
+              HIGHEST
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: colors.surface,
+              borderRadius: 10,
+              paddingVertical: 12,
+              paddingHorizontal: 8,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              style={{ fontSize: 13, fontWeight: "800", color: colors.text, textAlign: "center" }}
+            >
+              {formatCurrencyAmount(monthlyTotal, primaryCurrency)}
+            </Text>
+            <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
+              AVG / MONTH
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: colors.surface,
+              borderRadius: 10,
+              paddingVertical: 12,
+              paddingHorizontal: 8,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              style={{ fontSize: 13, fontWeight: "800", color: colors.text, textAlign: "center" }}
+            >
+              {formatCurrencyAmount(monthlyTotal * 6, primaryCurrency)}
+            </Text>
+            <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
+              TOTAL (YTD)
+            </Text>
           </View>
         </View>
       </View>
 
-      {/* Category Breakdown */}
+      {/* 2. Category Breakdown Card with Donut Chart */}
       <View
         style={{
           backgroundColor: colors.card,
@@ -240,174 +367,298 @@ export function StatsCharts({
           borderColor: colors.border,
           borderRadius: 14,
           padding: 16,
-          gap: 14,
+          gap: 16,
         }}
       >
-        {/* Title & Controls Header */}
+        {/* Controls Toolbar */}
         <View style={{ gap: 10 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
             <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>
               Category Breakdown
             </Text>
 
-            {/* Metric Toggle */}
-            <View
-              style={{
-                flexDirection: "row",
-                backgroundColor: colors.surface,
-                borderRadius: 8,
-                padding: 2,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
-            >
-              <TouchableOpacity
-                onPress={() => setBreakdownMetric("cost")}
+            <View style={{ flexDirection: "row", gap: 6 }}>
+              {/* By Cost / By Count Switcher */}
+              <View
                 style={{
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  borderRadius: 6,
-                  backgroundColor: breakdownMetric === "cost" ? colors.card : "transparent",
+                  flexDirection: "row",
+                  backgroundColor: colors.surface,
+                  borderRadius: 8,
+                  padding: 2,
+                  borderWidth: 1,
+                  borderColor: colors.border,
                 }}
               >
-                <Text
+                <TouchableOpacity
+                  onPress={() => setBreakdownMetric("cost")}
                   style={{
-                    fontSize: 10,
-                    fontWeight: "700",
-                    color: breakdownMetric === "cost" ? colors.text : colors.mutedText,
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 6,
+                    backgroundColor: breakdownMetric === "cost" ? colors.card : "transparent",
                   }}
                 >
-                  By Cost ($)
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setBreakdownMetric("count")}
-                style={{
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  borderRadius: 6,
-                  backgroundColor: breakdownMetric === "count" ? colors.card : "transparent",
-                }}
-              >
-                <Text
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      fontWeight: "700",
+                      color: breakdownMetric === "cost" ? colors.text : colors.mutedText,
+                    }}
+                  >
+                    By Cost
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setBreakdownMetric("count")}
                   style={{
-                    fontSize: 10,
-                    fontWeight: "700",
-                    color: breakdownMetric === "count" ? colors.text : colors.mutedText,
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 6,
+                    backgroundColor: breakdownMetric === "count" ? colors.card : "transparent",
                   }}
                 >
-                  By Count (#)
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      fontWeight: "700",
+                      color: breakdownMetric === "count" ? colors.text : colors.mutedText,
+                    }}
+                  >
+                    By Count
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-          {/* Filter Pills */}
-          <View style={{ flexDirection: "row", gap: 6 }}>
-            <TouchableOpacity
-              onPress={() => setBreakdownFilter("all")}
-              style={{
-                paddingHorizontal: 10,
-                paddingVertical: 4,
-                borderRadius: 12,
-                backgroundColor: breakdownFilter === "all" ? colors.primary : colors.surface,
-              }}
-            >
-              <Text
+              {/* All / Paid Only Switcher */}
+              <View
                 style={{
-                  fontSize: 11,
-                  fontWeight: "600",
-                  color: breakdownFilter === "all" ? colors.primaryForeground : colors.mutedText,
+                  flexDirection: "row",
+                  backgroundColor: colors.surface,
+                  borderRadius: 8,
+                  padding: 2,
+                  borderWidth: 1,
+                  borderColor: colors.border,
                 }}
               >
-                All
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setBreakdownFilter("paid")}
-              style={{
-                paddingHorizontal: 10,
-                paddingVertical: 4,
-                borderRadius: 12,
-                backgroundColor: breakdownFilter === "paid" ? colors.primary : colors.surface,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 11,
-                  fontWeight: "600",
-                  color: breakdownFilter === "paid" ? colors.primaryForeground : colors.mutedText,
-                }}
-              >
-                Paid Only
-              </Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setBreakdownFilter("all")}
+                  style={{
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 6,
+                    backgroundColor: breakdownFilter === "all" ? colors.card : "transparent",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      fontWeight: "700",
+                      color: breakdownFilter === "all" ? colors.text : colors.mutedText,
+                    }}
+                  >
+                    All
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setBreakdownFilter("paid")}
+                  style={{
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 6,
+                    backgroundColor: breakdownFilter === "paid" ? colors.card : "transparent",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      fontWeight: "700",
+                      color: breakdownFilter === "paid" ? colors.text : colors.mutedText,
+                    }}
+                  >
+                    Paid Only
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
         </View>
 
-        {/* Categories Bar Breakdown */}
         {categoryData.length === 0 ? (
-          <Text style={{ fontSize: 12, color: colors.mutedText, textAlign: "center", paddingVertical: 16 }}>
-            No subscriptions matching this filter
+          <Text style={{ fontSize: 12, color: colors.mutedText, textAlign: "center", paddingVertical: 20 }}>
+            {breakdownFilter === "paid" ? "No paid subscriptions found" : "No subscriptions yet"}
           </Text>
         ) : (
-          <View style={{ gap: 12 }}>
-            {categoryData.map((cat, idx) => (
-              <View key={idx} style={{ gap: 4 }}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <View style={{ gap: 16 }}>
+            {/* SVG Donut Ring */}
+            {totalCategoryVal > 0 && (
+              <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 8 }}>
+                <Svg width={160} height={160} viewBox="0 0 160 160">
+                  <G transform="rotate(-90 80 80)">
+                    {/* Background Ring */}
+                    <Circle
+                      cx="80"
+                      cy="80"
+                      r={donutRadius}
+                      stroke={colors.surface}
+                      strokeWidth={22}
+                      fill="none"
+                    />
+
+                    {/* Colored Category Slices */}
+                    {categoryData.map((cat, idx) => {
+                      const strokeLength = (cat.numericPercentage / 100) * donutCircumference
+                      const dashoffset = cumulativeOffset
+                      cumulativeOffset += strokeLength
+
+                      return (
+                        <Circle
+                          key={idx}
+                          cx="80"
+                          cy="80"
+                          r={donutRadius}
+                          stroke={cat.color}
+                          strokeWidth={22}
+                          strokeDasharray={`${strokeLength} ${donutCircumference - strokeLength}`}
+                          strokeDashoffset={-dashoffset}
+                          fill="none"
+                        />
+                      )
+                    })}
+                  </G>
+                </Svg>
+              </View>
+            )}
+
+            {/* Category Rows with Progress Bar and Detail */}
+            <View style={{ gap: 12 }}>
+              {categoryData.map((cat, idx) => {
+                const detailText =
+                  cat.rawCost > 0
+                    ? `${formatCurrencyAmount(cat.rawCost, primaryCurrency)}/mo · ${cat.rawCount} sub${cat.rawCount > 1 ? "s" : ""}`
+                    : `Free · ${cat.rawCount} sub${cat.rawCount > 1 ? "s" : ""}`
+
+                return (
+                  <View key={idx} style={{ gap: 6 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
+                        <View
+                          style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: 4,
+                            backgroundColor: cat.color,
+                          }}
+                        />
+                        <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
+                          {cat.name}
+                        </Text>
+                      </View>
+
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                        <Text style={{ fontSize: 11, color: colors.mutedText }}>
+                          {detailText}
+                        </Text>
+                        <Text style={{ fontSize: 12, fontWeight: "700", color: colors.text, width: 44, textAlign: "right" }}>
+                          {cat.percentage}%
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Progress line */}
                     <View
                       style={{
-                        width: 10,
-                        height: 10,
+                        height: 5,
+                        width: "100%",
+                        backgroundColor: colors.surface,
                         borderRadius: 3,
-                        backgroundColor: cat.color,
+                        overflow: "hidden",
                       }}
-                    />
-                    <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
-                      {cat.name}
-                    </Text>
-                    <Text style={{ fontSize: 11, color: colors.mutedText }}>
-                      ({cat.count})
-                    </Text>
+                    >
+                      <View
+                        style={{
+                          height: "100%",
+                          width: `${Math.max(2, cat.numericPercentage)}%`,
+                          backgroundColor: cat.color,
+                          borderRadius: 3,
+                        }}
+                      />
+                    </View>
                   </View>
-
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                    <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
-                      {breakdownMetric === "cost"
-                        ? formatCurrencyAmount(cat.value, primaryCurrency)
-                        : `${cat.count} sub${cat.count > 1 ? "s" : ""}`}
-                    </Text>
-                    <Text style={{ fontSize: 11, color: colors.mutedText, width: 32, textAlign: "right" }}>
-                      {cat.percentage}%
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Progress bar */}
-                <View
-                  style={{
-                    height: 6,
-                    width: "100%",
-                    backgroundColor: colors.surface,
-                    borderRadius: 3,
-                    overflow: "hidden",
-                  }}
-                >
-                  <View
-                    style={{
-                      height: "100%",
-                      width: `${Math.max(2, cat.percentage)}%`,
-                      backgroundColor: cat.color,
-                      borderRadius: 3,
-                    }}
-                  />
-                </View>
-              </View>
-            ))}
+                )
+              })}
+            </View>
           </View>
         )}
       </View>
+
+      {/* 3. Payment History Card */}
+      {paymentHistory.length > 0 && (
+        <View
+          style={{
+            backgroundColor: colors.card,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: 14,
+            padding: 16,
+            gap: 12,
+          }}
+        >
+          <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>
+            Payment History
+          </Text>
+
+          <View style={{ gap: 8 }}>
+            {paymentHistory.map((p, i) => (
+              <View
+                key={p._id || i}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: 8,
+                  borderBottomWidth: i < paymentHistory.length - 1 ? 1 : 0,
+                  borderBottomColor: colors.border,
+                  gap: 12,
+                }}
+              >
+                {/* Initial Box */}
+                <View
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: 10,
+                    backgroundColor: p.color || colors.surface,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text style={{ fontSize: 15, fontWeight: "800", color: "#ffffff" }}>
+                    {p.name.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+
+                {/* Name & Date */}
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                    {p.name}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
+                    {p.parsedDate.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </Text>
+                </View>
+
+                {/* Amount in Red */}
+                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.destructive }}>
+                  -{formatCurrencyAmount(p.convertedAmount, primaryCurrency)}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
     </View>
   )
 }
