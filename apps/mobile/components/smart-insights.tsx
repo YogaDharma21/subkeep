@@ -1,13 +1,6 @@
 import React, { useMemo } from "react"
 import { View, Text } from "react-native"
-import {
-  Sparkles,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  PieChart,
-  Users,
-} from "lucide-react-native"
+import { Sparkles } from "lucide-react-native"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { subMonths, endOfMonth } from "date-fns"
 import { useThemeColor } from "@/hooks/use-theme-color"
@@ -53,8 +46,6 @@ export function SmartInsights({
       title: string
       description: string
       badge?: string
-      icon: typeof Sparkles
-      iconColor: string
     }[] = []
 
     // 1. Category Dominance Calculation
@@ -95,8 +86,6 @@ export function SmartInsights({
           title: `${percent}% Spent on ${catLabel}`,
           description: `You spend ${percent}% of your total subscription budget on ${catLabel} alone (${formatCurrencyAmount(topCategoryAmount, primaryCurrency)} per month).`,
           badge: "BUDGET FOCUS",
-          icon: PieChart,
-          iconColor: colors.blue,
         })
       }
     }
@@ -141,8 +130,6 @@ export function SmartInsights({
           title: `Spending Trend (+${diffPct}% MoM)`,
           description: `Your monthly subscription spending increased by ${diffPct}% (+${formatCurrencyAmount(diffAbs, primaryCurrency)} per month) compared to last month.`,
           badge: "MONTHLY INCREASE",
-          icon: TrendingUp,
-          iconColor: colors.amber,
         })
       } else if (diffPct < 0) {
         list.push({
@@ -151,8 +138,6 @@ export function SmartInsights({
           title: `Spending Trend (${diffPct}% MoM)`,
           description: `Your monthly subscription spending decreased by ${Math.abs(diffPct)}% (-${formatCurrencyAmount(diffAbs, primaryCurrency)} per month) compared to last month. Great job!`,
           badge: "MONTHLY SAVINGS",
-          icon: TrendingDown,
-          iconColor: colors.emerald,
         })
       } else {
         list.push({
@@ -161,8 +146,6 @@ export function SmartInsights({
           title: "Stable Spending (0% MoM)",
           description: `Your recurring monthly commitments are consistent with last month at ${formatCurrencyAmount(thisMonthSum, primaryCurrency)} per month.`,
           badge: "STEADY BUDGET",
-          icon: Minus,
-          iconColor: colors.mutedText,
         })
       }
     }
@@ -187,8 +170,6 @@ export function SmartInsights({
           title: `Shared Plans Saving You ${formatCurrencyAmount(totalSavedMonthly * 12, primaryCurrency)}/yr`,
           description: `You share ${sharedSubs.length} subscription(s) with family/friends, cutting your annual costs significantly!`,
           badge: "FAMILY SAVINGS",
-          icon: Users,
-          iconColor: colors.blue,
         })
       }
     }
@@ -210,13 +191,11 @@ export function SmartInsights({
         title: `Consolidate ${entertainmentSubs.length} Media Services`,
         description: `You have ${entertainmentSubs.length} active media services (${formatCurrencyAmount(entTotalMonthly, primaryCurrency)} per month). Rotating services monthly could save up to ${formatCurrencyAmount(yearlyPotentialSavings, primaryCurrency)} per year!`,
         badge: "POTENTIAL SAVINGS",
-        icon: Sparkles,
-        iconColor: colors.amber,
       })
     }
 
     return list
-  }, [subscriptions, primaryCurrency, rates, colors])
+  }, [subscriptions, primaryCurrency, rates])
 
   if (insights.length === 0) return null
 
@@ -239,53 +218,44 @@ export function SmartInsights({
       </View>
 
       <View style={{ gap: 8 }}>
-        {insights.map((item) => {
-          const Icon = item.icon
-          return (
-            <View
-              key={item.id}
-              style={{
-                backgroundColor: colors.surface,
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderRadius: 12,
-                padding: 12,
-                flexDirection: "row",
-                gap: 12,
-                alignItems: "flex-start",
-              }}
-            >
-              <Icon size={16} color={item.iconColor} style={{ marginTop: 2 }} />
-
-              <View style={{ flex: 1, gap: 4 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text, flex: 1 }}>
-                    {item.title}
+        {insights.map((item) => (
+          <View
+            key={item.id}
+            style={{
+              backgroundColor: colors.surface,
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: 12,
+              padding: 12,
+              gap: 4,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+              <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text, flex: 1 }}>
+                {item.title}
+              </Text>
+              {item.badge ? (
+                <View
+                  style={{
+                    backgroundColor: colors.surfaceHover,
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                >
+                  <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+                    {item.badge}
                   </Text>
-                  {item.badge ? (
-                    <View
-                      style={{
-                        backgroundColor: colors.surfaceHover,
-                        paddingHorizontal: 6,
-                        paddingVertical: 2,
-                        borderRadius: 4,
-                        borderWidth: 1,
-                        borderColor: colors.border,
-                      }}
-                    >
-                      <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
-                        {item.badge}
-                      </Text>
-                    </View>
-                  ) : null}
                 </View>
-                <Text style={{ fontSize: 11, color: colors.mutedText, lineHeight: 16 }}>
-                  {item.description}
-                </Text>
-              </View>
+              ) : null}
             </View>
-          )
-        })}
+            <Text style={{ fontSize: 11, color: colors.mutedText, lineHeight: 16 }}>
+              {item.description}
+            </Text>
+          </View>
+        ))}
       </View>
     </View>
   )
