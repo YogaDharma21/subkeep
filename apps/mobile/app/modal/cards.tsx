@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
@@ -21,9 +20,10 @@ import {
 } from "lucide-react-native"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { convertAndFormat } from "@/lib/currency"
+import { convertAndFormat, convertCurrency } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { useAlert } from "@/components/custom-alert-provider"
 
 const CARD_TYPES = [
   { value: "visa", label: "Visa" },
@@ -50,6 +50,7 @@ export default function CardsModal() {
   const { colors } = useThemeColor()
   const { isSignedIn } = useAuth()
   const { primaryCurrency, rates } = usePrimaryCurrency()
+  const { showAlert, showToast } = useAlert()
 
   const paymentMethods = useQuery(
     api.paymentMethods.list,
@@ -78,34 +79,37 @@ export default function CardsModal() {
     if (!subscriptions) return map
 
     subscriptions.forEach((sub) => {
-      if (sub.isActive === false || !sub.paymentMethodId) return
+      if (!sub.paymentMethodId || sub.isActive === false) return
+      const cycle = (sub.cycle || "monthly").toLowerCase()
+      let nativeMonthly = sub.price
+      if (cycle === "quarterly") nativeMonthly = sub.price / 3
+      else if (cycle === "semi-annual") nativeMonthly = sub.price / 6
+      else if (cycle === "yearly") nativeMonthly = sub.price / 12
+      else if (cycle === "weekly") nativeMonthly = sub.price * 4.33
+      else if (cycle === "daily") nativeMonthly = sub.price * 30
+      else if (cycle === "none") nativeMonthly = 0
+
+      const converted = convertCurrency(nativeMonthly, sub.currency, primaryCurrency, rates)
       if (!map[sub.paymentMethodId]) {
         map[sub.paymentMethodId] = { totalMonthly: 0, subCount: 0 }
       }
-      const cycle = (sub.cycle || "monthly").toLowerCase()
-      let m = sub.price
-      if (cycle === "quarterly") m = sub.price / 3
-      else if (cycle === "semi-annual") m = sub.price / 6
-      else if (cycle === "yearly") m = sub.price / 12
-      else if (cycle === "weekly") m = sub.price * 4.33
-      else if (cycle === "daily") m = sub.price * 30
-      else if (cycle === "none") m = 0
-
-      map[sub.paymentMethodId].totalMonthly += m
+      map[sub.paymentMethodId].totalMonthly += converted
       map[sub.paymentMethodId].subCount += 1
     })
-    return map
-  }, [subscriptions])
 
-  // Expiry check
-  const now = new Date()
-  const currentYear = now.getFullYear()
-  const currentMonth = now.getMonth() + 1
+    return map
+  }, [subscriptions, primaryCurrency, rates])
 
   const checkExpiryStatus = (month?: number, year?: number) => {
-    if (!year || !month) return null
-    const isExpired = year < currentYear || (year === currentYear && month < currentMonth)
-    if (isExpired) return "expired"
+    if (!month || !year) return null
+    const now = new Date()
+    const currentYear = now.getFullYear()
+    const currentMonth = now.getMonth() + 1
+
+    if (year < currentYear || (year === currentYear && month < currentMonth)) {
+      return "expired"
+    }
+
     const monthsUntil = (year - currentYear) * 12 + (month - currentMonth)
     if (monthsUntil <= 2) return "expiring_soon"
     return null
@@ -113,7 +117,7 @@ export default function CardsModal() {
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      Alert.alert("Required", "Please enter a name for the payment method")
+      showToast("Please enter a name for the payment method", "error")
       return
     }
 
@@ -132,18 +136,20 @@ export default function CardsModal() {
       setExpiryMonth("")
       setExpiryYear("")
       setIsAdding(false)
+      showToast("Payment method added successfully", "success")
     } catch {
-      Alert.alert("Error", "Failed to add payment method")
+      showToast("Failed to add payment method", "error")
     } finally {
       setLoading(false)
     }
   }
 
   const handleDelete = (id: string, cardName: string) => {
-    Alert.alert(
-      "Delete Payment Method",
-      `Are you sure you want to remove ${cardName}?`,
-      [
+    showAlert({
+      title: "Delete Payment Method",
+      message: `Are you sure you want to remove ${cardName}?`,
+      icon: "warning",
+      buttons: [
         { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
@@ -151,13 +157,14 @@ export default function CardsModal() {
           onPress: async () => {
             try {
               await removeMutation({ id: id as Id<"paymentMethods"> })
+              showToast("Payment method removed", "info")
             } catch {
-              Alert.alert("Error", "Failed to delete payment method")
+              showToast("Failed to delete payment method", "error")
             }
           },
         },
-      ]
-    )
+      ],
+    })
   }
 
   return (

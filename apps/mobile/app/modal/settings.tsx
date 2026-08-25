@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
@@ -17,11 +16,13 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { useAlert } from "@/components/custom-alert-provider"
 
 export default function SettingsModal() {
   const router = useRouter()
   const { colors } = useThemeColor()
   const { isSignedIn } = useAuth()
+  const { showToast } = useAlert()
 
   const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
   const updateSettings = useMutation(api.userSettings.update)
@@ -41,8 +42,9 @@ export default function SettingsModal() {
     if (isSignedIn) {
       try {
         await updateSettings({ reminderDays: days })
+        showToast(`Reminders set to ${days === 0 ? "due date" : `${days} days before`}`, "success")
       } catch {
-        Alert.alert("Error", "Failed to update reminder settings")
+        showToast("Failed to update reminder settings", "error")
       }
     }
   }
@@ -53,9 +55,9 @@ export default function SettingsModal() {
     if (isSignedIn) {
       try {
         await updateSettings({ monthlyBudgetCap: val })
-        Alert.alert("Success", val ? `Monthly budget cap set to ${getSymbol(primaryCurrency)}${val}` : "Budget cap removed")
+        showToast(val ? `Monthly budget cap set to ${getSymbol(primaryCurrency)}${val}` : "Budget cap removed", "success")
       } catch {
-        Alert.alert("Error", "Failed to save budget cap")
+        showToast("Failed to save budget cap", "error")
       } finally {
         setSavingBudget(false)
       }

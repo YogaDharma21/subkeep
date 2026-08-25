@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
-  Alert,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
@@ -29,11 +28,13 @@ import { IconPickerModal } from "@/components/icon-picker-modal"
 import { SubscriptionTemplate } from "@/constants/default-templates"
 import { categories, billingCycles, colorOptions } from "@/constants/categories"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { useAlert } from "@/components/custom-alert-provider"
 
 export default function AddSubscriptionModal() {
   const router = useRouter()
   const { colors } = useThemeColor()
   const { isSignedIn } = useAuth()
+  const { showToast } = useAlert()
 
   const create = useMutation(api.subscriptions.create)
   const paymentMethods = useQuery(api.paymentMethods.list, isSignedIn ? {} : "skip")
@@ -126,7 +127,7 @@ export default function AddSubscriptionModal() {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert("Required", "Please enter a subscription name")
+      showToast("Please enter a subscription name", "error")
       return
     }
 
@@ -155,10 +156,11 @@ export default function AddSubscriptionModal() {
         splitMembers: isShared && splitMembersList.length > 0 ? splitMembersList : undefined,
       })
 
+      showToast("Subscription created successfully", "success")
       router.back()
     } catch (e) {
       console.error("Failed to create subscription:", e)
-      Alert.alert("Error", "Failed to create subscription")
+      showToast("Failed to create subscription", "error")
     } finally {
       setLoading(false)
     }

@@ -9,6 +9,7 @@ import React, { useEffect } from "react"
 import { View, ActivityIndicator } from "react-native"
 import { tokenCache } from "@/lib/token-cache"
 import { LandingScreen } from "@/components/landing-screen"
+import { CustomAlertProvider } from "@/components/custom-alert-provider"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import "react-native-reanimated"
 
@@ -93,10 +94,12 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
         <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-          <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
-            <InitialLayout />
-            <StatusBar style={isDark ? "light" : "dark"} />
-          </ThemeProvider>
+          <CustomAlertProvider>
+            <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+              <InitialLayout />
+              <StatusBar style={isDark ? "light" : "dark"} />
+            </ThemeProvider>
+          </CustomAlertProvider>
         </ConvexProviderWithClerk>
       </ClerkProvider>
     </SafeAreaProvider>

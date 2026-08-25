@@ -1,9 +1,10 @@
 import React, { useState, useCallback } from "react"
-import { TouchableOpacity, Text, ActivityIndicator, Alert } from "react-native"
+import { TouchableOpacity, Text, ActivityIndicator } from "react-native"
 import { useOAuth } from "@clerk/clerk-expo"
 import * as WebBrowser from "expo-web-browser"
 import * as Linking from "expo-linking"
 import Svg, { Path } from "react-native-svg"
+import { useAlert } from "@/components/custom-alert-provider"
 
 WebBrowser.maybeCompleteAuthSession()
 
@@ -18,6 +19,7 @@ export function GoogleOAuthButton({
 }: GoogleOAuthButtonProps) {
   const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" })
   const [loading, setLoading] = useState(false)
+  const { showAlert } = useAlert()
 
   const handleGoogleSignIn = useCallback(async () => {
     setLoading(true)
@@ -35,11 +37,11 @@ export function GoogleOAuthButton({
       console.error("OAuth error:", err)
       const error = err as { message?: string; errors?: { message?: string }[] }
       const msg = error.errors?.[0]?.message || error.message || "Failed to sign in with Google."
-      Alert.alert("Google Sign In", msg)
+      showAlert({ title: "Google Sign In", message: msg, icon: "error" })
     } finally {
       setLoading(false)
     }
-  }, [startOAuthFlow, onSuccess])
+  }, [startOAuthFlow, onSuccess, showAlert])
 
   return (
     <TouchableOpacity
