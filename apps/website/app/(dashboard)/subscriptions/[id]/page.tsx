@@ -45,6 +45,7 @@ import { format, differenceInDays } from "date-fns"
 import { convertAndFormat } from "@/lib/currency"
 import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
+import { SubscriptionDetailSkeleton } from "@/components/subscription-detail-skeleton"
 
 export default function SubscriptionDetailPage({
   params,
@@ -283,11 +284,7 @@ export default function SubscriptionDetailPage({
   }
 
   if (!sub) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Skeleton className="h-8 w-32" />
-      </div>
-    )
+    return <SubscriptionDetailSkeleton />
   }
 
   const currentIcon = editing ? editIcon || sub.icon : sub.icon
@@ -992,13 +989,5 @@ export default function SubscriptionDetailPage({
         defaultDomain={editWebsite || editName || sub.website || sub.name}
       />
     </div>
-  )
-}
-
-function Skeleton({ className }: { className?: string }) {
-  return (
-    <div
-      className={cn("animate-pulse rounded-lg bg-muted", className)}
-    />
   )
 }
