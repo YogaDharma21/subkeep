@@ -16,9 +16,12 @@ import { LandingPage } from "@/components/landing-page"
 import { Toaster } from "@/components/ui/sonner"
 import { useTheme } from "@/components/theme-provider"
 
+import { BrowserBridgePage } from "@/components/browser-bridge-page"
+
 export function App() {
   const { isSignedIn, isLoaded } = useAuth()
   const { setTheme, resolvedTheme } = useTheme()
+  const isElectron = !!window.electronAPI?.isElectron
 
   const [currentView, setCurrentView] = useState<DesktopView>("dashboard")
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null)
@@ -74,6 +77,11 @@ export function App() {
         <p className="text-xs text-muted-foreground font-semibold">Loading SubKeep Desktop...</p>
       </div>
     )
+  }
+
+  // If in browser (e.g. redirected to localhost:5173 during OAuth) and authenticated, bridge back to desktop
+  if (!isElectron && isSignedIn) {
+    return <BrowserBridgePage />
   }
 
   if (!isSignedIn) {

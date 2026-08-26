@@ -23,6 +23,66 @@ const CLERK_HOSTED_DOMAIN = "https://engaging-mole-10.clerk.accounts.dev"
 
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
 
+// Register custom protocol 'subkeep://' for deep linking
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient("subkeep", process.execPath, [
+      path.resolve(process.argv[1]),
+    ])
+  }
+} else {
+  app.setAsDefaultProtocolClient("subkeep")
+}
+
+function handleDeepLink(urlStr: string) {
+  if (!urlStr || !urlStr.startsWith("subkeep://")) return
+
+  try {
+    const parsed = new URL(urlStr)
+    const queryParams: Record<string, string> = {}
+    parsed.searchParams.forEach((val, key) => {
+      queryParams[key] = val
+    })
+
+    if (win && !win.isDestroyed()) {
+      win.webContents.send("auth:callback", {
+        query: queryParams,
+        url: urlStr,
+      })
+      if (win.isMinimized()) win.restore()
+      win.show()
+      win.focus()
+    }
+  } catch (e) {
+    console.error("Failed to parse deep link URL:", urlStr, e)
+  }
+}
+
+// Ensure single instance lock for deep linking
+const gotTheLock = app.requestSingleInstanceLock()
+
+if (!gotTheLock) {
+  app.quit()
+} else {
+  app.on("second-instance", (_event, commandLine) => {
+    if (win) {
+      if (win.isMinimized()) win.restore()
+      win.show()
+      win.focus()
+    }
+    const deepLinkUrl = commandLine.find((arg) => arg.startsWith("subkeep://"))
+    if (deepLinkUrl) {
+      handleDeepLink(deepLinkUrl)
+    }
+  })
+}
+
+// macOS open-url event
+app.on("open-url", (event, url) => {
+  event.preventDefault()
+  handleDeepLink(url)
+})
+
 function createWindow() {
   win = new BrowserWindow({
     width: 1280,
@@ -39,6 +99,14 @@ function createWindow() {
       sandbox: false,
     },
   })
+
+  // Check if launched with custom protocol URL
+  const initialDeepLink = process.argv.find((arg) => arg.startsWith("subkeep://"))
+  if (initialDeepLink) {
+    win.webContents.once("did-finish-load", () => {
+      handleDeepLink(initialDeepLink)
+    })
+  }
 
   // Prevent in-app navigation to external websites: open in default external browser
   win.webContents.on("will-navigate", (event, navigationUrl) => {
@@ -91,7 +159,7 @@ ipcMain.handle("window:is-maximized", () => {
 
 // External link opener
 ipcMain.handle("shell:open-external", async (_event, url: string) => {
-  if (typeof url === "string" && (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("mailto:"))) {
+  if (typeof url === "string" && (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("mailto:") || url.startsWith("subkeep://"))) {
     await shell.openExternal(url)
     return true
   }
@@ -203,7 +271,7 @@ ipcMain.handle("auth:start-browser-login", async (_event, customUrl?: string) =>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SubKeep Desktop - Authenticated</title>
+  <title>SubKeep Desktop</title>
   <style>
     body {
       margin: 0;
@@ -219,42 +287,65 @@ ipcMain.handle("auth:start-browser-login", async (_event, customUrl?: string) =>
     .container {
       text-align: center;
       background: #111113;
-      padding: 44px 36px;
+      padding: 48px 36px;
       border-radius: 24px;
       border: 1px solid #27272a;
-      max-width: 380px;
+      max-width: 400px;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
     }
     .icon {
-      width: 60px;
-      height: 60px;
+      width: 64px;
+      height: 64px;
       background: #ffffff;
-      border-radius: 18px;
+      border-radius: 20px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 25px -5px rgba(255, 255, 255, 0.2);
     }
-    h1 { margin: 0 0 10px; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
-    p { margin: 0; color: #a1a1aa; font-size: 13px; line-height: 1.5; }
+    h1 { margin: 0 0 10px; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+    p { margin: 0 0 24px; color: #a1a1aa; font-size: 13px; line-height: 1.5; }
+    .btn {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px 20px;
+      background: #ffffff;
+      color: #000000;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-radius: 9999px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #e4e4e7;
+      transform: scale(1.02);
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="icon">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="#000000">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="#000000">
         <path d="M12 2.2L20.8 7.3L12 12.4L3.2 7.3L12 2.2Z" />
         <path d="M2.5 9.1L11.3 14.2V21.8L2.5 16.7V9.1Z" />
         <path d="M12.7 14.2L21.5 9.1V16.7L12.7 21.8V14.2Z" />
       </svg>
     </div>
-    <h1>Signed In Successfully</h1>
-    <p>You are now connected to <strong>SubKeep Desktop</strong>. You can close this tab and return to the desktop application.</p>
+    <h1>Opening SubKeep Desktop...</h1>
+    <p>Click below if your browser doesn't prompt you to open the desktop app automatically.</p>
+    <a id="deepLinkBtn" href="#" class="btn">Open SubKeep Desktop</a>
   </div>
   <script>
-    setTimeout(() => {
-      window.close();
-    }, 1500);
+    const search = window.location.search;
+    const deepLink = "subkeep://auth-callback" + search;
+    document.getElementById("deepLinkBtn").setAttribute("href", deepLink);
+    window.location.href = deepLink;
   </script>
 </body>
 </html>`
