@@ -1,7 +1,8 @@
-import { contextBridge, ipcRenderer } from "electron"
+import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron"
 
 const electronAPI = {
   isElectron: true,
+  platform: process.platform,
   openExternal: (url: string) => ipcRenderer.invoke("shell:open-external", url),
   showNotification: (title: string, body: string) =>
     ipcRenderer.invoke("notification:show", { title, body }),
@@ -21,19 +22,19 @@ const electronAPI = {
     ipcRenderer.on("auth:callback", handler)
     return () => ipcRenderer.removeListener("auth:callback", handler)
   },
-  minimize: () => {
-    ipcRenderer.send("window:minimize")
-    return ipcRenderer.invoke("window:minimize")
-  },
-  maximize: () => {
-    ipcRenderer.send("window:maximize")
-    return ipcRenderer.invoke("window:maximize")
-  },
-  close: () => {
-    ipcRenderer.send("window:close")
-    return ipcRenderer.invoke("window:close")
-  },
+  minimize: () => ipcRenderer.invoke("window:minimize"),
+  maximize: () => ipcRenderer.invoke("window:maximize"),
+  close: () => ipcRenderer.invoke("window:close"),
   isMaximized: () => ipcRenderer.invoke("window:is-maximized"),
+  onMaximizeChange: (callback: (isMaximized: boolean) => void) => {
+    const listener = (_event: IpcRendererEvent, isMaximized: boolean) => {
+      callback(isMaximized)
+    }
+    ipcRenderer.on("window:maximize-change", listener)
+    return () => {
+      ipcRenderer.removeListener("window:maximize-change", listener)
+    }
+  },
   getAppInfo: () => ipcRenderer.invoke("app:get-info"),
 }
 

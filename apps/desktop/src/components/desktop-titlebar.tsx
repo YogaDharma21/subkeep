@@ -1,12 +1,5 @@
-import { useState, useEffect } from "react"
-import {
-  Minus,
-  Square,
-  X,
-  Sun,
-  Moon,
-  Command,
-} from "lucide-react"
+import { useEffect, useState } from "react"
+import { Minus, Square, Copy, X, Sun, Moon, Command } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 
 interface DesktopTitlebarProps {
@@ -18,14 +11,6 @@ interface DesktopTitlebarProps {
   isLanding?: boolean
 }
 
-const noDragStyle = {
-  WebkitAppRegion: "no-drag",
-} as React.CSSProperties
-
-const dragStyle = {
-  WebkitAppRegion: "drag",
-} as React.CSSProperties
-
 export function DesktopTitlebar({
   activeSubCount = 0,
   totalSubCount = 0,
@@ -35,39 +20,27 @@ export function DesktopTitlebar({
 }: DesktopTitlebarProps) {
   const [isMaximized, setIsMaximized] = useState(false)
   const { setTheme, resolvedTheme } = useTheme()
-  const isElectron =
-    typeof window !== "undefined" &&
-    (!!window.electronAPI?.isElectron ||
-      (typeof navigator !== "undefined" &&
-        navigator.userAgent.toLowerCase().includes(" electron/")))
+  const isMac = typeof window !== "undefined" && window.electronAPI?.platform === "darwin"
+  const isElectron = !!window.electronAPI?.isElectron
 
   useEffect(() => {
-    if (window.electronAPI?.isMaximized) {
-      window.electronAPI.isMaximized().then(setIsMaximized)
+    if (!window.electronAPI) return
+
+    window.electronAPI.isMaximized().then(setIsMaximized).catch(() => {})
+    const unsubscribe = window.electronAPI.onMaximizeChange?.((maximized) => {
+      setIsMaximized(maximized)
+    })
+
+    return () => {
+      unsubscribe?.()
     }
   }, [])
 
-  const handleMinimize = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    window.electronAPI?.minimize()
+  const handleMinimize = () => window.electronAPI?.minimize()
+  const handleMaximize = () => {
+    window.electronAPI?.maximize().then(setIsMaximized).catch(() => {})
   }
-
-  const handleMaximize = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    await window.electronAPI?.maximize()
-    if (window.electronAPI?.isMaximized) {
-      const max = await window.electronAPI.isMaximized()
-      setIsMaximized(max)
-    }
-  }
-
-  const handleClose = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    window.electronAPI?.close()
-  }
+  const handleClose = () => window.electronAPI?.close()
 
   const viewNameMap: Record<string, string> = {
     dashboard: "Subscriptions",
@@ -78,53 +51,57 @@ export function DesktopTitlebar({
   }
 
   const sectionName = viewNameMap[currentView] || "Subscriptions"
+  const countRatio = `${activeSubCount}/${totalSubCount}`
 
   if (isLanding) {
     return (
-      <header className="h-10 bg-black flex items-center justify-between px-3 select-none shrink-0 z-40 border-b border-zinc-900">
-        {/* Left: Brand (No Drag) */}
-        <div className="flex items-center gap-2.5 min-w-[150px]" style={noDragStyle}>
-          <div className="size-5.5 rounded-full bg-white text-black flex items-center justify-center font-black text-[11px] shadow-xs">
+      <header
+        className={`sticky top-0 z-50 flex h-10 w-full select-none items-center justify-between border-b border-zinc-900 bg-black app-drag-region ${
+          isMac ? "pl-20 pr-3" : "px-3"
+        }`}
+      >
+        {/* Left: App Brand */}
+        <div className="flex items-center gap-2 app-no-drag">
+          <div className="flex h-5 w-5 items-center justify-center rounded-md bg-white text-black font-black text-xs shadow-xs">
             S
           </div>
-          <span className="font-bold text-xs tracking-tight text-white">
-            SubKeep
-          </span>
+          <span className="text-xs font-black tracking-tight text-white">SubKeep</span>
         </div>
 
-        {/* Center: Draggable Space Only */}
-        <div className="flex-1 h-full cursor-default" style={dragStyle} />
+        {/* Center: Draggable Spacer */}
+        <div className="flex-1 h-full min-w-4" />
 
-        {/* Right: Window Controls (No Drag) */}
-        <div className="flex items-center gap-0.5 justify-end" style={noDragStyle}>
-          {isElectron && (
-            <div className="flex items-center" style={noDragStyle}>
+        {/* Right: Window Controls */}
+        <div className="flex items-center gap-1.5 app-no-drag">
+          {isElectron && !isMac && (
+            <div className="flex items-center ml-1 gap-0.5">
               <button
                 type="button"
                 onClick={handleMinimize}
-                style={noDragStyle}
-                className="size-8 flex items-center justify-center rounded-md hover:bg-zinc-800 text-zinc-400 hover:text-white cursor-pointer transition-colors"
+                className="flex h-7 w-8 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
                 title="Minimize"
               >
-                <Minus className="size-3.5" />
+                <Minus className="h-3.5 w-3.5" />
               </button>
               <button
                 type="button"
                 onClick={handleMaximize}
-                style={noDragStyle}
-                className="size-8 flex items-center justify-center rounded-md hover:bg-zinc-800 text-zinc-400 hover:text-white cursor-pointer transition-colors"
+                className="flex h-7 w-8 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
                 title={isMaximized ? "Restore" : "Maximize"}
               >
-                <Square className="size-3" />
+                {isMaximized ? (
+                  <Copy className="h-3 w-3 rotate-180" />
+                ) : (
+                  <Square className="h-3 w-3" />
+                )}
               </button>
               <button
                 type="button"
                 onClick={handleClose}
-                style={noDragStyle}
-                className="size-8 flex items-center justify-center rounded-md hover:bg-red-600 hover:text-white text-zinc-400 cursor-pointer transition-colors"
+                className="flex h-7 w-8 items-center justify-center rounded-md text-zinc-400 hover:bg-red-600 hover:text-white transition-colors cursor-pointer"
                 title="Close"
               >
-                <X className="size-3.5" />
+                <X className="h-3.5 w-3.5" />
               </button>
             </div>
           )}
@@ -134,97 +111,88 @@ export function DesktopTitlebar({
   }
 
   return (
-    <header className="h-10 border-b border-border/60 bg-background/95 backdrop-blur-md flex items-center justify-between px-3 select-none shrink-0 z-40">
-      {/* Left: Modern App Brand + Breadcrumb + Pill Counter (No Drag) */}
-      <div className="flex items-center gap-2 shrink-0" style={noDragStyle}>
-        {/* Rounded Circular Icon Container */}
-        <div className="size-5.5 rounded-full bg-foreground text-background flex items-center justify-center font-black text-[11px] shadow-xs">
+    <header
+      className={`sticky top-0 z-50 flex h-10 w-full select-none items-center justify-between border-b border-border bg-card/85 backdrop-blur-md app-drag-region ${
+        isMac ? "pl-20 pr-3" : "px-3"
+      }`}
+    >
+      {/* Left: App Brand & Breadcrumb */}
+      <div className="flex items-center gap-2 app-no-drag">
+        <div className="flex h-5 w-5 items-center justify-center rounded-md bg-primary text-primary-foreground font-black text-xs shadow-xs">
           S
         </div>
-
-        {/* App Title */}
-        <span className="font-bold text-xs tracking-tight text-foreground">
-          SubKeep
-        </span>
-
-        {/* Breadcrumb Separator */}
-        <span className="text-muted-foreground/60 text-xs font-normal">
-          /
-        </span>
-
-        {/* Active Section Name */}
-        <span className="text-xs font-semibold text-foreground/90">
-          {sectionName}
-        </span>
-
-        {/* Counter Badge Pill */}
-        <span className="bg-muted text-muted-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-md border border-border/60">
-          {activeSubCount}/{totalSubCount}
-        </span>
+        <span className="text-xs font-black tracking-tight text-foreground">SubKeep</span>
+        {sectionName && (
+          <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
+            <span className="text-border">/</span>
+            <span className="text-foreground/90">{sectionName}</span>
+            {totalSubCount > 0 && (
+              <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-extrabold text-foreground border border-border/50">
+                {countRatio}
+              </span>
+            )}
+          </span>
+        )}
       </div>
 
-      {/* Center: Draggable Space Only (Never Overlaps Buttons) */}
-      <div className="flex-1 h-full min-w-[20px] cursor-default" style={dragStyle} />
+      {/* Center: Draggable Window Spacer */}
+      <div className="flex-1 h-full min-w-4" />
 
-      {/* Right: Quick Tools & Custom Window Control Buttons (No Drag) */}
-      <div className="flex items-center gap-1.5 justify-end shrink-0" style={noDragStyle}>
-        {/* Command Palette Trigger */}
+      {/* Right: Actions & Window Controls */}
+      <div className="flex items-center gap-1.5 app-no-drag">
         {onOpenCommandPalette && (
           <button
             type="button"
             onClick={onOpenCommandPalette}
-            style={noDragStyle}
-            className="size-7 flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
             title="Command Palette (Ctrl+K)"
           >
-            <Command className="size-3.5" />
+            <Command className="h-3.5 w-3.5" />
           </button>
         )}
 
-        {/* Theme Toggle Button */}
         <button
           type="button"
           onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-          style={noDragStyle}
-          className="size-7 flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
           title="Toggle Theme (D)"
         >
           {resolvedTheme === "dark" ? (
-            <Sun className="size-3.5" />
+            <Sun className="h-3.5 w-3.5" />
           ) : (
-            <Moon className="size-3.5" />
+            <Moon className="h-3.5 w-3.5" />
           )}
         </button>
 
-        {/* Window Controls */}
-        {isElectron && (
-          <div className="flex items-center ml-1" style={noDragStyle}>
+        {isElectron && !isMac && (
+          <div className="flex items-center ml-1 gap-0.5">
             <button
               type="button"
               onClick={handleMinimize}
-              style={noDragStyle}
-              className="size-8 flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+              className="flex h-7 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
               title="Minimize"
             >
-              <Minus className="size-3.5" />
+              <Minus className="h-3.5 w-3.5" />
             </button>
             <button
               type="button"
               onClick={handleMaximize}
-              style={noDragStyle}
-              className="size-8 flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+              className="flex h-7 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
               title={isMaximized ? "Restore" : "Maximize"}
             >
-              <Square className="size-3" />
+              {isMaximized ? (
+                <Copy className="h-3 w-3 rotate-180" />
+              ) : (
+                <Square className="h-3 w-3" />
+              )}
             </button>
             <button
               type="button"
               onClick={handleClose}
-              style={noDragStyle}
-              className="size-8 flex items-center justify-center rounded-md hover:bg-destructive hover:text-destructive-foreground text-muted-foreground cursor-pointer transition-colors"
+              className="flex h-7 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive hover:text-white transition-colors cursor-pointer"
               title="Close"
             >
-              <X className="size-3.5" />
+              <X className="h-3.5 w-3.5" />
             </button>
           </div>
         )}
