@@ -8,10 +8,13 @@
   ],
   "scripts": {
     "dev": "npm run dev --prefix apps/website",
+    "dev:desktop": "npm run dev --prefix apps/desktop",
     "build": "npm run build --prefix apps/website",
+    "build:desktop": "npm run build --prefix apps/desktop",
     "start": "npm run start --prefix apps/website",
     "lint": "npm run lint --prefix apps/website",
     "typecheck": "npm run typecheck --prefix apps/website",
+    "typecheck:desktop": "npm run typecheck --prefix apps/desktop",
     "format": "npm run format --prefix apps/website"
   },
   "keywords": [
