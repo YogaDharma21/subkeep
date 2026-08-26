@@ -20,7 +20,18 @@ import { useTheme } from "@/components/theme-provider"
 export function App() {
   const { isSignedIn, isLoaded } = useAuth()
   const { setTheme, resolvedTheme } = useTheme()
-  const isElectron = !!window.electronAPI?.isElectron
+
+  const isElectron =
+    typeof window !== "undefined" &&
+    (!!window.electronAPI?.isElectron ||
+      (typeof navigator !== "undefined" &&
+        navigator.userAgent.toLowerCase().includes(" electron/")))
+
+  const isCallbackRoute =
+    typeof window !== "undefined" &&
+    (window.location.pathname.startsWith("/auth/desktop-callback") ||
+      window.location.pathname.startsWith("/desktop-callback") ||
+      window.location.pathname.includes("callback"))
 
   const [currentView, setCurrentView] = useState<DesktopView>("dashboard")
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null)
@@ -69,8 +80,8 @@ export function App() {
     setCurrentView("detail")
   }
 
-  // When viewed in an external web browser, render the dedicated "Continue in desktop app" handoff page
-  if (!isElectron) {
+  // Only render the browser handoff page if specifically navigating to the callback route in an external browser
+  if (!isElectron && isCallbackRoute) {
     return <DesktopCallbackPage />
   }
 
