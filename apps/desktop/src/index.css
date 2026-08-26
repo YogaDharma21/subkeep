@@ -43,6 +43,7 @@
 }
 
 :root {
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #09090b;
   --card: #ffffff;
@@ -79,6 +80,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: #09090b;
   --foreground: #fafafa;
   --card: #18181b;
@@ -133,6 +135,24 @@
   }
   input, textarea, select, [contenteditable="true"] {
     user-select: text;
+  }
+
+  select {
+    color-scheme: light;
+  }
+
+  select option {
+    background-color: #ffffff;
+    color: #09090b;
+  }
+
+  .dark select {
+    color-scheme: dark;
+  }
+
+  .dark select option {
+    background-color: #18181b;
+    color: #fafafa;
   }
 }
 
