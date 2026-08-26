@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell, ipcMain, dialog, Notification } from "electron"
 import path from "node:path"
-import fs from "node:fs/promises"
+import fs from "node:fs"
+import fsp from "node:fs/promises"
 import http from "node:http"
 import { fileURLToPath, URL } from "node:url"
 
@@ -77,7 +78,7 @@ if (!gotTheLock) {
 
 app.on("second-instance", (_event, commandLine) => {
   // Focus window when a second instance is invoked
-  if (win) {
+  if (win && !win.isDestroyed()) {
     if (win.isMinimized()) win.restore()
     win.show()
     win.focus()
@@ -262,7 +263,29 @@ function startAuthLoopbackServer() {
   })
 }
 
+function getPreloadPath(): string {
+  const candidates = [
+    path.join(__dirname, "preload.mjs"),
+    path.join(__dirname, "preload.js"),
+    path.join(__dirname, "../preload/index.mjs"),
+    path.join(__dirname, "../preload/index.js"),
+    path.join(__dirname, "../dist-electron/preload.mjs"),
+    path.join(app.getAppPath(), "dist-electron/preload.mjs"),
+    path.join(process.cwd(), "dist-electron/preload.mjs"),
+  ]
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate
+    }
+  }
+
+  return path.join(__dirname, "preload.mjs")
+}
+
 function createWindow() {
+  const preloadPath = getPreloadPath()
+
   win = new BrowserWindow({
     width: 1280,
     height: 840,
@@ -274,12 +297,19 @@ function createWindow() {
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
     trafficLightPosition: { x: 12, y: 12 },
     autoHideMenuBar: true,
+    show: false,
     webPreferences: {
-      preload: path.join(__dirname, "preload.mjs"),
+      preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
     },
+  })
+
+  // Ready-to-show visual smoothing
+  win.once("ready-to-show", () => {
+    win?.show()
+    win?.focus()
   })
 
   // Maximize / Unmaximize event broadcasting to renderer
@@ -323,14 +353,32 @@ function createWindow() {
   }
 }
 
+function getTargetWindow(event?: Electron.IpcMainInvokeEvent | Electron.IpcMainEvent): BrowserWindow | null {
+  if (event) {
+    const fromSender = BrowserWindow.fromWebContents(event.sender)
+    if (fromSender && !fromSender.isDestroyed()) return fromSender
+  }
+  if (win && !win.isDestroyed()) return win
+  const focused = BrowserWindow.getFocusedWindow()
+  if (focused && !focused.isDestroyed()) return focused
+  const all = BrowserWindow.getAllWindows()
+  if (all.length > 0 && !all[0].isDestroyed()) return all[0]
+  return null
+}
+
 // Window state IPC handlers
 ipcMain.handle("window:minimize", (event) => {
-  const targetWin = BrowserWindow.fromWebContents(event.sender) || win
+  const targetWin = getTargetWindow(event)
+  targetWin?.minimize()
+})
+
+ipcMain.on("window:minimize", (event) => {
+  const targetWin = getTargetWindow(event)
   targetWin?.minimize()
 })
 
 ipcMain.handle("window:maximize", (event) => {
-  const targetWin = BrowserWindow.fromWebContents(event.sender) || win
+  const targetWin = getTargetWindow(event)
   if (!targetWin) return false
   if (targetWin.isMaximized()) {
     targetWin.unmaximize()
@@ -341,13 +389,28 @@ ipcMain.handle("window:maximize", (event) => {
   }
 })
 
+ipcMain.on("window:maximize", (event) => {
+  const targetWin = getTargetWindow(event)
+  if (!targetWin) return
+  if (targetWin.isMaximized()) {
+    targetWin.unmaximize()
+  } else {
+    targetWin.maximize()
+  }
+})
+
 ipcMain.handle("window:close", (event) => {
-  const targetWin = BrowserWindow.fromWebContents(event.sender) || win
+  const targetWin = getTargetWindow(event)
+  targetWin?.close()
+})
+
+ipcMain.on("window:close", (event) => {
+  const targetWin = getTargetWindow(event)
   targetWin?.close()
 })
 
 ipcMain.handle("window:is-maximized", (event) => {
-  const targetWin = BrowserWindow.fromWebContents(event.sender) || win
+  const targetWin = getTargetWindow(event)
   return targetWin ? targetWin.isMaximized() : false
 })
 
@@ -379,9 +442,10 @@ ipcMain.handle("dialog:save-file", async (_event, { defaultFilename, content, fi
   mimeType?: string
   filters?: Array<{ name: string; extensions: string[] }>
 }) => {
-  if (!win) return { success: false, error: "No window active" }
+  const targetWin = getTargetWindow()
+  if (!targetWin) return { success: false, error: "No window active" }
 
-  const result = await dialog.showSaveDialog(win, {
+  const result = await dialog.showSaveDialog(targetWin, {
     defaultPath: defaultFilename,
     filters: filters || [
       { name: "All Files", extensions: ["*"] }
@@ -393,7 +457,7 @@ ipcMain.handle("dialog:save-file", async (_event, { defaultFilename, content, fi
   }
 
   try {
-    await fs.writeFile(result.filePath, content, "utf-8")
+    await fsp.writeFile(result.filePath, content, "utf-8")
     return { success: true, filePath: result.filePath }
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err)
@@ -405,9 +469,10 @@ ipcMain.handle("dialog:save-file", async (_event, { defaultFilename, content, fi
 ipcMain.handle("dialog:open-file", async (_event, { filters }: {
   filters?: Array<{ name: string; extensions: string[] }>
 }) => {
-  if (!win) return { success: false, error: "No window active" }
+  const targetWin = getTargetWindow()
+  if (!targetWin) return { success: false, error: "No window active" }
 
-  const result = await dialog.showOpenDialog(win, {
+  const result = await dialog.showOpenDialog(targetWin, {
     properties: ["openFile"],
     filters: filters || [
       { name: "Backup Files", extensions: ["json", "csv"] },
@@ -421,7 +486,7 @@ ipcMain.handle("dialog:open-file", async (_event, { filters }: {
 
   const selectedPath = result.filePaths[0]
   try {
-    const content = await fs.readFile(selectedPath, "utf-8")
+    const content = await fsp.readFile(selectedPath, "utf-8")
     const filename = path.basename(selectedPath)
     return { success: true, filename, content }
   } catch (err: unknown) {
