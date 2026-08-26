@@ -78,12 +78,9 @@ export function App() {
 
   if (!isSignedIn) {
     return (
-      <div className="h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden">
-        <DesktopTitlebar
-          onOpenCommandPalette={() => {}}
-          onAddSubscription={() => {}}
-        />
-        <main className="flex-1 overflow-y-auto">
+      <div className="h-screen w-screen flex flex-col bg-black text-white overflow-hidden">
+        <DesktopTitlebar isLanding />
+        <main className="flex-1 overflow-y-auto flex items-center justify-center bg-black">
           <LandingPage />
         </main>
         <Toaster />
