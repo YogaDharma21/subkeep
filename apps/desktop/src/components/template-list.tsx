@@ -18,7 +18,7 @@ interface TemplateListProps {
   }) => void
 }
 
-const TemplateRow = memo(function TemplateRow({
+const TemplateCard = memo(function TemplateCard({
   template,
   onSelect,
 }: {
@@ -29,19 +29,19 @@ const TemplateRow = memo(function TemplateRow({
     <button
       type="button"
       onClick={() => onSelect(template)}
-      className="flex w-full cursor-pointer items-center gap-3 rounded-lg p-2.5 hover:bg-muted/70 active:bg-muted transition-colors text-left"
+      className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-border/70 bg-card/60 p-3 hover:bg-muted/80 hover:border-foreground/20 active:scale-[0.99] transition-all text-left group shadow-2xs"
     >
       <div
-        className="flex size-10 shrink-0 items-center justify-center rounded-lg text-white shadow-xs"
+        className="flex size-10 shrink-0 items-center justify-center rounded-xl text-white shadow-xs transition-transform group-hover:scale-105"
         style={{ backgroundColor: template.color }}
       >
         <DynamicIcon name={template.icon} className="size-5 text-white" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-semibold text-foreground truncate">
+        <div className="text-xs font-bold text-foreground truncate group-hover:text-foreground">
           {template.name}
         </div>
-        <div className="text-xs text-muted-foreground">
+        <div className="text-[11px] text-muted-foreground mt-0.5">
           ${template.defaultPrice}/mo
         </div>
       </div>
@@ -81,14 +81,15 @@ export function TemplateList({ onSelect }: TemplateListProps) {
   )
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="relative mb-3 shrink-0">
+    <div className="flex flex-col h-full min-h-0 flex-1 space-y-3">
+      {/* Search Input Bar */}
+      <div className="relative shrink-0">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search services (e.g. Netflix, Spotify, iCloud)..."
+          placeholder="Search services (e.g. Netflix, Spotify, iCloud, ChatGPT)..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 pr-8"
+          className="pl-9 pr-8 h-9 text-xs"
         />
         {search && (
           <button
@@ -101,12 +102,13 @@ export function TemplateList({ onSelect }: TemplateListProps) {
         )}
       </div>
 
-      <div className="mb-3 flex gap-2 overflow-x-auto pb-1 shrink-0">
+      {/* Categories Filter Pills with Wrap (No Horizontal Overflow) */}
+      <div className="flex flex-wrap gap-1.5 shrink-0">
         {categories.map((cat) => (
           <Badge
             key={cat.value}
             variant={activeCategory === cat.value ? "default" : "outline"}
-            className="cursor-pointer shrink-0 rounded-md px-3 py-1 text-xs transition-colors"
+            className="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-semibold transition-all hover:bg-foreground/10"
             onClick={() => setActiveCategory(cat.value)}
           >
             {cat.label}
@@ -114,17 +116,20 @@ export function TemplateList({ onSelect }: TemplateListProps) {
         ))}
       </div>
 
-      <div className="h-[320px] overflow-y-auto pr-1 flex flex-col gap-1 pb-2">
+      {/* Responsive Multi-Column Grid Using Full Available Height */}
+      <div className="flex-1 min-h-0 overflow-y-auto pr-1 pb-2">
         {filteredTemplates.length > 0 ? (
-          filteredTemplates.map((template) => (
-            <TemplateRow
-              key={template.name}
-              template={template}
-              onSelect={handleSelect}
-            />
-          ))
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {filteredTemplates.map((template) => (
+              <TemplateCard
+                key={template.name}
+                template={template}
+                onSelect={handleSelect}
+              />
+            ))}
+          </div>
         ) : (
-          <div className="py-12 text-center text-sm text-muted-foreground">
+          <div className="py-16 text-center text-xs text-muted-foreground">
             No services found for &quot;{search}&quot;
           </div>
         )}

@@ -275,11 +275,11 @@ export function AddSubscriptionSheet({
               </div>
 
               {/* Free Trial Toggle */}
-              <div className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="size-4 text-emerald-500" />
+              <div className="flex items-center justify-between rounded-xl border border-border bg-muted/40 p-3.5">
+                <div className="flex items-center gap-2.5">
+                  <Sparkles className="size-4 text-foreground shrink-0" />
                   <div>
-                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <span className="text-xs font-bold text-foreground">
                       Free Trial Subscription
                     </span>
                     <p className="text-[11px] text-muted-foreground">
@@ -291,13 +291,13 @@ export function AddSubscriptionSheet({
                   type="checkbox"
                   checked={isTrial}
                   onChange={(e) => setIsTrial(e.target.checked)}
-                  className="size-4 rounded accent-emerald-500 cursor-pointer"
+                  className="size-4 rounded accent-foreground cursor-pointer"
                 />
               </div>
 
               {isTrial && (
-                <div className="space-y-2 rounded-xl bg-muted/40 p-3 border border-border">
-                  <label className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                <div className="space-y-2 rounded-xl bg-muted/40 p-3.5 border border-border">
+                  <label className="text-xs font-medium text-foreground">
                     Trial Expiration Date *
                   </label>
                   <Input
@@ -309,11 +309,11 @@ export function AddSubscriptionSheet({
               )}
 
               {/* Shared / Split Subscription Toggle (SplitKeep) */}
-              <div className="flex items-center justify-between rounded-xl border border-blue-500/30 bg-blue-500/10 p-3">
-                <div className="flex items-center gap-2">
-                  <Users className="size-4 text-blue-500" />
+              <div className="flex items-center justify-between rounded-xl border border-border bg-muted/40 p-3.5">
+                <div className="flex items-center gap-2.5">
+                  <Users className="size-4 text-primary shrink-0" />
                   <div>
-                    <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+                    <span className="text-xs font-bold text-foreground">
                       Shared / Split Plan (SplitKeep)
                     </span>
                     <p className="text-[11px] text-muted-foreground">
@@ -325,15 +325,15 @@ export function AddSubscriptionSheet({
                   type="checkbox"
                   checked={isShared}
                   onChange={(e) => setIsShared(e.target.checked)}
-                  className="size-4 rounded accent-blue-500 cursor-pointer"
+                  className="size-4 rounded accent-foreground cursor-pointer"
                 />
               </div>
 
               {isShared && (
-                <div className="space-y-3 rounded-xl bg-blue-500/5 p-3 border border-blue-500/20">
+                <div className="space-y-3 rounded-xl bg-muted/30 p-3.5 border border-border">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                      <label className="text-xs font-semibold text-foreground">
                         Total Plan Price
                       </label>
                       <Input
@@ -346,7 +346,7 @@ export function AddSubscriptionSheet({
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                      <label className="text-xs font-semibold text-foreground">
                         Total Members
                       </label>
                       <Input
@@ -360,9 +360,9 @@ export function AddSubscriptionSheet({
                   </div>
 
                   {/* Split members detail names */}
-                  <div className="space-y-2 pt-1 border-t border-blue-500/20">
+                  <div className="space-y-2 pt-2 border-t border-border">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
+                      <span className="text-xs font-semibold text-foreground">
                         Member Names & Split List
                       </span>
                       <Button
@@ -370,7 +370,7 @@ export function AddSubscriptionSheet({
                         variant="ghost"
                         size="sm"
                         onClick={addSplitMember}
-                        className="h-6 text-xs text-blue-500 gap-1 px-2 cursor-pointer"
+                        className="h-6 text-xs text-muted-foreground hover:text-foreground gap-1 px-2 cursor-pointer"
                       >
                         <UserPlus className="size-3" />
                         Add Member
