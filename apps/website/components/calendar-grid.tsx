@@ -314,6 +314,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
             const dayEvents = d.isCurrentMonth ? billingDays[d.day] : undefined
             const hasSub = !!(dayEvents && dayEvents.length > 0)
             const isSelected = selectedDay === d.day && d.isCurrentMonth
+            const isCurrentDayToday = d.isCurrentMonth && isToday(d.day)
             return (
               <button
                 key={i}
@@ -323,10 +324,10 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                   "relative flex aspect-square items-center justify-center rounded-lg text-sm transition-all cursor-pointer",
                   !d.isCurrentMonth && "text-muted-foreground/40",
                   d.isCurrentMonth && "hover:bg-muted",
-                  isToday(d.day) &&
+                  isCurrentDayToday &&
                     "bg-foreground font-semibold text-background",
                   isSelected &&
-                    !isToday(d.day) &&
+                    !isCurrentDayToday &&
                     "border-2 border-foreground font-semibold",
                   hasSub && "font-medium"
                 )}
@@ -339,7 +340,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                         key={idx}
                         className={cn(
                           "size-1.5 rounded-full transition-colors",
-                          getEventDotClass(event.eventType, isToday(d.day))
+                          getEventDotClass(event.eventType, isCurrentDayToday)
                         )}
                       />
                     ))}
@@ -347,7 +348,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                       <span
                         className={cn(
                           "size-1 rounded-full",
-                          isToday(d.day) ? "bg-background/80" : "bg-muted-foreground/70"
+                          isCurrentDayToday ? "bg-background/80" : "bg-muted-foreground/70"
                         )}
                       />
                     )}
