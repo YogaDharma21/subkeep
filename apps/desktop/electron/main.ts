@@ -23,6 +23,12 @@ const CLERK_HOSTED_DOMAIN = "https://engaging-mole-10.clerk.accounts.dev"
 
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
 
+// Ensure single instance lock for deep linking - exit immediately if second instance
+const gotTheLock = app.requestSingleInstanceLock()
+if (!gotTheLock) {
+  app.exit(0)
+}
+
 // Register custom protocol 'subkeep://' for deep linking
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
@@ -58,24 +64,18 @@ function handleDeepLink(urlStr: string) {
   }
 }
 
-// Ensure single instance lock for deep linking
-const gotTheLock = app.requestSingleInstanceLock()
-
-if (!gotTheLock) {
-  app.quit()
-} else {
-  app.on("second-instance", (_event, commandLine) => {
-    if (win) {
-      if (win.isMinimized()) win.restore()
-      win.show()
-      win.focus()
-    }
-    const deepLinkUrl = commandLine.find((arg) => arg.startsWith("subkeep://"))
-    if (deepLinkUrl) {
-      handleDeepLink(deepLinkUrl)
-    }
-  })
-}
+// Handle second instance deep link callback on Windows/Linux
+app.on("second-instance", (_event, commandLine) => {
+  if (win) {
+    if (win.isMinimized()) win.restore()
+    win.show()
+    win.focus()
+  }
+  const deepLinkUrl = commandLine.find((arg) => arg.startsWith("subkeep://"))
+  if (deepLinkUrl) {
+    handleDeepLink(deepLinkUrl)
+  }
+})
 
 // macOS open-url event
 app.on("open-url", (event, url) => {
@@ -265,7 +265,7 @@ ipcMain.handle("auth:start-browser-login", async (_event, customUrl?: string) =>
         queryParams[key] = val
       })
 
-      // Send sleek dark response HTML to the browser tab
+      // Send sleek dark response HTML to the browser tab with deep link trigger
       const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -377,9 +377,13 @@ ipcMain.handle("auth:start-browser-login", async (_event, customUrl?: string) =>
   })
 
   authServer.listen(AUTH_PORT, "127.0.0.1", async () => {
-    // Open Clerk Sign-In with redirect back to our local loopback server
-    const targetUrl = customUrl || `${CLERK_HOSTED_DOMAIN}/sign-in?redirect_url=${encodeURIComponent(callbackUrl)}`
-    await shell.openExternal(targetUrl)
+    // If customUrl provided, open external browser with it
+    if (customUrl) {
+      await shell.openExternal(customUrl)
+    } else {
+      const targetUrl = `${CLERK_HOSTED_DOMAIN}/sign-in?redirect_url=${encodeURIComponent(callbackUrl)}`
+      await shell.openExternal(targetUrl)
+    }
   })
 
   authServer.on("error", (err) => {

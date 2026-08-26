@@ -8,7 +8,7 @@ export function LandingPage() {
   const [loading, setLoading] = useState(false)
   const isElectron = !!window.electronAPI?.isElectron
 
-  // Listen for loopback OAuth callback from external browser
+  // Listen for loopback OAuth callback or deep link from external browser
   const handleAuthCallback = useCallback(
     async (data: { query: Record<string, string>; url: string }) => {
       if (!isLoaded || !signIn) return
@@ -33,7 +33,10 @@ export function LandingPage() {
         }
 
         // 2. Created Session ID based auth
-        const createdSessionId = query.__clerk_created_session_id || query.created_session_id
+        const createdSessionId =
+          query.__clerk_created_session_id ||
+          query.created_session_id ||
+          query.session_id
         if (createdSessionId) {
           await setActive({ session: createdSessionId })
           toast.success("Successfully signed in!")
@@ -68,7 +71,7 @@ export function LandingPage() {
     }
   }, [handleAuthCallback])
 
-  // Active polling while loading to immediately catch completed browser login
+  // Active polling while waiting for authentication
   useEffect(() => {
     if (!loading || !signIn || !isLoaded) return
 
@@ -84,7 +87,7 @@ export function LandingPage() {
           setLoading(false)
         }
       } catch {
-        // Keep polling silently while user completes Google auth
+        // Silently continue polling
       }
     }, 1000)
 
@@ -99,28 +102,19 @@ export function LandingPage() {
     setLoading(true)
 
     try {
-      const callbackUrl = "http://127.0.0.1:49221/auth-callback"
-
-      // Create Google OAuth flow in Clerk to obtain the exact verification redirect URL
-      const res = await signIn.create({
-        strategy: "oauth_google",
-        redirectUrl: callbackUrl,
-        actionCompleteRedirectUrl: callbackUrl,
-      })
-
-      const externalVerificationUrl =
-        res.firstFactorVerification?.externalVerificationRedirectURL?.href ||
-        (typeof res.firstFactorVerification?.externalVerificationRedirectURL === "string"
-          ? res.firstFactorVerification.externalVerificationRedirectURL
-          : undefined)
-
-      if (isElectron && window.electronAPI?.startBrowserAuth) {
-        await window.electronAPI.startBrowserAuth(externalVerificationUrl)
-        toast.info("Opening Google Sign-In in your browser...", { duration: 4000 })
+      if (isElectron) {
+        // Start loopback server so it is listening for callback
+        await window.electronAPI?.startBrowserAuth()
       }
+
+      // Initiate Google OAuth redirect flow
+      await signIn.authenticateWithRedirect({
+        strategy: "oauth_google",
+        redirectUrl: "http://127.0.0.1:49221/auth-callback",
+        redirectUrlComplete: "http://127.0.0.1:49221/auth-callback",
+      })
     } catch (err: unknown) {
-      console.warn("Direct OAuth creation fallback:", err)
-      // Fallback: start loopback server and open hosted auth portal
+      console.warn("authenticateWithRedirect trigger fallback:", err)
       if (isElectron && window.electronAPI?.startBrowserAuth) {
         await window.electronAPI.startBrowserAuth()
         toast.info("Opening Google Sign-In in your browser...", { duration: 4000 })
