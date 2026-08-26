@@ -205,11 +205,14 @@
   background: rgba(255, 255, 255, 0.55);
 }
 
+.app-region-drag,
+.app-drag-region,
 .titlebar-drag,
 .app-drag {
   -webkit-app-region: drag;
 }
 
+.app-region-no-drag,
 .titlebar-no-drag,
 .app-no-drag {
   -webkit-app-region: no-drag;

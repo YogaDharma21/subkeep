@@ -1,5 +1,6 @@
 export interface ElectronAPI {
   isElectron: boolean
+  platform: NodeJS.Platform | string
   openExternal: (url: string) => Promise<boolean>
   showNotification: (title: string, body: string) => Promise<boolean>
   saveFile: (options: {
@@ -16,9 +17,10 @@ export interface ElectronAPI {
     callback: (data: { query: Record<string, string>; url: string }) => void
   ) => () => void
   minimize: () => Promise<void>
-  maximize: () => Promise<void>
+  maximize: () => Promise<boolean>
   close: () => Promise<void>
   isMaximized: () => Promise<boolean>
+  onMaximizeChange?: (callback: (isMaximized: boolean) => void) => () => void
   getAppInfo: () => Promise<{ version: string; platform: string; isPackaged: boolean }>
 }
 

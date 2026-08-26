@@ -269,8 +269,10 @@ function createWindow() {
     minWidth: 1024,
     minHeight: 700,
     title: "SubKeep",
-    backgroundColor: "#000000",
+    backgroundColor: "#09090b",
     frame: false,
+    titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
+    trafficLightPosition: { x: 12, y: 12 },
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs"),
@@ -278,6 +280,15 @@ function createWindow() {
       nodeIntegration: false,
       sandbox: false,
     },
+  })
+
+  // Maximize / Unmaximize event broadcasting to renderer
+  win.on("maximize", () => {
+    win?.webContents.send("window:maximize-change", true)
+  })
+
+  win.on("unmaximize", () => {
+    win?.webContents.send("window:maximize-change", false)
   })
 
   // Prevent in-app navigation to external websites: open in default external browser
@@ -313,39 +324,31 @@ function createWindow() {
 }
 
 // Window state IPC handlers
-function handleWinMinimize(event: Electron.IpcMainInvokeEvent | Electron.IpcMainEvent) {
-  const targetWin = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow() || win
+ipcMain.handle("window:minimize", (event) => {
+  const targetWin = BrowserWindow.fromWebContents(event.sender) || win
   targetWin?.minimize()
-}
+})
 
-function handleWinMaximize(event: Electron.IpcMainInvokeEvent | Electron.IpcMainEvent) {
-  const targetWin = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow() || win
-  if (targetWin) {
-    if (targetWin.isMaximized()) {
-      targetWin.unmaximize()
-    } else {
-      targetWin.maximize()
-    }
+ipcMain.handle("window:maximize", (event) => {
+  const targetWin = BrowserWindow.fromWebContents(event.sender) || win
+  if (!targetWin) return false
+  if (targetWin.isMaximized()) {
+    targetWin.unmaximize()
+    return false
+  } else {
+    targetWin.maximize()
+    return true
   }
-}
+})
 
-function handleWinClose(event: Electron.IpcMainInvokeEvent | Electron.IpcMainEvent) {
-  const targetWin = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow() || win
+ipcMain.handle("window:close", (event) => {
+  const targetWin = BrowserWindow.fromWebContents(event.sender) || win
   targetWin?.close()
-}
-
-ipcMain.handle("window:minimize", handleWinMinimize)
-ipcMain.on("window:minimize", handleWinMinimize)
-
-ipcMain.handle("window:maximize", handleWinMaximize)
-ipcMain.on("window:maximize", handleWinMaximize)
-
-ipcMain.handle("window:close", handleWinClose)
-ipcMain.on("window:close", handleWinClose)
+})
 
 ipcMain.handle("window:is-maximized", (event) => {
-  const targetWin = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow() || win
-  return targetWin?.isMaximized() ?? false
+  const targetWin = BrowserWindow.fromWebContents(event.sender) || win
+  return targetWin ? targetWin.isMaximized() : false
 })
 
 // External link opener
@@ -429,7 +432,7 @@ ipcMain.handle("dialog:open-file", async (_event, { filters }: {
 
 // Browser Auth Loopback Server IPC
 ipcMain.handle("auth:start-browser-login", async (_event, customUrl?: string) => {
-  const callbackUrl = `http://127.0.0.1:${AUTH_PORT}/auth-callback`
+  const callbackUrl = "http://localhost:5173/auth/desktop-callback"
   startAuthLoopbackServer()
 
   const targetUrl = customUrl || `${CLERK_HOSTED_DOMAIN}/sign-in?redirect_url=${encodeURIComponent(callbackUrl)}`
