@@ -1,10 +1,7 @@
 import { useState } from "react"
 import {
   ExternalLink,
-  CheckSquare,
-  Square,
   ShieldAlert,
-  Sparkles,
   Search,
   Pencil,
   Check,
@@ -53,7 +50,6 @@ export function CancellationGuideModal({
   primaryCurrency = "IDR",
   rates,
 }: CancellationGuideModalProps) {
-  const [checkedSteps, setCheckedSteps] = useState<Record<number, boolean>>({})
   const [isEditingUrl, setIsEditingUrl] = useState(false)
   const [newUrl, setNewUrl] = useState("")
   const [savingUrl, setSavingUrl] = useState(false)
@@ -67,45 +63,12 @@ export function CancellationGuideModal({
       `how to cancel ${subscription.name} subscription`
     )}`
 
-  const steps = [
-    {
-      title: "1. Access Cancellation Page",
-      detail: hasCustomUrl
-        ? `Click the direct link button below to open ${subscription.name}'s cancellation page in your browser.`
-        : `Click the search button below to find the cancellation steps for ${subscription.name}.`,
-    },
-    {
-      title: "2. Sign In to Your Account",
-      detail: "Log in with the account credentials used for this subscription.",
-    },
-    {
-      title: "3. Locate Billing or Plan Details",
-      detail: "Navigate to Account Settings -> Membership / Billing / Subscriptions.",
-    },
-    {
-      title: "4. Confirm Cancellation",
-      detail: "Click 'Cancel Subscription' or 'Turn Off Auto-Renew' and complete all confirmation prompts.",
-    },
-    {
-      title: "5. Mark as Canceled in SubKeep",
-      detail: "Update SubKeep so your monthly expense stats stay accurate and active reminders stop.",
-    },
-  ]
-
-  const toggleStep = (index: number) => {
-    setCheckedSteps((prev) => ({
-      ...prev,
-      [index]: !prev[index],
-    }))
-  }
-
   const handleOpenLink = () => {
     if (window.electronAPI?.openExternal) {
       window.electronAPI.openExternal(directUrl)
     } else {
       window.open(directUrl, "_blank", "noopener,noreferrer")
     }
-    setCheckedSteps((prev) => ({ ...prev, 0: true }))
   }
 
   const handleStartEditUrl = () => {
@@ -260,52 +223,6 @@ export function CancellationGuideModal({
               </div>
             </>
           )}
-        </div>
-
-        {/* Step-by-Step Checklist */}
-        <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3 text-xs">
-          <div className="flex items-center justify-between font-medium text-foreground pb-1.5 border-b border-border/50">
-            <span className="flex items-center gap-1.5 font-semibold">
-              <Sparkles className="size-3.5 text-primary" />
-              Step-by-Step Checklist
-            </span>
-            <span className="text-[10px] text-muted-foreground">
-              {Object.values(checkedSteps).filter(Boolean).length}/{steps.length} done
-            </span>
-          </div>
-
-          <div className="space-y-2 pt-0.5">
-            {steps.map((step, idx) => {
-              const isChecked = !!checkedSteps[idx]
-              return (
-                <div
-                  key={idx}
-                  onClick={() => toggleStep(idx)}
-                  className="flex items-start gap-2.5 cursor-pointer select-none group"
-                >
-                  {isChecked ? (
-                    <CheckSquare className="size-4 shrink-0 text-emerald-500 mt-0.5" />
-                  ) : (
-                    <Square className="size-4 shrink-0 text-muted-foreground group-hover:text-foreground mt-0.5" />
-                  )}
-                  <div className="min-w-0">
-                    <p
-                      className={`font-medium ${
-                        isChecked
-                          ? "line-through text-muted-foreground"
-                          : "text-foreground"
-                      }`}
-                    >
-                      {step.title}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground leading-snug">
-                      {step.detail}
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
         </div>
 
         {onMarkCanceled && (
