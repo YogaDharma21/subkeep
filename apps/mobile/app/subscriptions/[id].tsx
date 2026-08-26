@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import {
+  Modal,
   View,
   Text,
   ScrollView,
@@ -30,6 +31,8 @@ import {
   DollarSign,
   FileText,
   MessageSquare,
+  X,
+  Link2,
 } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { Input } from "@/components/ui/input"
@@ -57,6 +60,9 @@ export default function SubscriptionDetailPage() {
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [iconPickerOpen, setIconPickerOpen] = useState(false)
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
+  const [cancelUrlModalOpen, setCancelUrlModalOpen] = useState(false)
+  const [tempCancelUrl, setTempCancelUrl] = useState("")
+  const [savingCancelUrl, setSavingCancelUrl] = useState(false)
 
   const sub = useQuery(
     api.subscriptions.get,
@@ -273,6 +279,34 @@ export default function SubscriptionDetailPage() {
       showToast("Receipt invoice removed", "info")
     } catch {
       showToast("Failed to remove receipt", "error")
+    }
+  }
+
+  const handleUpdateCancelUrl = async (subId: string, url: string) => {
+    try {
+      await updateMutation({
+        id: subId as Id<"subscriptions">,
+        cancelUrl: url.trim() || undefined,
+      })
+      showToast("Cancellation page URL updated", "success")
+    } catch {
+      showToast("Failed to update cancellation URL", "error")
+    }
+  }
+
+  const handleOpenCancelUrlModal = () => {
+    setTempCancelUrl(sub?.cancelUrl || "")
+    setCancelUrlModalOpen(true)
+  }
+
+  const handleSaveCancelUrlModal = async () => {
+    if (!sub || !id) return
+    setSavingCancelUrl(true)
+    try {
+      await handleUpdateCancelUrl(id, tempCancelUrl)
+      setCancelUrlModalOpen(false)
+    } finally {
+      setSavingCancelUrl(false)
     }
   }
 
@@ -813,21 +847,42 @@ export default function SubscriptionDetailPage() {
                   <Text style={{ fontSize: 13, color: colors.mutedText }}>
                     Direct Cancel Page
                   </Text>
-                  {sub.cancelUrl ? (
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    {sub.cancelUrl ? (
+                      <TouchableOpacity
+                        onPress={() => Linking.openURL(sub.cancelUrl!)}
+                        style={{ flexDirection: "row", alignItems: "center", gap: 4, maxWidth: 140 }}
+                      >
+                        <ExternalLink size={12} color={colors.blue} />
+                        <Text numberOfLines={1} style={{ fontSize: 12, fontWeight: "600", color: colors.blue }}>
+                          Cancellation Page
+                        </Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <Text style={{ fontSize: 12, fontWeight: "600", color: colors.mutedText }}>
+                        Standard Search
+                      </Text>
+                    )}
                     <TouchableOpacity
-                      onPress={() => Linking.openURL(sub.cancelUrl!)}
-                      style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+                      onPress={handleOpenCancelUrlModal}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 3,
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        backgroundColor: colors.surface,
+                        borderRadius: 6,
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                      }}
                     >
-                      <ExternalLink size={12} color={colors.blue} />
-                      <Text style={{ fontSize: 12, fontWeight: "600", color: colors.blue }}>
-                        Cancellation Page
+                      <Pencil size={11} color={colors.primary} />
+                      <Text style={{ fontSize: 11, fontWeight: "600", color: colors.text }}>
+                        {sub.cancelUrl ? "Change" : "Set URL"}
                       </Text>
                     </TouchableOpacity>
-                  ) : (
-                    <Text style={{ fontSize: 13, fontWeight: "600", color: colors.mutedText }}>
-                      Standard URL search
-                    </Text>
-                  )}
+                  </View>
                 </View>
               </View>
             </View>
@@ -1118,10 +1173,62 @@ export default function SubscriptionDetailPage() {
             isTrial: sub.isTrial,
             trialEndDate: sub.trialEndDate,
           }}
+          onUpdateCancelUrl={handleUpdateCancelUrl}
           primaryCurrency={primaryCurrency}
           rates={rates}
         />
       )}
+
+      {/* Change Cancel URL Modal */}
+      <Modal
+        visible={cancelUrlModalOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCancelUrlModalOpen(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", alignItems: "center", padding: 20 }}>
+          <View style={{ backgroundColor: colors.card, borderRadius: 14, borderWidth: 1, borderColor: colors.border, padding: 18, width: "100%", maxWidth: 360, gap: 12 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>
+                Change Cancellation Page
+              </Text>
+              <TouchableOpacity onPress={() => setCancelUrlModalOpen(false)}>
+                <X size={18} color={colors.mutedText} />
+              </TouchableOpacity>
+            </View>
+            <Text style={{ fontSize: 12, color: colors.mutedText, lineHeight: 16 }}>
+              Provide the direct account cancellation or subscription management URL for {sub?.name}.
+            </Text>
+            <Input
+              placeholder="https://service.com/account/cancel"
+              value={tempCancelUrl}
+              onChangeText={setTempCancelUrl}
+              autoCapitalize="none"
+              keyboardType="url"
+              autoFocus
+            />
+            <Text style={{ fontSize: 11, color: colors.mutedText }}>
+              Leave empty to use the standard search guide.
+            </Text>
+            <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 4 }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onPress={() => setCancelUrlModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onPress={handleSaveCancelUrlModal}
+                disabled={savingCancelUrl}
+              >
+                {savingCancelUrl ? "Saving..." : "Save URL"}
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Icon Picker Modal for editing */}
       <IconPickerModal

@@ -1,5 +1,16 @@
 import { useState } from "react"
-import { ExternalLink, CheckSquare, Square, ShieldAlert, Sparkles } from "lucide-react"
+import {
+  ExternalLink,
+  CheckSquare,
+  Square,
+  ShieldAlert,
+  Sparkles,
+  Search,
+  Pencil,
+  Check,
+  X,
+  Link2,
+} from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -8,6 +19,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
 
@@ -27,6 +39,7 @@ interface CancellationGuideModalProps {
     trialEndDate?: string
   } | null
   onMarkCanceled?: (id: string) => Promise<void>
+  onUpdateCancelUrl?: (id: string, url: string) => Promise<void>
   primaryCurrency?: string
   rates?: Record<string, number>
 }
@@ -36,13 +49,18 @@ export function CancellationGuideModal({
   onOpenChange,
   subscription,
   onMarkCanceled,
+  onUpdateCancelUrl,
   primaryCurrency = "IDR",
   rates,
 }: CancellationGuideModalProps) {
   const [checkedSteps, setCheckedSteps] = useState<Record<number, boolean>>({})
+  const [isEditingUrl, setIsEditingUrl] = useState(false)
+  const [newUrl, setNewUrl] = useState("")
+  const [savingUrl, setSavingUrl] = useState(false)
 
   if (!subscription) return null
 
+  const hasCustomUrl = Boolean(subscription.cancelUrl && subscription.cancelUrl.trim().length > 0)
   const directUrl =
     subscription.cancelUrl ||
     `https://www.google.com/search?q=${encodeURIComponent(
@@ -52,7 +70,9 @@ export function CancellationGuideModal({
   const steps = [
     {
       title: "1. Access Cancellation Page",
-      detail: `Click the direct link button below to open ${subscription.name}'s cancellation page in your browser.`,
+      detail: hasCustomUrl
+        ? `Click the direct link button below to open ${subscription.name}'s cancellation page in your browser.`
+        : `Click the search button below to find the cancellation steps for ${subscription.name}.`,
     },
     {
       title: "2. Sign In to Your Account",
@@ -88,22 +108,41 @@ export function CancellationGuideModal({
     setCheckedSteps((prev) => ({ ...prev, 0: true }))
   }
 
+  const handleStartEditUrl = () => {
+    setNewUrl(subscription.cancelUrl || "")
+    setIsEditingUrl(true)
+  }
+
+  const handleSaveUrl = async () => {
+    if (!onUpdateCancelUrl) return
+    setSavingUrl(true)
+    try {
+      await onUpdateCancelUrl(subscription._id, newUrl.trim())
+      setIsEditingUrl(false)
+    } finally {
+      setSavingUrl(false)
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-lg p-5" onClose={() => onOpenChange(false)}>
-        <DialogHeader className="space-y-2">
+      <DialogContent
+        className="max-w-md max-h-[88vh] overflow-y-auto flex flex-col gap-3.5 rounded-lg p-5"
+        onClose={() => onOpenChange(false)}
+      >
+        <DialogHeader className="pr-6 space-y-1.5 text-left mb-0">
           <div className="flex items-center gap-3">
             <div
-              className="flex size-11 shrink-0 items-center justify-center rounded-lg"
+              className="flex size-10 shrink-0 items-center justify-center rounded-lg shadow-xs"
               style={{ backgroundColor: subscription.color }}
             >
               <DynamicIcon name={subscription.icon} className="size-5 text-white" />
             </div>
-            <div>
-              <DialogTitle className="text-base font-semibold">
+            <div className="min-w-0 flex-1">
+              <DialogTitle className="text-base font-semibold truncate">
                 Cancel {subscription.name}
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
+              <DialogDescription className="text-xs text-muted-foreground truncate">
                 {subscription.isTrial ? (
                   <span className="font-medium text-amber-500">
                     Free Trial Guide
@@ -129,39 +168,113 @@ export function CancellationGuideModal({
             <ShieldAlert className="size-4 shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold">Cancel before free trial ends!</p>
-              <p className="mt-0.5 text-[11px] opacity-90">
+              <p className="mt-0.5 text-[11px] opacity-90 leading-relaxed">
                 Cancel now to prevent auto-renewal charges while retaining access until your trial period expires.
               </p>
             </div>
           </div>
         )}
 
-        <div className="my-2 space-y-2">
-          <Button
-            onClick={handleOpenLink}
-            className="w-full gap-2 bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-10 rounded-lg cursor-pointer"
-          >
-            <ExternalLink className="size-3.5" />
-            Open Direct Cancellation Page
-          </Button>
+        {/* Cancellation Link Box */}
+        <div className="space-y-2 rounded-lg border border-border bg-muted/20 p-3">
+          {isEditingUrl ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                  <Link2 className="size-3.5 text-primary" />
+                  Edit Cancellation URL
+                </label>
+                <button
+                  onClick={() => setIsEditingUrl(false)}
+                  className="text-muted-foreground hover:text-foreground p-0.5 cursor-pointer"
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+              <Input
+                placeholder="https://service.com/account/cancel"
+                value={newUrl}
+                onChange={(e) => setNewUrl(e.target.value)}
+                className="h-8 text-xs bg-background"
+                autoFocus
+              />
+              <div className="flex items-center justify-end gap-1.5">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditingUrl(false)}
+                  className="h-7 text-xs px-2 cursor-pointer"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSaveUrl}
+                  disabled={savingUrl}
+                  className="h-7 text-xs px-2.5 gap-1 cursor-pointer"
+                >
+                  <Check className="size-3" />
+                  {savingUrl ? "Saving..." : "Save URL"}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <Button
+                onClick={handleOpenLink}
+                className="w-full gap-2 bg-foreground text-background hover:bg-foreground/90 font-medium text-xs h-9 rounded-lg cursor-pointer"
+              >
+                {hasCustomUrl ? (
+                  <>
+                    <ExternalLink className="size-3.5" />
+                    Open Direct Cancellation Page
+                  </>
+                ) : (
+                  <>
+                    <Search className="size-3.5" />
+                    Search Cancellation Guide (Google)
+                  </>
+                )}
+              </Button>
 
-          <p className="text-[11px] text-center text-muted-foreground truncate">
-            {directUrl}
-          </p>
+              <div className="flex items-center justify-between gap-2 px-0.5 pt-0.5">
+                <p className="text-[11px] text-muted-foreground truncate flex-1">
+                  {hasCustomUrl ? (
+                    <span className="text-foreground/80 font-mono text-[10.5px]">
+                      {subscription.cancelUrl}
+                    </span>
+                  ) : (
+                    <span>Default search query</span>
+                  )}
+                </p>
+
+                {onUpdateCancelUrl && (
+                  <button
+                    onClick={handleStartEditUrl}
+                    className="shrink-0 flex items-center gap-1 text-[11px] font-medium text-primary hover:underline cursor-pointer"
+                  >
+                    <Pencil className="size-2.5" />
+                    {hasCustomUrl ? "Change" : "Set URL"}
+                  </button>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
-        <div className="space-y-2.5 rounded-lg border border-border bg-muted/30 p-3 text-xs">
-          <div className="flex items-center justify-between font-medium text-foreground pb-1 border-b border-border/50">
-            <span className="flex items-center gap-1.5">
+        {/* Step-by-Step Checklist */}
+        <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3 text-xs">
+          <div className="flex items-center justify-between font-medium text-foreground pb-1.5 border-b border-border/50">
+            <span className="flex items-center gap-1.5 font-semibold">
               <Sparkles className="size-3.5 text-primary" />
-              Step-by-Step Cancellation Checklist
+              Step-by-Step Checklist
             </span>
             <span className="text-[10px] text-muted-foreground">
               {Object.values(checkedSteps).filter(Boolean).length}/{steps.length} done
             </span>
           </div>
 
-          <div className="space-y-2 pt-1">
+          <div className="space-y-2 pt-0.5">
             {steps.map((step, idx) => {
               const isChecked = !!checkedSteps[idx]
               return (
@@ -196,7 +309,7 @@ export function CancellationGuideModal({
         </div>
 
         {onMarkCanceled && (
-          <div className="pt-2">
+          <div>
             <Button
               variant="outline"
               onClick={async () => {

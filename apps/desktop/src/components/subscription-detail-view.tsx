@@ -27,6 +27,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { IconPicker } from "@/components/icon-picker"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { toast } from "sonner"
@@ -101,6 +108,9 @@ export function SubscriptionDetailView({
   const [editSplitMembers, setEditSplitMembers] = useState<
     Array<{ name: string; shareAmount: number; isPaid?: boolean }>
   >([])
+  const [cancelUrlModalOpen, setCancelUrlModalOpen] = useState(false)
+  const [tempCancelUrl, setTempCancelUrl] = useState("")
+  const [savingCancelUrl, setSavingCancelUrl] = useState(false)
 
   const colorOptions = [
     "#000000", "#555555", "#E50914", "#1DB954", "#00A8E1",
@@ -273,6 +283,34 @@ export function SubscriptionDetailView({
       toast.success("Receipt invoice removed")
     } catch {
       toast.error("Failed to remove receipt")
+    }
+  }
+
+  const handleUpdateCancelUrl = async (subId: string, url: string) => {
+    try {
+      await updateMutation({
+        id: subId as Id<"subscriptions">,
+        cancelUrl: url.trim() || undefined,
+      })
+      toast.success("Cancellation page URL updated")
+    } catch {
+      toast.error("Failed to update cancellation URL")
+    }
+  }
+
+  const handleOpenCancelUrlModal = () => {
+    setTempCancelUrl(sub?.cancelUrl || "")
+    setCancelUrlModalOpen(true)
+  }
+
+  const handleSaveCancelUrlModal = async () => {
+    if (!sub || !subscriptionId) return
+    setSavingCancelUrl(true)
+    try {
+      await handleUpdateCancelUrl(subscriptionId, tempCancelUrl)
+      setCancelUrlModalOpen(false)
+    } finally {
+      setSavingCancelUrl(false)
     }
   }
 
@@ -742,23 +780,34 @@ export function SubscriptionDetailView({
 
               <Separator />
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-xs text-muted-foreground">
                   Direct Cancel Page
                 </span>
-                <span className="text-xs font-semibold">
+                <div className="flex items-center gap-2">
                   {sub.cancelUrl ? (
                     <button
                       onClick={() => openUrl(sub.cancelUrl!)}
-                      className="text-foreground hover:underline flex items-center gap-1 cursor-pointer"
+                      className="text-foreground hover:underline flex items-center gap-1 cursor-pointer text-xs font-semibold truncate max-w-[180px]"
                     >
-                      <ExternalLink className="size-3" />
-                      Cancellation Page
+                      <ExternalLink className="size-3 shrink-0" />
+                      <span className="truncate">Cancellation Page</span>
                     </button>
                   ) : (
-                    "Standard URL search"
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      Standard URL search
+                    </span>
                   )}
-                </span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleOpenCancelUrlModal}
+                    className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <Pencil className="size-3 mr-1" />
+                    {sub.cancelUrl ? "Change" : "Set URL"}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -983,9 +1032,57 @@ export function SubscriptionDetailView({
         onOpenChange={setCancelModalOpen}
         subscription={sub}
         onMarkCanceled={handleSuspend}
+        onUpdateCancelUrl={handleUpdateCancelUrl}
         primaryCurrency={primaryCurrency}
         rates={rates}
       />
+
+      <Dialog open={cancelUrlModalOpen} onOpenChange={setCancelUrlModalOpen}>
+        <DialogContent className="max-w-sm rounded-lg p-5" onClose={() => setCancelUrlModalOpen(false)}>
+          <DialogHeader className="pr-6 space-y-1 text-left mb-0">
+            <DialogTitle className="text-base font-semibold">Change Cancellation Page</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Provide the direct account cancellation or subscription management URL for {sub.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                <Link2 className="size-3.5 text-primary" />
+                Cancellation URL
+              </label>
+              <Input
+                placeholder="https://service.com/account/cancel"
+                value={tempCancelUrl}
+                onChange={(e) => setTempCancelUrl(e.target.value)}
+                className="text-xs"
+                autoFocus
+              />
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Leave empty to use the standard search guide for {sub.name}.
+            </p>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCancelUrlModalOpen(false)}
+              className="cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSaveCancelUrlModal}
+              disabled={savingCancelUrl}
+              className="cursor-pointer"
+            >
+              {savingCancelUrl ? "Saving..." : "Save URL"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <IconPicker
         selected={editIcon}
