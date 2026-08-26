@@ -8,17 +8,6 @@ export function LandingPage() {
   const [loading, setLoading] = useState(false)
   const isElectron = !!window.electronAPI?.isElectron
 
-  // If viewed in a regular external browser (e.g. redirected to localhost:5173 after Google login)
-  useEffect(() => {
-    if (!isElectron) {
-      const deepLink = `subkeep://auth-callback${window.location.search}`
-      const timer = setTimeout(() => {
-        window.location.href = deepLink
-      }, 300)
-      return () => clearTimeout(timer)
-    }
-  }, [isElectron])
-
   // Listen for loopback OAuth callback or deep link from external browser
   const handleAuthCallback = useCallback(
     async (data: { query: Record<string, string>; url: string }) => {
@@ -28,7 +17,20 @@ export function LandingPage() {
         setLoading(true)
         const { query } = data
 
-        // 1. Ticket based auth
+        // 1. Created Session ID based auth
+        const createdSessionId =
+          query.__clerk_created_session_id ||
+          query.created_session_id ||
+          query.sessionId ||
+          query.session_id
+        if (createdSessionId) {
+          await setActive({ session: createdSessionId })
+          toast.success("Successfully signed in!")
+          setLoading(false)
+          return
+        }
+
+        // 2. Ticket based auth
         const ticket = query.__clerk_ticket || query.ticket
         if (ticket) {
           const res = await signIn.create({
@@ -41,19 +43,6 @@ export function LandingPage() {
             setLoading(false)
             return
           }
-        }
-
-        // 2. Created Session ID based auth
-        const createdSessionId =
-          query.__clerk_created_session_id ||
-          query.created_session_id ||
-          query.sessionId ||
-          query.session_id
-        if (createdSessionId) {
-          await setActive({ session: createdSessionId })
-          toast.success("Successfully signed in!")
-          setLoading(false)
-          return
         }
 
         // 3. Fallback: reload status
@@ -114,71 +103,38 @@ export function LandingPage() {
     setLoading(true)
 
     try {
-      const callbackUrl = "http://127.0.0.1:49221/auth-callback"
-
-      // Create Google OAuth flow in Clerk to obtain the exact verification redirect URL
-      const res = await signIn.create({
-        strategy: "oauth_google",
-        redirectUrl: callbackUrl,
-        actionCompleteRedirectUrl: callbackUrl,
-      })
-
-      const externalVerificationUrl =
-        res.firstFactorVerification?.externalVerificationRedirectURL?.href ||
-        (typeof res.firstFactorVerification?.externalVerificationRedirectURL === "string"
-          ? res.firstFactorVerification.externalVerificationRedirectURL
-          : undefined)
-
       if (isElectron && window.electronAPI?.startBrowserAuth) {
+        const callbackUrl = "http://127.0.0.1:49221/auth-callback"
+
+        // Create Google OAuth flow in Clerk to obtain the exact verification redirect URL
+        const res = await signIn.create({
+          strategy: "oauth_google",
+          redirectUrl: callbackUrl,
+          actionCompleteRedirectUrl: callbackUrl,
+        })
+
+        const externalVerificationUrl =
+          res.firstFactorVerification?.externalVerificationRedirectURL?.href ||
+          (typeof res.firstFactorVerification?.externalVerificationRedirectURL === "string"
+            ? res.firstFactorVerification.externalVerificationRedirectURL
+            : undefined)
+
         await window.electronAPI.startBrowserAuth(externalVerificationUrl)
         toast.info("Opening Google Sign-In in your browser...", { duration: 4000 })
+      } else {
+        await signIn.authenticateWithRedirect({
+          strategy: "oauth_google",
+          redirectUrl: "/sso-callback",
+          redirectUrlComplete: "/",
+        })
       }
     } catch (err: unknown) {
       console.warn("Direct OAuth creation fallback:", err)
-      // Fallback: start loopback server and open hosted auth portal
       if (isElectron && window.electronAPI?.startBrowserAuth) {
         await window.electronAPI.startBrowserAuth()
         toast.info("Opening Google Sign-In in your browser...", { duration: 4000 })
       }
     }
-  }
-
-  // Browser redirect view (shown when external browser lands on Vite dev server)
-  if (!isElectron) {
-    return (
-      <div className="min-h-screen w-full bg-black text-white flex flex-col items-center justify-center px-4 py-8 selection:bg-zinc-800 selection:text-white select-none">
-        <div className="w-full max-w-sm mx-auto flex flex-col items-center text-center space-y-6 animate-in fade-in zoom-in-95 duration-300">
-          <div className="size-20 rounded-3xl bg-white flex items-center justify-center shadow-2xl shadow-white/10">
-            <svg
-              viewBox="0 0 24 24"
-              className="size-10 fill-black"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M12 2.2L20.8 7.3L12 12.4L3.2 7.3L12 2.2Z" />
-              <path d="M2.5 9.1L11.3 14.2V21.8L2.5 16.7V9.1Z" />
-              <path d="M12.7 14.2L21.5 9.1V16.7L12.7 21.8V14.2Z" />
-            </svg>
-          </div>
-
-          <div className="space-y-2">
-            <h1 className="text-2xl font-black tracking-wider uppercase">
-              <span className="text-white">SUB</span>
-              <span className="text-zinc-500">KEEP</span>
-            </h1>
-            <p className="text-xs text-zinc-400">
-              Authentication complete! Click below if your browser did not automatically prompt you to open SubKeep.
-            </p>
-          </div>
-
-          <a
-            href={`subkeep://auth-callback${window.location.search}`}
-            className="w-full h-13 rounded-full bg-white text-black font-extrabold text-xs tracking-wider uppercase flex items-center justify-center gap-2 hover:bg-zinc-100 transition-all shadow-xl cursor-pointer"
-          >
-            Open SubKeep Desktop
-          </a>
-        </div>
-      </div>
-    )
   }
 
   return (
