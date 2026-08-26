@@ -4,12 +4,7 @@ import {
   Square,
   X,
   Search,
-  Plus,
-  Moon,
-  Sun,
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useTheme } from "@/components/theme-provider"
 
 interface DesktopTitlebarProps {
   onOpenCommandPalette?: () => void
@@ -19,10 +14,8 @@ interface DesktopTitlebarProps {
 
 export function DesktopTitlebar({
   onOpenCommandPalette,
-  onAddSubscription,
   isLanding = false,
 }: DesktopTitlebarProps) {
-  const { setTheme, resolvedTheme } = useTheme()
   const [isMaximized, setIsMaximized] = useState(false)
   const isElectron = !!window.electronAPI?.isElectron
 
@@ -121,37 +114,10 @@ export function DesktopTitlebar({
         </div>
       )}
 
-      {/* Right Controls */}
+      {/* Right Controls: Clean Window Controls Only */}
       <div className="flex items-center gap-1 min-w-[200px] justify-end app-no-drag">
-        {onAddSubscription && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onAddSubscription}
-            className="h-7 px-2.5 text-xs font-semibold gap-1.5 cursor-pointer shadow-2xs"
-          >
-            <Plus className="size-3.5" />
-            <span className="hidden sm:inline">Add</span>
-          </Button>
-        )}
-
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-          className="size-7 cursor-pointer text-muted-foreground hover:text-foreground"
-          title={`Switch theme (${resolvedTheme === "dark" ? "Light" : "Dark"})`}
-        >
-          {resolvedTheme === "dark" ? (
-            <Sun className="size-3.5" />
-          ) : (
-            <Moon className="size-3.5" />
-          )}
-        </Button>
-
-        {/* Window Controls (Native Electron) */}
         {isElectron && (
-          <div className="flex items-center ml-1.5 border-l border-border/60 pl-1.5">
+          <div className="flex items-center">
             <button
               onClick={handleMinimize}
               className="size-7 flex items-center justify-center rounded hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
