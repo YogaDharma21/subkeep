@@ -21,7 +21,6 @@ export function DesktopTitlebar({
   const [isMaximized, setIsMaximized] = useState(false)
   const { setTheme, resolvedTheme } = useTheme()
   const isMac = typeof window !== "undefined" && window.electronAPI?.platform === "darwin"
-  const isElectron = !!window.electronAPI?.isElectron
 
   useEffect(() => {
     if (!window.electronAPI) return
@@ -73,7 +72,7 @@ export function DesktopTitlebar({
 
         {/* Right: Window Controls */}
         <div className="flex items-center gap-1.5 app-no-drag">
-          {isElectron && !isMac && (
+          {!isMac && (
             <div className="flex items-center ml-1 gap-0.5">
               <button
                 type="button"
@@ -164,7 +163,7 @@ export function DesktopTitlebar({
           )}
         </button>
 
-        {isElectron && !isMac && (
+        {!isMac && (
           <div className="flex items-center ml-1 gap-0.5">
             <button
               type="button"
