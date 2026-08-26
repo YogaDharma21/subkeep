@@ -1,10 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import { useMutation } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { Id } from "@/convex/_generated/dataModel"
 import { Bell, Send, Check, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
+import { toast } from "sonner"
 import { findUpcomingReminders, ReminderItem, sendWebPushNotification } from "@/lib/notifications"
 import { CancellationGuideModal } from "./cancellation-guide-modal"
 
@@ -36,6 +40,7 @@ export function UpcomingReminders({
 }: UpcomingRemindersProps) {
   const [selectedSubForCancel, setSelectedSubForCancel] = useState<ReminderItem | null>(null)
   const [sentAlerts, setSentAlerts] = useState<Record<string, boolean>>({})
+  const updateMutation = useMutation(api.subscriptions.update)
 
   const reminders = findUpcomingReminders(subscriptions, 3)
 
@@ -51,6 +56,18 @@ export function UpcomingReminders({
 
     sendWebPushNotification(title, body)
     setSentAlerts((prev) => ({ ...prev, [item._id]: true }))
+  }
+
+  const handleUpdateCancelUrl = async (id: string, url: string) => {
+    try {
+      await updateMutation({
+        id: id as Id<"subscriptions">,
+        cancelUrl: url.trim() || undefined,
+      })
+      toast.success("Cancellation page URL updated")
+    } catch {
+      toast.error("Failed to update cancellation URL")
+    }
   }
 
   return (
@@ -107,7 +124,7 @@ export function UpcomingReminders({
                     size="sm"
                     variant="outline"
                     onClick={() => setSelectedSubForCancel(item)}
-                    className="h-7 px-2 text-[11px] font-medium gap-1"
+                    className="h-7 px-2 text-[11px] font-medium gap-1 cursor-pointer"
                   >
                     <ExternalLink className="size-3" />
                     Cancel Link
@@ -117,7 +134,7 @@ export function UpcomingReminders({
                     size="sm"
                     variant="ghost"
                     onClick={() => handleSendTestNotification(item)}
-                    className={`h-7 px-2 text-[11px] gap-1 ${
+                    className={`h-7 px-2 text-[11px] gap-1 cursor-pointer ${
                       isSent ? "text-emerald-500" : "text-amber-600 dark:text-amber-400"
                     }`}
                   >
@@ -136,6 +153,7 @@ export function UpcomingReminders({
         onOpenChange={(o) => { if (!o) setSelectedSubForCancel(null) }}
         subscription={selectedSubForCancel}
         onMarkCanceled={onMarkCanceled}
+        onUpdateCancelUrl={handleUpdateCancelUrl}
         primaryCurrency={primaryCurrency}
       />
     </div>
