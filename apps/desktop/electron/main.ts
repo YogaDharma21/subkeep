@@ -270,6 +270,7 @@ function createWindow() {
     minHeight: 700,
     title: "SubKeep",
     backgroundColor: "#000000",
+    frame: false,
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs"),
@@ -300,6 +301,10 @@ function createWindow() {
     return { action: "deny" }
   })
 
+  win.on("closed", () => {
+    win = null
+  })
+
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
   } else {
@@ -308,24 +313,39 @@ function createWindow() {
 }
 
 // Window state IPC handlers
-ipcMain.handle("window:minimize", () => {
-  win?.minimize()
-})
+function handleWinMinimize(event: Electron.IpcMainInvokeEvent | Electron.IpcMainEvent) {
+  const targetWin = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow() || win
+  targetWin?.minimize()
+}
 
-ipcMain.handle("window:maximize", () => {
-  if (win?.isMaximized()) {
-    win.unmaximize()
-  } else {
-    win?.maximize()
+function handleWinMaximize(event: Electron.IpcMainInvokeEvent | Electron.IpcMainEvent) {
+  const targetWin = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow() || win
+  if (targetWin) {
+    if (targetWin.isMaximized()) {
+      targetWin.unmaximize()
+    } else {
+      targetWin.maximize()
+    }
   }
-})
+}
 
-ipcMain.handle("window:close", () => {
-  win?.close()
-})
+function handleWinClose(event: Electron.IpcMainInvokeEvent | Electron.IpcMainEvent) {
+  const targetWin = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow() || win
+  targetWin?.close()
+}
 
-ipcMain.handle("window:is-maximized", () => {
-  return win?.isMaximized() ?? false
+ipcMain.handle("window:minimize", handleWinMinimize)
+ipcMain.on("window:minimize", handleWinMinimize)
+
+ipcMain.handle("window:maximize", handleWinMaximize)
+ipcMain.on("window:maximize", handleWinMaximize)
+
+ipcMain.handle("window:close", handleWinClose)
+ipcMain.on("window:close", handleWinClose)
+
+ipcMain.handle("window:is-maximized", (event) => {
+  const targetWin = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow() || win
+  return targetWin?.isMaximized() ?? false
 })
 
 // External link opener
