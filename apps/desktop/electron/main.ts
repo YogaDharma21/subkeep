@@ -30,7 +30,7 @@ function createWindow() {
     minWidth: 1024,
     minHeight: 700,
     title: "SubKeep",
-    backgroundColor: "#09090b",
+    backgroundColor: "#000000",
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs"),
@@ -40,7 +40,20 @@ function createWindow() {
     },
   })
 
-  // Open all target="_blank" or external window links in user default browser
+  // Prevent in-app navigation to external websites: open in default external browser
+  win.webContents.on("will-navigate", (event, navigationUrl) => {
+    const isLocal =
+      navigationUrl.startsWith("http://localhost:") ||
+      navigationUrl.startsWith("http://127.0.0.1:") ||
+      navigationUrl.startsWith("file://")
+
+    if (!isLocal) {
+      event.preventDefault()
+      shell.openExternal(navigationUrl)
+    }
+  })
+
+  // Intercept all new window requests: open in default external browser
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith("http:") || url.startsWith("https:")) {
       shell.openExternal(url)
@@ -156,8 +169,7 @@ ipcMain.handle("dialog:open-file", async (_event, { filters }: {
 })
 
 // Browser Auth Loopback Server IPC
-ipcMain.handle("auth:start-browser-login", async (_event, options?: { mode?: "google" | "sign-in" | "sign-up"; url?: string }) => {
-  const mode = options?.mode || "google"
+ipcMain.handle("auth:start-browser-login", async () => {
   const callbackUrl = `http://127.0.0.1:${AUTH_PORT}/auth-callback`
 
   // Close previous server if running
@@ -170,7 +182,7 @@ ipcMain.handle("auth:start-browser-login", async (_event, options?: { mode?: "go
     authServer = null
   }
 
-  // Create temporary local HTTP loopback server to receive the callback
+  // Create temporary local HTTP loopback server to receive the OAuth callback
   authServer = http.createServer((req, res) => {
     if (!req.url) {
       res.writeHead(400)
@@ -185,7 +197,7 @@ ipcMain.handle("auth:start-browser-login", async (_event, options?: { mode?: "go
         queryParams[key] = val
       })
 
-      // Send sleek dark response HTML
+      // Send sleek dark response HTML to the browser tab
       const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -195,7 +207,7 @@ ipcMain.handle("auth:start-browser-login", async (_event, options?: { mode?: "go
   <style>
     body {
       margin: 0;
-      background-color: #09090b;
+      background-color: #000000;
       color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       display: flex;
@@ -206,18 +218,18 @@ ipcMain.handle("auth:start-browser-login", async (_event, options?: { mode?: "go
     }
     .container {
       text-align: center;
-      background: #18181b;
+      background: #111113;
       padding: 44px 36px;
-      border-radius: 20px;
+      border-radius: 24px;
       border: 1px solid #27272a;
       max-width: 380px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
     }
     .icon {
-      width: 56px;
-      height: 56px;
+      width: 60px;
+      height: 60px;
       background: #ffffff;
-      border-radius: 16px;
+      border-radius: 18px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -230,14 +242,14 @@ ipcMain.handle("auth:start-browser-login", async (_event, options?: { mode?: "go
 <body>
   <div class="container">
     <div class="icon">
-      <svg width="30" height="30" viewBox="0 0 24 24" fill="#000000">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="#000000">
         <path d="M12 2.2L20.8 7.3L12 12.4L3.2 7.3L12 2.2Z" />
         <path d="M2.5 9.1L11.3 14.2V21.8L2.5 16.7V9.1Z" />
         <path d="M12.7 14.2L21.5 9.1V16.7L12.7 21.8V14.2Z" />
       </svg>
     </div>
     <h1>Signed In Successfully</h1>
-    <p>You are now connected to <strong>SubKeep Desktop</strong>. You can close this tab and return to the app.</p>
+    <p>You are now connected to <strong>SubKeep Desktop</strong>. You can close this tab and return to the desktop application.</p>
   </div>
   <script>
     setTimeout(() => {
@@ -260,30 +272,22 @@ ipcMain.handle("auth:start-browser-login", async (_event, options?: { mode?: "go
         win.focus()
       }
 
-      // Close the loopback server after a short delay
+      // Close the loopback server after callback handling
       setTimeout(() => {
         if (authServer) {
           authServer.close()
           authServer = null
         }
       }, 3000)
-    } catch (e) {
+    } catch {
       res.writeHead(500)
       res.end("Internal Server Error")
     }
   })
 
   authServer.listen(AUTH_PORT, "127.0.0.1", async () => {
-    // Determine external URL to open
-    let targetUrl = options?.url
-    if (!targetUrl) {
-      if (mode === "sign-up") {
-        targetUrl = `${CLERK_HOSTED_DOMAIN}/sign-up?redirect_url=${encodeURIComponent(callbackUrl)}`
-      } else {
-        targetUrl = `${CLERK_HOSTED_DOMAIN}/sign-in?redirect_url=${encodeURIComponent(callbackUrl)}`
-      }
-    }
-
+    // Open Clerk Sign-In with redirect back to our local loopback server
+    const targetUrl = `${CLERK_HOSTED_DOMAIN}/sign-in?redirect_url=${encodeURIComponent(callbackUrl)}`
     await shell.openExternal(targetUrl)
   })
 
