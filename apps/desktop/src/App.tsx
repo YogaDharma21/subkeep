@@ -13,12 +13,14 @@ import { AddSubscriptionSheet } from "@/components/add-subscription-sheet"
 import { PaymentMethodsSheet } from "@/components/payment-methods-sheet"
 import { CommandPalette } from "@/components/command-palette"
 import { LandingPage } from "@/components/landing-page"
+import { DesktopCallbackPage } from "@/components/desktop-callback-page"
 import { Toaster } from "@/components/ui/sonner"
 import { useTheme } from "@/components/theme-provider"
 
 export function App() {
   const { isSignedIn, isLoaded } = useAuth()
   const { setTheme, resolvedTheme } = useTheme()
+  const isElectron = !!window.electronAPI?.isElectron
 
   const [currentView, setCurrentView] = useState<DesktopView>("dashboard")
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null)
@@ -67,6 +69,11 @@ export function App() {
     setCurrentView("detail")
   }
 
+  // When viewed in an external web browser, render the dedicated "Continue in desktop app" handoff page
+  if (!isElectron) {
+    return <DesktopCallbackPage />
+  }
+
   if (!isLoaded) {
     return (
       <div className="h-screen w-screen flex flex-col bg-background text-foreground items-center justify-center">
@@ -89,7 +96,7 @@ export function App() {
     )
   }
 
-  // When user is signed in, immediately render the full desktop workspace
+  // When user is signed in inside Electron, render the full desktop workspace
   return (
     <div className="h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden">
       {/* Frameless Top Window Bar */}
