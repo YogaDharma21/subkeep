@@ -65,7 +65,7 @@ export default function SettingsModal() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView edges={["top", "bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
       {/* Header */}
       <View
         style={{
