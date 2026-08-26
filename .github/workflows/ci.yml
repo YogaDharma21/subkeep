@@ -19,8 +19,6 @@ jobs:
           filters: |
             website:
               - 'apps/website/**'
-              - 'package.json'
-              - 'package-lock.json'
               - '.github/workflows/ci.yml'
 
   build-website:
@@ -33,12 +31,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
+          cache-dependency-path: 'apps/website/package-lock.json'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
+        working-directory: apps/website
 
       - name: Lint check
         run: npm run lint

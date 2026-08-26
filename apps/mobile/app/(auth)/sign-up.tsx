@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import {
   View,
   Text,
+  Image,
   ScrollView,
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -10,7 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { useSignUp } from "@clerk/clerk-expo"
-import { Lock, Mail, ArrowRight, CheckCircle, Receipt } from "lucide-react-native"
+import { Lock, Mail, ArrowRight, CheckCircle } from "lucide-react-native"
 import { GoogleOAuthButton } from "@/components/google-oauth-button"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -105,18 +106,15 @@ export default function SignUpScreen() {
         >
           {/* Header */}
           <View style={{ alignItems: "center", gap: 10, paddingVertical: 12 }}>
-            <View
+            <Image
+              source={require("@/assets/images/icon.png")}
               style={{
                 width: 48,
                 height: 48,
-                borderRadius: 14,
-                backgroundColor: colors.primary,
-                alignItems: "center",
-                justifyContent: "center",
+                borderRadius: 12,
               }}
-            >
-              <Receipt size={24} color={colors.primaryForeground} />
-            </View>
+              resizeMode="contain"
+            />
             <Text style={{ fontSize: 22, fontWeight: "800", color: colors.text }}>
               {pendingVerification ? "Verify your email" : "Create your account"}
             </Text>

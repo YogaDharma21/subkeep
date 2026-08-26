@@ -97,6 +97,48 @@ app.on("open-url", (event, url) => {
   handleDeepLink(url)
 })
 
+function getAppIconPath(): string | undefined {
+  const candidates = [
+    path.join(__dirname, "../public/icon.png"),
+    path.join(process.env.APP_ROOT || "", "public/icon.png"),
+    path.join(__dirname, "../public/icon.ico"),
+    path.join(process.env.APP_ROOT || "", "public/icon.ico"),
+    path.join(process.cwd(), "apps/desktop/public/icon.png"),
+  ]
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate
+    }
+  }
+
+  return undefined
+}
+
+function getAppIconDataUri(): string {
+  const candidates = [
+    path.join(__dirname, "../public/app-icon.png"),
+    path.join(process.env.APP_ROOT || "", "public/app-icon.png"),
+    path.join(process.cwd(), "apps/desktop/public/app-icon.png"),
+    path.join(__dirname, "../public/icon.png"),
+    path.join(process.env.APP_ROOT || "", "public/icon.png"),
+    path.join(process.cwd(), "apps/desktop/public/icon.png"),
+  ]
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      try {
+        const data = fs.readFileSync(candidate)
+        return `data:image/png;base64,${data.toString("base64")}`
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  return ""
+}
+
 function startAuthLoopbackServer() {
   if (authServer) return
 
@@ -154,6 +196,11 @@ function startAuthLoopbackServer() {
         queryParams[key] = val
       })
 
+      const iconDataUri = getAppIconDataUri()
+      const iconImg = iconDataUri
+        ? `<img src="${iconDataUri}" alt="SubKeep" style="width: 100%; height: 100%; object-fit: cover;" />`
+        : `<span style="font-weight: 900; font-size: 24px; color: #ffffff;">S</span>`
+
       // Send deep link trigger HTML to the browser tab
       const html = `<!DOCTYPE html>
 <html lang="en">
@@ -177,20 +224,21 @@ function startAuthLoopbackServer() {
       text-align: center;
       background: #111113;
       padding: 44px 36px;
-      border-radius: 0.625rem;
+      border-radius: 1rem;
       border: 1px solid #27272a;
       max-width: 380px;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
     }
     .icon {
-      width: 60px;
-      height: 60px;
-      background: #ffffff;
-      border-radius: 0.625rem;
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
     }
     h1 { margin: 0 0 10px; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
     p { margin: 0 0 24px; color: #a1a1aa; font-size: 13px; line-height: 1.5; }
@@ -209,17 +257,17 @@ function startAuthLoopbackServer() {
       text-transform: uppercase;
       cursor: pointer;
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      transition: opacity 0.2s ease;
+    }
+    .btn:hover {
+      opacity: 0.9;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="icon">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="#000000">
-        <path d="M12 2.2L20.8 7.3L12 12.4L3.2 7.3L12 2.2Z" />
-        <path d="M2.5 9.1L11.3 14.2V21.8L2.5 16.7V9.1Z" />
-        <path d="M12.7 14.2L21.5 9.1V16.7L12.7 21.8V14.2Z" />
-      </svg>
+      ${iconImg}
     </div>
     <h1>Signed In Successfully</h1>
     <p>Click below if your browser did not automatically prompt you to open SubKeep.</p>
@@ -291,6 +339,7 @@ function getPreloadPath(): string {
 
 function createWindow() {
   const preloadPath = getPreloadPath()
+  const iconPath = getAppIconPath()
 
   win = new BrowserWindow({
     width: 1280,
@@ -298,6 +347,7 @@ function createWindow() {
     minWidth: 1024,
     minHeight: 700,
     title: "SubKeep",
+    icon: iconPath,
     backgroundColor: "#09090b",
     frame: false,
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : undefined,

@@ -46,18 +46,12 @@ export function DesktopCallbackPage() {
   return (
     <div className="min-h-screen w-full bg-black text-white flex flex-col items-center justify-center p-4 selection:bg-zinc-800 selection:text-white select-none">
       <div className="w-full max-w-sm mx-auto bg-zinc-950 border border-zinc-800/80 rounded-lg p-8 text-center space-y-6 shadow-2xl shadow-black/80 animate-in fade-in zoom-in-95 duration-200">
-        {/* White Rounded App Icon Container */}
-        <div className="size-20 rounded-lg bg-white flex items-center justify-center mx-auto shadow-xl shadow-white/5">
-          <svg
-            viewBox="0 0 24 24"
-            className="size-10 fill-black"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M12 2.2L20.8 7.3L12 12.4L3.2 7.3L12 2.2Z" />
-            <path d="M2.5 9.1L11.3 14.2V21.8L2.5 16.7V9.1Z" />
-            <path d="M12.7 14.2L21.5 9.1V16.7L12.7 21.8V14.2Z" />
-          </svg>
-        </div>
+        {/* SubKeep App Icon */}
+        <img
+          src="/app-icon.png"
+          alt="SubKeep"
+          className="size-20 rounded-2xl shadow-xl shadow-white/5 mx-auto object-contain"
+        />
 
         {/* Brand & State Heading */}
         <div className="space-y-2">
