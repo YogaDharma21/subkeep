@@ -23,13 +23,7 @@ const CLERK_HOSTED_DOMAIN = "https://engaging-mole-10.clerk.accounts.dev"
 
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
 
-// Ensure single instance lock for deep linking - exit immediately if second instance
-const gotTheLock = app.requestSingleInstanceLock()
-if (!gotTheLock) {
-  app.exit(0)
-}
-
-// Register custom protocol 'subkeep://' for deep linking
+// Register custom protocol client for deep linking (subkeep://)
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
     app.setAsDefaultProtocolClient("subkeep", process.execPath, [
@@ -40,11 +34,11 @@ if (process.defaultApp) {
   app.setAsDefaultProtocolClient("subkeep")
 }
 
-function handleDeepLink(urlStr: string) {
-  if (!urlStr || !urlStr.startsWith("subkeep://")) return
-
+// Function to handle deep link URLs (e.g., subkeep://auth-callback?...)
+function handleDeepLink(urlString: string) {
   try {
-    const parsed = new URL(urlStr)
+    const raw = urlString.replace(/^subkeep:\/?\/?/, "")
+    const parsed = new URL(`http://localhost/${raw}`)
     const queryParams: Record<string, string> = {}
     parsed.searchParams.forEach((val, key) => {
       queryParams[key] = val
@@ -53,31 +47,40 @@ function handleDeepLink(urlStr: string) {
     if (win && !win.isDestroyed()) {
       win.webContents.send("auth:callback", {
         query: queryParams,
-        url: urlStr,
+        url: urlString,
       })
       if (win.isMinimized()) win.restore()
       win.show()
       win.focus()
     }
-  } catch (e) {
-    console.error("Failed to parse deep link URL:", urlStr, e)
+  } catch (err) {
+    console.error("Failed to parse deep link:", err)
   }
 }
 
-// Handle second instance deep link callback on Windows/Linux
-app.on("second-instance", (_event, commandLine) => {
-  if (win) {
-    if (win.isMinimized()) win.restore()
-    win.show()
-    win.focus()
-  }
-  const deepLinkUrl = commandLine.find((arg) => arg.startsWith("subkeep://"))
-  if (deepLinkUrl) {
-    handleDeepLink(deepLinkUrl)
-  }
-})
+// Ensure single instance lock for deep linking protocol handling
+const gotTheLock = app.requestSingleInstanceLock()
 
-// macOS open-url event
+if (!gotTheLock) {
+  app.quit()
+} else {
+  app.on("second-instance", (_event, commandLine) => {
+    // Focus window when a second instance is invoked
+    if (win) {
+      if (win.isMinimized()) win.restore()
+      win.show()
+      win.focus()
+    }
+
+    // Check command line arguments on Windows for deep link protocol
+    const deepLink = commandLine.find((arg) => arg.startsWith("subkeep://"))
+    if (deepLink) {
+      handleDeepLink(deepLink)
+    }
+  })
+}
+
+// Handle macOS open-url event
 app.on("open-url", (event, url) => {
   event.preventDefault()
   handleDeepLink(url)
@@ -99,14 +102,6 @@ function createWindow() {
       sandbox: false,
     },
   })
-
-  // Check if launched with custom protocol URL
-  const initialDeepLink = process.argv.find((arg) => arg.startsWith("subkeep://"))
-  if (initialDeepLink) {
-    win.webContents.once("did-finish-load", () => {
-      handleDeepLink(initialDeepLink)
-    })
-  }
 
   // Prevent in-app navigation to external websites: open in default external browser
   win.webContents.on("will-navigate", (event, navigationUrl) => {
@@ -159,7 +154,7 @@ ipcMain.handle("window:is-maximized", () => {
 
 // External link opener
 ipcMain.handle("shell:open-external", async (_event, url: string) => {
-  if (typeof url === "string" && (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("mailto:") || url.startsWith("subkeep://"))) {
+  if (typeof url === "string" && (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("mailto:"))) {
     await shell.openExternal(url)
     return true
   }
@@ -265,7 +260,7 @@ ipcMain.handle("auth:start-browser-login", async (_event, customUrl?: string) =>
         queryParams[key] = val
       })
 
-      // Send sleek dark response HTML to the browser tab with deep link trigger
+      // Send deep link trigger HTML to the browser tab
       const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -287,65 +282,61 @@ ipcMain.handle("auth:start-browser-login", async (_event, customUrl?: string) =>
     .container {
       text-align: center;
       background: #111113;
-      padding: 48px 36px;
+      padding: 44px 36px;
       border-radius: 24px;
       border: 1px solid #27272a;
-      max-width: 400px;
+      max-width: 380px;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
     }
     .icon {
-      width: 64px;
-      height: 64px;
+      width: 60px;
+      height: 60px;
       background: #ffffff;
-      border-radius: 20px;
+      border-radius: 18px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 24px;
-      box-shadow: 0 10px 25px -5px rgba(255, 255, 255, 0.2);
+      margin-bottom: 20px;
     }
-    h1 { margin: 0 0 10px; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+    h1 { margin: 0 0 10px; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
     p { margin: 0 0 24px; color: #a1a1aa; font-size: 13px; line-height: 1.5; }
     .btn {
-      display: block;
+      display: inline-block;
       width: 100%;
       box-sizing: border-box;
-      padding: 14px 20px;
+      padding: 14px 0;
+      border-radius: 9999px;
       background: #ffffff;
       color: #000000;
-      text-decoration: none;
       font-weight: 800;
       font-size: 13px;
+      text-decoration: none;
       letter-spacing: 0.05em;
       text-transform: uppercase;
-      border-radius: 9999px;
-      transition: all 0.2s;
       cursor: pointer;
-    }
-    .btn:hover {
-      background: #e4e4e7;
-      transform: scale(1.02);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="icon">
-      <svg width="34" height="34" viewBox="0 0 24 24" fill="#000000">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="#000000">
         <path d="M12 2.2L20.8 7.3L12 12.4L3.2 7.3L12 2.2Z" />
         <path d="M2.5 9.1L11.3 14.2V21.8L2.5 16.7V9.1Z" />
         <path d="M12.7 14.2L21.5 9.1V16.7L12.7 21.8V14.2Z" />
       </svg>
     </div>
-    <h1>Opening SubKeep Desktop...</h1>
-    <p>Click below if your browser doesn't prompt you to open the desktop app automatically.</p>
-    <a id="deepLinkBtn" href="#" class="btn">Open SubKeep Desktop</a>
+    <h1>Signed In Successfully</h1>
+    <p>Click below if your browser did not automatically prompt you to open SubKeep.</p>
+    <a id="deepLinkBtn" class="btn" href="#">Open SubKeep</a>
   </div>
   <script>
-    const search = window.location.search;
-    const deepLink = "subkeep://auth-callback" + search;
-    document.getElementById("deepLinkBtn").setAttribute("href", deepLink);
-    window.location.href = deepLink;
+    const deepLinkUrl = "subkeep://auth-callback" + window.location.search;
+    document.getElementById("deepLinkBtn").href = deepLinkUrl;
+    setTimeout(() => {
+      window.location.href = deepLinkUrl;
+    }, 200);
   </script>
 </body>
 </html>`
@@ -363,13 +354,13 @@ ipcMain.handle("auth:start-browser-login", async (_event, customUrl?: string) =>
         win.focus()
       }
 
-      // Close the loopback server after callback handling
+      // Close loopback server
       setTimeout(() => {
         if (authServer) {
           authServer.close()
           authServer = null
         }
-      }, 3000)
+      }, 5000)
     } catch {
       res.writeHead(500)
       res.end("Internal Server Error")
@@ -377,13 +368,8 @@ ipcMain.handle("auth:start-browser-login", async (_event, customUrl?: string) =>
   })
 
   authServer.listen(AUTH_PORT, "127.0.0.1", async () => {
-    // If customUrl provided, open external browser with it
-    if (customUrl) {
-      await shell.openExternal(customUrl)
-    } else {
-      const targetUrl = `${CLERK_HOSTED_DOMAIN}/sign-in?redirect_url=${encodeURIComponent(callbackUrl)}`
-      await shell.openExternal(targetUrl)
-    }
+    const targetUrl = customUrl || `${CLERK_HOSTED_DOMAIN}/sign-in?redirect_url=${encodeURIComponent(callbackUrl)}`
+    await shell.openExternal(targetUrl)
   })
 
   authServer.on("error", (err) => {
