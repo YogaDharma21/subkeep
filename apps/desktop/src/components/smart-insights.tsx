@@ -202,7 +202,7 @@ export function SmartInsights({
   if (insights.length === 0) return null
 
   return (
-    <div className="rounded-xl border border-border bg-background p-4 shadow-xs">
+    <div className="rounded-lg border border-border bg-background p-4 shadow-xs">
       <div className="flex items-center gap-2 pb-3 mb-3 border-b border-border/60">
         <Sparkles className="size-4 text-muted-foreground" />
         <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">

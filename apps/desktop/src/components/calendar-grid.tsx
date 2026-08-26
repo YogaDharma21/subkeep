@@ -263,7 +263,7 @@ export function CalendarGrid({ subscriptions, onSelectSubscription }: CalendarGr
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-      <div className="lg:col-span-7 rounded-xl border border-border bg-background p-4 sm:p-6 shadow-xs">
+      <div className="lg:col-span-7 rounded-lg border border-border bg-background p-4 sm:p-6 shadow-xs">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-bold">{monthName}</h3>
           <div className="flex gap-2">
@@ -325,7 +325,7 @@ export function CalendarGrid({ subscriptions, onSelectSubscription }: CalendarGr
       </div>
 
       {selectedDay !== null && (
-        <div className="lg:col-span-5 rounded-xl border border-border bg-background shadow-xs overflow-hidden">
+        <div className="lg:col-span-5 rounded-lg border border-border bg-background shadow-xs overflow-hidden">
           <div className="border-b border-border p-4">
             <h3 className="text-sm font-bold">{getHeaderTitle()}</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
