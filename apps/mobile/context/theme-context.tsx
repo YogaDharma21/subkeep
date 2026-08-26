@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react"
 import { useColorScheme, Appearance } from "react-native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import * as SystemUI from "expo-system-ui"
 import { Colors, ThemeColors } from "@/constants/theme"
 
 export type ThemeMode = "system" | "light" | "dark"
@@ -51,6 +52,10 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
 
   const isDark = effectiveScheme === "dark"
   const colors = isDark ? Colors.dark : Colors.light
+
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(colors.background).catch(() => {})
+  }, [colors.background])
 
   return (
     <ThemeContext.Provider

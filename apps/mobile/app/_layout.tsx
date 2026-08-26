@@ -5,12 +5,13 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { Stack, useRouter, useSegments } from "expo-router"
 import { StatusBar } from "expo-status-bar"
-import React, { useEffect } from "react"
+import React, { useEffect, useMemo } from "react"
 import { View, ActivityIndicator } from "react-native"
 import { tokenCache } from "@/lib/token-cache"
 import { LandingScreen } from "@/components/landing-screen"
 import { CustomAlertProvider } from "@/components/custom-alert-provider"
 import { AppThemeProvider, useThemeColor } from "@/hooks/use-theme-color"
+import { Colors } from "@/constants/theme"
 import "react-native-reanimated"
 
 const convexUrl =
@@ -20,6 +21,32 @@ const clerkPublishableKey =
   "pk_test_ZW5nYWdpbmctbW9sZS0xMC5jbGVyay5hY2NvdW50cy5kZXYk"
 
 const convex = new ConvexReactClient(convexUrl)
+
+const customDarkTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: Colors.dark.background,
+    card: Colors.dark.card,
+    text: Colors.dark.text,
+    border: Colors.dark.border,
+    primary: Colors.dark.primary,
+    notification: Colors.dark.destructive,
+  },
+}
+
+const customLightTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: Colors.light.background,
+    card: Colors.light.card,
+    text: Colors.light.text,
+    border: Colors.light.border,
+    primary: Colors.light.primary,
+    notification: Colors.light.destructive,
+  },
+}
 
 function InitialLayout() {
   const { isLoaded, isSignedIn } = useAuth()
@@ -65,46 +92,94 @@ function InitialLayout() {
         headerShadowVisible: false,
       }}
     >
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="(tabs)"
+        options={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      />
+      <Stack.Screen
+        name="(auth)"
+        options={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      />
       <Stack.Screen
         name="modal/add"
-        options={{ presentation: "pageSheet", headerShown: false }}
+        options={{
+          presentation: "pageSheet",
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+        }}
       />
       <Stack.Screen
         name="modal/settings"
-        options={{ presentation: "pageSheet", headerShown: false }}
+        options={{
+          presentation: "pageSheet",
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+        }}
       />
       <Stack.Screen
         name="modal/cards"
-        options={{ presentation: "pageSheet", headerShown: false }}
+        options={{
+          presentation: "pageSheet",
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+        }}
       />
       <Stack.Screen
         name="modal/preferences"
-        options={{ presentation: "pageSheet", headerShown: false }}
+        options={{
+          presentation: "pageSheet",
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+        }}
       />
       <Stack.Screen
         name="subscriptions/[id]"
-        options={{ headerShown: false }}
+        options={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+        }}
       />
     </Stack>
   )
 }
 
 function ThemedApp() {
-  const { isDark } = useThemeColor()
+  const { isDark, colors } = useThemeColor()
+
+  const navigationTheme = useMemo(
+    () => ({
+      ...(isDark ? customDarkTheme : customLightTheme),
+      colors: {
+        ...(isDark ? customDarkTheme.colors : customLightTheme.colors),
+        background: colors.background,
+        card: colors.card,
+        text: colors.text,
+        border: colors.border,
+        primary: colors.primary,
+      },
+    }),
+    [isDark, colors]
+  )
 
   return (
-    <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
-      <InitialLayout />
-      <StatusBar style={isDark ? "light" : "dark"} />
+    <ThemeProvider value={navigationTheme}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <InitialLayout />
+        <StatusBar style={isDark ? "light" : "dark"} backgroundColor={colors.background} />
+      </View>
     </ThemeProvider>
   )
 }
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider style={{ flex: 1, backgroundColor: Colors.dark.background }}>
       <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
         <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
           <AppThemeProvider>
