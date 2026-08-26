@@ -230,27 +230,9 @@ export function SmartInsights({
               gap: 4,
             }}
           >
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-              <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text, flex: 1 }}>
-                {item.title}
-              </Text>
-              {item.badge ? (
-                <View
-                  style={{
-                    backgroundColor: colors.surfaceHover,
-                    paddingHorizontal: 6,
-                    paddingVertical: 2,
-                    borderRadius: 4,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
-                >
-                  <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
-                    {item.badge}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
+            <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+              {item.title}
+            </Text>
             <Text style={{ fontSize: 11, color: colors.mutedText, lineHeight: 16 }}>
               {item.description}
             </Text>

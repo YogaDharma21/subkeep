@@ -4,6 +4,7 @@ import { useMemo } from "react"
 import { Sparkles, TrendingUp, TrendingDown, Minus, PieChart, Users } from "lucide-react"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { subMonths, endOfMonth } from "date-fns"
+import { cn } from "@/lib/utils"
 
 interface SmartInsightsProps {
   subscriptions: Array<{
@@ -24,12 +25,14 @@ interface SmartInsightsProps {
   }>
   primaryCurrency?: string
   rates?: Record<string, number>
+  className?: string
 }
 
 export function SmartInsights({
   subscriptions,
   primaryCurrency = "IDR",
   rates,
+  className,
 }: SmartInsightsProps) {
   const insights = useMemo(() => {
     if (!subscriptions || subscriptions.length === 0) return []
@@ -204,7 +207,7 @@ export function SmartInsights({
   if (insights.length === 0) return null
 
   return (
-    <div className="mb-4 rounded-lg border border-border bg-background p-4 shadow-xs">
+    <div className={cn("rounded-lg border border-border bg-background p-4 shadow-xs", className)}>
       <div className="flex items-center gap-2 pb-3 mb-3 border-b border-border/60">
         <Sparkles className="size-4 text-muted-foreground" />
         <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
@@ -213,32 +216,17 @@ export function SmartInsights({
       </div>
 
       <div className="space-y-2.5">
-        {insights.map((item) => {
-          const Icon = item.icon
-          return (
-            <div
-              key={item.id}
-              className="rounded-lg border border-border/80 bg-muted/30 p-3 text-xs transition-colors hover:bg-muted/50"
-            >
-              <div className="flex items-start gap-2.5">
-                <Icon className="size-4 shrink-0 mt-0.5 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-semibold text-foreground">{item.title}</span>
-                    {item.badge && (
-                      <span className="rounded-md bg-muted px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground border border-border shrink-0">
-                        {item.badge}
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
-                    {item.description}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )
-        })}
+        {insights.map((item) => (
+          <div
+            key={item.id}
+            className="rounded-lg border border-border/80 bg-muted/30 p-3 text-xs transition-colors hover:bg-muted/50"
+          >
+            <span className="font-semibold text-foreground block">{item.title}</span>
+            <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
+              {item.description}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   )

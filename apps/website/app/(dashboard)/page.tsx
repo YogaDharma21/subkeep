@@ -178,7 +178,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="flex flex-col gap-4 sm:gap-6">
       {/* Dynamic Summary Banner with Currency Converter */}
       <div className="rounded-lg border border-border bg-background p-4 sm:p-5 shadow-xs">
         <div className="flex items-center justify-between border-b border-border/60 pb-3 mb-3 sm:mb-4">
@@ -271,6 +271,14 @@ export default function HomePage() {
           </div>
         )}
       </div>
+
+      {/* Savings Recommendations & Insights (Visible on smaller screens: < lg) */}
+      <SmartInsights
+        subscriptions={subscriptions || []}
+        primaryCurrency={primaryCurrency}
+        rates={rates}
+        className="lg:hidden"
+      />
 
       {/* Responsive Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -384,6 +392,7 @@ export default function HomePage() {
             subscriptions={subscriptions || []}
             primaryCurrency={primaryCurrency}
             rates={rates}
+            className="hidden lg:block"
           />
           <UpcomingReminders
             subscriptions={subscriptions || []}
