@@ -265,13 +265,19 @@ function startAuthLoopbackServer() {
 
 function getPreloadPath(): string {
   const candidates = [
+    path.join(__dirname, "preload.cjs"),
     path.join(__dirname, "preload.mjs"),
     path.join(__dirname, "preload.js"),
+    path.join(__dirname, "../preload/index.cjs"),
     path.join(__dirname, "../preload/index.mjs"),
     path.join(__dirname, "../preload/index.js"),
+    path.join(__dirname, "../dist-electron/preload.cjs"),
     path.join(__dirname, "../dist-electron/preload.mjs"),
+    path.join(app.getAppPath(), "dist-electron/preload.cjs"),
     path.join(app.getAppPath(), "dist-electron/preload.mjs"),
+    path.join(process.cwd(), "dist-electron/preload.cjs"),
     path.join(process.cwd(), "dist-electron/preload.mjs"),
+    path.join(process.cwd(), "apps/desktop/dist-electron/preload.cjs"),
   ]
 
   for (const candidate of candidates) {
@@ -280,7 +286,7 @@ function getPreloadPath(): string {
     }
   }
 
-  return path.join(__dirname, "preload.mjs")
+  return path.join(__dirname, "preload.cjs")
 }
 
 function createWindow() {
@@ -294,7 +300,7 @@ function createWindow() {
     title: "SubKeep",
     backgroundColor: "#09090b",
     frame: false,
-    titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
+    titleBarStyle: process.platform === "darwin" ? "hiddenInset" : undefined,
     trafficLightPosition: { x: 12, y: 12 },
     autoHideMenuBar: true,
     show: false,
@@ -369,17 +375,16 @@ function getTargetWindow(event?: Electron.IpcMainInvokeEvent | Electron.IpcMainE
 // Window state IPC handlers
 ipcMain.handle("window:minimize", (event) => {
   const targetWin = getTargetWindow(event)
-  targetWin?.minimize()
-})
-
-ipcMain.on("window:minimize", (event) => {
-  const targetWin = getTargetWindow(event)
-  targetWin?.minimize()
+  if (targetWin && !targetWin.isDestroyed()) {
+    targetWin.minimize()
+    return true
+  }
+  return false
 })
 
 ipcMain.handle("window:maximize", (event) => {
   const targetWin = getTargetWindow(event)
-  if (!targetWin) return false
+  if (!targetWin || targetWin.isDestroyed()) return false
   if (targetWin.isMaximized()) {
     targetWin.unmaximize()
     return false
@@ -389,29 +394,18 @@ ipcMain.handle("window:maximize", (event) => {
   }
 })
 
-ipcMain.on("window:maximize", (event) => {
-  const targetWin = getTargetWindow(event)
-  if (!targetWin) return
-  if (targetWin.isMaximized()) {
-    targetWin.unmaximize()
-  } else {
-    targetWin.maximize()
-  }
-})
-
 ipcMain.handle("window:close", (event) => {
   const targetWin = getTargetWindow(event)
-  targetWin?.close()
-})
-
-ipcMain.on("window:close", (event) => {
-  const targetWin = getTargetWindow(event)
-  targetWin?.close()
+  if (targetWin && !targetWin.isDestroyed()) {
+    targetWin.close()
+    return true
+  }
+  return false
 })
 
 ipcMain.handle("window:is-maximized", (event) => {
   const targetWin = getTargetWindow(event)
-  return targetWin ? targetWin.isMaximized() : false
+  return targetWin && !targetWin.isDestroyed() ? targetWin.isMaximized() : false
 })
 
 // External link opener
