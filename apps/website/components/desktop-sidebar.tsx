@@ -12,7 +12,6 @@ import {
   Plus,
   LogOut,
   Search,
-  CreditCard,
 } from "lucide-react"
 import { useUser, useClerk } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
@@ -41,13 +40,11 @@ const navItems = [
 interface DesktopSidebarProps {
   onAddClick?: () => void
   onSearchClick?: () => void
-  onCardsClick?: () => void
 }
 
 export function DesktopSidebar({
   onAddClick,
   onSearchClick,
-  onCardsClick,
 }: DesktopSidebarProps) {
   const pathname = usePathname()
   const { user } = useUser()
@@ -124,15 +121,6 @@ export function DesktopSidebar({
             </Link>
           )
         })}
-
-        {/* Card Vault Quick Link */}
-        <button
-          onClick={onCardsClick}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground cursor-pointer"
-        >
-          <CreditCard className="size-4.5 shrink-0 text-muted-foreground" />
-          <span>Card Vault</span>
-        </button>
       </nav>
 
       {/* User Profile at Bottom */}
