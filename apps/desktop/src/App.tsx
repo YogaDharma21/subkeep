@@ -112,6 +112,9 @@ export function App() {
     <div className="h-screen w-screen flex flex-col bg-background text-foreground overflow-hidden">
       {/* Frameless Top Window Bar */}
       <DesktopTitlebar
+        activeSubCount={activeSubsCount}
+        totalSubCount={subscriptions?.length || 0}
+        currentView={currentView}
         onOpenCommandPalette={() => setCommandPaletteOpen(true)}
         onAddSubscription={() => setAddSheetOpen(true)}
       />
