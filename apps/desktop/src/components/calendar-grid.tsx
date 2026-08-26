@@ -39,6 +39,21 @@ interface CalendarGridProps {
   onSelectSubscription?: (id: string) => void
 }
 
+const eventPriority: Record<CalendarEventType, number> = {
+  start: 1,
+  renewal: 2,
+  trial_end: 3,
+  end: 4,
+}
+
+function getEventDotClass(eventType: CalendarEventType, isTodayCell: boolean): string {
+  const isEndEvent = eventType === "end" || eventType === "trial_end"
+  if (isTodayCell) {
+    return isEndEvent ? "bg-orange-300" : "bg-blue-300"
+  }
+  return isEndEvent ? "bg-orange-500" : "bg-blue-500"
+}
+
 function parseLocalDate(dateStr: string): Date {
   const parts = dateStr.split("-").map(Number)
   const y = parts[0]
@@ -193,6 +208,10 @@ export function CalendarGrid({ subscriptions, onSelectSubscription }: CalendarGr
         }
       }
     })
+    Object.keys(map).forEach((key) => {
+      const d = Number(key)
+      map[d].sort((a, b) => eventPriority[a.eventType] - eventPriority[b.eventType])
+    })
     return map
   }, [subscriptions, year, month, daysInMonth])
 
@@ -263,14 +282,14 @@ export function CalendarGrid({ subscriptions, onSelectSubscription }: CalendarGr
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-      <div className="lg:col-span-7 rounded-lg border border-border bg-background p-4 sm:p-6 shadow-xs">
+      <div className="lg:col-span-7 rounded-lg border border-border bg-background p-4 sm:p-5">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-bold">{monthName}</h3>
+          <h3 className="text-base font-semibold">{monthName}</h3>
           <div className="flex gap-2">
-            <Button variant="outline" size="icon-sm" onClick={prevMonth} className="cursor-pointer">
+            <Button variant="outline" size="icon-sm" onClick={prevMonth}>
               <ChevronLeft className="size-4" />
             </Button>
-            <Button variant="outline" size="icon-sm" onClick={nextMonth} className="cursor-pointer">
+            <Button variant="outline" size="icon-sm" onClick={nextMonth}>
               <ChevronRight className="size-4" />
             </Button>
           </div>
@@ -310,17 +329,42 @@ export function CalendarGrid({ subscriptions, onSelectSubscription }: CalendarGr
                 )}
               >
                 {d.day}
-                {hasSub && (
-                  <span
-                    className={cn(
-                      "absolute bottom-1 size-1.5 rounded-full",
-                      isToday(d.day) ? "bg-background" : "bg-primary"
+                {hasSub && dayEvents && (
+                  <div className="absolute bottom-1 flex items-center justify-center gap-1">
+                    {dayEvents.slice(0, 3).map((event, idx) => (
+                      <span
+                        key={idx}
+                        className={cn(
+                          "size-1.5 rounded-full transition-colors",
+                          getEventDotClass(event.eventType, isToday(d.day))
+                        )}
+                      />
+                    ))}
+                    {dayEvents.length > 3 && (
+                      <span
+                        className={cn(
+                          "size-1 rounded-full",
+                          isToday(d.day) ? "bg-background/80" : "bg-muted-foreground/70"
+                        )}
+                      />
                     )}
-                  />
+                  </div>
                 )}
               </button>
             )
           })}
+        </div>
+
+        {/* Calendar Legend */}
+        <div className="mt-4 flex items-center justify-center gap-6 border-t border-border pt-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <span className="size-2 rounded-full bg-blue-500" />
+            <span>Subscription Start</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="size-2 rounded-full bg-orange-500" />
+            <span>Subscription End</span>
+          </div>
         </div>
       </div>
 
@@ -386,7 +430,7 @@ export function CalendarGrid({ subscriptions, onSelectSubscription }: CalendarGr
                         )}
 
                         {eventType === "trial_end" && (
-                          <span className="rounded-md bg-purple-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-purple-600 dark:text-purple-400 border border-purple-500/30 uppercase tracking-wider shrink-0">
+                          <span className="rounded-md bg-orange-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-orange-600 dark:text-orange-400 border border-orange-500/30 uppercase tracking-wider shrink-0">
                             Trial Ends
                           </span>
                         )}
@@ -398,7 +442,7 @@ export function CalendarGrid({ subscriptions, onSelectSubscription }: CalendarGr
                         )}
 
                         {eventType === "end" && (
-                          <span className="rounded-md bg-rose-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-rose-600 dark:text-rose-400 border border-rose-500/30 uppercase tracking-wider shrink-0">
+                          <span className="rounded-md bg-orange-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-orange-600 dark:text-orange-400 border border-orange-500/30 uppercase tracking-wider shrink-0">
                             Ends
                           </span>
                         )}

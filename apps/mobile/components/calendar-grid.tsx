@@ -38,6 +38,13 @@ interface CalendarGridProps {
   subscriptions: CalendarSubscriptionItem[]
 }
 
+const eventPriority: Record<CalendarEventType, number> = {
+  start: 1,
+  renewal: 2,
+  trial_end: 3,
+  end: 4,
+}
+
 function parseLocalDate(dateStr: string): Date {
   const parts = dateStr.split("-").map(Number)
   const y = parts[0]
@@ -179,6 +186,11 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
           }
         }
       }
+    })
+
+    Object.keys(map).forEach((key) => {
+      const d = Number(key)
+      map[d].sort((a, b) => eventPriority[a.eventType] - eventPriority[b.eventType])
     })
 
     return map
@@ -336,11 +348,9 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                           backgroundColor:
                             isSelected
                               ? colors.primaryForeground
-                              : ev.eventType === "trial_end"
+                              : ev.eventType === "trial_end" || ev.eventType === "end"
                               ? colors.amber
-                              : ev.eventType === "start"
-                              ? colors.blue
-                              : ev.subscription.color || colors.emerald,
+                              : colors.blue,
                         }}
                       />
                     ))}
@@ -349,6 +359,46 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
               </TouchableOpacity>
             )
           })}
+        </View>
+
+        {/* Calendar Legend */}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 16,
+            paddingTop: 10,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <View
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: colors.blue,
+              }}
+            />
+            <Text style={{ fontSize: 11, color: colors.mutedText }}>
+              Start
+            </Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <View
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: colors.amber,
+              }}
+            />
+            <Text style={{ fontSize: 11, color: colors.mutedText }}>
+              End
+            </Text>
+          </View>
         </View>
       </View>
 
