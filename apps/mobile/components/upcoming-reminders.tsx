@@ -1,5 +1,8 @@
 import React, { useState } from "react"
 import { View, Text, TouchableOpacity } from "react-native"
+import { useMutation } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { Id } from "@/convex/_generated/dataModel"
 import { Bell, Send, Check, ExternalLink } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
@@ -35,13 +38,26 @@ export function UpcomingReminders({
   onMarkCanceled,
 }: UpcomingRemindersProps) {
   const { colors } = useThemeColor()
-  const { showAlert } = useAlert()
+  const { showAlert, showToast } = useAlert()
   const [selectedSubForCancel, setSelectedSubForCancel] = useState<ReminderItem | null>(null)
   const [sentAlerts, setSentAlerts] = useState<Record<string, boolean>>({})
+  const updateMutation = useMutation(api.subscriptions.update)
 
   const reminders = findUpcomingReminders(subscriptions, 7)
 
   if (reminders.length === 0) return null
+
+  const handleUpdateCancelUrl = async (id: string, url: string) => {
+    try {
+      await updateMutation({
+        id: id as Id<"subscriptions">,
+        cancelUrl: url.trim() || undefined,
+      })
+      showToast("Cancellation page URL updated", "success")
+    } catch {
+      showToast("Failed to update cancellation URL", "error")
+    }
+  }
 
   const handleTestAlert = (item: ReminderItem) => {
     const isTrial = item.type === "trial"
@@ -198,6 +214,7 @@ export function UpcomingReminders({
         onClose={() => setSelectedSubForCancel(null)}
         subscription={selectedSubForCancel}
         onMarkCanceled={onMarkCanceled}
+        onUpdateCancelUrl={handleUpdateCancelUrl}
         primaryCurrency={primaryCurrency}
         rates={rates}
       />
