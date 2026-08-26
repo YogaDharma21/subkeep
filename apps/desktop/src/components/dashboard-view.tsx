@@ -134,7 +134,7 @@ export function DashboardView({
     <div className="space-y-6 pb-16">
       {/* Top Stat Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="rounded-xl border border-border bg-background p-4 sm:p-5 shadow-xs">
+        <div className="rounded-lg border border-border bg-background p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground mb-1">
             <span className="text-xs font-semibold uppercase tracking-wider">Monthly Spend</span>
             <DollarSign className="size-4 text-primary" />
@@ -147,7 +147,7 @@ export function DashboardView({
           </p>
         </div>
 
-        <div className="rounded-xl border border-border bg-background p-4 sm:p-5 shadow-xs">
+        <div className="rounded-lg border border-border bg-background p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between text-muted-foreground mb-1">
             <span className="text-xs font-semibold uppercase tracking-wider">Yearly Projection</span>
             <Calendar className="size-4 text-primary" />
@@ -161,7 +161,7 @@ export function DashboardView({
         </div>
 
         {monthlyBudgetCap !== undefined && (
-          <div className="rounded-xl border border-border bg-background p-4 sm:p-5 shadow-xs sm:col-span-2 lg:col-span-1">
+          <div className="rounded-lg border border-border bg-background p-4 sm:p-5 shadow-xs sm:col-span-2 lg:col-span-1">
             <div className="flex items-center justify-between text-muted-foreground mb-1">
               <span className="text-xs font-semibold uppercase tracking-wider">Budget Status</span>
               {isBudgetExceeded ? (
@@ -173,9 +173,9 @@ export function DashboardView({
             <div className="text-lg font-bold text-foreground">
               {formatCurrencyAmount(totalMonthly, primaryCurrency)} / {formatCurrencyAmount(monthlyBudgetCap, primaryCurrency)}
             </div>
-            <div className="w-full bg-muted rounded-full h-2 mt-2 overflow-hidden">
+            <div className="w-full bg-muted rounded-lg h-2 mt-2 overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all ${
+                className={`h-full rounded-lg transition-all ${
                   isBudgetExceeded ? "bg-destructive" : "bg-primary"
                 }`}
                 style={{ width: `${budgetPercentage}%` }}
@@ -273,7 +273,7 @@ export function DashboardView({
           ))}
         </div>
       ) : (
-        <div className="py-16 text-center rounded-xl border border-dashed border-border p-8">
+        <div className="py-16 text-center rounded-lg border border-dashed border-border p-8">
           <Receipt className="size-10 mx-auto mb-3 text-muted-foreground/60" />
           <h3 className="text-sm font-bold text-foreground">No subscriptions found</h3>
           <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">

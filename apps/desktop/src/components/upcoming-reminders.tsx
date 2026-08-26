@@ -52,7 +52,7 @@ export function UpcomingReminders({
   }
 
   return (
-    <div className="rounded-xl border border-border bg-background p-4 shadow-xs space-y-2.5">
+    <div className="rounded-lg border border-border bg-background p-4 shadow-xs space-y-2.5">
       <div className="flex items-center justify-between pb-2 border-b border-border/60">
         <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
           <Bell className="size-3.5" />

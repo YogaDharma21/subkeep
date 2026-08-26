@@ -365,7 +365,7 @@ export function SubscriptionDetailView({
       </div>
 
       {sub.isTrial && (
-        <div className="flex items-center justify-between rounded-xl bg-muted/60 p-3.5 text-xs text-foreground border border-border">
+        <div className="flex items-center justify-between rounded-lg bg-muted/60 p-3.5 text-xs text-foreground border border-border">
           <div className="flex items-center gap-2.5">
             <Sparkles className="size-4 shrink-0 text-foreground" />
             <div>
@@ -390,12 +390,12 @@ export function SubscriptionDetailView({
       )}
 
       {/* Main Card Header */}
-      <div className="rounded-xl border border-border bg-background p-5 shadow-xs">
+      <div className="rounded-lg border border-border bg-background p-5 shadow-xs">
         <div className="flex items-center gap-4">
           <button
             onClick={() => editing && setIconOpen(true)}
             className={cn(
-              "flex size-14 items-center justify-center rounded-xl shadow-xs transition-transform",
+              "flex size-14 items-center justify-center rounded-lg shadow-xs transition-transform",
               editing && "cursor-pointer ring-2 ring-border ring-offset-2 hover:scale-105"
             )}
             style={{ backgroundColor: editing ? editColor : sub.color }}
@@ -472,7 +472,7 @@ export function SubscriptionDetailView({
 
       {/* Quick Metrics */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-xl bg-muted/50 border border-border/60 p-3 text-center">
+        <div className="rounded-lg bg-muted/50 border border-border/60 p-3 text-center">
           <div className="text-sm font-extrabold text-foreground truncate">
             {convertAndFormat(
               editing ? parseFloat(editPrice || "0") : sub.price,
@@ -485,7 +485,7 @@ export function SubscriptionDetailView({
             Price ({primaryCurrency})
           </div>
         </div>
-        <div className="rounded-xl bg-muted/50 border border-border/60 p-3 text-center">
+        <div className="rounded-lg bg-muted/50 border border-border/60 p-3 text-center">
           <div className="text-sm font-bold truncate">
             {editing
               ? editCycle.charAt(0).toUpperCase() + editCycle.slice(1)
@@ -495,7 +495,7 @@ export function SubscriptionDetailView({
             Cycle
           </div>
         </div>
-        <div className="rounded-xl bg-muted/50 border border-border/60 p-3 text-center">
+        <div className="rounded-lg bg-muted/50 border border-border/60 p-3 text-center">
           <div className="text-sm font-extrabold text-foreground truncate">
             {convertAndFormat(
               nativeYearlyCost,
@@ -512,7 +512,7 @@ export function SubscriptionDetailView({
 
       {/* Editing Form */}
       {editing ? (
-        <div className="space-y-4 rounded-xl border border-border bg-background p-4 shadow-xs">
+        <div className="space-y-4 rounded-lg border border-border bg-background p-4 shadow-xs">
           <div className="flex items-center justify-between rounded-lg bg-emerald-500/10 p-3 border border-emerald-500/30">
             <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               Free Trial Subscription
@@ -653,7 +653,7 @@ export function SubscriptionDetailView({
                   type="button"
                   onClick={() => setEditColor(c)}
                   className={cn(
-                    "size-7 rounded-full border-2 transition-all cursor-pointer",
+                    "size-7 rounded-lg border-2 transition-all cursor-pointer",
                     editColor === c
                       ? "border-foreground scale-110"
                       : "border-transparent"
@@ -671,7 +671,7 @@ export function SubscriptionDetailView({
       ) : (
         <div className="space-y-4">
           {/* Details Block */}
-          <div className="rounded-xl border border-border bg-background p-4 space-y-3 shadow-xs">
+          <div className="rounded-lg border border-border bg-background p-4 space-y-3 shadow-xs">
             <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
               Subscription Information
             </h3>
@@ -769,7 +769,7 @@ export function SubscriptionDetailView({
 
           {/* SplitKeep Household Splitting Section */}
           {sub.isShared && sub.splitMembers && sub.splitMembers.length > 0 && (
-            <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3 shadow-xs">
+            <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3 shadow-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Users className="size-4 text-primary" />
@@ -828,7 +828,7 @@ export function SubscriptionDetailView({
 
           {/* Price Hike History */}
           {priceHistory.length > 0 && (
-            <div className="rounded-xl border border-border bg-background p-4 space-y-3 shadow-xs">
+            <div className="rounded-lg border border-border bg-background p-4 space-y-3 shadow-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="size-4 text-primary" />
@@ -862,7 +862,7 @@ export function SubscriptionDetailView({
           )}
 
           {/* Invoice / Receipt Attachment */}
-          <div className="rounded-xl border border-border bg-background p-4 space-y-3 shadow-xs">
+          <div className="rounded-lg border border-border bg-background p-4 space-y-3 shadow-xs">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Paperclip className="size-4 text-primary" />
@@ -950,7 +950,7 @@ export function SubscriptionDetailView({
 
       <div>
         {deleteConfirm ? (
-          <div className="space-y-2 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+          <div className="space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
             <p className="text-center text-xs text-muted-foreground">
               Are you sure you want to delete this subscription? This cannot be undone.
             </p>
