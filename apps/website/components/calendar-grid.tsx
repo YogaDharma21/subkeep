@@ -41,6 +41,21 @@ interface CalendarGridProps {
   subscriptions: SubscriptionItem[]
 }
 
+const eventPriority: Record<CalendarEventType, number> = {
+  start: 1,
+  renewal: 2,
+  trial_end: 3,
+  end: 4,
+}
+
+function getEventDotClass(eventType: CalendarEventType, isTodayCell: boolean): string {
+  const isEndEvent = eventType === "end" || eventType === "trial_end"
+  if (isTodayCell) {
+    return isEndEvent ? "bg-orange-300" : "bg-blue-300"
+  }
+  return isEndEvent ? "bg-orange-500" : "bg-blue-500"
+}
+
 function parseLocalDate(dateStr: string): Date {
   const parts = dateStr.split("-").map(Number)
   const y = parts[0]
@@ -196,6 +211,10 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
         }
       }
     })
+    Object.keys(map).forEach((key) => {
+      const d = Number(key)
+      map[d].sort((a, b) => eventPriority[a.eventType] - eventPriority[b.eventType])
+    })
     return map
   }, [subscriptions, year, month, daysInMonth])
 
@@ -295,6 +314,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
             const dayEvents = d.isCurrentMonth ? billingDays[d.day] : undefined
             const hasSub = !!(dayEvents && dayEvents.length > 0)
             const isSelected = selectedDay === d.day && d.isCurrentMonth
+            const isCurrentDayToday = d.isCurrentMonth && isToday(d.day)
             return (
               <button
                 key={i}
@@ -304,26 +324,51 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                   "relative flex aspect-square items-center justify-center rounded-lg text-sm transition-all cursor-pointer",
                   !d.isCurrentMonth && "text-muted-foreground/40",
                   d.isCurrentMonth && "hover:bg-muted",
-                  isToday(d.day) &&
+                  isCurrentDayToday &&
                     "bg-foreground font-semibold text-background",
                   isSelected &&
-                    !isToday(d.day) &&
+                    !isCurrentDayToday &&
                     "border-2 border-foreground font-semibold",
                   hasSub && "font-medium"
                 )}
               >
                 {d.day}
-                {hasSub && (
-                  <span
-                    className={cn(
-                      "absolute bottom-0.5 size-1 rounded-full",
-                      isToday(d.day) ? "bg-background" : "bg-blue-500"
+                {hasSub && dayEvents && (
+                  <div className="absolute bottom-1 flex items-center justify-center gap-1">
+                    {dayEvents.slice(0, 3).map((event, idx) => (
+                      <span
+                        key={idx}
+                        className={cn(
+                          "size-1.5 rounded-full transition-colors",
+                          getEventDotClass(event.eventType, isCurrentDayToday)
+                        )}
+                      />
+                    ))}
+                    {dayEvents.length > 3 && (
+                      <span
+                        className={cn(
+                          "size-1 rounded-full",
+                          isCurrentDayToday ? "bg-background/80" : "bg-muted-foreground/70"
+                        )}
+                      />
                     )}
-                  />
+                  </div>
                 )}
               </button>
             )
           })}
+        </div>
+
+        {/* Calendar Legend */}
+        <div className="mt-4 flex items-center justify-center gap-6 border-t border-border pt-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <span className="size-2 rounded-full bg-blue-500" />
+            <span>Subscription Start</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="size-2 rounded-full bg-orange-500" />
+            <span>Subscription End</span>
+          </div>
         </div>
       </div>
 
@@ -389,7 +434,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                         )}
 
                         {eventType === "trial_end" && (
-                          <span className="rounded-md bg-purple-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-purple-600 dark:text-purple-400 border border-purple-500/30 uppercase tracking-wider shrink-0">
+                          <span className="rounded-md bg-orange-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-orange-600 dark:text-orange-400 border border-orange-500/30 uppercase tracking-wider shrink-0">
                             Trial Ends
                           </span>
                         )}
@@ -401,7 +446,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                         )}
 
                         {eventType === "end" && (
-                          <span className="rounded-md bg-rose-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-rose-600 dark:text-rose-400 border border-rose-500/30 uppercase tracking-wider shrink-0">
+                          <span className="rounded-md bg-orange-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-orange-600 dark:text-orange-400 border border-orange-500/30 uppercase tracking-wider shrink-0">
                             Ends
                           </span>
                         )}

@@ -2,11 +2,11 @@ import {
   LayoutDashboard,
   Calendar,
   BarChart3,
-  CreditCard,
   Settings,
   Plus,
   Globe,
   LogOut,
+  Search,
 } from "lucide-react"
 import { UserButton, useUser, useClerk } from "@clerk/clerk-react"
 import { Button } from "@/components/ui/button"
@@ -19,7 +19,7 @@ interface DesktopSidebarProps {
   currentView: DesktopView
   onNavigate: (view: DesktopView) => void
   onAddSubscription: () => void
-  onOpenPaymentMethods: () => void
+  onSearchClick?: () => void
   activeSubCount?: number
 }
 
@@ -27,12 +27,17 @@ export function DesktopSidebar({
   currentView,
   onNavigate,
   onAddSubscription,
-  onOpenPaymentMethods,
+  onSearchClick,
   activeSubCount = 0,
 }: DesktopSidebarProps) {
   const { user } = useUser()
   const { signOut } = useClerk()
   const { primaryCurrency } = usePrimaryCurrency()
+  const isMac =
+    (typeof window !== "undefined" && window.electronAPI?.platform === "darwin") ||
+    (typeof navigator !== "undefined" &&
+      navigator.userAgent.toLowerCase().includes("mac") &&
+      !navigator.userAgent.toLowerCase().includes("win"))
 
   const navItems = [
     {
@@ -61,14 +66,29 @@ export function DesktopSidebar({
   return (
     <aside className="w-60 border-r border-border bg-sidebar/50 backdrop-blur-xs flex flex-col justify-between p-3 shrink-0 select-none">
       <div className="space-y-4">
-        {/* Quick Add Button */}
-        <Button
-          onClick={onAddSubscription}
-          className="w-full gap-2 font-bold text-xs h-9 shadow-xs cursor-pointer"
-        >
-          <Plus className="size-4" />
-          Add Subscription
-        </Button>
+        {/* Quick Add Button & Search & Commands */}
+        <div className="space-y-2">
+          <Button
+            onClick={onAddSubscription}
+            className="w-full gap-2 font-bold text-xs h-9 shadow-xs cursor-pointer"
+          >
+            <Plus className="size-4" />
+            Add Subscription
+          </Button>
+
+          <button
+            onClick={onSearchClick}
+            className="flex w-full items-center justify-between rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <Search className="size-3.5" />
+              <span>Search & Commands...</span>
+            </div>
+            <kbd className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-mono">
+              {isMac ? "⌘K" : "Ctrl+K"}
+            </kbd>
+          </button>
+        </div>
 
         {/* Navigation List */}
         <nav className="space-y-1">
@@ -109,20 +129,6 @@ export function DesktopSidebar({
             )
           })}
         </nav>
-
-        {/* Secondary Quick Access */}
-        <div className="space-y-1 pt-2 border-t border-border/60">
-          <p className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            Tools & Vault
-          </p>
-          <button
-            onClick={onOpenPaymentMethods}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted/70 hover:text-foreground transition-all cursor-pointer"
-          >
-            <CreditCard className="size-4 text-primary" />
-            <span>Card Vault</span>
-          </button>
-        </div>
       </div>
 
       {/* Footer: User profile & Active Currency */}

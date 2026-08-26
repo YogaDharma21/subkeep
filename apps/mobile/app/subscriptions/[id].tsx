@@ -172,6 +172,15 @@ export default function SubscriptionDetailPage() {
     }
   }
 
+  const handleSuspend = async (subId: string) => {
+    try {
+      await suspendMutation({ id: subId as Id<"subscriptions"> })
+      showToast("Subscription marked as canceled / suspended", "info")
+    } catch {
+      showToast("Failed to update subscription status", "error")
+    }
+  }
+
   const handleClone = async () => {
     if (!id) return
     try {
@@ -1173,6 +1182,7 @@ export default function SubscriptionDetailPage() {
             isTrial: sub.isTrial,
             trialEndDate: sub.trialEndDate,
           }}
+          onMarkCanceled={handleSuspend}
           onUpdateCancelUrl={handleUpdateCancelUrl}
           primaryCurrency={primaryCurrency}
           rates={rates}
