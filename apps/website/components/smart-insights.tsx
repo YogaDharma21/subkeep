@@ -4,6 +4,7 @@ import { useMemo } from "react"
 import { Sparkles, TrendingUp, TrendingDown, Minus, PieChart, Users } from "lucide-react"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { subMonths, endOfMonth } from "date-fns"
+import { cn } from "@/lib/utils"
 
 interface SmartInsightsProps {
   subscriptions: Array<{
@@ -24,12 +25,14 @@ interface SmartInsightsProps {
   }>
   primaryCurrency?: string
   rates?: Record<string, number>
+  className?: string
 }
 
 export function SmartInsights({
   subscriptions,
   primaryCurrency = "IDR",
   rates,
+  className,
 }: SmartInsightsProps) {
   const insights = useMemo(() => {
     if (!subscriptions || subscriptions.length === 0) return []
@@ -204,7 +207,7 @@ export function SmartInsights({
   if (insights.length === 0) return null
 
   return (
-    <div className="mb-4 rounded-lg border border-border bg-background p-4 shadow-xs">
+    <div className={cn("rounded-lg border border-border bg-background p-4 shadow-xs", className)}>
       <div className="flex items-center gap-2 pb-3 mb-3 border-b border-border/60">
         <Sparkles className="size-4 text-muted-foreground" />
         <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
