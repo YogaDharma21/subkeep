@@ -29,10 +29,14 @@ if (process.platform === "win32") {
 }
 
 // Register custom protocol client for deep linking (subkeep://)
-if (process.defaultApp) {
+if (process.defaultApp || !app.isPackaged) {
   if (process.argv.length >= 2) {
     app.setAsDefaultProtocolClient("subkeep", process.execPath, [
       path.resolve(process.argv[1]),
+    ])
+  } else {
+    app.setAsDefaultProtocolClient("subkeep", process.execPath, [
+      path.resolve("."),
     ])
   }
 } else {
@@ -91,6 +95,172 @@ app.on("open-url", (event, url) => {
   event.preventDefault()
   handleDeepLink(url)
 })
+
+function startAuthLoopbackServer() {
+  if (authServer) return
+
+  authServer = http.createServer((req, res) => {
+    // Enable CORS for web browser requests
+    res.setHeader("Access-Control-Allow-Origin", "*")
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type")
+
+    if (req.method === "OPTIONS") {
+      res.writeHead(200)
+      res.end()
+      return
+    }
+
+    if (!req.url) {
+      res.writeHead(400)
+      res.end("Bad Request")
+      return
+    }
+
+    // Handle POST /auth-token directly from browser page
+    if (req.method === "POST") {
+      let body = ""
+      req.on("data", (chunk) => {
+        body += chunk
+      })
+      req.on("end", () => {
+        try {
+          const data = JSON.parse(body || "{}")
+          if (win && !win.isDestroyed()) {
+            win.webContents.send("auth:callback", {
+              query: data,
+              url: req.url,
+            })
+            if (win.isMinimized()) win.restore()
+            win.show()
+            win.focus()
+          }
+          res.writeHead(200, { "Content-Type": "application/json" })
+          res.end(JSON.stringify({ success: true }))
+        } catch {
+          res.writeHead(400)
+          res.end("Invalid JSON")
+        }
+      })
+      return
+    }
+
+    // Handle GET /auth-callback redirect from Clerk
+    try {
+      const parsedUrl = new URL(req.url, `http://127.0.0.1:${AUTH_PORT}`)
+      const queryParams: Record<string, string> = {}
+      parsedUrl.searchParams.forEach((val, key) => {
+        queryParams[key] = val
+      })
+
+      // Send deep link trigger HTML to the browser tab
+      const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SubKeep Desktop</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000000;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+    .container {
+      text-align: center;
+      background: #111113;
+      padding: 44px 36px;
+      border-radius: 24px;
+      border: 1px solid #27272a;
+      max-width: 380px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+    }
+    .icon {
+      width: 60px;
+      height: 60px;
+      background: #ffffff;
+      border-radius: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    h1 { margin: 0 0 10px; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+    p { margin: 0 0 24px; color: #a1a1aa; font-size: 13px; line-height: 1.5; }
+    .btn {
+      display: inline-block;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px 0;
+      border-radius: 9999px;
+      background: #ffffff;
+      color: #000000;
+      font-weight: 800;
+      font-size: 13px;
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="#000000">
+        <path d="M12 2.2L20.8 7.3L12 12.4L3.2 7.3L12 2.2Z" />
+        <path d="M2.5 9.1L11.3 14.2V21.8L2.5 16.7V9.1Z" />
+        <path d="M12.7 14.2L21.5 9.1V16.7L12.7 21.8V14.2Z" />
+      </svg>
+    </div>
+    <h1>Signed In Successfully</h1>
+    <p>Click below if your browser did not automatically prompt you to open SubKeep.</p>
+    <a id="deepLinkBtn" class="btn" href="#">Open SubKeep</a>
+  </div>
+  <script>
+    const deepLinkUrl = "subkeep://auth-callback" + window.location.search;
+    document.getElementById("deepLinkBtn").href = deepLinkUrl;
+    setTimeout(() => {
+      window.location.href = deepLinkUrl;
+    }, 200);
+  </script>
+</body>
+</html>`
+
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" })
+      res.end(html)
+
+      // Forward token/ticket to renderer
+      if (win && !win.isDestroyed()) {
+        win.webContents.send("auth:callback", {
+          query: queryParams,
+          url: req.url,
+        })
+        if (win.isMinimized()) win.restore()
+        win.show()
+        win.focus()
+      }
+    } catch {
+      res.writeHead(500)
+      res.end("Internal Server Error")
+    }
+  })
+
+  authServer.listen(AUTH_PORT, "127.0.0.1", () => {
+    console.log(`Auth loopback listening on http://127.0.0.1:${AUTH_PORT}`)
+  })
+
+  authServer.on("error", (err) => {
+    console.error("Auth server error:", err)
+  })
+}
 
 function createWindow() {
   win = new BrowserWindow({
@@ -240,151 +410,10 @@ ipcMain.handle("dialog:open-file", async (_event, { filters }: {
 // Browser Auth Loopback Server IPC
 ipcMain.handle("auth:start-browser-login", async (_event, customUrl?: string) => {
   const callbackUrl = `http://127.0.0.1:${AUTH_PORT}/auth-callback`
+  startAuthLoopbackServer()
 
-  // Close previous server if running
-  if (authServer) {
-    try {
-      authServer.close()
-    } catch {
-      // Ignore
-    }
-    authServer = null
-  }
-
-  // Create temporary local HTTP loopback server to receive the OAuth callback
-  authServer = http.createServer((req, res) => {
-    if (!req.url) {
-      res.writeHead(400)
-      res.end("Bad Request")
-      return
-    }
-
-    try {
-      const parsedUrl = new URL(req.url, `http://127.0.0.1:${AUTH_PORT}`)
-      const queryParams: Record<string, string> = {}
-      parsedUrl.searchParams.forEach((val, key) => {
-        queryParams[key] = val
-      })
-
-      // Send deep link trigger HTML to the browser tab
-      const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SubKeep Desktop</title>
-  <style>
-    body {
-      margin: 0;
-      background-color: #000000;
-      color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      box-sizing: border-box;
-    }
-    .container {
-      text-align: center;
-      background: #111113;
-      padding: 44px 36px;
-      border-radius: 24px;
-      border: 1px solid #27272a;
-      max-width: 380px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
-    }
-    .icon {
-      width: 60px;
-      height: 60px;
-      background: #ffffff;
-      border-radius: 18px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-    h1 { margin: 0 0 10px; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
-    p { margin: 0 0 24px; color: #a1a1aa; font-size: 13px; line-height: 1.5; }
-    .btn {
-      display: inline-block;
-      width: 100%;
-      box-sizing: border-box;
-      padding: 14px 0;
-      border-radius: 9999px;
-      background: #ffffff;
-      color: #000000;
-      font-weight: 800;
-      font-size: 13px;
-      text-decoration: none;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      cursor: pointer;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="icon">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="#000000">
-        <path d="M12 2.2L20.8 7.3L12 12.4L3.2 7.3L12 2.2Z" />
-        <path d="M2.5 9.1L11.3 14.2V21.8L2.5 16.7V9.1Z" />
-        <path d="M12.7 14.2L21.5 9.1V16.7L12.7 21.8V14.2Z" />
-      </svg>
-    </div>
-    <h1>Signed In Successfully</h1>
-    <p>Click below if your browser did not automatically prompt you to open SubKeep.</p>
-    <a id="deepLinkBtn" class="btn" href="#">Open SubKeep</a>
-  </div>
-  <script>
-    const deepLinkUrl = "subkeep://auth-callback" + window.location.search;
-    document.getElementById("deepLinkBtn").href = deepLinkUrl;
-    setTimeout(() => {
-      window.location.href = deepLinkUrl;
-    }, 200);
-  </script>
-</body>
-</html>`
-
-      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" })
-      res.end(html)
-
-      // Forward token/ticket to renderer
-      if (win && !win.isDestroyed()) {
-        win.webContents.send("auth:callback", {
-          query: queryParams,
-          url: req.url,
-        })
-        win.show()
-        win.focus()
-      }
-
-      // Close loopback server
-      setTimeout(() => {
-        if (authServer) {
-          authServer.close()
-          authServer = null
-        }
-      }, 5000)
-    } catch {
-      res.writeHead(500)
-      res.end("Internal Server Error")
-    }
-  })
-
-  authServer.listen(AUTH_PORT, "127.0.0.1", async () => {
-    const targetUrl = customUrl || `${CLERK_HOSTED_DOMAIN}/sign-in?redirect_url=${encodeURIComponent(callbackUrl)}`
-    await shell.openExternal(targetUrl)
-  })
-
-  authServer.on("error", (err) => {
-    console.error("Auth server error:", err)
-    if (authServer) {
-      authServer.close()
-      authServer = null
-    }
-  })
+  const targetUrl = customUrl || `${CLERK_HOSTED_DOMAIN}/sign-in?redirect_url=${encodeURIComponent(callbackUrl)}`
+  await shell.openExternal(targetUrl)
 
   return { success: true }
 })
@@ -415,4 +444,7 @@ app.on("activate", () => {
   }
 })
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  startAuthLoopbackServer()
+  createWindow()
+})
