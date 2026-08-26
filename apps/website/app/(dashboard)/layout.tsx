@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { UserButton, Show } from "@clerk/nextjs"
-import { Receipt, Search } from "lucide-react"
+import { Search } from "lucide-react"
 import { BottomNav } from "@/components/bottom-nav"
 import { DesktopSidebar } from "@/components/desktop-sidebar"
 import { AddSubscriptionSheet } from "@/components/add-subscription-sheet"
@@ -33,9 +34,13 @@ export default function DashboardLayout({
           {/* Mobile Top Header */}
           <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background px-4 py-3 md:hidden">
             <div className="flex items-center gap-2">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-foreground text-background shadow-xs">
-                <Receipt className="size-4 stroke-[2.2]" />
-              </div>
+              <Image
+                src="/app-icon.png"
+                alt="SubKeep"
+                width={28}
+                height={28}
+                className="size-7 rounded-lg object-contain shadow-xs"
+              />
               <h1 className="text-base font-bold text-foreground">SubKeep</h1>
             </div>
 

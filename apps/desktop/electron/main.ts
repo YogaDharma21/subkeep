@@ -289,8 +289,27 @@ function getPreloadPath(): string {
   return path.join(__dirname, "preload.cjs")
 }
 
+function getAppIconPath(): string | undefined {
+  const candidates = [
+    path.join(__dirname, "../public/icon.png"),
+    path.join(process.env.APP_ROOT || "", "public/icon.png"),
+    path.join(__dirname, "../public/icon.ico"),
+    path.join(process.env.APP_ROOT || "", "public/icon.ico"),
+    path.join(process.cwd(), "apps/desktop/public/icon.png"),
+  ]
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate
+    }
+  }
+
+  return undefined
+}
+
 function createWindow() {
   const preloadPath = getPreloadPath()
+  const iconPath = getAppIconPath()
 
   win = new BrowserWindow({
     width: 1280,
@@ -298,6 +317,7 @@ function createWindow() {
     minWidth: 1024,
     minHeight: 700,
     title: "SubKeep",
+    icon: iconPath,
     backgroundColor: "#09090b",
     frame: false,
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : undefined,

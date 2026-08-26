@@ -16,7 +16,6 @@ import {
   Bell,
   Target,
   ShieldCheck,
-  Laptop,
   LogOut,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -771,8 +770,12 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
       <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
         <DialogContent className="max-w-md rounded-lg p-5" onClose={() => setAboutOpen(false)}>
           <DialogHeader>
-            <div className="flex items-center gap-2">
-              <Laptop className="size-5 text-primary" />
+            <div className="flex items-center gap-2.5">
+              <img
+                src="/app-icon.png"
+                alt="SubKeep"
+                className="size-6 rounded-md object-contain shadow-xs"
+              />
               <DialogTitle className="text-base font-bold">About SubKeep Desktop</DialogTitle>
             </div>
             <DialogDescription className="text-xs text-muted-foreground">

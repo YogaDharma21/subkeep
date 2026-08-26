@@ -88,9 +88,11 @@ export function DesktopTitlebar({
       >
         {/* Left: App Brand */}
         <div className="flex items-center gap-2 app-no-drag" style={noDragStyle}>
-          <div className="flex h-5 w-5 items-center justify-center rounded-md bg-white text-black font-black text-xs shadow-xs">
-            S
-          </div>
+          <img
+            src="/app-icon.png"
+            alt="SubKeep"
+            className="size-5 rounded-md object-contain shadow-xs"
+          />
           <span className="text-xs font-black tracking-tight text-white">SubKeep</span>
         </div>
 
@@ -151,9 +153,11 @@ export function DesktopTitlebar({
     >
       {/* Left: App Brand & Breadcrumb */}
       <div className="flex items-center gap-2 app-no-drag" style={noDragStyle}>
-        <div className="flex h-5 w-5 items-center justify-center rounded-md bg-primary text-primary-foreground font-black text-xs shadow-xs">
-          S
-        </div>
+        <img
+          src="/app-icon.png"
+          alt="SubKeep"
+          className="size-5 rounded-md object-contain shadow-xs"
+        />
         <span className="text-xs font-black tracking-tight text-foreground">SubKeep</span>
         {sectionName && (
           <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
