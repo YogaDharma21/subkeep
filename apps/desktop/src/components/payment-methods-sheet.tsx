@@ -363,15 +363,15 @@ export function PaymentMethodsSheet({
 
                     {/* Expiry alerts */}
                     {expiryStatus === "expired" && (
-                      <div className="mt-3 flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/30 p-2 text-xs text-red-400">
+                      <div className="mt-3 flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/20 p-2 text-xs text-destructive">
                         <AlertTriangle className="size-4 shrink-0" />
                         <span>This card has expired! Update your subscriptions to prevent billing interruptions.</span>
                       </div>
                     )}
 
                     {expiryStatus === "expiring_soon" && (
-                      <div className="mt-3 flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-2 text-xs text-amber-400">
-                        <AlertTriangle className="size-4 shrink-0" />
+                      <div className="mt-3 flex items-center gap-2 rounded-lg bg-muted/60 border border-border p-2 text-xs text-foreground">
+                        <AlertTriangle className="size-4 shrink-0 text-muted-foreground" />
                         <span>Card expires soon. Remember to update renewal details.</span>
                       </div>
                     )}

@@ -365,12 +365,12 @@ export function SubscriptionDetailView({
       </div>
 
       {sub.isTrial && (
-        <div className="flex items-center justify-between rounded-xl bg-emerald-500/15 p-3.5 text-xs text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+        <div className="flex items-center justify-between rounded-xl bg-muted/60 p-3.5 text-xs text-foreground border border-border">
           <div className="flex items-center gap-2.5">
-            <Sparkles className="size-4 shrink-0" />
+            <Sparkles className="size-4 shrink-0 text-foreground" />
             <div>
               <p className="font-bold">Active Free Trial</p>
-              <p className="text-[11px] opacity-90">
+              <p className="text-[11px] text-muted-foreground">
                 {sub.trialEndDate
                   ? `Expires on ${format(new Date(sub.trialEndDate), "MMM d, yyyy")} (${trialDaysLeft} days left)`
                   : "Trial subscription mode"}
@@ -379,8 +379,9 @@ export function SubscriptionDetailView({
           </div>
           <Button
             size="sm"
+            variant="outline"
             onClick={() => setCancelModalOpen(true)}
-            className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1 cursor-pointer"
+            className="h-8 text-xs gap-1 cursor-pointer"
           >
             <ExternalLink className="size-3.5" />
             Cancel Guide
@@ -441,19 +442,19 @@ export function SubscriptionDetailView({
               )}
 
               {sub.isTrial && (
-                <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold rounded-md">
+                <Badge variant="outline" className="bg-muted/60 text-foreground border-border text-xs font-semibold rounded-md">
                   FREE TRIAL
                 </Badge>
               )}
 
               {sub.isShared && (
-                <Badge className="bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-xs font-bold rounded-md">
+                <Badge variant="outline" className="bg-muted/60 text-foreground border-border text-xs font-semibold rounded-md">
                   SPLIT PLAN {sub.totalMembers ? `(1/${sub.totalMembers})` : ""}
                 </Badge>
               )}
 
               {hasPriceHike && (
-                <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold rounded-md">
+                <Badge variant="outline" className="bg-muted/60 text-foreground border-border text-xs font-semibold rounded-md">
                   +{priceHikeDiff}% PRICE HIKE
                 </Badge>
               )}
@@ -753,7 +754,7 @@ export function SubscriptionDetailView({
                   {sub.cancelUrl ? (
                     <button
                       onClick={() => openUrl(sub.cancelUrl!)}
-                      className="text-blue-500 hover:underline flex items-center gap-1 cursor-pointer"
+                      className="text-foreground hover:underline flex items-center gap-1 cursor-pointer"
                     >
                       <ExternalLink className="size-3" />
                       Cancellation Page
@@ -768,11 +769,11 @@ export function SubscriptionDetailView({
 
           {/* SplitKeep Household Splitting Section */}
           {sub.isShared && sub.splitMembers && sub.splitMembers.length > 0 && (
-            <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-4 space-y-3 shadow-xs">
+            <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-3 shadow-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Users className="size-4 text-blue-500" />
-                  <h3 className="text-xs font-bold uppercase tracking-wide text-blue-600 dark:text-blue-400">
+                  <Users className="size-4 text-primary" />
+                  <h3 className="text-xs font-bold uppercase tracking-wide text-foreground">
                     SplitKeep: Household Split Tracker
                   </h3>
                 </div>
@@ -793,7 +794,7 @@ export function SubscriptionDetailView({
                         className={cn(
                           "size-5 rounded flex items-center justify-center border transition-all cursor-pointer",
                           member.isPaid
-                            ? "bg-emerald-500 text-white border-emerald-600"
+                            ? "bg-foreground text-background border-foreground"
                             : "border-border hover:border-foreground/50"
                         )}
                         title={member.isPaid ? "Mark as unpaid" : "Mark as paid"}
@@ -814,7 +815,7 @@ export function SubscriptionDetailView({
                       size="sm"
                       variant="ghost"
                       onClick={() => handleCopyPaymentReminder(member)}
-                      className="h-7 text-[11px] gap-1 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 cursor-pointer"
+                      className="h-7 text-[11px] gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       <MessageSquare className="size-3" />
                       Copy Reminder
@@ -836,7 +837,7 @@ export function SubscriptionDetailView({
                   </h3>
                 </div>
                 {hasPriceHike && (
-                  <span className="text-xs font-bold text-amber-500">
+                  <span className="text-xs font-bold text-foreground">
                     +{priceHikeDiff}% overall increase
                   </span>
                 )}

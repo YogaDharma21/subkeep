@@ -167,7 +167,7 @@ export function DashboardView({
               {isBudgetExceeded ? (
                 <AlertCircle className="size-4 text-destructive" />
               ) : (
-                <span className="text-xs font-bold text-emerald-500">{budgetPercentage}%</span>
+                <span className="text-xs font-bold text-foreground">{budgetPercentage}%</span>
               )}
             </div>
             <div className="text-lg font-bold text-foreground">
