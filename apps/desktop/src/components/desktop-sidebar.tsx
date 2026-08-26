@@ -6,8 +6,9 @@ import {
   Settings,
   Plus,
   Globe,
+  LogOut,
 } from "lucide-react"
-import { UserButton, useUser } from "@clerk/clerk-react"
+import { UserButton, useUser, useClerk } from "@clerk/clerk-react"
 import { Button } from "@/components/ui/button"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { cn } from "@/lib/utils"
@@ -30,6 +31,7 @@ export function DesktopSidebar({
   activeSubCount = 0,
 }: DesktopSidebarProps) {
   const { user } = useUser()
+  const { signOut } = useClerk()
   const { primaryCurrency } = usePrimaryCurrency()
 
   const navItems = [
@@ -135,11 +137,11 @@ export function DesktopSidebar({
           </span>
         </div>
 
-        <div className="flex items-center gap-3 px-2 py-1.5 rounded-lg bg-card border border-border shadow-2xs">
+        <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg bg-card border border-border shadow-2xs">
           <UserButton
             appearance={{
               elements: {
-                avatarBox: "size-8",
+                avatarBox: "size-7",
               },
             }}
           />
@@ -151,6 +153,13 @@ export function DesktopSidebar({
               {user?.primaryEmailAddress?.emailAddress || ""}
             </p>
           </div>
+          <button
+            onClick={() => signOut()}
+            className="size-7 flex items-center justify-center rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors cursor-pointer shrink-0"
+            title="Log Out"
+          >
+            <LogOut className="size-3.5" />
+          </button>
         </div>
       </div>
     </aside>

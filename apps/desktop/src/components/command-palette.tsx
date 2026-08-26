@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { useQuery } from "convex/react"
-import { useAuth } from "@clerk/clerk-react"
+import { useAuth, useClerk } from "@clerk/clerk-react"
 import { api } from "@/convex/_generated/api"
 import { useTheme } from "@/components/theme-provider"
 import {
@@ -17,6 +17,7 @@ import {
   Sparkles,
   X,
   LayoutDashboard,
+  LogOut,
 } from "lucide-react"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
@@ -39,6 +40,7 @@ export function CommandPalette({
   onOpenPaymentMethods,
 }: CommandPaletteProps) {
   const { isSignedIn } = useAuth()
+  const { signOut } = useClerk()
   const { setTheme, resolvedTheme } = useTheme()
   const { primaryCurrency, setPrimaryCurrency, rates } = usePrimaryCurrency()
   const subscriptions = useQuery(
@@ -169,6 +171,17 @@ export function CommandPalette({
         run: () => {
           setTheme(resolvedTheme === "dark" ? "light" : "dark")
           onOpenChange(false)
+        },
+      },
+      {
+        id: "logout",
+        label: "Log Out / Sign Out",
+        detail: "End active session and return to login",
+        icon: LogOut,
+        category: "Account",
+        run: () => {
+          onOpenChange(false)
+          signOut()
         },
       },
     ]
