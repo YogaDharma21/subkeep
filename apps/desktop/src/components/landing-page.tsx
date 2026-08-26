@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { useSignIn, SignInButton, SignUpButton } from "@clerk/clerk-react"
+import { useSignIn, SignInButton } from "@clerk/clerk-react"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -26,7 +26,7 @@ export function LandingPage() {
           })
           if (res.status === "complete" && res.createdSessionId) {
             await setActive({ session: res.createdSessionId })
-            toast.success("Successfully logged in!")
+            toast.success("Successfully signed in!")
             return
           }
         }
@@ -35,22 +35,15 @@ export function LandingPage() {
         const createdSessionId = query.__clerk_created_session_id || query.created_session_id
         if (createdSessionId) {
           await setActive({ session: createdSessionId })
-          toast.success("Successfully logged in!")
+          toast.success("Successfully signed in!")
           return
         }
 
-        // 3. Status complete verification
-        if (signIn.status === "complete" && signIn.createdSessionId) {
-          await setActive({ session: signIn.createdSessionId })
-          toast.success("Successfully logged in!")
-          return
-        }
-
-        // 4. Fallback reload
+        // 3. Fallback: reload status
         await signIn.reload()
         if (signIn.status === "complete" && signIn.createdSessionId) {
           await setActive({ session: signIn.createdSessionId })
-          toast.success("Successfully logged in!")
+          toast.success("Successfully signed in!")
         }
       } catch (err: unknown) {
         console.error("Auth callback error:", err)
@@ -73,47 +66,11 @@ export function LandingPage() {
     }
   }, [handleAuthCallback])
 
-  const handleGoogleSignIn = async () => {
-    if (!isLoaded || !signIn) return
-
-    if (!isElectron) {
-      // In web browser, standard redirect or Clerk modal handles it
-      return
-    }
-
-    try {
-      setLoading(true)
-      const callbackUrl = "http://127.0.0.1:49221/auth-callback"
-
-      // Request OAuth URL from Clerk
-      const response = await signIn.create({
-        strategy: "oauth_google",
-        redirectUrl: callbackUrl,
-        actionCompleteRedirectUrl: callbackUrl,
-      })
-
-      const externalUrl = response.firstFactorVerification?.externalVerificationRedirectURL
-
-      if (externalUrl) {
-        await window.electronAPI?.startBrowserAuth({ url: externalUrl.toString() })
-      } else {
-        await window.electronAPI?.startBrowserAuth({ mode: "google" })
-      }
-
-      toast.info("Opening Google Sign-In in your browser...", { duration: 4000 })
-    } catch (err: unknown) {
-      console.error("Google sign in error:", err)
-      // Fallback to hosted Clerk browser sign-in
-      await window.electronAPI?.startBrowserAuth({ mode: "google" })
-      toast.info("Opening sign-in page in your browser...", { duration: 4000 })
-    }
-  }
-
-  const handleBrowserSignIn = async (mode: "sign-in" | "sign-up") => {
+  const handleContinueWithGoogle = async () => {
     if (isElectron && window.electronAPI?.startBrowserAuth) {
       setLoading(true)
-      await window.electronAPI.startBrowserAuth({ mode })
-      toast.info(`Opening ${mode === "sign-up" ? "sign up" : "sign in"} in your browser...`, { duration: 4000 })
+      await window.electronAPI.startBrowserAuth()
+      toast.info("Opening Google Sign-In in your browser...", { duration: 4000 })
     }
   }
 
@@ -151,11 +108,11 @@ export function LandingPage() {
           </div>
         </div>
 
-        {/* Primary Action CTA: Rounded Pill Button */}
-        <div className="w-full space-y-4 pt-2">
+        {/* Primary Action CTA: Exactly 1 Button */}
+        <div className="w-full pt-2">
           {isElectron ? (
             <button
-              onClick={handleGoogleSignIn}
+              onClick={handleContinueWithGoogle}
               disabled={loading}
               className="w-full h-13 sm:h-14 rounded-full bg-white text-black font-extrabold text-xs sm:text-sm tracking-wider uppercase flex items-center justify-center gap-3 transition-all hover:bg-zinc-100 hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-xl shadow-black/60 disabled:opacity-75 disabled:cursor-not-allowed"
             >
@@ -199,41 +156,6 @@ export function LandingPage() {
               </button>
             </SignInButton>
           )}
-
-          {/* Secondary Sign In / Sign Up Trigger Links */}
-          <div className="flex items-center justify-center gap-3 text-xs text-zinc-500 font-medium">
-            {isElectron ? (
-              <>
-                <button
-                  onClick={() => handleBrowserSignIn("sign-in")}
-                  className="hover:text-zinc-300 transition-colors cursor-pointer"
-                >
-                  Sign in in browser
-                </button>
-                <span>&middot;</span>
-                <button
-                  onClick={() => handleBrowserSignIn("sign-up")}
-                  className="hover:text-zinc-300 transition-colors cursor-pointer"
-                >
-                  Create account in browser
-                </button>
-              </>
-            ) : (
-              <>
-                <SignInButton mode="modal">
-                  <button className="hover:text-zinc-300 transition-colors cursor-pointer">
-                    Sign in with email
-                  </button>
-                </SignInButton>
-                <span>&middot;</span>
-                <SignUpButton mode="modal">
-                  <button className="hover:text-zinc-300 transition-colors cursor-pointer">
-                    Create account
-                  </button>
-                </SignUpButton>
-              </>
-            )}
-          </div>
         </div>
       </div>
     </div>
