@@ -125,6 +125,7 @@ export function App() {
           currentView={currentView}
           onNavigate={(v) => handleNavigate(v)}
           onAddSubscription={() => setAddSheetOpen(true)}
+          onSearchClick={() => setCommandPaletteOpen(true)}
           activeSubCount={activeSubsCount}
         />
 
