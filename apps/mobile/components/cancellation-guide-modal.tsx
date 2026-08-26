@@ -10,10 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context"
 import {
   ExternalLink,
-  CheckSquare,
-  Square,
   ShieldAlert,
-  Sparkles,
   Search,
   Pencil,
   Check,
@@ -61,7 +58,6 @@ export function CancellationGuideModal({
 }: CancellationGuideModalProps) {
   const { colors } = useThemeColor()
   const { showToast } = useAlert()
-  const [checkedSteps, setCheckedSteps] = useState<Record<number, boolean>>({})
   const [isEditingUrl, setIsEditingUrl] = useState(false)
   const [newUrl, setNewUrl] = useState("")
   const [savingUrl, setSavingUrl] = useState(false)
@@ -75,42 +71,9 @@ export function CancellationGuideModal({
       `how to cancel ${subscription.name} subscription`
     )}`
 
-  const steps = [
-    {
-      title: "1. Access Cancellation Page",
-      detail: hasCustomUrl
-        ? `Tap the button below to open ${subscription.name}'s account management / cancellation page.`
-        : `Tap the search button below to find cancellation instructions for ${subscription.name}.`,
-    },
-    {
-      title: "2. Sign In to Your Account",
-      detail: "Log in with the credentials registered for this subscription.",
-    },
-    {
-      title: "3. Locate Billing & Plans",
-      detail: "Navigate to Account Settings → Membership / Billing / Subscriptions.",
-    },
-    {
-      title: "4. Confirm Cancellation",
-      detail: "Select 'Cancel Subscription' or 'Turn Off Auto-Renew' and complete all confirmation prompts.",
-    },
-    {
-      title: "5. Mark as Canceled in SubKeep",
-      detail: "Update SubKeep to keep your monthly expense stats accurate and stop recurring alerts.",
-    },
-  ]
-
-  const toggleStep = (index: number) => {
-    setCheckedSteps((prev) => ({
-      ...prev,
-      [index]: !prev[index],
-    }))
-  }
-
   const handleOpenLink = async () => {
     try {
       await Linking.openURL(directUrl)
-      setCheckedSteps((prev) => ({ ...prev, 0: true }))
     } catch {
       showToast("Unable to open cancellation URL", "error")
     }
@@ -332,73 +295,7 @@ export function CancellationGuideModal({
             )}
           </View>
 
-          {/* Checklist */}
-          <View
-            style={{
-              backgroundColor: colors.card,
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: 12,
-              padding: 14,
-              gap: 12,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                borderBottomWidth: 1,
-                borderBottomColor: colors.border,
-                paddingBottom: 8,
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                <Sparkles size={14} color={colors.primary} />
-                <Text style={{ fontSize: 12, fontWeight: "700", color: colors.text }}>
-                  Step-by-Step Checklist
-                </Text>
-              </View>
-              <Text style={{ fontSize: 11, color: colors.mutedText }}>
-                {Object.values(checkedSteps).filter(Boolean).length}/{steps.length} done
-              </Text>
-            </View>
-
-            {steps.map((step, idx) => {
-              const isChecked = !!checkedSteps[idx]
-              return (
-                <TouchableOpacity
-                  key={idx}
-                  activeOpacity={0.7}
-                  onPress={() => toggleStep(idx)}
-                  style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}
-                >
-                  {isChecked ? (
-                    <CheckSquare size={18} color={colors.emerald} style={{ marginTop: 2 }} />
-                  ) : (
-                    <Square size={18} color={colors.mutedText} style={{ marginTop: 2 }} />
-                  )}
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontSize: 13,
-                        fontWeight: "600",
-                        color: isChecked ? colors.mutedText : colors.text,
-                        textDecorationLine: isChecked ? "line-through" : "none",
-                      }}
-                    >
-                      {step.title}
-                    </Text>
-                    <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 2 }}>
-                      {step.detail}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              )
-            })}
-          </View>
-
-          {/* Mark Canceled Button */}
+          {/* Mark Canceled / Suspended Button */}
           {onMarkCanceled ? (
             <Button
               variant="outline"
@@ -409,7 +306,7 @@ export function CancellationGuideModal({
               style={{ borderColor: "rgba(16, 185, 129, 0.4)" }}
               textStyle={{ color: colors.emerald }}
             >
-              Mark as Canceled in SubKeep
+              Mark as Canceled / Suspended in SubKeep
             </Button>
           ) : null}
         </ScrollView>
