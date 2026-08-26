@@ -6,9 +6,10 @@ interface SheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   children: React.ReactNode
+  className?: string
 }
 
-function Sheet({ open, onOpenChange, children }: SheetProps) {
+function Sheet({ open, onOpenChange, children, className }: SheetProps) {
   if (!open) return null
 
   return (
@@ -18,7 +19,7 @@ function Sheet({ open, onOpenChange, children }: SheetProps) {
         onClick={() => onOpenChange(false)}
       />
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-xl bg-background border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
+        <div className={cn("w-screen max-w-2xl bg-background border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200 h-full", className)}>
           {children}
         </div>
       </div>
