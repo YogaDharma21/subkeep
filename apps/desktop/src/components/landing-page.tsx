@@ -44,7 +44,11 @@ export function LandingPage() {
         }
 
         // 2. Created Session ID based auth
-        const createdSessionId = query.__clerk_created_session_id || query.created_session_id
+        const createdSessionId =
+          query.__clerk_created_session_id ||
+          query.created_session_id ||
+          query.sessionId ||
+          query.session_id
         if (createdSessionId) {
           await setActive({ session: createdSessionId })
           toast.success("Successfully signed in!")
