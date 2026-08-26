@@ -568,7 +568,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
             onClick={handleExportCSV}
             className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
           >
-            <FileSpreadsheet className="size-5 text-emerald-500 shrink-0 mt-0.5" />
+            <FileSpreadsheet className="size-5 text-foreground shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-foreground">Export as CSV</p>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -581,7 +581,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
             onClick={handleExportJSON}
             className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
           >
-            <Download className="size-5 text-blue-500 shrink-0 mt-0.5" />
+            <Download className="size-5 text-foreground shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-foreground">Export JSON</p>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -594,7 +594,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
             onClick={handleOpenCsvFile}
             className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
           >
-            <Upload className="size-5 text-blue-500 shrink-0 mt-0.5" />
+            <Upload className="size-5 text-foreground shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-foreground">Import from CSV</p>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -607,7 +607,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
             onClick={handleBackup}
             className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
           >
-            <FileJson className="size-5 text-purple-500 shrink-0 mt-0.5" />
+            <FileJson className="size-5 text-foreground shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-foreground">Full JSON Backup</p>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -620,7 +620,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
             onClick={handleOpenJsonFile}
             className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer sm:col-span-2"
           >
-            <Download className="size-5 text-amber-500 shrink-0 mt-0.5" />
+            <Download className="size-5 text-foreground shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-foreground">Restore JSON Backup</p>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -803,7 +803,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
             <Separator />
             <div className="flex justify-between">
               <span className="text-muted-foreground">Security</span>
-              <span className="font-medium flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+              <span className="font-medium flex items-center gap-1 text-foreground">
                 <ShieldCheck className="size-3.5" /> End-to-End Encrypted Sessions
               </span>
             </div>
