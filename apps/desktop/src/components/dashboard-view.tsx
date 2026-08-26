@@ -224,12 +224,12 @@ export function DashboardView({
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="bg-transparent text-foreground text-xs font-semibold focus:outline-none cursor-pointer"
+                className="bg-transparent text-foreground text-xs font-semibold focus:outline-none cursor-pointer [&>option]:bg-background [&>option]:text-foreground"
               >
-                <option value="nextBilling">Next Renewal</option>
-                <option value="priceDesc">Highest Price</option>
-                <option value="priceAsc">Lowest Price</option>
-                <option value="name">Name A-Z</option>
+                <option value="nextBilling" className="bg-background text-foreground">Next Renewal</option>
+                <option value="priceDesc" className="bg-background text-foreground">Highest Price</option>
+                <option value="priceAsc" className="bg-background text-foreground">Lowest Price</option>
+                <option value="name" className="bg-background text-foreground">Name A-Z</option>
               </select>
             </div>
 
