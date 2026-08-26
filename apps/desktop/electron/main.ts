@@ -23,6 +23,11 @@ const CLERK_HOSTED_DOMAIN = "https://engaging-mole-10.clerk.accounts.dev"
 
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
 
+app.name = "subkeep"
+if (process.platform === "win32") {
+  app.setAppUserModelId("com.subkeep.desktop")
+}
+
 // Register custom protocol client for deep linking (subkeep://)
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
@@ -63,22 +68,23 @@ const gotTheLock = app.requestSingleInstanceLock()
 
 if (!gotTheLock) {
   app.quit()
-} else {
-  app.on("second-instance", (_event, commandLine) => {
-    // Focus window when a second instance is invoked
-    if (win) {
-      if (win.isMinimized()) win.restore()
-      win.show()
-      win.focus()
-    }
-
-    // Check command line arguments on Windows for deep link protocol
-    const deepLink = commandLine.find((arg) => arg.startsWith("subkeep://"))
-    if (deepLink) {
-      handleDeepLink(deepLink)
-    }
-  })
+  process.exit(0)
 }
+
+app.on("second-instance", (_event, commandLine) => {
+  // Focus window when a second instance is invoked
+  if (win) {
+    if (win.isMinimized()) win.restore()
+    win.show()
+    win.focus()
+  }
+
+  // Check command line arguments on Windows for deep link protocol
+  const deepLink = commandLine.find((arg) => arg.startsWith("subkeep://"))
+  if (deepLink) {
+    handleDeepLink(deepLink)
+  }
+})
 
 // Handle macOS open-url event
 app.on("open-url", (event, url) => {
