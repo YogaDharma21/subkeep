@@ -28,7 +28,11 @@ export function DesktopTitlebar({
 }: DesktopTitlebarProps) {
   const [isMaximized, setIsMaximized] = useState(false)
   const { setTheme, resolvedTheme } = useTheme()
-  const isMac = typeof window !== "undefined" && window.electronAPI?.platform === "darwin"
+  const isMac =
+    (typeof window !== "undefined" && window.electronAPI?.platform === "darwin") ||
+    (typeof navigator !== "undefined" &&
+      navigator.userAgent.toLowerCase().includes("mac") &&
+      !navigator.userAgent.toLowerCase().includes("win"))
 
   useEffect(() => {
     if (!window.electronAPI) return
