@@ -10,7 +10,6 @@ import {
   BarChart3,
   Settings,
   Plus,
-  Receipt,
   LogOut,
   Search,
   CreditCard,
