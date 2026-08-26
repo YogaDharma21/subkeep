@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import Image from "next/image"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
@@ -421,9 +422,21 @@ export default function MorePage() {
       <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>About SubKeep</DialogTitle>
+            <div className="flex items-center gap-3">
+              <Image
+                src="/app-icon.png"
+                alt="SubKeep"
+                width={36}
+                height={36}
+                className="size-9 rounded-xl object-contain shadow-xs"
+              />
+              <div>
+                <DialogTitle>About SubKeep</DialogTitle>
+                <p className="text-xs text-muted-foreground">Version 0.0.1</p>
+              </div>
+            </div>
           </DialogHeader>
-          <div className="space-y-4 text-sm text-muted-foreground">
+          <div className="space-y-4 text-sm text-muted-foreground pt-1">
             <p>
               SubKeep is a sleek subscription management and analytics platform designed to keep your recurring expenses organized.
             </p>
@@ -434,7 +447,7 @@ export default function MorePage() {
               href="https://github.com/YogaDharma21/subkeep"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-foreground hover:underline"
+              className="flex items-center gap-2 text-foreground hover:underline font-medium pt-1"
             >
               <ExternalLink className="size-4" />
               View on GitHub

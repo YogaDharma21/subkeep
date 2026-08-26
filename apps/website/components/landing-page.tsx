@@ -1,8 +1,8 @@
 "use client"
 
+import Image from "next/image"
 import { SignInButton, SignUpButton } from "@clerk/nextjs"
 import {
-  Receipt,
   ArrowRight,
   Sparkles,
   CreditCard,
@@ -21,9 +21,14 @@ export function LandingPage() {
         <div className="lg:col-span-7 flex flex-col justify-center space-y-6 sm:space-y-8">
           {/* Brand Header */}
           <div className="flex items-center gap-3">
-            <div className="flex size-12 sm:size-14 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-950 shadow-md">
-              <Receipt className="size-6 sm:size-7 stroke-[2.4]" />
-            </div>
+            <Image
+              src="/app-icon.png"
+              alt="SubKeep"
+              width={56}
+              height={56}
+              priority
+              className="size-12 sm:size-14 rounded-2xl object-contain shadow-md"
+            />
             <span className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-wider text-white uppercase">
               SUBKEEP
             </span>
