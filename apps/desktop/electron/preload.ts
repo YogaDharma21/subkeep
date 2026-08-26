@@ -14,8 +14,8 @@ const electronAPI = {
   openFile: (options?: {
     filters?: Array<{ name: string; extensions: string[] }>
   }) => ipcRenderer.invoke("dialog:open-file", options || {}),
-  startBrowserAuth: (options?: { mode?: "google" | "sign-in" | "sign-up"; url?: string }) =>
-    ipcRenderer.invoke("auth:start-browser-login", options || {}),
+  startBrowserAuth: (url?: string) =>
+    ipcRenderer.invoke("auth:start-browser-login", url),
   onAuthCallback: (callback: (data: { query: Record<string, string>; url: string }) => void) => {
     const handler = (_event: unknown, data: { query: Record<string, string>; url: string }) => callback(data)
     ipcRenderer.on("auth:callback", handler)

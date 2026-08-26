@@ -169,7 +169,7 @@ ipcMain.handle("dialog:open-file", async (_event, { filters }: {
 })
 
 // Browser Auth Loopback Server IPC
-ipcMain.handle("auth:start-browser-login", async () => {
+ipcMain.handle("auth:start-browser-login", async (_event, customUrl?: string) => {
   const callbackUrl = `http://127.0.0.1:${AUTH_PORT}/auth-callback`
 
   // Close previous server if running
@@ -287,7 +287,7 @@ ipcMain.handle("auth:start-browser-login", async () => {
 
   authServer.listen(AUTH_PORT, "127.0.0.1", async () => {
     // Open Clerk Sign-In with redirect back to our local loopback server
-    const targetUrl = `${CLERK_HOSTED_DOMAIN}/sign-in?redirect_url=${encodeURIComponent(callbackUrl)}`
+    const targetUrl = customUrl || `${CLERK_HOSTED_DOMAIN}/sign-in?redirect_url=${encodeURIComponent(callbackUrl)}`
     await shell.openExternal(targetUrl)
   })
 
