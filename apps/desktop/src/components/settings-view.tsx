@@ -672,7 +672,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
               <span>About SubKeep Desktop</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Version 1.0.0 &middot; Electron Desktop App
+              Version 0.0.1 &middot; Electron Desktop App
             </p>
           </div>
 
@@ -783,7 +783,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
           <div className="my-3 space-y-3 rounded-xl border border-border bg-muted/30 p-4 text-xs">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Version</span>
-              <span className="font-bold">1.0.0</span>
+              <span className="font-bold">0.0.1</span>
             </div>
             <Separator />
             <div className="flex justify-between">
