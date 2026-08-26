@@ -90,7 +90,7 @@ export function CancellationGuideModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-xl p-5" onClose={() => onOpenChange(false)}>
+      <DialogContent className="max-w-md rounded-lg p-5" onClose={() => onOpenChange(false)}>
         <DialogHeader className="space-y-2">
           <div className="flex items-center gap-3">
             <div

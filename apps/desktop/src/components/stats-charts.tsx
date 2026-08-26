@@ -185,7 +185,7 @@ export function StatsCharts({
       {/* 2-Column Responsive Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Spending Trend Chart */}
-        <div className="rounded-xl border border-border bg-background shadow-xs overflow-hidden">
+        <div className="rounded-lg border border-border bg-background shadow-xs overflow-hidden">
           <div className="border-b border-border p-4">
             <h3 className="text-sm font-bold">Spending Trend</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -215,7 +215,7 @@ export function StatsCharts({
                       backgroundColor: "var(--card)",
                       borderColor: "var(--border)",
                       color: "var(--card-foreground)",
-                      borderRadius: "8px",
+                      borderRadius: "0.625rem",
                       fontSize: "12px",
                       boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                     }}
@@ -255,7 +255,7 @@ export function StatsCharts({
         </div>
 
         {/* Category Breakdown Chart */}
-        <div className="rounded-xl border border-border bg-background shadow-xs overflow-hidden">
+        <div className="rounded-lg border border-border bg-background shadow-xs overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-4">
             <h3 className="text-sm font-bold">Category Breakdown</h3>
             <div className="flex items-center gap-2">
@@ -364,9 +364,9 @@ export function StatsCharts({
                           <span className="font-medium">{cat.name}</span>
                           <span className="text-xs text-muted-foreground">{detailText}</span>
                         </div>
-                        <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                        <div className="mt-1 h-1.5 overflow-hidden rounded-lg bg-muted">
                           <div
-                            className="h-full rounded-full transition-all"
+                            className="h-full rounded-lg transition-all"
                             style={{
                               width: `${pct}%`,
                               backgroundColor: cat.color,
@@ -388,7 +388,7 @@ export function StatsCharts({
 
       {/* Payment History */}
       {paymentHistory.length > 0 && (
-        <div className="rounded-xl border border-border bg-background shadow-xs overflow-hidden">
+        <div className="rounded-lg border border-border bg-background shadow-xs overflow-hidden">
           <div className="border-b border-border p-4">
             <h3 className="text-sm font-bold">Recent Payment History</h3>
           </div>

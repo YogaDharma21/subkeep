@@ -302,7 +302,7 @@ export function CommandPalette({
       onClick={() => onOpenChange(false)}
     >
       <div
-        className="w-full max-w-xl overflow-hidden rounded-xl border border-border bg-card shadow-2xl transform-gpu transition-transform duration-150 animate-in zoom-in-98"
+        className="w-full max-w-xl overflow-hidden rounded-lg border border-border bg-card shadow-2xl transform-gpu transition-transform duration-150 animate-in zoom-in-98"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}

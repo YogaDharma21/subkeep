@@ -45,9 +45,9 @@ export function DesktopCallbackPage() {
 
   return (
     <div className="min-h-screen w-full bg-black text-white flex flex-col items-center justify-center p-4 selection:bg-zinc-800 selection:text-white select-none">
-      <div className="w-full max-w-sm mx-auto bg-zinc-950 border border-zinc-800/80 rounded-3xl p-8 text-center space-y-6 shadow-2xl shadow-black/80 animate-in fade-in zoom-in-95 duration-200">
-        {/* White Rounded Squircle App Icon Container */}
-        <div className="size-20 rounded-2xl bg-white flex items-center justify-center mx-auto shadow-xl shadow-white/5">
+      <div className="w-full max-w-sm mx-auto bg-zinc-950 border border-zinc-800/80 rounded-lg p-8 text-center space-y-6 shadow-2xl shadow-black/80 animate-in fade-in zoom-in-95 duration-200">
+        {/* White Rounded App Icon Container */}
+        <div className="size-20 rounded-lg bg-white flex items-center justify-center mx-auto shadow-xl shadow-white/5">
           <svg
             viewBox="0 0 24 24"
             className="size-10 fill-black"
@@ -73,7 +73,7 @@ export function DesktopCallbackPage() {
         <div className="space-y-3 pt-2">
           <button
             onClick={triggerDesktopHandoff}
-            className="w-full h-12 rounded-full bg-white text-black font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-zinc-100 hover:scale-[1.01] active:scale-[0.99] transition-all shadow-xl cursor-pointer"
+            className="w-full h-12 rounded-lg bg-white text-black font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-zinc-100 hover:scale-[1.01] active:scale-[0.99] transition-all shadow-xl cursor-pointer"
           >
             <ExternalLink className="size-4" />
             <span>Open SubKeep Desktop</span>

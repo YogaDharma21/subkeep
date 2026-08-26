@@ -383,7 +383,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
       </div>
 
       {/* Preferences Section */}
-      <div className="rounded-xl border border-border bg-background p-5 shadow-xs space-y-5">
+      <div className="rounded-lg border border-border bg-background p-5 shadow-xs space-y-5">
         <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
           General Preferences
         </h3>
@@ -558,7 +558,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
       </div>
 
       {/* Data Export & Backup Section */}
-      <div className="rounded-xl border border-border bg-background p-5 shadow-xs space-y-4">
+      <div className="rounded-lg border border-border bg-background p-5 shadow-xs space-y-4">
         <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
           Backup, Export & Migration
         </h3>
@@ -566,7 +566,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
             onClick={handleExportCSV}
-            className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
+            className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
           >
             <FileSpreadsheet className="size-5 text-foreground shrink-0 mt-0.5" />
             <div>
@@ -579,7 +579,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
           <button
             onClick={handleExportJSON}
-            className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
+            className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
           >
             <Download className="size-5 text-foreground shrink-0 mt-0.5" />
             <div>
@@ -592,7 +592,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
           <button
             onClick={handleOpenCsvFile}
-            className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
+            className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
           >
             <Upload className="size-5 text-foreground shrink-0 mt-0.5" />
             <div>
@@ -605,7 +605,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
           <button
             onClick={handleBackup}
-            className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
+            className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
           >
             <FileJson className="size-5 text-foreground shrink-0 mt-0.5" />
             <div>
@@ -618,7 +618,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
           <button
             onClick={handleOpenJsonFile}
-            className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer sm:col-span-2"
+            className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer sm:col-span-2"
           >
             <Download className="size-5 text-foreground shrink-0 mt-0.5" />
             <div>
@@ -632,7 +632,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
       </div>
 
       {/* Account & Session Section */}
-      <div className="rounded-xl border border-border bg-background p-5 shadow-xs space-y-4">
+      <div className="rounded-lg border border-border bg-background p-5 shadow-xs space-y-4">
         <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
           Account & Session
         </h3>
@@ -660,7 +660,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
       </div>
 
       {/* Danger Zone & About Section */}
-      <div className="rounded-xl border border-border bg-background p-5 shadow-xs space-y-4">
+      <div className="rounded-lg border border-border bg-background p-5 shadow-xs space-y-4">
         <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
           System & Danger Zone
         </h3>
@@ -668,16 +668,16 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <div className="flex items-center gap-2 text-sm font-semibold">
-              <Info className="size-4 text-primary" />
-              <span>About SubKeep Desktop</span>
+              <Info className="size-4" />
+              <span>About SubKeep</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Version 0.0.1 &middot; Electron Desktop App
+              Desktop Application Info, build runtime & system specs
             </p>
           </div>
 
           <Button variant="outline" size="sm" onClick={() => setAboutOpen(true)} className="cursor-pointer text-xs">
-            App Info
+            About App
           </Button>
         </div>
 
@@ -687,10 +687,10 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
           <div className="space-y-0.5">
             <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
               <Trash2 className="size-4" />
-              <span>Delete All Data</span>
+              <span>Reset & Wipe Data</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Permanently wipe all subscriptions, cards, and payment history
+              Permanently purge all subscriptions, history, and cards
             </p>
           </div>
 
@@ -707,7 +707,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
       {/* Delete All Confirmation Dialog */}
       <Dialog open={deleteConfirm} onOpenChange={setDeleteConfirm}>
-        <DialogContent className="max-w-sm rounded-xl p-5" onClose={() => setDeleteConfirm(false)}>
+        <DialogContent className="max-w-sm rounded-lg p-5" onClose={() => setDeleteConfirm(false)}>
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-destructive">
               Wipe All Subscription Data?
@@ -737,7 +737,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
       {/* Restore Confirmation Dialog */}
       <Dialog open={restoreConfirm} onOpenChange={setRestoreConfirm}>
-        <DialogContent className="max-w-sm rounded-xl p-5" onClose={() => setRestoreConfirm(false)}>
+        <DialogContent className="max-w-sm rounded-lg p-5" onClose={() => setRestoreConfirm(false)}>
           <DialogHeader>
             <DialogTitle className="text-base font-bold">
               Restore Subscriptions?
@@ -769,7 +769,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
       {/* About Dialog */}
       <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
-        <DialogContent className="max-w-md rounded-xl p-5" onClose={() => setAboutOpen(false)}>
+        <DialogContent className="max-w-md rounded-lg p-5" onClose={() => setAboutOpen(false)}>
           <DialogHeader>
             <div className="flex items-center gap-2">
               <Laptop className="size-5 text-primary" />
@@ -780,7 +780,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="my-3 space-y-3 rounded-xl border border-border bg-muted/30 p-4 text-xs">
+          <div className="my-3 space-y-3 rounded-lg border border-border bg-muted/30 p-4 text-xs">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Version</span>
               <span className="font-bold">0.0.1</span>

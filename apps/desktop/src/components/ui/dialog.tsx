@@ -31,7 +31,7 @@ function DialogContent({
   return (
     <div
       className={cn(
-        "relative mx-auto w-full max-w-lg rounded-xl border border-border bg-background p-6 shadow-2xl animate-in fade-in zoom-in-95",
+        "relative mx-auto w-full max-w-lg rounded-lg border border-border bg-background p-6 shadow-2xl animate-in fade-in zoom-in-95",
         className
       )}
       {...props}
