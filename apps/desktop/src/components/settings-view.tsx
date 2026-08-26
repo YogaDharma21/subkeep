@@ -1,6 +1,6 @@
 import { useState, useRef } from "react"
 import { useQuery, useMutation } from "convex/react"
-import { useAuth } from "@clerk/clerk-react"
+import { useAuth, useClerk, useUser } from "@clerk/clerk-react"
 import { api } from "@/convex/_generated/api"
 import {
   Download,
@@ -17,6 +17,7 @@ import {
   Target,
   ShieldCheck,
   Laptop,
+  LogOut,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -42,6 +43,8 @@ interface SettingsViewProps {
 export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
   const { theme, setTheme, resolvedTheme } = useTheme()
   const { isSignedIn } = useAuth()
+  const { user } = useUser()
+  const { signOut } = useClerk()
   const { primaryCurrency, setPrimaryCurrency } = usePrimaryCurrency()
 
   const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
@@ -625,6 +628,34 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
               </p>
             </div>
           </button>
+        </div>
+      </div>
+
+      {/* Account & Session Section */}
+      <div className="rounded-xl border border-border bg-background p-5 shadow-xs space-y-4">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Account & Session
+        </h3>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <p className="text-sm font-bold text-foreground">
+              {user?.fullName || user?.primaryEmailAddress?.emailAddress?.split("@")[0] || "User"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {user?.primaryEmailAddress?.emailAddress || "Signed in with Google"}
+            </p>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => signOut()}
+            className="text-xs font-semibold gap-1.5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 cursor-pointer"
+          >
+            <LogOut className="size-3.5" />
+            <span>Sign Out</span>
+          </Button>
         </div>
       </div>
 
