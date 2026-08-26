@@ -162,7 +162,7 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
   return (
     <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4" onClick={onClose}>
       <div
-        className="w-full max-w-lg max-h-[85vh] flex flex-col rounded-xl bg-background border border-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95"
+        className="w-full max-w-lg max-h-[85vh] flex flex-col rounded-lg bg-background border border-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -283,7 +283,7 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
                         >
                           <DynamicIcon name={icon} className="size-5" />
                           {isSelected && (
-                            <span className="absolute top-1 right-1 flex size-3.5 items-center justify-center rounded-full bg-background text-foreground">
+                            <span className="absolute top-1 right-1 flex size-3.5 items-center justify-center rounded-md bg-background text-foreground">
                               <Check className="size-2.5" />
                             </span>
                           )}

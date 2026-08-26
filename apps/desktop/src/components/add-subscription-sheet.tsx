@@ -263,7 +263,7 @@ export function AddSubscriptionSheet({
                       type="button"
                       onClick={() => setSelectedColor(c)}
                       className={cn(
-                        "size-7 rounded-full border-2 transition-all cursor-pointer",
+                        "size-7 rounded-lg border-2 transition-all cursor-pointer",
                         selectedColor === c
                           ? "border-foreground scale-110"
                           : "border-transparent"
@@ -275,7 +275,7 @@ export function AddSubscriptionSheet({
               </div>
 
               {/* Free Trial Toggle */}
-              <div className="flex items-center justify-between rounded-xl border border-border bg-muted/40 p-3.5">
+              <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 p-3.5">
                 <div className="flex items-center gap-2.5">
                   <Sparkles className="size-4 text-foreground shrink-0" />
                   <div>
@@ -296,7 +296,7 @@ export function AddSubscriptionSheet({
               </div>
 
               {isTrial && (
-                <div className="space-y-2 rounded-xl bg-muted/40 p-3.5 border border-border">
+                <div className="space-y-2 rounded-lg bg-muted/40 p-3.5 border border-border">
                   <label className="text-xs font-medium text-foreground">
                     Trial Expiration Date *
                   </label>
@@ -309,7 +309,7 @@ export function AddSubscriptionSheet({
               )}
 
               {/* Shared / Split Subscription Toggle (SplitKeep) */}
-              <div className="flex items-center justify-between rounded-xl border border-border bg-muted/40 p-3.5">
+              <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 p-3.5">
                 <div className="flex items-center gap-2.5">
                   <Users className="size-4 text-primary shrink-0" />
                   <div>
@@ -330,7 +330,7 @@ export function AddSubscriptionSheet({
               </div>
 
               {isShared && (
-                <div className="space-y-3 rounded-xl bg-muted/30 p-3.5 border border-border">
+                <div className="space-y-3 rounded-lg bg-muted/30 p-3.5 border border-border">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-xs font-semibold text-foreground">

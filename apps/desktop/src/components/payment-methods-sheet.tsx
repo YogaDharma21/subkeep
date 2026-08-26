@@ -188,7 +188,7 @@ export function PaymentMethodsSheet({
 
           {/* Add New Card Form */}
           {isAdding && (
-            <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-4 animate-in fade-in-50">
+            <div className="rounded-lg border border-border bg-muted/40 p-4 space-y-4 animate-in fade-in-50">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
                   New Payment Method
@@ -271,7 +271,7 @@ export function PaymentMethodsSheet({
                       type="button"
                       onClick={() => setColor(c)}
                       className={cn(
-                        "size-7 rounded-full border-2 transition-transform cursor-pointer",
+                        "size-7 rounded-lg border-2 transition-transform cursor-pointer",
                         color === c ? "border-foreground scale-110" : "border-transparent"
                       )}
                       style={{ backgroundColor: c }}
@@ -296,7 +296,7 @@ export function PaymentMethodsSheet({
                 return (
                   <div
                     key={pm._id}
-                    className="relative overflow-hidden rounded-xl border border-border bg-card p-4 transition-all hover:border-border/80 shadow-xs"
+                    className="relative overflow-hidden rounded-lg border border-border bg-card p-4 transition-all hover:border-border/80 shadow-xs"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3">
@@ -379,7 +379,7 @@ export function PaymentMethodsSheet({
                 )
               })
             ) : (
-              <div className="py-8 text-center rounded-xl border border-dashed border-border p-6 text-xs text-muted-foreground">
+              <div className="py-8 text-center rounded-lg border border-dashed border-border p-6 text-xs text-muted-foreground">
                 <CreditCard className="size-8 mx-auto mb-2 text-muted-foreground/60" />
                 <p className="font-medium text-foreground">No payment methods added yet</p>
                 <p className="mt-1">Add your credit cards, PayPal, or bank accounts to track spending per payment source.</p>

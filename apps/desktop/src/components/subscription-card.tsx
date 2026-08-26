@@ -80,10 +80,10 @@ export function SubscriptionCard({
         }
       }}
       title={tooltipText}
-      className="flex items-center gap-3.5 rounded-xl border border-border bg-background p-3.5 transition-all hover:border-border/90 hover:bg-muted/30 active:scale-[0.99] cursor-pointer relative overflow-hidden group shadow-xs"
+      className="flex items-center gap-3.5 rounded-lg border border-border bg-background p-3.5 transition-all hover:border-border/90 hover:bg-muted/30 active:scale-[0.99] cursor-pointer relative overflow-hidden group shadow-xs"
     >
       <div
-        className="flex size-12 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105 overflow-hidden shadow-xs"
+        className="flex size-12 shrink-0 items-center justify-center rounded-lg transition-transform group-hover:scale-105 overflow-hidden shadow-xs"
         style={{ backgroundColor: sub.color }}
       >
         <DynamicIcon name={sub.icon} className="size-6 text-white" />

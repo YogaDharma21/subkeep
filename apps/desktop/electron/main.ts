@@ -177,7 +177,7 @@ function startAuthLoopbackServer() {
       text-align: center;
       background: #111113;
       padding: 44px 36px;
-      border-radius: 24px;
+      border-radius: 0.625rem;
       border: 1px solid #27272a;
       max-width: 380px;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
@@ -186,7 +186,7 @@ function startAuthLoopbackServer() {
       width: 60px;
       height: 60px;
       background: #ffffff;
-      border-radius: 18px;
+      border-radius: 0.625rem;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -199,7 +199,7 @@ function startAuthLoopbackServer() {
       width: 100%;
       box-sizing: border-box;
       padding: 14px 0;
-      border-radius: 9999px;
+      border-radius: 0.625rem;
       background: #ffffff;
       color: #000000;
       font-weight: 800;

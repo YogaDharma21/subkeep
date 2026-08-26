@@ -29,10 +29,10 @@ const TemplateCard = memo(function TemplateCard({
     <button
       type="button"
       onClick={() => onSelect(template)}
-      className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-border/70 bg-card/60 p-3 hover:bg-muted/80 hover:border-foreground/20 active:scale-[0.99] transition-all text-left group shadow-2xs"
+      className="flex w-full cursor-pointer items-center gap-3 rounded-lg border border-border/70 bg-card/60 p-3 hover:bg-muted/80 hover:border-foreground/20 active:scale-[0.99] transition-all text-left group shadow-2xs"
     >
       <div
-        className="flex size-10 shrink-0 items-center justify-center rounded-xl text-white shadow-xs transition-transform group-hover:scale-105"
+        className="flex size-10 shrink-0 items-center justify-center rounded-lg text-white shadow-xs transition-transform group-hover:scale-105"
         style={{ backgroundColor: template.color }}
       >
         <DynamicIcon name={template.icon} className="size-5 text-white" />
