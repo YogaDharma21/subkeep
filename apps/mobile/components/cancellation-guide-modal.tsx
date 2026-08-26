@@ -14,10 +14,15 @@ import {
   Square,
   ShieldAlert,
   Sparkles,
+  Search,
+  Pencil,
+  Check,
   X,
+  Link2,
 } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { convertAndFormat, formatCycleLabel } from "@/lib/currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/components/custom-alert-provider"
@@ -40,6 +45,7 @@ interface CancellationGuideModalProps {
   onClose: () => void
   subscription: CancellationGuideSub | null
   onMarkCanceled?: (id: string) => Promise<void>
+  onUpdateCancelUrl?: (id: string, url: string) => Promise<void>
   primaryCurrency?: string
   rates?: Record<string, number>
 }
@@ -49,15 +55,20 @@ export function CancellationGuideModal({
   onClose,
   subscription,
   onMarkCanceled,
+  onUpdateCancelUrl,
   primaryCurrency = "USD",
   rates,
 }: CancellationGuideModalProps) {
   const { colors } = useThemeColor()
   const { showToast } = useAlert()
   const [checkedSteps, setCheckedSteps] = useState<Record<number, boolean>>({})
+  const [isEditingUrl, setIsEditingUrl] = useState(false)
+  const [newUrl, setNewUrl] = useState("")
+  const [savingUrl, setSavingUrl] = useState(false)
 
   if (!subscription) return null
 
+  const hasCustomUrl = Boolean(subscription.cancelUrl && subscription.cancelUrl.trim().length > 0)
   const directUrl =
     subscription.cancelUrl ||
     `https://www.google.com/search?q=${encodeURIComponent(
@@ -67,7 +78,9 @@ export function CancellationGuideModal({
   const steps = [
     {
       title: "1. Access Cancellation Page",
-      detail: `Tap the button below to open ${subscription.name}'s account management / cancellation page.`,
+      detail: hasCustomUrl
+        ? `Tap the button below to open ${subscription.name}'s account management / cancellation page.`
+        : `Tap the search button below to find cancellation instructions for ${subscription.name}.`,
     },
     {
       title: "2. Sign In to Your Account",
@@ -103,6 +116,22 @@ export function CancellationGuideModal({
     }
   }
 
+  const handleStartEditUrl = () => {
+    setNewUrl(subscription.cancelUrl || "")
+    setIsEditingUrl(true)
+  }
+
+  const handleSaveUrl = async () => {
+    if (!onUpdateCancelUrl) return
+    setSavingUrl(true)
+    try {
+      await onUpdateCancelUrl(subscription._id, newUrl.trim())
+      setIsEditingUrl(false)
+    } finally {
+      setSavingUrl(false)
+    }
+  }
+
   return (
     <Modal
       visible={visible}
@@ -123,7 +152,7 @@ export function CancellationGuideModal({
             borderBottomColor: colors.border,
           }}
         >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10, flex: 1, marginRight: 8 }}>
             <View
               style={{
                 width: 36,
@@ -136,8 +165,8 @@ export function CancellationGuideModal({
             >
               <DynamicIcon name={subscription.icon} size={18} color="#ffffff" />
             </View>
-            <View>
-              <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>
+            <View style={{ flex: 1 }}>
+              <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>
                 Cancel {subscription.name}
               </Text>
               <Text style={{ fontSize: 11, color: colors.mutedText }}>
@@ -172,7 +201,7 @@ export function CancellationGuideModal({
           </TouchableOpacity>
         </View>
 
-        <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
+        <ScrollView contentContainerStyle={{ padding: 16, gap: 14 }}>
           {/* Trial Warning */}
           {subscription.isTrial && (
             <View
@@ -191,28 +220,116 @@ export function CancellationGuideModal({
                 <Text style={{ fontSize: 12, fontWeight: "700", color: colors.amber }}>
                   Cancel before free trial ends!
                 </Text>
-                <Text style={{ fontSize: 11, color: colors.amber, opacity: 0.9, marginTop: 2 }}>
+                <Text style={{ fontSize: 11, color: colors.amber, opacity: 0.9, marginTop: 2, lineHeight: 16 }}>
                   Cancel now to prevent auto-renewal charges while retaining access until your trial period expires.
                 </Text>
               </View>
             </View>
           )}
 
-          {/* Direct Link Button */}
-          <View style={{ gap: 6 }}>
-            <Button
-              onPress={handleOpenLink}
-              size="lg"
-              icon={<ExternalLink size={16} color={colors.primaryForeground} />}
-            >
-              Open Direct Cancellation Page
-            </Button>
-            <Text
-              numberOfLines={1}
-              style={{ fontSize: 11, color: colors.mutedText, textAlign: "center" }}
-            >
-              {directUrl}
-            </Text>
+          {/* Direct Link Section */}
+          <View
+            style={{
+              backgroundColor: colors.card,
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: 12,
+              padding: 12,
+              gap: 10,
+            }}
+          >
+            {isEditingUrl ? (
+              <View style={{ gap: 8 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <Link2 size={14} color={colors.primary} />
+                    <Text style={{ fontSize: 12, fontWeight: "700", color: colors.text }}>
+                      Edit Cancellation URL
+                    </Text>
+                  </View>
+                  <TouchableOpacity onPress={() => setIsEditingUrl(false)}>
+                    <X size={14} color={colors.mutedText} />
+                  </TouchableOpacity>
+                </View>
+
+                <Input
+                  placeholder="https://service.com/account/cancel"
+                  value={newUrl}
+                  onChangeText={setNewUrl}
+                  autoCapitalize="none"
+                  keyboardType="url"
+                  autoFocus
+                />
+
+                <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 2 }}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onPress={() => setIsEditingUrl(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onPress={handleSaveUrl}
+                    disabled={savingUrl}
+                    icon={<Check size={14} color={colors.primaryForeground} />}
+                  >
+                    {savingUrl ? "Saving..." : "Save URL"}
+                  </Button>
+                </View>
+              </View>
+            ) : (
+              <>
+                <Button
+                  onPress={handleOpenLink}
+                  size="md"
+                  icon={
+                    hasCustomUrl ? (
+                      <ExternalLink size={15} color={colors.primaryForeground} />
+                    ) : (
+                      <Search size={15} color={colors.primaryForeground} />
+                    )
+                  }
+                >
+                  {hasCustomUrl ? "Open Direct Cancellation Page" : "Search Cancellation Guide (Google)"}
+                </Button>
+
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 6,
+                    paddingHorizontal: 2,
+                  }}
+                >
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontSize: 11,
+                      color: colors.mutedText,
+                      flex: 1,
+                      fontFamily: hasCustomUrl ? "monospace" : undefined,
+                    }}
+                  >
+                    {hasCustomUrl ? subscription.cancelUrl : "Default search query"}
+                  </Text>
+
+                  {onUpdateCancelUrl && (
+                    <TouchableOpacity
+                      onPress={handleStartEditUrl}
+                      style={{ flexDirection: "row", alignItems: "center", gap: 3 }}
+                    >
+                      <Pencil size={11} color={colors.primary} />
+                      <Text style={{ fontSize: 11, fontWeight: "600", color: colors.primary }}>
+                        {hasCustomUrl ? "Change" : "Set URL"}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </>
+            )}
           </View>
 
           {/* Checklist */}
