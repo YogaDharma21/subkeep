@@ -27,7 +27,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Skeleton } from "@/components/ui/skeleton"
 import { IconPicker } from "@/components/icon-picker"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { toast } from "sonner"
@@ -43,6 +42,7 @@ import { format, differenceInDays } from "date-fns"
 import { convertAndFormat } from "@/lib/currency"
 import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
+import { SubscriptionDetailSkeleton } from "@/components/subscription-detail-skeleton"
 
 interface SubscriptionDetailViewProps {
   subscriptionId: string
@@ -296,11 +296,7 @@ export function SubscriptionDetailView({
   }
 
   if (!sub) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Skeleton className="h-8 w-32" />
-      </div>
-    )
+    return <SubscriptionDetailSkeleton />
   }
 
   const currentIcon = editing ? editIcon || sub.icon : sub.icon
