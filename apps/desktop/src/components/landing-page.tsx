@@ -140,22 +140,12 @@ export function LandingPage() {
   return (
     <div className="min-h-full w-full bg-black text-white flex flex-col items-center justify-center px-4 py-8 selection:bg-zinc-800 selection:text-white select-none">
       <div className="w-full max-w-sm mx-auto flex flex-col items-center text-center space-y-7 sm:space-y-8 animate-in fade-in zoom-in-95 duration-300">
-        {/* White Rounded App Icon Container */}
-        <div className="size-24 sm:size-28 rounded-lg bg-white flex items-center justify-center shadow-2xl shadow-white/10 transition-transform hover:scale-105">
-          {/* Isometric 3D Cube Icon */}
-          <svg
-            viewBox="0 0 24 24"
-            className="size-12 sm:size-14 fill-black"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Top Diamond Facet */}
-            <path d="M12 2.2L20.8 7.3L12 12.4L3.2 7.3L12 2.2Z" />
-            {/* Left Vertical Facet */}
-            <path d="M2.5 9.1L11.3 14.2V21.8L2.5 16.7V9.1Z" />
-            {/* Right Vertical Facet */}
-            <path d="M12.7 14.2L21.5 9.1V16.7L12.7 21.8V14.2Z" />
-          </svg>
-        </div>
+        {/* SubKeep App Icon */}
+        <img
+          src="/app-icon.png"
+          alt="SubKeep"
+          className="size-24 sm:size-28 rounded-2xl shadow-2xl shadow-white/10 transition-transform hover:scale-105 object-contain"
+        />
 
         {/* Brand Title: SUB (white) + KEEP (gray) */}
         <div className="space-y-3">

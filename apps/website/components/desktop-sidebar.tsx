@@ -3,13 +3,13 @@
 import { useSyncExternalStore } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import Image from "next/image"
 import {
   Home,
   Calendar,
   BarChart3,
   Settings,
   Plus,
-  Receipt,
   LogOut,
   Search,
   CreditCard,
@@ -63,9 +63,13 @@ export function DesktopSidebar({
       {/* Brand Header */}
       <div className="flex h-16 items-center justify-between px-6 border-b border-border">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-foreground text-background shadow-xs">
-            <Receipt className="size-4.5 stroke-[2.2]" />
-          </div>
+          <Image
+            src="/app-icon.png"
+            alt="SubKeep"
+            width={32}
+            height={32}
+            className="size-8 rounded-lg object-contain shadow-xs"
+          />
           <span className="text-base font-bold text-foreground tracking-tight">SubKeep</span>
         </Link>
       </div>

@@ -5,6 +5,7 @@ import {
   Text,
   TouchableOpacity,
   Linking,
+  Image,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import {
@@ -369,24 +370,21 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
             </TouchableOpacity>
 
             {/* App Icon */}
-            <View
+            <Image
+              source={require("@/assets/images/icon.png")}
               style={{
                 width: 64,
                 height: 64,
-                borderRadius: 18,
-                backgroundColor: colors.primary,
-                alignItems: "center",
-                justifyContent: "center",
+                borderRadius: 16,
                 marginTop: 8,
                 marginBottom: 12,
-                shadowColor: colors.primary,
-                shadowOffset: { width: 0, height: 6 },
-                shadowOpacity: 0.4,
-                shadowRadius: 12,
+                shadowColor: "#000000",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
               }}
-            >
-              <Sparkles size={32} color="#ffffff" />
-            </View>
+              resizeMode="contain"
+            />
 
             <Text style={{ fontSize: 19, fontWeight: "900", color: colors.text }}>
               SubKeep

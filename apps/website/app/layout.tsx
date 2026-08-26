@@ -18,6 +18,14 @@ const fontMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SubKeep",
   description: "Track your subscriptions and never miss a payment.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/manifest.json",
 }
 
 export default function RootLayout({

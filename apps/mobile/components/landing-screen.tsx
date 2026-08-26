@@ -1,8 +1,7 @@
 import React from "react"
-import { View, Text } from "react-native"
+import { View, Text, Image } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
-import { Receipt } from "lucide-react-native"
 import { GoogleOAuthButton } from "@/components/google-oauth-button"
 import { useThemeColor } from "@/hooks/use-theme-color"
 
@@ -21,24 +20,20 @@ export function LandingScreen() {
       }}
     >
       <View style={{ width: "100%", maxWidth: 340, alignItems: "center" }}>
-        {/* Brand Icon Squircle */}
-        <View
+        {/* Brand Icon */}
+        <Image
+          source={require("@/assets/images/icon.png")}
           style={{
             width: 96,
             height: 96,
-            borderRadius: 28,
-            backgroundColor: "#ffffff",
-            alignItems: "center",
-            justifyContent: "center",
+            borderRadius: 24,
             shadowColor: "#000000",
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.2,
             shadowRadius: 10,
-            elevation: 5,
           }}
-        >
-          <Receipt size={46} color="#09090b" strokeWidth={2.2} />
-        </View>
+          resizeMode="contain"
+        />
 
         {/* Brand Name */}
         <View style={{ flexDirection: "row", alignItems: "center", marginTop: 28 }}>
