@@ -28,7 +28,6 @@ export default function DashboardLayout({
           <DesktopSidebar
             onAddClick={() => setAddOpen(true)}
             onSearchClick={() => setCmdPaletteOpen(true)}
-            onCardsClick={() => setPaymentMethodsOpen(true)}
           />
 
           {/* Mobile Top Header */}

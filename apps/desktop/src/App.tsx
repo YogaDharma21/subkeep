@@ -125,7 +125,6 @@ export function App() {
           currentView={currentView}
           onNavigate={(v) => handleNavigate(v)}
           onAddSubscription={() => setAddSheetOpen(true)}
-          onOpenPaymentMethods={() => setPaymentSheetOpen(true)}
           activeSubCount={activeSubsCount}
         />
 
