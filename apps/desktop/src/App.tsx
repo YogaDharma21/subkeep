@@ -16,8 +16,6 @@ import { LandingPage } from "@/components/landing-page"
 import { Toaster } from "@/components/ui/sonner"
 import { useTheme } from "@/components/theme-provider"
 
-import { BrowserBridgePage } from "@/components/browser-bridge-page"
-
 export function App() {
   const { isSignedIn, isLoaded } = useAuth()
   const { setTheme, resolvedTheme } = useTheme()
@@ -39,6 +37,17 @@ export function App() {
   )
 
   const activeSubsCount = subscriptions?.filter((s) => s.isActive !== false).length || 0
+
+  // Browser redirect trigger when user finishes auth in external browser
+  useEffect(() => {
+    if (!isElectron && isSignedIn) {
+      const deepLink = `subkeep://auth-callback${window.location.search}`
+      const timer = setTimeout(() => {
+        window.location.href = deepLink
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [isElectron, isSignedIn])
 
   // Keyboard shortcut listener for theme toggle ('D') and Command Palette ('Ctrl+K')
   useEffect(() => {
@@ -79,9 +88,33 @@ export function App() {
     )
   }
 
-  // If in browser (e.g. redirected to localhost:5173 during OAuth) and authenticated, bridge back to desktop
+  // If opened in external browser after signing in, prompt user to Open Desktop App
   if (!isElectron && isSignedIn) {
-    return <BrowserBridgePage />
+    return (
+      <div className="min-h-screen w-full bg-black text-white flex flex-col items-center justify-center p-4 selection:bg-zinc-800 selection:text-white select-none">
+        <div className="w-full max-w-sm mx-auto bg-zinc-950 border border-zinc-800 rounded-3xl p-8 text-center space-y-6 shadow-2xl">
+          <div className="size-20 rounded-2xl bg-white flex items-center justify-center mx-auto shadow-xl">
+            <svg viewBox="0 0 24 24" className="size-10 fill-black" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2.2L20.8 7.3L12 12.4L3.2 7.3L12 2.2Z" />
+              <path d="M2.5 9.1L11.3 14.2V21.8L2.5 16.7V9.1Z" />
+              <path d="M12.7 14.2L21.5 9.1V16.7L12.7 21.8V14.2Z" />
+            </svg>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold">Authentication Complete</h2>
+            <p className="text-xs text-zinc-400">
+              You are signed in! Click below to return to the SubKeep desktop application.
+            </p>
+          </div>
+          <a
+            href={`subkeep://auth-callback${window.location.search}`}
+            className="w-full h-12 rounded-full bg-white text-black font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-zinc-100 transition-all shadow-xl cursor-pointer"
+          >
+            Open SubKeep Desktop
+          </a>
+        </div>
+      </div>
+    )
   }
 
   if (!isSignedIn) {
