@@ -27,6 +27,7 @@ export function LandingPage() {
           if (res.status === "complete" && res.createdSessionId) {
             await setActive({ session: res.createdSessionId })
             toast.success("Successfully signed in!")
+            setLoading(false)
             return
           }
         }
@@ -36,6 +37,7 @@ export function LandingPage() {
         if (createdSessionId) {
           await setActive({ session: createdSessionId })
           toast.success("Successfully signed in!")
+          setLoading(false)
           return
         }
 
@@ -44,13 +46,13 @@ export function LandingPage() {
         if (signIn.status === "complete" && signIn.createdSessionId) {
           await setActive({ session: signIn.createdSessionId })
           toast.success("Successfully signed in!")
+          setLoading(false)
         }
       } catch (err: unknown) {
         console.error("Auth callback error:", err)
         const error = err as { errors?: { message?: string }[]; message?: string }
         const msg = error.errors?.[0]?.message || error.message || "Failed to complete authentication"
         toast.error(msg)
-      } finally {
         setLoading(false)
       }
     },
@@ -66,11 +68,63 @@ export function LandingPage() {
     }
   }, [handleAuthCallback])
 
+  // Active polling while loading to immediately catch completed browser login
+  useEffect(() => {
+    if (!loading || !signIn || !isLoaded) return
+
+    let cancelled = false
+    const interval = setInterval(async () => {
+      if (cancelled) return
+      try {
+        await signIn.reload()
+        if (signIn.status === "complete" && signIn.createdSessionId) {
+          cancelled = true
+          await setActive({ session: signIn.createdSessionId })
+          toast.success("Successfully signed in!")
+          setLoading(false)
+        }
+      } catch {
+        // Keep polling silently while user completes Google auth
+      }
+    }, 1000)
+
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [loading, signIn, isLoaded, setActive])
+
   const handleContinueWithGoogle = async () => {
-    if (isElectron && window.electronAPI?.startBrowserAuth) {
-      setLoading(true)
-      await window.electronAPI.startBrowserAuth()
-      toast.info("Opening Google Sign-In in your browser...", { duration: 4000 })
+    if (!isLoaded || !signIn) return
+    setLoading(true)
+
+    try {
+      const callbackUrl = "http://127.0.0.1:49221/auth-callback"
+
+      // Create Google OAuth flow in Clerk to obtain the exact verification redirect URL
+      const res = await signIn.create({
+        strategy: "oauth_google",
+        redirectUrl: callbackUrl,
+        actionCompleteRedirectUrl: callbackUrl,
+      })
+
+      const externalVerificationUrl =
+        res.firstFactorVerification?.externalVerificationRedirectURL?.href ||
+        (typeof res.firstFactorVerification?.externalVerificationRedirectURL === "string"
+          ? res.firstFactorVerification.externalVerificationRedirectURL
+          : undefined)
+
+      if (isElectron && window.electronAPI?.startBrowserAuth) {
+        await window.electronAPI.startBrowserAuth(externalVerificationUrl)
+        toast.info("Opening Google Sign-In in your browser...", { duration: 4000 })
+      }
+    } catch (err: unknown) {
+      console.warn("Direct OAuth creation fallback:", err)
+      // Fallback: start loopback server and open hosted auth portal
+      if (isElectron && window.electronAPI?.startBrowserAuth) {
+        await window.electronAPI.startBrowserAuth()
+        toast.info("Opening Google Sign-In in your browser...", { duration: 4000 })
+      }
     }
   }
 
