@@ -14,8 +14,22 @@ export default function AuthLayout() {
         headerShadowVisible: false,
       }}
     >
-      <Stack.Screen name="sign-in" options={{ title: "Log In", headerBackTitle: "Back" }} />
-      <Stack.Screen name="sign-up" options={{ title: "Create Account", headerBackTitle: "Back" }} />
+      <Stack.Screen
+        name="sign-in"
+        options={{
+          title: "Log In",
+          headerBackTitle: "Back",
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      />
+      <Stack.Screen
+        name="sign-up"
+        options={{
+          title: "Create Account",
+          headerBackTitle: "Back",
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      />
     </Stack>
   )
 }
