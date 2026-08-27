@@ -1,6 +1,21 @@
 "use client"
 
 import { useMemo, useState, useEffect } from "react"
+import { useMutation } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { Id } from "@/convex/_generated/dataModel"
+import { Pencil, Trash2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { toast } from "sonner"
 import {
   BarChart,
   Bar,
@@ -13,7 +28,7 @@ import {
   Pie,
   Cell,
 } from "recharts"
-import { categoryColors } from "@/lib/constants"
+import { categoryColors, currencies } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 import { convertCurrency, formatCurrencyAmount, fetchExchangeRates, fallbackRates } from "@/lib/currency"
 
@@ -59,6 +74,98 @@ export function StatsCharts({
 }: StatsChartsProps) {
   const [breakdownMetric, setBreakdownMetric] = useState<"cost" | "count">("cost")
   const [breakdownFilter, setBreakdownFilter] = useState<"all" | "paid">("all")
+
+  const updatePaymentMutation = useMutation(api.payments.update)
+  const removePaymentMutation = useMutation(api.payments.remove)
+
+  const [editingPayment, setEditingPayment] = useState<{
+    _id: string
+    name: string
+    amount: number
+    currency: string
+    date: string
+  } | null>(null)
+  const [editAmount, setEditAmount] = useState("")
+  const [editCurrency, setEditCurrency] = useState("USD")
+  const [editDate, setEditDate] = useState("")
+  const [isUpdating, setIsUpdating] = useState(false)
+
+  const [deletingPayment, setDeletingPayment] = useState<{
+    _id: string
+    name: string
+    amount: number
+    currency: string
+    date: string
+  } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleOpenEdit = (p: {
+    _id: string
+    name: string
+    amount: number
+    currency: string
+    date: Date
+  }) => {
+    const y = p.date.getFullYear()
+    const m = String(p.date.getMonth() + 1).padStart(2, "0")
+    const d = String(p.date.getDate()).padStart(2, "0")
+    const dateStr = `${y}-${m}-${d}`
+
+    setEditingPayment({
+      _id: p._id,
+      name: p.name,
+      amount: p.amount,
+      currency: p.currency,
+      date: dateStr,
+    })
+    setEditAmount(p.amount.toString())
+    setEditCurrency(p.currency)
+    setEditDate(dateStr)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingPayment) return
+    const parsedAmount = parseFloat(editAmount)
+    if (isNaN(parsedAmount) || parsedAmount < 0) {
+      toast.error("Please enter a valid amount")
+      return
+    }
+    if (!editDate) {
+      toast.error("Please select a date")
+      return
+    }
+    setIsUpdating(true)
+    try {
+      await updatePaymentMutation({
+        id: editingPayment._id as Id<"payments">,
+        amount: parsedAmount,
+        currency: editCurrency,
+        date: editDate,
+      })
+      toast.success("Payment record updated")
+      setEditingPayment(null)
+    } catch {
+      toast.error("Failed to update payment record")
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deletingPayment) return
+    setIsDeleting(true)
+    try {
+      await removePaymentMutation({
+        id: deletingPayment._id as Id<"payments">,
+      })
+      toast.success("Payment record deleted")
+      setDeletingPayment(null)
+    } catch {
+      toast.error("Failed to delete payment record")
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   const [internalRates, setInternalRates] = useState<Record<string, number>>(fallbackRates)
   useEffect(() => {
@@ -393,7 +500,7 @@ export function StatsCharts({
           <div>
             {paymentHistory.map((p, i) => (
               <div
-                key={i}
+                key={p._id || i}
                 className="flex items-center gap-3 border-b border-border px-4 py-3 last:border-b-0"
               >
                 <div
@@ -414,14 +521,152 @@ export function StatsCharts({
                     })}
                   </div>
                 </div>
-                <div className="text-sm font-semibold text-red-500">
-                  -{formatCurrencyAmount(p.convertedAmount, primaryCurrency)}
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <div className="text-sm font-semibold text-red-500">
+                      -{formatCurrencyAmount(p.convertedAmount, primaryCurrency)}
+                    </div>
+                    {p.currency !== primaryCurrency && (
+                      <div className="text-[10px] text-muted-foreground">
+                        {p.amount} {p.currency}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => handleOpenEdit(p)}
+                      title="Edit payment"
+                      className="size-7 text-muted-foreground hover:text-foreground cursor-pointer"
+                    >
+                      <Pencil className="size-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => {
+                        const y = p.date.getFullYear()
+                        const m = String(p.date.getMonth() + 1).padStart(2, "0")
+                        const d = String(p.date.getDate()).padStart(2, "0")
+                        setDeletingPayment({
+                          _id: p._id,
+                          name: p.name,
+                          amount: p.amount,
+                          currency: p.currency,
+                          date: `${y}-${m}-${d}`,
+                        })
+                      }}
+                      title="Delete payment"
+                      className="size-7 text-muted-foreground hover:text-destructive cursor-pointer"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* Edit Payment Dialog */}
+      <Dialog open={!!editingPayment} onOpenChange={(open) => !open && setEditingPayment(null)}>
+        <DialogContent className="max-w-sm rounded-lg p-5">
+          <DialogHeader className="space-y-1 text-left">
+            <DialogTitle className="text-base font-semibold">Edit Payment Record</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Update the payment details for {editingPayment?.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Amount</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editAmount}
+                  onChange={(e) => setEditAmount(e.target.value)}
+                  className="text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Currency</label>
+                <select
+                  value={editCurrency}
+                  onChange={(e) => setEditCurrency(e.target.value)}
+                  className="flex h-9 w-full rounded-lg border border-border bg-background px-2.5 text-xs"
+                >
+                  {currencies.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium">Payment Date</label>
+              <Input
+                type="date"
+                value={editDate}
+                onChange={(e) => setEditDate(e.target.value)}
+                className="text-xs"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditingPayment(null)}
+              className="cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSaveEdit}
+              disabled={isUpdating}
+              className="cursor-pointer"
+            >
+              {isUpdating ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Payment Dialog */}
+      <Dialog open={!!deletingPayment} onOpenChange={(open) => !open && setDeletingPayment(null)}>
+        <DialogContent className="max-w-sm rounded-lg p-5">
+          <DialogHeader className="space-y-1 text-left">
+            <DialogTitle className="text-base font-semibold">Delete Payment Record</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to delete this payment record of {deletingPayment?.amount} {deletingPayment?.currency} for {deletingPayment?.name}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0 mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDeletingPayment(null)}
+              className="cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="cursor-pointer"
+            >
+              {isDeleting ? "Deleting..." : "Delete Payment"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

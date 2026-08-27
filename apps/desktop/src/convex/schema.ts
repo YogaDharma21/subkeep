@@ -84,7 +84,9 @@ export default defineSchema({
     currency: v.string(),
     category: v.string(),
     date: v.string(),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .index("by_subscription", ["subscriptionId"]),
 
   userSettings: defineTable({
     userId: v.string(),
