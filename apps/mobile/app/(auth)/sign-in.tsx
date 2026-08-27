@@ -10,7 +10,7 @@ import {
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
-import { useSignIn } from "@clerk/expo/legacy"
+import { useSignIn } from "@clerk/expo"
 import { Lock, Mail, ArrowRight } from "lucide-react-native"
 import { GoogleOAuthButton } from "@/components/google-oauth-button"
 import { Input } from "@/components/ui/input"
@@ -20,7 +20,7 @@ import { useThemeColor } from "@/hooks/use-theme-color"
 export default function SignInScreen() {
   const router = useRouter()
   const { colors } = useThemeColor()
-  const { signIn, setActive, isLoaded } = useSignIn()
+  const { signIn } = useSignIn()
 
   const [emailAddress, setEmailAddress] = useState("")
   const [password, setPassword] = useState("")
@@ -28,8 +28,6 @@ export default function SignInScreen() {
   const [errorMsg, setErrorMsg] = useState("")
 
   const handleSignIn = async () => {
-    if (!isLoaded) return
-
     if (!emailAddress.trim() || !password.trim()) {
       setErrorMsg("Please enter your email and password.")
       return
@@ -39,22 +37,40 @@ export default function SignInScreen() {
     setErrorMsg("")
 
     try {
-      const result = await signIn.create({
+      const result = await signIn.password({
         identifier: emailAddress.trim(),
         password: password,
       })
 
-      if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId })
-        router.replace("/(tabs)" as never)
-      } else {
-        console.log("Sign in status not complete:", result)
-        setErrorMsg("Further verification required.")
+      if (result.error) {
+        throw result.error
       }
+
+      if (signIn.status !== "complete") {
+        console.log("Sign in status not complete:", signIn.status)
+        setErrorMsg("Further verification required.")
+        return
+      }
+
+      const finalizeResult = await signIn.finalize()
+      if (finalizeResult.error) {
+        throw finalizeResult.error
+      }
+
+      router.replace("/(tabs)" as never)
     } catch (err: unknown) {
-      const error = err as { errors?: { message?: string; longMessage?: string }[] }
+      const error = err as {
+        message?: string
+        longMessage?: string
+        errors?: { message?: string; longMessage?: string }[]
+      }
       console.error("Sign in error:", err)
-      const msg = error.errors?.[0]?.longMessage || error.errors?.[0]?.message || "Failed to log in. Please check your credentials."
+      const msg =
+        error.longMessage ||
+        error.message ||
+        error.errors?.[0]?.longMessage ||
+        error.errors?.[0]?.message ||
+        "Failed to log in. Please check your credentials."
       setErrorMsg(msg)
     } finally {
       setLoading(false)
