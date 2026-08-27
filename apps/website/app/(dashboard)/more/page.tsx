@@ -3,10 +3,11 @@
 import { useState, useRef } from "react"
 import Image from "next/image"
 import { useQuery, useMutation } from "convex/react"
-import { useAuth } from "@clerk/nextjs"
+import { useAuth, useUser, useClerk } from "@clerk/nextjs"
+import { useTheme } from "next-themes"
 import { api } from "@/convex/_generated/api"
 import {
-  Settings,
+  SlidersHorizontal,
   Download,
   Upload,
   Info,
@@ -16,6 +17,7 @@ import {
   FileSpreadsheet,
   ExternalLink,
   CreditCard,
+  LogOut,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -27,10 +29,18 @@ import {
 import { SettingsSheet } from "@/components/settings-sheet"
 import { PaymentMethodsSheet } from "@/components/payment-methods-sheet"
 import { exportSubscriptionsToCSV, parseCSVToSubscriptions } from "@/lib/csv"
+import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
+import { getSymbol } from "@/lib/constants"
 import { toast } from "sonner"
 
 export default function MorePage() {
   const { isSignedIn } = useAuth()
+  const { user } = useUser()
+  const { signOut } = useClerk()
+  const { theme, resolvedTheme } = useTheme()
+  const { primaryCurrency } = usePrimaryCurrency()
+  const isDark = resolvedTheme === "dark" || theme === "dark"
+
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
@@ -205,76 +215,8 @@ export default function MorePage() {
     }
   }
 
-  const handleItemClick = (id: string) => {
-    if (id === "settings") setSettingsOpen(true)
-    else if (id === "cards") setPaymentMethodsOpen(true)
-    else if (id === "export-csv") handleExportCSV()
-    else if (id === "export-json") handleExportJSON()
-    else if (id === "import-csv") csvFileInputRef.current?.click()
-    else if (id === "backup") handleBackup()
-    else if (id === "restore") jsonFileInputRef.current?.click()
-    else if (id === "about") setAboutOpen(true)
-  }
-
-  const menuGroups = [
-    [
-      {
-        id: "settings",
-        icon: Settings,
-        label: "Settings & Budget Cap",
-        description: "Dark mode, primary currency, monthly budget limit",
-      },
-      {
-        id: "cards",
-        icon: CreditCard,
-        label: "Payment Methods & Card Vault",
-        description: "Track credit cards, card expiry alerts & spend breakdown",
-      },
-    ],
-    [
-      {
-        id: "export-csv",
-        icon: FileSpreadsheet,
-        label: "Export as CSV",
-        description: "Download spreadsheet formatted for Excel / Sheets",
-      },
-      {
-        id: "import-csv",
-        icon: Upload,
-        label: "Import from CSV",
-        description: "Upload spreadsheet to restore or migrate subscriptions",
-      },
-      {
-        id: "export-json",
-        icon: Download,
-        label: "Export JSON",
-        description: "Download raw JSON subscription records",
-      },
-      {
-        id: "backup",
-        icon: FileJson,
-        label: "Full Backup",
-        description: "Export full backup including payment history",
-      },
-      {
-        id: "restore",
-        icon: Upload,
-        label: "Restore JSON Backup",
-        description: "Import from a previous SubKeep JSON backup",
-      },
-    ],
-    [
-      {
-        id: "about",
-        icon: Info,
-        label: "About SubKeep",
-        description: "Version 0.0.1",
-      },
-    ],
-  ]
-
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
+    <div className="max-w-2xl mx-auto space-y-6">
       <input
         ref={jsonFileInputRef}
         type="file"
@@ -290,49 +232,191 @@ export default function MorePage() {
         onChange={handleCsvFileSelect}
       />
 
-      {menuGroups.map((group, gi) => (
-        <div
-          key={gi}
-          className="mb-3 overflow-hidden rounded-lg border border-border bg-background divide-y divide-border"
-        >
-          {group.map((item, ii) => {
-            const Icon = item.icon
-            return (
-              <button
-                key={ii}
-                onClick={() => handleItemClick(item.id)}
-                className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
-              >
-                <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80">
-                  <Icon className="size-4 text-foreground/80" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium text-foreground">{item.label}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {item.description}
-                  </div>
-                </div>
-                <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-              </button>
-            )
-          })}
+      {/* User Profile Card */}
+      {user && (
+        <div className="flex items-center gap-3.5 rounded-xl border border-border bg-background p-4 shadow-2xs">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-base shadow-xs">
+            {(user.fullName || user.primaryEmailAddress?.emailAddress || "U").charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-sm font-bold text-foreground truncate">
+              {user.fullName || "SubKeep User"}
+            </h2>
+            <p className="text-xs text-muted-foreground truncate">
+              {user.primaryEmailAddress?.emailAddress}
+            </p>
+          </div>
         </div>
-      ))}
+      )}
 
-      <div className="overflow-hidden rounded-lg border border-border bg-background">
+      {/* Category: GENERAL & PREFERENCES */}
+      <div className="space-y-2">
+        <h3 className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          General & Preferences
+        </h3>
+        <div className="overflow-hidden rounded-xl border border-border bg-background divide-y divide-border shadow-2xs">
+          {/* Preferences */}
+          <button
+            onClick={() => setSettingsOpen(true)}
+            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+          >
+            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+              <SlidersHorizontal className="size-4 text-foreground/80" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground">Preferences</div>
+              <div className="text-xs text-muted-foreground">
+                {isDark ? "Dark" : "Light"} mode · {primaryCurrency} ({getSymbol(primaryCurrency)}) · Budget cap & alerts
+              </div>
+            </div>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          </button>
+
+          {/* Payment Methods & Card Vault */}
+          <button
+            onClick={() => setPaymentMethodsOpen(true)}
+            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+          >
+            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+              <CreditCard className="size-4 text-foreground/80" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground">Payment Methods & Card Vault</div>
+              <div className="text-xs text-muted-foreground">
+                Track credit cards, card expiry alerts & spend breakdown
+              </div>
+            </div>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          </button>
+        </div>
+      </div>
+
+      {/* Category: DATA & BACKUP */}
+      <div className="space-y-2">
+        <h3 className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Data & Backup
+        </h3>
+        <div className="overflow-hidden rounded-xl border border-border bg-background divide-y divide-border shadow-2xs">
+          <button
+            onClick={handleExportCSV}
+            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+          >
+            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+              <FileSpreadsheet className="size-4 text-foreground/80" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground">Export as CSV</div>
+              <div className="text-xs text-muted-foreground">Download spreadsheet formatted for Excel / Sheets</div>
+            </div>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          </button>
+
+          <button
+            onClick={() => csvFileInputRef.current?.click()}
+            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+          >
+            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+              <Upload className="size-4 text-foreground/80" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground">Import from CSV</div>
+              <div className="text-xs text-muted-foreground">Upload spreadsheet to restore or migrate subscriptions</div>
+            </div>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          </button>
+
+          <button
+            onClick={handleExportJSON}
+            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+          >
+            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+              <Download className="size-4 text-foreground/80" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground">Export JSON</div>
+              <div className="text-xs text-muted-foreground">Download raw JSON subscription records</div>
+            </div>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          </button>
+
+          <button
+            onClick={handleBackup}
+            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+          >
+            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+              <FileJson className="size-4 text-foreground/80" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground">Full Backup</div>
+              <div className="text-xs text-muted-foreground">Export full backup including payment history</div>
+            </div>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          </button>
+
+          <button
+            onClick={() => jsonFileInputRef.current?.click()}
+            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+          >
+            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+              <Upload className="size-4 text-foreground/80" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground">Restore JSON Backup</div>
+              <div className="text-xs text-muted-foreground">Import from a previous SubKeep JSON backup</div>
+            </div>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          </button>
+        </div>
+      </div>
+
+      {/* Category: ABOUT */}
+      <div className="overflow-hidden rounded-xl border border-border bg-background shadow-2xs">
+        <button
+          onClick={() => setAboutOpen(true)}
+          className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+        >
+          <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+            <Info className="size-4 text-foreground/80" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-semibold text-foreground">About SubKeep</div>
+            <div className="text-xs text-muted-foreground">Version 0.0.1</div>
+          </div>
+          <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+        </button>
+      </div>
+
+      {/* Category: ACCOUNT & DANGER ZONE */}
+      <div className="overflow-hidden rounded-xl border border-border bg-background divide-y divide-border shadow-2xs">
+        {isSignedIn && (
+          <button
+            onClick={() => signOut()}
+            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+          >
+            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+              <LogOut className="size-4 text-foreground/80" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground">Sign Out</div>
+              <div className="text-xs text-muted-foreground">Log out of this device and session</div>
+            </div>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          </button>
+        )}
+
         <button
           onClick={() => setDeleteConfirm(true)}
           className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-destructive/10 active:bg-destructive/20 group"
         >
-          <div className="flex size-9 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-destructive/10 text-destructive shrink-0">
             <Trash2 className="size-4 text-destructive" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium text-destructive">
+            <div className="text-sm font-semibold text-destructive">
               Delete All Data
             </div>
             <div className="text-xs text-muted-foreground">
-              Remove all subscriptions and payment logs
+              Permanently erase all subscriptions and payment logs
             </div>
           </div>
           <ChevronRight className="size-4 shrink-0 text-muted-foreground group-hover:text-destructive transition-colors" />
