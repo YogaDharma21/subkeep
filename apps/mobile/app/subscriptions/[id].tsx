@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useMemo } from "react"
 import {
   Modal,
   View,
@@ -70,10 +70,16 @@ export default function SubscriptionDetailPage() {
     api.subscriptions.get,
     id ? { id: id as Id<"subscriptions"> } : "skip"
   )
-  const subPayments = useQuery(
-    api.payments.listBySubscription,
-    id && isSignedIn ? { subscriptionId: id as Id<"subscriptions"> } : "skip"
+  const allPayments = useQuery(
+    api.payments.list,
+    isSignedIn ? {} : "skip"
   )
+  const subPayments = useMemo(() => {
+    if (!allPayments || !id) return []
+    return allPayments.filter(
+      (p) => p.subscriptionId === id || (sub && p.name === sub.name)
+    )
+  }, [allPayments, id, sub])
   const paymentMethods = useQuery(
     api.paymentMethods.list,
     isSignedIn ? {} : "skip"
