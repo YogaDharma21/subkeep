@@ -328,7 +328,7 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40 }}>
-        {/* User profile card (opens Clerk Profile modal) */}
+        {/* User profile card (opens Clerk's hosted Account Portal) */}
         {user ? (
           <TouchableOpacity
             activeOpacity={0.7}
