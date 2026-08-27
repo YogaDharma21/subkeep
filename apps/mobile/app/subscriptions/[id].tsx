@@ -502,12 +502,14 @@ export default function SubscriptionDetailPage() {
               width: 52,
               height: 52,
               borderRadius: 12,
-              backgroundColor: editing ? editColor : sub.color,
+              backgroundColor: colors.surface,
+              borderWidth: 1,
+              borderColor: colors.border,
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <DynamicIcon name={editing ? editIcon || sub.icon : sub.icon} size={26} color="#ffffff" />
+            <DynamicIcon name={editing ? editIcon || sub.icon : sub.icon} size={26} color={editing ? editColor : sub.color || colors.text} />
           </TouchableOpacity>
 
           <View style={{ flex: 1, gap: 6 }}>

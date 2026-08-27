@@ -32,10 +32,9 @@ const TemplateCard = memo(function TemplateCard({
       className="flex w-full cursor-pointer items-center gap-3 rounded-lg border border-border/70 bg-card/60 p-3 hover:bg-muted/80 hover:border-foreground/20 active:scale-[0.99] transition-all text-left group shadow-2xs"
     >
       <div
-        className="flex size-10 shrink-0 items-center justify-center rounded-lg text-white shadow-xs transition-transform group-hover:scale-105"
-        style={{ backgroundColor: template.color }}
+        className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 shadow-xs transition-transform group-hover:scale-105"
       >
-        <DynamicIcon name={template.icon} className="size-5 text-white" />
+        <DynamicIcon name={template.icon} className="size-5" style={{ color: template.color || "currentColor" }} />
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-xs font-bold text-foreground truncate group-hover:text-foreground">

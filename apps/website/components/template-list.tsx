@@ -34,10 +34,9 @@ const TemplateRow = memo(function TemplateRow({
       className="flex w-full cursor-pointer items-center gap-3 rounded-lg p-2.5 hover:bg-muted/70 active:bg-muted transition-colors text-left"
     >
       <div
-        className="flex size-10 shrink-0 items-center justify-center rounded-lg text-white shadow-xs"
-        style={{ backgroundColor: template.color }}
+        className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 shadow-xs"
       >
-        <DynamicIcon name={template.icon} className="size-5 text-white" />
+        <DynamicIcon name={template.icon} className="size-5" style={{ color: template.color || "currentColor" }} />
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-sm font-semibold text-foreground truncate">
