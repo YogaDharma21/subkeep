@@ -9,7 +9,7 @@ import {
 } from "react-native"
 import { Search, X, Plus } from "lucide-react-native"
 import { DEFAULT_TEMPLATES, SubscriptionTemplate } from "@/constants/default-templates"
-import { categories } from "@/constants/categories"
+import { categories, getContrastTextColor } from "@/constants/categories"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { useThemeColor } from "@/hooks/use-theme-color"
 
@@ -175,12 +175,14 @@ export function TemplateList({ onSelect, onCustomCreate }: TemplateListProps) {
                 width: 40,
                 height: 40,
                 borderRadius: 8,
-                backgroundColor: item.color,
+                backgroundColor: item.color || "#6366F1",
+                borderWidth: 1,
+                borderColor: colors.border,
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <DynamicIcon name={item.icon} size={20} color="#ffffff" />
+              <DynamicIcon name={item.icon} size={18} color={getContrastTextColor(item.color)} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>

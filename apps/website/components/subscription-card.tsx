@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { getSymbol } from "@/lib/constants"
+import { getSymbol, getContrastTextColor } from "@/lib/constants"
 import { format, differenceInDays } from "date-fns"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat, formatCurrencyAmount } from "@/lib/currency"
@@ -60,10 +60,10 @@ export function SubscriptionCard({
       className="flex items-center gap-3 rounded-lg border border-border bg-background p-3 transition-all hover:border-border/80 active:scale-[0.98] active:opacity-80 relative overflow-hidden group"
     >
       <div
-        className="flex size-11 shrink-0 items-center justify-center rounded-lg transition-transform group-hover:scale-105 overflow-hidden"
-        style={{ backgroundColor: sub.color }}
+        className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-black/10 dark:border-white/10 transition-transform group-hover:scale-105 overflow-hidden shadow-xs"
+        style={{ backgroundColor: sub.color || "#6366F1" }}
       >
-        <DynamicIcon name={sub.icon} className="size-5 text-white" />
+        <DynamicIcon name={sub.icon} className="size-5.5" style={{ color: getContrastTextColor(sub.color) }} />
       </div>
 
       <div className="min-w-0 flex-1">

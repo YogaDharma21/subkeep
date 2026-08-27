@@ -1,10 +1,11 @@
-import { Tabs } from "expo-router"
+import { Tabs, useRouter } from "expo-router"
 import { View, Text, TouchableOpacity, Image } from "react-native"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/components/custom-alert-provider"
-import { Receipt, Calendar, BarChart3, Settings, Search } from "lucide-react-native"
+import { Home, Calendar, Plus, BarChart3, Settings, Search } from "lucide-react-native"
 
 export default function TabLayout() {
+  const router = useRouter()
   const { colors } = useThemeColor()
   const { showSearchModal } = useAlert()
 
@@ -55,8 +56,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          tabBarLabel: "Dashboard",
-          tabBarIcon: ({ color, size }) => <Receipt size={size || 22} color={color} />,
+          tabBarLabel: "Home",
+          tabBarIcon: ({ color, size }) => <Home size={size || 22} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -64,6 +65,59 @@ export default function TabLayout() {
         options={{
           tabBarLabel: "Calendar",
           tabBarIcon: ({ color, size }) => <Calendar size={size || 22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="add"
+        options={{
+          tabBarLabel: "Add",
+          tabBarButton: () => (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => router.push("/modal/add")}
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+                paddingTop: 4,
+              }}
+            >
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  backgroundColor: colors.primary,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginTop: -10,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 4,
+                  elevation: 4,
+                }}
+              >
+                <Plus size={22} color={colors.primaryForeground} strokeWidth={2.5} />
+              </View>
+              <Text
+                style={{
+                  fontSize: 10,
+                  fontWeight: "600",
+                  color: colors.tabIconDefault,
+                  marginTop: 2,
+                }}
+              >
+                Add
+              </Text>
+            </TouchableOpacity>
+          ),
+        }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault()
+            router.push("/modal/add")
+          },
         }}
       />
       <Tabs.Screen

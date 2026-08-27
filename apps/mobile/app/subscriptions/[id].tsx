@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useMemo } from "react"
 import {
   Modal,
   View,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Linking,
   Share,
+  TextInput,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useLocalSearchParams, useRouter } from "expo-router"
@@ -33,6 +34,7 @@ import {
   MessageSquare,
   X,
   Link2,
+  History,
 } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { Input } from "@/components/ui/input"
@@ -40,8 +42,8 @@ import { Button } from "@/components/ui/button"
 import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { IconPickerModal } from "@/components/icon-picker-modal"
 import { convertAndFormat, formatCycleLabel } from "@/lib/currency"
-import { getSymbol } from "@/constants/currencies"
-import { categoryColors } from "@/constants/categories"
+import { getSymbol, currencies } from "@/constants/currencies"
+import { categoryColors, colorPresets, getContrastTextColor } from "@/constants/categories"
 import { format, differenceInDays } from "date-fns"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
@@ -68,6 +70,16 @@ export default function SubscriptionDetailPage() {
     api.subscriptions.get,
     id ? { id: id as Id<"subscriptions"> } : "skip"
   )
+  const allPayments = useQuery(
+    api.payments.list,
+    isSignedIn ? {} : "skip"
+  )
+  const subPayments = useMemo(() => {
+    if (!allPayments || !id) return []
+    return allPayments.filter(
+      (p) => p.subscriptionId === id || (sub && p.name === sub.name)
+    )
+  }, [allPayments, id, sub])
   const paymentMethods = useQuery(
     api.paymentMethods.list,
     isSignedIn ? {} : "skip"
@@ -78,7 +90,92 @@ export default function SubscriptionDetailPage() {
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
   const recordPaymentMutation = useMutation(api.payments.create)
+  const updatePaymentMutation = useMutation(api.payments.update)
+  const removePaymentMutation = useMutation(api.payments.remove)
   const generateUploadUrl = useMutation(api.subscriptions.generateUploadUrl)
+
+  // Payment History Edit/Delete State
+  const [editingPayment, setEditingPayment] = useState<{
+    _id: string
+    name: string
+    amount: number
+    currency: string
+    date: string
+  } | null>(null)
+  const [editPaymentAmount, setEditPaymentAmount] = useState("")
+  const [editPaymentCurrency, setEditPaymentCurrency] = useState("USD")
+  const [editPaymentDate, setEditPaymentDate] = useState("")
+  const [isUpdatingPayment, setIsUpdatingPayment] = useState(false)
+
+  const handleOpenEditPayment = (p: {
+    _id: string
+    name: string
+    amount: number
+    currency: string
+    date: string
+  }) => {
+    setEditingPayment(p)
+    setEditPaymentAmount(p.amount.toString())
+    setEditPaymentCurrency(p.currency)
+    setEditPaymentDate(p.date)
+  }
+
+  const handleSaveEditPayment = async () => {
+    if (!editingPayment) return
+    const parsedAmount = parseFloat(editPaymentAmount)
+    if (isNaN(parsedAmount) || parsedAmount < 0) {
+      showToast("Please enter a valid amount", "error")
+      return
+    }
+    if (!editPaymentDate) {
+      showToast("Please enter a valid date (YYYY-MM-DD)", "error")
+      return
+    }
+    setIsUpdatingPayment(true)
+    try {
+      await updatePaymentMutation({
+        id: editingPayment._id as Id<"payments">,
+        amount: parsedAmount,
+        currency: editPaymentCurrency,
+        date: editPaymentDate,
+      })
+      showToast("Payment record updated", "success")
+      setEditingPayment(null)
+    } catch {
+      showToast("Failed to update payment record", "error")
+    } finally {
+      setIsUpdatingPayment(false)
+    }
+  }
+
+  const handleDeletePayment = (p: {
+    _id: string
+    name: string
+    amount: number
+    currency: string
+    date: string
+  }) => {
+    showAlert({
+      title: "Delete Payment Record",
+      message: `Are you sure you want to delete this payment record of ${p.amount} ${p.currency} on ${p.date}?`,
+      icon: "warning",
+      buttons: [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await removePaymentMutation({ id: p._id as Id<"payments"> })
+              showToast("Payment record deleted", "info")
+            } catch {
+              showToast("Failed to delete payment record", "error")
+            }
+          },
+        },
+      ],
+    })
+  }
 
   // Edit form state
   const [editName, setEditName] = useState("")
@@ -102,11 +199,6 @@ export default function SubscriptionDetailPage() {
     { name: string; shareAmount: number; isPaid?: boolean }[]
   >([])
 
-  const colorOptions = [
-    "#000000", "#555555", "#E50914", "#1DB954", "#00A8E1",
-    "#4285F4", "#0078D4", "#B535F6", "#F47D31", "#00C4CC",
-    "#E60023", "#107C10", "#003087", "#58CC02", "#FF0000",
-  ]
 
   const startEditing = () => {
     if (!sub) return
@@ -502,12 +594,18 @@ export default function SubscriptionDetailPage() {
               width: 52,
               height: 52,
               borderRadius: 12,
-              backgroundColor: editing ? editColor : sub.color,
+              backgroundColor: (editing ? editColor : sub.color) || "#6366F1",
+              borderWidth: 1,
+              borderColor: colors.border,
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <DynamicIcon name={editing ? editIcon || sub.icon : sub.icon} size={26} color="#ffffff" />
+            <DynamicIcon
+              name={editing ? editIcon || sub.icon : sub.icon}
+              size={26}
+              color={getContrastTextColor(editing ? editColor : sub.color)}
+            />
           </TouchableOpacity>
 
           <View style={{ flex: 1, gap: 6 }}>
@@ -694,12 +792,12 @@ export default function SubscriptionDetailPage() {
                   Currency
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 4 }}>
-                  {["USD", "EUR", "GBP", "IDR", "SGD", "AUD", "CAD"].map((curr) => (
+                  {currencies.map((c) => c.value).map((curr) => (
                     <TouchableOpacity
                       key={curr}
                       onPress={() => setEditCurrency(curr)}
                       style={{
-                        paddingHorizontal: 8,
+                        paddingHorizontal: 12,
                         paddingVertical: 8,
                         borderRadius: 8,
                         backgroundColor: editCurrency === curr ? colors.primary : colors.surface,
@@ -734,27 +832,68 @@ export default function SubscriptionDetailPage() {
               onChangeText={setEditCancelUrl}
             />
 
-            {/* Color Circles */}
-            <View style={{ gap: 6 }}>
+            {/* Color Circles & Custom Hex Input */}
+            <View style={{ gap: 8 }}>
               <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
                 Icon Color
               </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8 }}>
-                {colorOptions.map((c) => (
-                  <TouchableOpacity
-                    key={c}
-                    onPress={() => setEditColor(c)}
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 14,
-                      backgroundColor: c,
-                      borderWidth: editColor === c ? 2 : 0,
-                      borderColor: colors.text,
-                    }}
-                  />
-                ))}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8, alignItems: "center" }}>
+                {colorPresets.map((c) => {
+                  const isSelected = editColor?.toLowerCase() === c.toLowerCase()
+                  return (
+                    <TouchableOpacity
+                      key={c}
+                      onPress={() => setEditColor(c)}
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 14,
+                        backgroundColor: c,
+                        borderWidth: isSelected ? 2.5 : c.toLowerCase() === "#ffffff" ? 1 : 0,
+                        borderColor: isSelected ? colors.primary : colors.border,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    />
+                  )
+                })}
               </ScrollView>
+
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 2 }}>
+                <View
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 14,
+                    backgroundColor: editColor?.startsWith("#") ? editColor : "#FFFFFF",
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                />
+                <TextInput
+                  value={editColor}
+                  onChangeText={(text) => {
+                    let val = text.trim()
+                    if (!val.startsWith("#") && val.length > 0) val = "#" + val
+                    setEditColor(val)
+                  }}
+                  placeholder="#FFFFFF"
+                  placeholderTextColor={colors.mutedText}
+                  maxLength={7}
+                  autoCapitalize="characters"
+                  style={{
+                    flex: 1,
+                    height: 38,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    fontSize: 13,
+                    color: colors.text,
+                    backgroundColor: colors.surface,
+                  }}
+                />
+              </View>
             </View>
 
             <Button onPress={saveEdit} style={{ marginTop: 6 }}>
@@ -1063,6 +1202,109 @@ export default function SubscriptionDetailPage() {
               )}
             </View>
 
+            {/* Payment History Log */}
+            <View
+              style={{
+                backgroundColor: colors.card,
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 14,
+                padding: 16,
+                gap: 12,
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <History size={14} color={colors.text} />
+                  <Text style={{ fontSize: 11, fontWeight: "700", color: colors.text, textTransform: "uppercase", letterSpacing: 0.8 }}>
+                    PAYMENT HISTORY & BILLING LOGS
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 11, color: colors.mutedText, fontWeight: "600" }}>
+                  {subPayments?.length || 0} {subPayments?.length === 1 ? "record" : "records"}
+                </Text>
+              </View>
+
+              {subPayments && subPayments.length > 0 ? (
+                <View style={{ gap: 8 }}>
+                  {subPayments.map((p) => {
+                    const paymentDate = new Date(p.date)
+                    return (
+                      <View
+                        key={p._id}
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          backgroundColor: colors.surface,
+                          borderRadius: 10,
+                          padding: 10,
+                          borderWidth: 1,
+                          borderColor: colors.border,
+                          gap: 10,
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: 8,
+                            backgroundColor: p.color || sub.color,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Text style={{ fontSize: 13, fontWeight: "800", color: "#ffffff" }}>
+                            {p.name.charAt(0).toUpperCase()}
+                          </Text>
+                        </View>
+
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 12, fontWeight: "700", color: colors.text }}>
+                            {format(paymentDate, "MMM d, yyyy")}
+                          </Text>
+                          <Text style={{ fontSize: 10, color: colors.mutedText }}>
+                            {getSymbol(p.currency)}{p.amount} ({p.currency})
+                          </Text>
+                        </View>
+
+                        <View style={{ alignItems: "flex-end", gap: 3 }}>
+                          <Text style={{ fontSize: 12, fontWeight: "700", color: colors.destructive }}>
+                            -{convertAndFormat(p.amount, p.currency, primaryCurrency, rates)}
+                          </Text>
+                          <View style={{ flexDirection: "row", gap: 6, marginTop: 2 }}>
+                            <TouchableOpacity
+                              onPress={() => handleOpenEditPayment(p)}
+                              style={{
+                                padding: 4,
+                                borderRadius: 6,
+                                backgroundColor: colors.card,
+                              }}
+                            >
+                              <Pencil size={12} color={colors.text} />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              onPress={() => handleDeletePayment(p)}
+                              style={{
+                                padding: 4,
+                                borderRadius: 6,
+                                backgroundColor: colors.card,
+                              }}
+                            >
+                              <Trash2 size={12} color={colors.destructive} />
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      </View>
+                    )
+                  })}
+                </View>
+              ) : (
+                <Text style={{ fontSize: 11, color: colors.mutedText, lineHeight: 16 }}>
+                  No payments logged yet. Use &ldquo;Record Payment&rdquo; below to log each billing transaction.
+                </Text>
+              )}
+            </View>
+
             {/* Action Buttons */}
             <View style={{ gap: 10, paddingTop: 4 }}>
               {/* Suspend & Clone Row */}
@@ -1235,6 +1477,187 @@ export default function SubscriptionDetailPage() {
               >
                 {savingCancelUrl ? "Saving..." : "Save URL"}
               </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit Payment Modal */}
+      <Modal
+        visible={!!editingPayment}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setEditingPayment(null)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: 20,
+          }}
+        >
+          <View
+            style={{
+              width: "100%",
+              maxWidth: 360,
+              backgroundColor: colors.card,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: colors.border,
+              padding: 20,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 10 },
+              shadowOpacity: 0.35,
+              shadowRadius: 20,
+              elevation: 12,
+            }}
+          >
+            {/* Header */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 16,
+              }}
+            >
+              <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
+                Edit Payment Record
+              </Text>
+              <TouchableOpacity
+                onPress={() => setEditingPayment(null)}
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 14,
+                  backgroundColor: colors.surface,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <X size={16} color={colors.mutedText} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Amount input */}
+            <View style={{ marginBottom: 12 }}>
+              <Text style={{ fontSize: 12, fontWeight: "600", color: colors.mutedText, marginBottom: 6 }}>
+                Amount
+              </Text>
+              <TextInput
+                value={editPaymentAmount}
+                onChangeText={setEditPaymentAmount}
+                keyboardType="numeric"
+                style={{
+                  backgroundColor: colors.surface,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 10,
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  fontSize: 14,
+                  color: colors.text,
+                }}
+                placeholder="0.00"
+                placeholderTextColor={colors.mutedText}
+              />
+            </View>
+
+            {/* Currency selector chips */}
+            <View style={{ marginBottom: 12 }}>
+              <Text style={{ fontSize: 12, fontWeight: "600", color: colors.mutedText, marginBottom: 6 }}>
+                Currency
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: "row" }}>
+                {currencies.slice(0, 10).map((c) => (
+                  <TouchableOpacity
+                    key={c.value}
+                    onPress={() => setEditPaymentCurrency(c.value)}
+                    style={{
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
+                      borderRadius: 8,
+                      backgroundColor: editPaymentCurrency === c.value ? colors.primary : colors.surface,
+                      marginRight: 6,
+                      borderWidth: 1,
+                      borderColor: editPaymentCurrency === c.value ? colors.primary : colors.border,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        fontWeight: "700",
+                        color: editPaymentCurrency === c.value ? colors.primaryForeground : colors.text,
+                      }}
+                    >
+                      {c.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* Date input */}
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ fontSize: 12, fontWeight: "600", color: colors.mutedText, marginBottom: 6 }}>
+                Payment Date (YYYY-MM-DD)
+              </Text>
+              <TextInput
+                value={editPaymentDate}
+                onChangeText={setEditPaymentDate}
+                style={{
+                  backgroundColor: colors.surface,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 10,
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  fontSize: 14,
+                  color: colors.text,
+                }}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={colors.mutedText}
+              />
+            </View>
+
+            {/* Action Buttons */}
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <TouchableOpacity
+                onPress={() => setEditingPayment(null)}
+                style={{
+                  flex: 1,
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                  backgroundColor: colors.surface,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleSaveEditPayment}
+                disabled={isUpdatingPayment}
+                style={{
+                  flex: 1,
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                  backgroundColor: colors.primary,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.primaryForeground }}>
+                  {isUpdatingPayment ? "Saving..." : "Save Changes"}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>

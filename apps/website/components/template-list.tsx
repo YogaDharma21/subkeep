@@ -4,7 +4,7 @@ import { useState, useMemo, useDeferredValue, memo, useCallback } from "react"
 import { Search, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { categories } from "@/lib/constants"
+import { categories, getContrastTextColor } from "@/lib/constants"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { DEFAULT_TEMPLATES, type SubscriptionTemplate } from "@/lib/default-templates"
 
@@ -34,10 +34,10 @@ const TemplateRow = memo(function TemplateRow({
       className="flex w-full cursor-pointer items-center gap-3 rounded-lg p-2.5 hover:bg-muted/70 active:bg-muted transition-colors text-left"
     >
       <div
-        className="flex size-10 shrink-0 items-center justify-center rounded-lg text-white shadow-xs"
-        style={{ backgroundColor: template.color }}
+        className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-black/10 dark:border-white/10 shadow-xs"
+        style={{ backgroundColor: template.color || "#6366F1" }}
       >
-        <DynamicIcon name={template.icon} className="size-5 text-white" />
+        <DynamicIcon name={template.icon} className="size-5" style={{ color: getContrastTextColor(template.color) }} />
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-sm font-semibold text-foreground truncate">
