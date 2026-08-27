@@ -175,12 +175,14 @@ export function TemplateList({ onSelect, onCustomCreate }: TemplateListProps) {
                 width: 40,
                 height: 40,
                 borderRadius: 8,
-                backgroundColor: item.color,
+                backgroundColor: colors.surface,
+                borderWidth: 1,
+                borderColor: colors.border,
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <DynamicIcon name={item.icon} size={20} color="#ffffff" />
+              <DynamicIcon name={item.icon} size={18} color={item.color || colors.text} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>

@@ -515,13 +515,16 @@ export function SubscriptionDetailView({
           <button
             onClick={() => editing && setIconOpen(true)}
             className={cn(
-              "flex size-14 items-center justify-center rounded-lg shadow-xs transition-transform",
+              "flex size-14 items-center justify-center rounded-lg border border-border bg-muted/50 shadow-xs transition-transform",
               editing && "cursor-pointer ring-2 ring-border ring-offset-2 hover:scale-105"
             )}
-            style={{ backgroundColor: editing ? editColor : sub.color }}
             disabled={!editing}
           >
-            <DynamicIcon name={currentIcon} className="size-7 text-white" />
+            <DynamicIcon
+              name={currentIcon}
+              className="size-7"
+              style={{ color: (editing ? editColor : sub.color) || "currentColor" }}
+            />
           </button>
           <div className="flex-1 min-w-0">
             {editing ? (
