@@ -2,7 +2,7 @@ import { Tabs } from "expo-router"
 import { View, Text, TouchableOpacity, Image } from "react-native"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/components/custom-alert-provider"
-import { Receipt, Calendar, BarChart3, Settings, Search } from "lucide-react-native"
+import { Home, Calendar, BarChart3, Settings, Search } from "lucide-react-native"
 
 export default function TabLayout() {
   const { colors } = useThemeColor()
@@ -55,8 +55,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          tabBarLabel: "Dashboard",
-          tabBarIcon: ({ color, size }) => <Receipt size={size || 22} color={color} />,
+          tabBarLabel: "Home",
+          tabBarIcon: ({ color, size }) => <Home size={size || 22} color={color} />,
         }}
       />
       <Tabs.Screen
