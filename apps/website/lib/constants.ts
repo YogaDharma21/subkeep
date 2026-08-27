@@ -35,6 +35,21 @@ export const categoryColors: Record<string, string> = {
   other: "#71717a",
 }
 
+export const colorPresets = [
+  "#FFFFFF",
+  "#09090B",
+  "#64748B",
+  "#3B82F6",
+  "#6366F1",
+  "#8B5CF6",
+  "#EC4899",
+  "#EF4444",
+  "#F59E0B",
+  "#10B981",
+]
+
+export const colorOptions = colorPresets
+
 export const billingCycles = [
   { value: "daily", label: "Daily" },
   { value: "weekly", label: "Weekly" },

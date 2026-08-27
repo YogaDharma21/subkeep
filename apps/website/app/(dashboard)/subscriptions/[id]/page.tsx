@@ -26,6 +26,7 @@ import {
   MessageSquare,
   Paperclip,
   History,
+  Pipette,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -49,6 +50,7 @@ import {
   billingCycles,
   getSymbol,
   categoryColors,
+  colorPresets,
 } from "@/lib/constants"
 import { format, differenceInDays } from "date-fns"
 import { convertAndFormat } from "@/lib/currency"
@@ -204,11 +206,6 @@ export default function SubscriptionDetailPage({
     }
   }
 
-  const colorOptions = [
-    "#000000", "#555555", "#E50914", "#1DB954", "#00A8E1",
-    "#4285F4", "#0078D4", "#B535F6", "#F47D31", "#00C4CC",
-    "#E60023", "#107C10", "#003087", "#58CC02", "#FF0000",
-  ]
 
   const startEditing = () => {
     if (!sub) return
@@ -764,21 +761,50 @@ export default function SubscriptionDetailPage({
 
           <div className="space-y-1">
             <label className="text-xs font-medium">Icon Color</label>
-            <div className="flex flex-wrap gap-2">
-              {colorOptions.map((c) => (
+            <div className="flex flex-wrap items-center gap-2">
+              {colorPresets.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setEditColor(c)}
                   className={cn(
-                    "size-8 rounded-full border-2 transition-all cursor-pointer",
-                    editColor === c
-                      ? "border-foreground scale-110"
-                      : "border-transparent"
+                    "size-7 rounded-full border-2 transition-all cursor-pointer shadow-xs",
+                    editColor?.toLowerCase() === c.toLowerCase()
+                      ? "border-primary ring-2 ring-primary/30 scale-110"
+                      : c.toLowerCase() === "#ffffff"
+                        ? "border-muted-foreground/30"
+                        : "border-transparent"
                   )}
                   style={{ backgroundColor: c }}
+                  title={c}
                 />
               ))}
+              <div className="flex items-center gap-1.5 ml-1 pl-2 border-l border-border">
+                <label
+                  className="relative size-7 rounded-full border border-border cursor-pointer overflow-hidden flex items-center justify-center bg-muted/50 hover:bg-muted transition-colors shrink-0"
+                  title="Pick custom color"
+                >
+                  <Pipette className="size-3.5 text-muted-foreground" />
+                  <input
+                    type="color"
+                    value={
+                      editColor?.startsWith("#") && editColor.length === 7
+                        ? editColor
+                        : "#FFFFFF"
+                    }
+                    onChange={(e) => setEditColor(e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                </label>
+                <input
+                  type="text"
+                  value={editColor}
+                  onChange={(e) => setEditColor(e.target.value)}
+                  placeholder="#FFFFFF"
+                  maxLength={7}
+                  className="w-20 px-2 py-1 text-xs font-mono rounded-md border border-border bg-background focus:outline-hidden focus:ring-1 focus:ring-primary"
+                />
+              </div>
             </div>
           </div>
 
