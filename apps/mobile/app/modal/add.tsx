@@ -27,6 +27,7 @@ import { TemplateList } from "@/components/template-list"
 import { IconPickerModal } from "@/components/icon-picker-modal"
 import { SubscriptionTemplate } from "@/constants/default-templates"
 import { categories, billingCycles, colorOptions } from "@/constants/categories"
+import { currencies } from "@/constants/currencies"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/components/custom-alert-provider"
 
@@ -342,12 +343,12 @@ export default function AddSubscriptionModal() {
                   Currency
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 4 }}>
-                  {["USD", "EUR", "GBP", "IDR", "SGD", "AUD", "CAD"].map((curr) => (
+                  {currencies.map((c) => c.value).map((curr) => (
                     <TouchableOpacity
                       key={curr}
                       onPress={() => setCurrency(curr)}
                       style={{
-                        paddingHorizontal: 10,
+                        paddingHorizontal: 12,
                         paddingVertical: 10,
                         borderRadius: 8,
                         backgroundColor: currency === curr ? colors.primary : colors.surface,
