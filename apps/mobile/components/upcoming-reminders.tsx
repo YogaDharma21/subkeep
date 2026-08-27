@@ -6,6 +6,7 @@ import { Id } from "@/convex/_generated/dataModel"
 import { Bell, Send, Check, ExternalLink } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
+import { getContrastTextColor } from "@/constants/categories"
 import { findUpcomingReminders, ReminderItem } from "@/lib/notifications"
 import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { useThemeColor } from "@/hooks/use-theme-color"
@@ -108,14 +109,14 @@ export function UpcomingReminders({
                     width: 36,
                     height: 36,
                     borderRadius: 8,
-                    backgroundColor: colors.surface,
+                    backgroundColor: item.color || "#6366F1",
                     borderWidth: 1,
                     borderColor: colors.border,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <DynamicIcon name={item.icon} size={18} color={item.color || colors.text} />
+                  <DynamicIcon name={item.icon} size={18} color={getContrastTextColor(item.color)} />
                 </View>
 
                 <View style={{ flex: 1 }}>

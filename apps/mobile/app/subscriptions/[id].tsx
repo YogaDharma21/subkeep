@@ -43,7 +43,7 @@ import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { IconPickerModal } from "@/components/icon-picker-modal"
 import { convertAndFormat, formatCycleLabel } from "@/lib/currency"
 import { getSymbol, currencies } from "@/constants/currencies"
-import { categoryColors, colorPresets } from "@/constants/categories"
+import { categoryColors, colorPresets, getContrastTextColor } from "@/constants/categories"
 import { format, differenceInDays } from "date-fns"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
@@ -594,14 +594,18 @@ export default function SubscriptionDetailPage() {
               width: 52,
               height: 52,
               borderRadius: 12,
-              backgroundColor: colors.surface,
+              backgroundColor: (editing ? editColor : sub.color) || "#6366F1",
               borderWidth: 1,
               borderColor: colors.border,
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <DynamicIcon name={editing ? editIcon || sub.icon : sub.icon} size={26} color={editing ? editColor : sub.color || colors.text} />
+            <DynamicIcon
+              name={editing ? editIcon || sub.icon : sub.icon}
+              size={26}
+              color={getContrastTextColor(editing ? editColor : sub.color)}
+            />
           </TouchableOpacity>
 
           <View style={{ flex: 1, gap: 6 }}>

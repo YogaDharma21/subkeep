@@ -8,6 +8,7 @@ import { Bell, Send, Check, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
+import { getContrastTextColor } from "@/lib/constants"
 import { toast } from "sonner"
 import { findUpcomingReminders, ReminderItem, sendWebPushNotification } from "@/lib/notifications"
 import { CancellationGuideModal } from "./cancellation-guide-modal"
@@ -93,9 +94,10 @@ export function UpcomingReminders({
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div
-                    className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50"
+                    className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-black/10 dark:border-white/10 shadow-xs"
+                    style={{ backgroundColor: item.color || "#6366F1" }}
                   >
-                    <DynamicIcon name={item.icon} className="size-4" style={{ color: item.color || "currentColor" }} />
+                    <DynamicIcon name={item.icon} className="size-4" style={{ color: getContrastTextColor(item.color) }} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">

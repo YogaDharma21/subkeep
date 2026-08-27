@@ -28,6 +28,7 @@ import {
   currencies,
   billingCycles,
   colorPresets,
+  getContrastTextColor,
 } from "@/lib/constants"
 
 interface AddSubscriptionSheetProps {
@@ -243,17 +244,19 @@ export function AddSubscriptionSheet({
                   >
                     <div
                       className={cn(
-                        "flex size-12 items-center justify-center rounded-lg border-2 border-dashed",
-                        selectedIcon
-                          ? "border-transparent"
-                          : "border-border text-muted-foreground"
+                        "flex size-10 items-center justify-center rounded-lg border border-black/10 dark:border-white/10 shadow-xs",
+                        !selectedIcon && "border-dashed border-border"
                       )}
                       style={
-                        selectedIcon ? { backgroundColor: selectedColor } : undefined
+                        selectedIcon ? { backgroundColor: selectedColor || "#6366F1" } : undefined
                       }
                     >
                       {selectedIcon ? (
-                        <DynamicIcon name={selectedIcon} className="size-5 text-white" />
+                        <DynamicIcon
+                          name={selectedIcon}
+                          className="size-5"
+                          style={{ color: getContrastTextColor(selectedColor) }}
+                        />
                       ) : (
                         <Plus className="size-5" />
                       )}
@@ -264,7 +267,7 @@ export function AddSubscriptionSheet({
                   </button>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Icon Color</label>
+                    <label className="text-sm font-medium">Brand Color</label>
                     <div className="flex flex-wrap items-center gap-2">
                       {colorPresets.map((c) => (
                         <button

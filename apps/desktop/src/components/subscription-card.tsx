@@ -1,4 +1,4 @@
-import { getSymbol } from "@/lib/constants"
+import { getSymbol, getContrastTextColor } from "@/lib/constants"
 import { format, differenceInDays } from "date-fns"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat, formatCurrencyAmount } from "@/lib/currency"
@@ -83,9 +83,10 @@ export function SubscriptionCard({
       className="flex items-center gap-3.5 rounded-lg border border-border bg-background p-3.5 transition-all hover:border-border/90 hover:bg-muted/30 active:scale-[0.99] cursor-pointer relative overflow-hidden group shadow-xs"
     >
       <div
-        className="flex size-12 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 transition-transform group-hover:scale-105 overflow-hidden shadow-xs"
+        className="flex size-12 shrink-0 items-center justify-center rounded-lg border border-black/10 dark:border-white/10 transition-transform group-hover:scale-105 overflow-hidden shadow-xs"
+        style={{ backgroundColor: sub.color || "#6366F1" }}
       >
-        <DynamicIcon name={sub.icon} className="size-6" style={{ color: sub.color || "currentColor" }} />
+        <DynamicIcon name={sub.icon} className="size-6" style={{ color: getContrastTextColor(sub.color) }} />
       </div>
 
       <div className="min-w-0 flex-1">
