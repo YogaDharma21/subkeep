@@ -51,6 +51,7 @@ import {
   getSymbol,
   categoryColors,
   colorPresets,
+  getContrastTextColor,
 } from "@/lib/constants"
 import { format, differenceInDays } from "date-fns"
 import { convertAndFormat } from "@/lib/currency"
@@ -507,15 +508,16 @@ export default function SubscriptionDetailPage({
           <button
             onClick={() => editing && setIconOpen(true)}
             className={cn(
-              "flex size-14 items-center justify-center rounded-lg border border-border bg-muted/50",
-              editing && "cursor-pointer ring-2 ring-border ring-offset-2"
+              "flex size-14 items-center justify-center rounded-lg border border-black/10 dark:border-white/10 shadow-xs",
+              editing && "cursor-pointer ring-2 ring-primary ring-offset-2"
             )}
+            style={{ backgroundColor: (editing ? editColor : sub.color) || "#6366F1" }}
             disabled={!editing}
           >
             <DynamicIcon
               name={currentIcon}
               className="size-7"
-              style={{ color: (editing ? editColor : sub.color) || "currentColor" }}
+              style={{ color: getContrastTextColor(editing ? editColor : sub.color) }}
             />
           </button>
           <div className="flex-1">

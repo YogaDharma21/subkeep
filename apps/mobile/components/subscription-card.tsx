@@ -5,6 +5,7 @@ import { DynamicIcon } from "@/components/dynamic-icon"
 import { Badge } from "@/components/ui/badge"
 import { convertAndFormat, formatCurrencyAmount, formatCycleLabel } from "@/lib/currency"
 import { getSymbol } from "@/constants/currencies"
+import { getContrastTextColor } from "@/constants/categories"
 import { format, differenceInDays } from "date-fns"
 import { useThemeColor } from "@/hooks/use-theme-color"
 
@@ -79,7 +80,7 @@ export function SubscriptionCard({
           width: 42,
           height: 42,
           borderRadius: 10,
-          backgroundColor: colors.surface,
+          backgroundColor: sub.color || "#6366F1",
           borderWidth: 1,
           borderColor: colors.border,
           alignItems: "center",
@@ -87,7 +88,7 @@ export function SubscriptionCard({
           overflow: "hidden",
         }}
       >
-        <DynamicIcon name={sub.icon} size={20} color={sub.color || colors.text} />
+        <DynamicIcon name={sub.icon} size={20} color={getContrastTextColor(sub.color)} />
       </View>
 
       {/* Info Column */}

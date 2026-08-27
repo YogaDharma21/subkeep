@@ -27,7 +27,7 @@ import { Button } from "@/components/ui/button"
 import { TemplateList } from "@/components/template-list"
 import { IconPickerModal } from "@/components/icon-picker-modal"
 import { SubscriptionTemplate } from "@/constants/default-templates"
-import { categories, billingCycles, colorPresets } from "@/constants/categories"
+import { categories, billingCycles, colorPresets, getContrastTextColor } from "@/constants/categories"
 import { currencies } from "@/constants/currencies"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/components/custom-alert-provider"
@@ -233,12 +233,14 @@ export default function AddSubscriptionModal() {
                   width: 54,
                   height: 54,
                   borderRadius: 14,
-                  backgroundColor: selectedColor,
+                  backgroundColor: selectedColor || "#6366F1",
+                  borderWidth: 1,
+                  borderColor: colors.border,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <DynamicIcon name={selectedIcon || "Receipt"} size={26} color="#ffffff" />
+                <DynamicIcon name={selectedIcon || "Receipt"} size={26} color={getContrastTextColor(selectedColor)} />
               </TouchableOpacity>
 
               <View style={{ flex: 1, gap: 4 }}>
