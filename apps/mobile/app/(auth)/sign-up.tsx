@@ -10,7 +10,7 @@ import {
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
-import { useSignUp } from "@clerk/expo/legacy"
+import { useSignUp } from "@clerk/expo"
 import { Lock, Mail, ArrowRight, CheckCircle } from "lucide-react-native"
 import { GoogleOAuthButton } from "@/components/google-oauth-button"
 import { Input } from "@/components/ui/input"
@@ -20,7 +20,7 @@ import { useThemeColor } from "@/hooks/use-theme-color"
 export default function SignUpScreen() {
   const router = useRouter()
   const { colors } = useThemeColor()
-  const { isLoaded, signUp, setActive } = useSignUp()
+  const { signUp } = useSignUp()
 
   const [emailAddress, setEmailAddress] = useState("")
   const [password, setPassword] = useState("")
@@ -30,8 +30,6 @@ export default function SignUpScreen() {
   const [errorMsg, setErrorMsg] = useState("")
 
   const onSignUpPress = async () => {
-    if (!isLoaded) return
-
     if (!emailAddress.trim() || !password.trim()) {
       setErrorMsg("Please enter an email and password.")
       return
@@ -41,17 +39,34 @@ export default function SignUpScreen() {
     setErrorMsg("")
 
     try {
-      await signUp.create({
+      const result = await signUp.password({
         emailAddress: emailAddress.trim(),
         password: password,
       })
 
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" })
+      if (result.error) {
+        throw result.error
+      }
+
+      const verification = await signUp.verifications.sendEmailCode()
+      if (verification.error) {
+        throw verification.error
+      }
+
       setPendingVerification(true)
     } catch (err: unknown) {
-      const error = err as { errors?: { message?: string; longMessage?: string }[] }
+      const error = err as {
+        message?: string
+        longMessage?: string
+        errors?: { message?: string; longMessage?: string }[]
+      }
       console.error("Sign up error:", err)
-      const msg = error.errors?.[0]?.longMessage || error.errors?.[0]?.message || "Failed to create account."
+      const msg =
+        error.longMessage ||
+        error.message ||
+        error.errors?.[0]?.longMessage ||
+        error.errors?.[0]?.message ||
+        "Failed to create account."
       setErrorMsg(msg)
     } finally {
       setLoading(false)
@@ -59,8 +74,6 @@ export default function SignUpScreen() {
   }
 
   const onPressVerify = async () => {
-    if (!isLoaded) return
-
     if (!code.trim()) {
       setErrorMsg("Please enter the verification code sent to your email.")
       return
@@ -70,21 +83,33 @@ export default function SignUpScreen() {
     setErrorMsg("")
 
     try {
-      const completeSignUp = await signUp.attemptEmailAddressVerification({
+      const verification = await signUp.verifications.verifyEmailCode({
         code: code.trim(),
       })
 
-      if (completeSignUp.status === "complete") {
-        await setActive({ session: completeSignUp.createdSessionId })
-        router.replace("/(tabs)" as never)
-      } else {
-        console.error("Verification status not complete:", completeSignUp)
-        setErrorMsg("Verification incomplete.")
+      if (verification.error) {
+        throw verification.error
       }
+
+      const finalizeResult = await signUp.finalize()
+      if (finalizeResult.error) {
+        throw finalizeResult.error
+      }
+
+      router.replace("/(tabs)" as never)
     } catch (err: unknown) {
-      const error = err as { errors?: { message?: string; longMessage?: string }[] }
+      const error = err as {
+        message?: string
+        longMessage?: string
+        errors?: { message?: string; longMessage?: string }[]
+      }
       console.error("Verification error:", err)
-      const msg = error.errors?.[0]?.longMessage || error.errors?.[0]?.message || "Invalid verification code."
+      const msg =
+        error.longMessage ||
+        error.message ||
+        error.errors?.[0]?.longMessage ||
+        error.errors?.[0]?.message ||
+        "Invalid verification code."
       setErrorMsg(msg)
     } finally {
       setLoading(false)
@@ -124,6 +149,8 @@ export default function SignUpScreen() {
                 : "Get started with SubKeep subscription manager"}
             </Text>
           </View>
+
+          <View nativeID="clerk-captcha" />
 
           {/* Primary Google Auth */}
           {!pendingVerification && (
