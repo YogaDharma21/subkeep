@@ -418,13 +418,16 @@ export default function SubscriptionDetailPage({
           <button
             onClick={() => editing && setIconOpen(true)}
             className={cn(
-              "flex size-14 items-center justify-center rounded-lg",
+              "flex size-14 items-center justify-center rounded-lg border border-border bg-muted/50",
               editing && "cursor-pointer ring-2 ring-border ring-offset-2"
             )}
-            style={{ backgroundColor: editing ? editColor : sub.color }}
             disabled={!editing}
           >
-            <DynamicIcon name={currentIcon} className="size-7 text-white" />
+            <DynamicIcon
+              name={currentIcon}
+              className="size-7"
+              style={{ color: (editing ? editColor : sub.color) || "currentColor" }}
+            />
           </button>
           <div className="flex-1">
             {editing ? (

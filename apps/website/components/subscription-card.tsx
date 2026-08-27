@@ -60,10 +60,9 @@ export function SubscriptionCard({
       className="flex items-center gap-3 rounded-lg border border-border bg-background p-3 transition-all hover:border-border/80 active:scale-[0.98] active:opacity-80 relative overflow-hidden group"
     >
       <div
-        className="flex size-11 shrink-0 items-center justify-center rounded-lg transition-transform group-hover:scale-105 overflow-hidden"
-        style={{ backgroundColor: sub.color }}
+        className="flex size-11 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 transition-transform group-hover:scale-105 overflow-hidden"
       >
-        <DynamicIcon name={sub.icon} className="size-5 text-white" />
+        <DynamicIcon name={sub.icon} className="size-5" style={{ color: sub.color || "currentColor" }} />
       </div>
 
       <div className="min-w-0 flex-1">

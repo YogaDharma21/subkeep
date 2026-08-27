@@ -76,16 +76,18 @@ export function SubscriptionCard({
       {/* Icon Box */}
       <View
         style={{
-          width: 44,
-          height: 44,
+          width: 42,
+          height: 42,
           borderRadius: 10,
-          backgroundColor: sub.color || "#000000",
+          backgroundColor: colors.surface,
+          borderWidth: 1,
+          borderColor: colors.border,
           alignItems: "center",
           justifyContent: "center",
           overflow: "hidden",
         }}
       >
-        <DynamicIcon name={sub.icon} size={22} color="#ffffff" />
+        <DynamicIcon name={sub.icon} size={20} color={sub.color || colors.text} />
       </View>
 
       {/* Info Column */}

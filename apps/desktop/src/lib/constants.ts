@@ -75,16 +75,16 @@ export const currencySymbols: Record<string, string> = {
 }
 
 export const categoryColors: Record<string, string> = {
-  entertainment: "#E50914",
-  music: "#1DB954",
-  productivity: "#0078D4",
-  cloud: "#5ac8fa",
-  gaming: "#107C10",
-  education: "#FF9500",
-  fitness: "#FF2D55",
-  news: "#AF52DE",
-  finance: "#34C759",
-  other: "#8E8E93",
+  entertainment: "#6366f1",
+  music: "#10b981",
+  productivity: "#3b82f6",
+  cloud: "#06b6d4",
+  gaming: "#8b5cf6",
+  education: "#f59e0b",
+  fitness: "#ec4899",
+  news: "#64748b",
+  finance: "#14b8a6",
+  other: "#71717a",
 }
 
 export const billingCycles = [
