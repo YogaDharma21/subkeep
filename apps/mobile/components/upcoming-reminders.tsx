@@ -6,6 +6,7 @@ import { Id } from "@/convex/_generated/dataModel"
 import { Bell, Send, Check, ExternalLink } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
+import { getContrastTextColor } from "@/constants/categories"
 import { findUpcomingReminders, ReminderItem } from "@/lib/notifications"
 import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { useThemeColor } from "@/hooks/use-theme-color"
@@ -78,8 +79,8 @@ export function UpcomingReminders({
   return (
     <View style={{ gap: 8 }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 4 }}>
-        <Bell size={14} color={colors.amber} />
-        <Text style={{ fontSize: 12, fontWeight: "700", color: colors.amber }}>
+        <Bell size={14} color={colors.mutedText} />
+        <Text style={{ fontSize: 12, fontWeight: "700", color: colors.text }}>
           Upcoming Billing & Trial Alerts ({reminders.length})
         </Text>
       </View>
@@ -94,12 +95,8 @@ export function UpcomingReminders({
             <View
               key={item._id}
               style={{
-                backgroundColor: isTrial
-                  ? colors.emeraldBackground
-                  : colors.amberBackground,
-                borderColor: isTrial
-                  ? "rgba(16, 185, 129, 0.3)"
-                  : "rgba(245, 158, 11, 0.3)",
+                backgroundColor: colors.card,
+                borderColor: colors.border,
                 borderWidth: 1,
                 borderRadius: 12,
                 padding: 12,
@@ -112,12 +109,14 @@ export function UpcomingReminders({
                     width: 36,
                     height: 36,
                     borderRadius: 8,
-                    backgroundColor: item.color || "#000000",
+                    backgroundColor: item.color || "#6366F1",
+                    borderWidth: 1,
+                    borderColor: colors.border,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <DynamicIcon name={item.icon} size={18} color="#ffffff" />
+                  <DynamicIcon name={item.icon} size={18} color={getContrastTextColor(item.color)} />
                 </View>
 
                 <View style={{ flex: 1 }}>

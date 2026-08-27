@@ -139,6 +139,14 @@ function InitialLayout() {
         }}
       />
       <Stack.Screen
+        name="modal/profile"
+        options={{
+          presentation: "pageSheet",
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      />
+      <Stack.Screen
         name="subscriptions/[id]"
         options={{
           headerShown: false,

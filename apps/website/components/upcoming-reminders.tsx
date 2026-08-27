@@ -8,6 +8,7 @@ import { Bell, Send, Check, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
+import { getContrastTextColor } from "@/lib/constants"
 import { toast } from "sonner"
 import { findUpcomingReminders, ReminderItem, sendWebPushNotification } from "@/lib/notifications"
 import { CancellationGuideModal } from "./cancellation-guide-modal"
@@ -73,8 +74,8 @@ export function UpcomingReminders({
   return (
     <div className="mb-4 space-y-2">
       <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
-          <Bell className="size-3.5 animate-bounce" />
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+          <Bell className="size-3.5 text-muted-foreground" />
           <span>Upcoming Billing & Trial Alerts ({reminders.length})</span>
         </div>
       </div>
@@ -88,19 +89,15 @@ export function UpcomingReminders({
           return (
             <div
               key={item._id}
-              className={`flex flex-col gap-2 rounded-lg border p-3 text-xs transition-all ${
-                isTrial
-                  ? "border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/20"
-                  : "border-amber-500/30 bg-amber-500/5 dark:bg-amber-950/20"
-              }`}
+              className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3 text-xs transition-all"
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div
-                    className="flex size-8 shrink-0 items-center justify-center rounded-lg"
-                    style={{ backgroundColor: item.color }}
+                    className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-black/10 dark:border-white/10 shadow-xs"
+                    style={{ backgroundColor: item.color || "#6366F1" }}
                   >
-                    <DynamicIcon name={item.icon} className="size-4 text-white" />
+                    <DynamicIcon name={item.icon} className="size-4" style={{ color: getContrastTextColor(item.color) }} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">

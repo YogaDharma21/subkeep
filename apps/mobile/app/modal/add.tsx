@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
+  TextInput,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
@@ -26,7 +27,8 @@ import { Button } from "@/components/ui/button"
 import { TemplateList } from "@/components/template-list"
 import { IconPickerModal } from "@/components/icon-picker-modal"
 import { SubscriptionTemplate } from "@/constants/default-templates"
-import { categories, billingCycles, colorOptions } from "@/constants/categories"
+import { categories, billingCycles, colorPresets, getContrastTextColor } from "@/constants/categories"
+import { currencies } from "@/constants/currencies"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/components/custom-alert-provider"
 
@@ -231,12 +233,14 @@ export default function AddSubscriptionModal() {
                   width: 54,
                   height: 54,
                   borderRadius: 14,
-                  backgroundColor: selectedColor,
+                  backgroundColor: selectedColor || "#6366F1",
+                  borderWidth: 1,
+                  borderColor: colors.border,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <DynamicIcon name={selectedIcon || "Receipt"} size={26} color="#ffffff" />
+                <DynamicIcon name={selectedIcon || "Receipt"} size={26} color={getContrastTextColor(selectedColor)} />
               </TouchableOpacity>
 
               <View style={{ flex: 1, gap: 4 }}>
@@ -251,27 +255,68 @@ export default function AddSubscriptionModal() {
               </View>
             </View>
 
-            {/* Color circles */}
-            <View style={{ gap: 6 }}>
+            {/* Color circles & Custom Hex Input */}
+            <View style={{ gap: 8 }}>
               <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
                 Brand Color
               </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8 }}>
-                {colorOptions.map((c) => (
-                  <TouchableOpacity
-                    key={c}
-                    onPress={() => setSelectedColor(c)}
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 14,
-                      backgroundColor: c,
-                      borderWidth: selectedColor === c ? 2 : 0,
-                      borderColor: colors.text,
-                    }}
-                  />
-                ))}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8, alignItems: "center" }}>
+                {colorPresets.map((c) => {
+                  const isSelected = selectedColor?.toLowerCase() === c.toLowerCase()
+                  return (
+                    <TouchableOpacity
+                      key={c}
+                      onPress={() => setSelectedColor(c)}
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 14,
+                        backgroundColor: c,
+                        borderWidth: isSelected ? 2.5 : c.toLowerCase() === "#ffffff" ? 1 : 0,
+                        borderColor: isSelected ? colors.primary : colors.border,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    />
+                  )
+                })}
               </ScrollView>
+
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 2 }}>
+                <View
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 14,
+                    backgroundColor: selectedColor?.startsWith("#") ? selectedColor : "#FFFFFF",
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                />
+                <TextInput
+                  value={selectedColor}
+                  onChangeText={(text) => {
+                    let val = text.trim()
+                    if (!val.startsWith("#") && val.length > 0) val = "#" + val
+                    setSelectedColor(val)
+                  }}
+                  placeholder="#FFFFFF"
+                  placeholderTextColor={colors.mutedText}
+                  maxLength={7}
+                  autoCapitalize="characters"
+                  style={{
+                    flex: 1,
+                    height: 38,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    fontSize: 13,
+                    color: colors.text,
+                    backgroundColor: colors.surface,
+                  }}
+                />
+              </View>
             </View>
           </View>
 
@@ -342,12 +387,12 @@ export default function AddSubscriptionModal() {
                   Currency
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 4 }}>
-                  {["USD", "EUR", "GBP", "IDR", "SGD", "AUD", "CAD"].map((curr) => (
+                  {currencies.map((c) => c.value).map((curr) => (
                     <TouchableOpacity
                       key={curr}
                       onPress={() => setCurrency(curr)}
                       style={{
-                        paddingHorizontal: 10,
+                        paddingHorizontal: 12,
                         paddingVertical: 10,
                         borderRadius: 8,
                         backgroundColor: currency === curr ? colors.primary : colors.surface,

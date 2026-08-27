@@ -13,79 +13,42 @@ export const categories = [
 ]
 
 export const currencies = [
-  { value: "USD", label: "$ USD" },
-  { value: "EUR", label: "\u20ac EUR" },
-  { value: "GBP", label: "\u00a3 GBP" },
-  { value: "JPY", label: "\u00a5 JPY" },
-  { value: "AUD", label: "A$ AUD" },
-  { value: "CAD", label: "C$ CAD" },
-  { value: "INR", label: "\u20b9 INR" },
-  { value: "KRW", label: "\u20a9 KRW" },
-  { value: "SGD", label: "S$ SGD" },
-  { value: "BRL", label: "R$ BRL" },
-  { value: "MXN", label: "$ MXN" },
-  { value: "THB", label: "\u0e3f THB" },
   { value: "IDR", label: "Rp IDR" },
-  { value: "MYR", label: "RM MYR" },
-  { value: "PHP", label: "\u20b1 PHP" },
-  { value: "VND", label: "\u20ab VND" },
-  { value: "NZD", label: "NZ$ NZD" },
-  { value: "SEK", label: "kr SEK" },
-  { value: "NOK", label: "kr NOK" },
-  { value: "DKK", label: "kr DKK" },
-  { value: "PLN", label: "z\u0142 PLN" },
-  { value: "CZK", label: "K\u010d CZK" },
-  { value: "HUF", label: "Ft HUF" },
-  { value: "TRY", label: "\u20ba TRY" },
-  { value: "ZAR", label: "R ZAR" },
-  { value: "AED", label: "د.إ AED" },
-  { value: "SAR", label: "\ufd5e SAR" },
-  { value: "TWD", label: "NT$ TWD" },
+  { value: "USD", label: "$ USD" },
 ]
 
 export const currencySymbols: Record<string, string> = {
-  USD: "$",
-  EUR: "\u20ac",
-  GBP: "\u00a3",
-  JPY: "\u00a5",
-  AUD: "A$",
-  CAD: "C$",
-  INR: "\u20b9",
-  KRW: "\u20a9",
-  SGD: "S$",
-  BRL: "R$",
-  MXN: "$",
-  THB: "\u0e3f",
   IDR: "Rp",
-  MYR: "RM",
-  PHP: "\u20b1",
-  VND: "\u20ab",
-  NZD: "NZ$",
-  SEK: "kr",
-  NOK: "kr",
-  DKK: "kr",
-  PLN: "z\u0142",
-  CZK: "K\u010d",
-  HUF: "Ft",
-  TRY: "\u20ba",
-  ZAR: "R",
-  AED: "د.إ",
-  SAR: "\ufd5e",
-  TWD: "NT$",
+  USD: "$",
 }
 
 export const categoryColors: Record<string, string> = {
-  entertainment: "#E50914",
-  music: "#1DB954",
-  productivity: "#0078D4",
-  cloud: "#5ac8fa",
-  gaming: "#107C10",
-  education: "#FF9500",
-  fitness: "#FF2D55",
-  news: "#AF52DE",
-  finance: "#34C759",
-  other: "#8E8E93",
+  entertainment: "#6366f1",
+  music: "#10b981",
+  productivity: "#3b82f6",
+  cloud: "#06b6d4",
+  gaming: "#8b5cf6",
+  education: "#f59e0b",
+  fitness: "#ec4899",
+  news: "#64748b",
+  finance: "#14b8a6",
+  other: "#71717a",
 }
+
+export const colorPresets = [
+  "#FFFFFF",
+  "#09090B",
+  "#64748B",
+  "#3B82F6",
+  "#6366F1",
+  "#8B5CF6",
+  "#EC4899",
+  "#EF4444",
+  "#F59E0B",
+  "#10B981",
+]
+
+export const colorOptions = colorPresets
 
 export const billingCycles = [
   { value: "daily", label: "Daily" },
@@ -265,4 +228,23 @@ export function calculateMonthlyTotal(
 export function formatCurrency(amount: number, currency: string): string {
   const symbol = getSymbol(currency)
   return `${symbol}${amount.toFixed(2)}`
+}
+
+export function getContrastTextColor(hexColor?: string): string {
+  if (!hexColor || !hexColor.startsWith("#")) return "#FFFFFF"
+  const hex = hexColor.replace("#", "")
+  let r = 0, g = 0, b = 0
+  if (hex.length === 3) {
+    r = parseInt(hex[0] + hex[0], 16)
+    g = parseInt(hex[1] + hex[1], 16)
+    b = parseInt(hex[2] + hex[2], 16)
+  } else if (hex.length === 6) {
+    r = parseInt(hex.substring(0, 2), 16)
+    g = parseInt(hex.substring(2, 4), 16)
+    b = parseInt(hex.substring(4, 6), 16)
+  } else {
+    return "#FFFFFF"
+  }
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000
+  return yiq >= 180 ? "#09090B" : "#FFFFFF"
 }

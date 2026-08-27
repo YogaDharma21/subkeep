@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState, useRef } from "react"
+import { use, useState, useRef, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
@@ -25,6 +25,8 @@ import {
   Upload,
   MessageSquare,
   Paperclip,
+  History,
+  Pipette,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -48,6 +50,8 @@ import {
   billingCycles,
   getSymbol,
   categoryColors,
+  colorPresets,
+  getContrastTextColor,
 } from "@/lib/constants"
 import { format, differenceInDays } from "date-fns"
 import { convertAndFormat } from "@/lib/currency"
@@ -74,6 +78,16 @@ export default function SubscriptionDetailPage({
     api.subscriptions.get,
     id ? { id: id as Id<"subscriptions"> } : "skip"
   )
+  const allPayments = useQuery(
+    api.payments.list,
+    isSignedIn ? {} : "skip"
+  )
+  const subPayments = useMemo(() => {
+    if (!allPayments || !id) return []
+    return allPayments.filter(
+      (p) => p.subscriptionId === id || (sub && p.name === sub.name)
+    )
+  }, [allPayments, id, sub])
   const paymentMethods = useQuery(
     api.paymentMethods.list,
     isSignedIn ? {} : "skip"
@@ -84,6 +98,8 @@ export default function SubscriptionDetailPage({
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
   const recordPaymentMutation = useMutation(api.payments.create)
+  const updatePaymentMutation = useMutation(api.payments.update)
+  const removePaymentMutation = useMutation(api.payments.remove)
   const generateUploadUrl = useMutation(api.subscriptions.generateUploadUrl)
 
   const { primaryCurrency, rates } = usePrimaryCurrency()
@@ -112,11 +128,85 @@ export default function SubscriptionDetailPage({
   const [tempCancelUrl, setTempCancelUrl] = useState("")
   const [savingCancelUrl, setSavingCancelUrl] = useState(false)
 
-  const colorOptions = [
-    "#000000", "#555555", "#E50914", "#1DB954", "#00A8E1",
-    "#4285F4", "#0078D4", "#B535F6", "#F47D31", "#00C4CC",
-    "#E60023", "#107C10", "#003087", "#58CC02", "#FF0000",
-  ]
+  // Payment History Edit/Delete State
+  const [editingPayment, setEditingPayment] = useState<{
+    _id: string
+    name: string
+    amount: number
+    currency: string
+    date: string
+  } | null>(null)
+  const [editPaymentAmount, setEditPaymentAmount] = useState("")
+  const [editPaymentCurrency, setEditPaymentCurrency] = useState("USD")
+  const [editPaymentDate, setEditPaymentDate] = useState("")
+  const [isUpdatingPayment, setIsUpdatingPayment] = useState(false)
+
+  const [deletingPayment, setDeletingPayment] = useState<{
+    _id: string
+    name: string
+    amount: number
+    currency: string
+    date: string
+  } | null>(null)
+  const [isDeletingPayment, setIsDeletingPayment] = useState(false)
+
+  const handleOpenEditPayment = (p: {
+    _id: string
+    name: string
+    amount: number
+    currency: string
+    date: string
+  }) => {
+    setEditingPayment(p)
+    setEditPaymentAmount(p.amount.toString())
+    setEditPaymentCurrency(p.currency)
+    setEditPaymentDate(p.date)
+  }
+
+  const handleSaveEditPayment = async () => {
+    if (!editingPayment) return
+    const parsedAmount = parseFloat(editPaymentAmount)
+    if (isNaN(parsedAmount) || parsedAmount < 0) {
+      toast.error("Please enter a valid amount")
+      return
+    }
+    if (!editPaymentDate) {
+      toast.error("Please select a date")
+      return
+    }
+    setIsUpdatingPayment(true)
+    try {
+      await updatePaymentMutation({
+        id: editingPayment._id as Id<"payments">,
+        amount: parsedAmount,
+        currency: editPaymentCurrency,
+        date: editPaymentDate,
+      })
+      toast.success("Payment record updated")
+      setEditingPayment(null)
+    } catch {
+      toast.error("Failed to update payment record")
+    } finally {
+      setIsUpdatingPayment(false)
+    }
+  }
+
+  const handleConfirmDeletePayment = async () => {
+    if (!deletingPayment) return
+    setIsDeletingPayment(true)
+    try {
+      await removePaymentMutation({
+        id: deletingPayment._id as Id<"payments">,
+      })
+      toast.success("Payment record deleted")
+      setDeletingPayment(null)
+    } catch {
+      toast.error("Failed to delete payment record")
+    } finally {
+      setIsDeletingPayment(false)
+    }
+  }
+
 
   const startEditing = () => {
     if (!sub) return
@@ -418,13 +508,17 @@ export default function SubscriptionDetailPage({
           <button
             onClick={() => editing && setIconOpen(true)}
             className={cn(
-              "flex size-14 items-center justify-center rounded-lg",
-              editing && "cursor-pointer ring-2 ring-border ring-offset-2"
+              "flex size-14 items-center justify-center rounded-lg border border-black/10 dark:border-white/10 shadow-xs",
+              editing && "cursor-pointer ring-2 ring-primary ring-offset-2"
             )}
-            style={{ backgroundColor: editing ? editColor : sub.color }}
+            style={{ backgroundColor: (editing ? editColor : sub.color) || "#6366F1" }}
             disabled={!editing}
           >
-            <DynamicIcon name={currentIcon} className="size-7 text-white" />
+            <DynamicIcon
+              name={currentIcon}
+              className="size-7"
+              style={{ color: getContrastTextColor(editing ? editColor : sub.color) }}
+            />
           </button>
           <div className="flex-1">
             {editing ? (
@@ -669,21 +763,50 @@ export default function SubscriptionDetailPage({
 
           <div className="space-y-1">
             <label className="text-xs font-medium">Icon Color</label>
-            <div className="flex flex-wrap gap-2">
-              {colorOptions.map((c) => (
+            <div className="flex flex-wrap items-center gap-2">
+              {colorPresets.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setEditColor(c)}
                   className={cn(
-                    "size-8 rounded-full border-2 transition-all cursor-pointer",
-                    editColor === c
-                      ? "border-foreground scale-110"
-                      : "border-transparent"
+                    "size-7 rounded-full border-2 transition-all cursor-pointer shadow-xs",
+                    editColor?.toLowerCase() === c.toLowerCase()
+                      ? "border-primary ring-2 ring-primary/30 scale-110"
+                      : c.toLowerCase() === "#ffffff"
+                        ? "border-muted-foreground/30"
+                        : "border-transparent"
                   )}
                   style={{ backgroundColor: c }}
+                  title={c}
                 />
               ))}
+              <div className="flex items-center gap-1.5 ml-1 pl-2 border-l border-border">
+                <label
+                  className="relative size-7 rounded-full border border-border cursor-pointer overflow-hidden flex items-center justify-center bg-muted/50 hover:bg-muted transition-colors shrink-0"
+                  title="Pick custom color"
+                >
+                  <Pipette className="size-3.5 text-muted-foreground" />
+                  <input
+                    type="color"
+                    value={
+                      editColor?.startsWith("#") && editColor.length === 7
+                        ? editColor
+                        : "#FFFFFF"
+                    }
+                    onChange={(e) => setEditColor(e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                </label>
+                <input
+                  type="text"
+                  value={editColor}
+                  onChange={(e) => setEditColor(e.target.value)}
+                  placeholder="#FFFFFF"
+                  maxLength={7}
+                  className="w-20 px-2 py-1 text-xs font-mono rounded-md border border-border bg-background focus:outline-hidden focus:ring-1 focus:ring-primary"
+                />
+              </div>
             </div>
           </div>
 
@@ -951,6 +1074,82 @@ export default function SubscriptionDetailPage({
               </p>
             )}
           </div>
+
+          {/* Payment History Log */}
+          <div className="rounded-lg border border-border bg-background p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <History className="size-4 text-primary" />
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Payment History & Billing Logs
+                </h3>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {subPayments?.length || 0} {subPayments?.length === 1 ? "record" : "records"}
+              </span>
+            </div>
+
+            {subPayments && subPayments.length > 0 ? (
+              <div className="space-y-2">
+                {subPayments.map((p) => {
+                  const paymentDate = new Date(p.date)
+                  return (
+                    <div
+                      key={p._id}
+                      className="flex items-center justify-between rounded-lg bg-muted/40 p-2.5 border border-border text-xs"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div
+                          className="flex size-7 shrink-0 items-center justify-center rounded-md font-bold text-white text-[11px]"
+                          style={{ backgroundColor: p.color || sub.color }}
+                        >
+                          {p.name.charAt(0)}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-foreground truncate">
+                            {format(paymentDate, "MMM d, yyyy")}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {getSymbol(p.currency)}{p.amount} ({p.currency})
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-red-500 text-xs">
+                          -{convertAndFormat(p.amount, p.currency, primaryCurrency, rates)}
+                        </span>
+                        <div className="flex items-center gap-0.5">
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => handleOpenEditPayment(p)}
+                            title="Edit payment"
+                            className="size-7 text-muted-foreground hover:text-foreground cursor-pointer"
+                          >
+                            <Pencil className="size-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => setDeletingPayment(p)}
+                            title="Delete payment"
+                            className="size-7 text-muted-foreground hover:text-destructive cursor-pointer"
+                          >
+                            <Trash2 className="size-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                No payments logged yet. Use &ldquo;Record Payment&rdquo; below to log each billing transaction.
+              </p>
+            )}
+          </div>
         </div>
       )}
 
@@ -1071,6 +1270,104 @@ export default function SubscriptionDetailPage({
               className="cursor-pointer"
             >
               {savingCancelUrl ? "Saving..." : "Save URL"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Payment Dialog */}
+      <Dialog open={!!editingPayment} onOpenChange={(open) => !open && setEditingPayment(null)}>
+        <DialogContent className="max-w-sm rounded-lg p-5">
+          <DialogHeader className="space-y-1 text-left">
+            <DialogTitle className="text-base font-semibold">Edit Payment Record</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Update the payment details for {editingPayment?.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Amount</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editPaymentAmount}
+                  onChange={(e) => setEditPaymentAmount(e.target.value)}
+                  className="text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Currency</label>
+                <select
+                  value={editPaymentCurrency}
+                  onChange={(e) => setEditPaymentCurrency(e.target.value)}
+                  className="flex h-9 w-full rounded-lg border border-border bg-background px-2.5 text-xs"
+                >
+                  {currencies.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium">Payment Date</label>
+              <Input
+                type="date"
+                value={editPaymentDate}
+                onChange={(e) => setEditPaymentDate(e.target.value)}
+                className="text-xs"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditingPayment(null)}
+              className="cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSaveEditPayment}
+              disabled={isUpdatingPayment}
+              className="cursor-pointer"
+            >
+              {isUpdatingPayment ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Payment Dialog */}
+      <Dialog open={!!deletingPayment} onOpenChange={(open) => !open && setDeletingPayment(null)}>
+        <DialogContent className="max-w-sm rounded-lg p-5">
+          <DialogHeader className="space-y-1 text-left">
+            <DialogTitle className="text-base font-semibold">Delete Payment Record</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to delete this payment record of {deletingPayment?.amount} {deletingPayment?.currency} on {deletingPayment?.date}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0 mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDeletingPayment(null)}
+              className="cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleConfirmDeletePayment}
+              disabled={isDeletingPayment}
+              className="cursor-pointer"
+            >
+              {isDeletingPayment ? "Deleting..." : "Delete Payment"}
             </Button>
           </DialogFooter>
         </DialogContent>

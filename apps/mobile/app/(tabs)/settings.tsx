@@ -328,9 +328,11 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40 }}>
-        {/* User profile card */}
+        {/* User profile card (opens Clerk Profile modal) */}
         {user ? (
-          <View
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => router.push("/modal/profile" as never)}
             style={{
               flexDirection: "row",
               alignItems: "center",
@@ -358,14 +360,32 @@ export default function SettingsScreen() {
             </View>
 
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>
-                {user.fullName || "SubKeep User"}
-              </Text>
-              <Text style={{ fontSize: 12, color: colors.mutedText }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>
+                  {user.fullName || "SubKeep User"}
+                </Text>
+                <View
+                  style={{
+                    backgroundColor: colors.surface,
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                >
+                  <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+                    Clerk
+                  </Text>
+                </View>
+              </View>
+              <Text style={{ fontSize: 12, color: colors.mutedText, marginTop: 1 }}>
                 {user.primaryEmailAddress?.emailAddress}
               </Text>
             </View>
-          </View>
+
+            <ChevronRight size={16} color={colors.mutedText} />
+          </TouchableOpacity>
         ) : null}
 
         {/* Preferences & Payment Methods Section */}

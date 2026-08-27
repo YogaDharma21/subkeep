@@ -300,9 +300,11 @@ function normalizeIconName(name: string): string {
 export const DynamicIcon = memo(function DynamicIcon({
   name,
   className,
+  style,
 }: {
   name: string
   className?: string
+  style?: React.CSSProperties
 }) {
   const [imageError, setImageError] = useState(false)
 
@@ -312,6 +314,7 @@ export const DynamicIcon = memo(function DynamicIcon({
         src={name}
         alt="service logo"
         onError={() => setImageError(true)}
+        style={style}
         className={`size-full object-contain p-0.5 rounded-md ${className || ""}`}
       />
     )
@@ -320,5 +323,5 @@ export const DynamicIcon = memo(function DynamicIcon({
   const kebabName = normalizeIconName(name)
   const Component = STATIC_ICONS[kebabName] || Receipt
 
-  return <Component className={className} />
+  return <Component className={className} style={style} />
 })
