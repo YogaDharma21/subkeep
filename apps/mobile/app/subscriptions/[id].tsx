@@ -40,7 +40,7 @@ import { Button } from "@/components/ui/button"
 import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { IconPickerModal } from "@/components/icon-picker-modal"
 import { convertAndFormat, formatCycleLabel } from "@/lib/currency"
-import { getSymbol } from "@/constants/currencies"
+import { getSymbol, currencies } from "@/constants/currencies"
 import { categoryColors } from "@/constants/categories"
 import { format, differenceInDays } from "date-fns"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
@@ -694,12 +694,12 @@ export default function SubscriptionDetailPage() {
                   Currency
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 4 }}>
-                  {["USD", "EUR", "GBP", "IDR", "SGD", "AUD", "CAD"].map((curr) => (
+                  {currencies.map((c) => c.value).map((curr) => (
                     <TouchableOpacity
                       key={curr}
                       onPress={() => setEditCurrency(curr)}
                       style={{
-                        paddingHorizontal: 8,
+                        paddingHorizontal: 12,
                         paddingVertical: 8,
                         borderRadius: 8,
                         backgroundColor: editCurrency === curr ? colors.primary : colors.surface,

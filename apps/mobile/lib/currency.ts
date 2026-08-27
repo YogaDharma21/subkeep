@@ -4,33 +4,7 @@ import { getSymbol } from "@/constants/currencies"
 // Fallback rates relative to USD (1 USD = X target currency)
 export const fallbackRates: Record<string, number> = {
   USD: 1,
-  EUR: 0.92,
-  GBP: 0.78,
-  JPY: 155.0,
-  AUD: 1.52,
-  CAD: 1.36,
-  INR: 83.5,
-  KRW: 1380.0,
-  SGD: 1.35,
-  BRL: 5.45,
-  MXN: 18.2,
-  THB: 36.5,
   IDR: 16200.0,
-  MYR: 4.7,
-  PHP: 58.5,
-  VND: 25400.0,
-  NZD: 1.66,
-  SEK: 10.6,
-  NOK: 10.8,
-  DKK: 6.9,
-  PLN: 3.95,
-  CZK: 23.2,
-  HUF: 360.0,
-  TRY: 32.8,
-  ZAR: 18.4,
-  AED: 3.67,
-  SAR: 3.75,
-  TWD: 32.5,
 }
 
 let cachedRates: Record<string, number> = { ...fallbackRates }
