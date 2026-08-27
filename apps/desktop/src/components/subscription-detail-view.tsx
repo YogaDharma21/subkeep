@@ -22,6 +22,7 @@ import {
   Upload,
   MessageSquare,
   Paperclip,
+  History,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -74,6 +75,10 @@ export function SubscriptionDetailView({
     api.subscriptions.get,
     subscriptionId ? { id: subscriptionId as Id<"subscriptions"> } : "skip"
   )
+  const subPayments = useQuery(
+    api.payments.listBySubscription,
+    subscriptionId && isSignedIn ? { subscriptionId: subscriptionId as Id<"subscriptions"> } : "skip"
+  )
   const paymentMethods = useQuery(
     api.paymentMethods.list,
     isSignedIn ? {} : "skip"
@@ -84,6 +89,8 @@ export function SubscriptionDetailView({
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
   const recordPaymentMutation = useMutation(api.payments.create)
+  const updatePaymentMutation = useMutation(api.payments.update)
+  const removePaymentMutation = useMutation(api.payments.remove)
   const generateUploadUrl = useMutation(api.subscriptions.generateUploadUrl)
 
   const { primaryCurrency, rates } = usePrimaryCurrency()
@@ -111,6 +118,85 @@ export function SubscriptionDetailView({
   const [cancelUrlModalOpen, setCancelUrlModalOpen] = useState(false)
   const [tempCancelUrl, setTempCancelUrl] = useState("")
   const [savingCancelUrl, setSavingCancelUrl] = useState(false)
+
+  // Payment History Edit/Delete State
+  const [editingPayment, setEditingPayment] = useState<{
+    _id: string
+    name: string
+    amount: number
+    currency: string
+    date: string
+  } | null>(null)
+  const [editPaymentAmount, setEditPaymentAmount] = useState("")
+  const [editPaymentCurrency, setEditPaymentCurrency] = useState("USD")
+  const [editPaymentDate, setEditPaymentDate] = useState("")
+  const [isUpdatingPayment, setIsUpdatingPayment] = useState(false)
+
+  const [deletingPayment, setDeletingPayment] = useState<{
+    _id: string
+    name: string
+    amount: number
+    currency: string
+    date: string
+  } | null>(null)
+  const [isDeletingPayment, setIsDeletingPayment] = useState(false)
+
+  const handleOpenEditPayment = (p: {
+    _id: string
+    name: string
+    amount: number
+    currency: string
+    date: string
+  }) => {
+    setEditingPayment(p)
+    setEditPaymentAmount(p.amount.toString())
+    setEditPaymentCurrency(p.currency)
+    setEditPaymentDate(p.date)
+  }
+
+  const handleSaveEditPayment = async () => {
+    if (!editingPayment) return
+    const parsedAmount = parseFloat(editPaymentAmount)
+    if (isNaN(parsedAmount) || parsedAmount < 0) {
+      toast.error("Please enter a valid amount")
+      return
+    }
+    if (!editPaymentDate) {
+      toast.error("Please select a date")
+      return
+    }
+    setIsUpdatingPayment(true)
+    try {
+      await updatePaymentMutation({
+        id: editingPayment._id as Id<"payments">,
+        amount: parsedAmount,
+        currency: editPaymentCurrency,
+        date: editPaymentDate,
+      })
+      toast.success("Payment record updated")
+      setEditingPayment(null)
+    } catch {
+      toast.error("Failed to update payment record")
+    } finally {
+      setIsUpdatingPayment(false)
+    }
+  }
+
+  const handleConfirmDeletePayment = async () => {
+    if (!deletingPayment) return
+    setIsDeletingPayment(true)
+    try {
+      await removePaymentMutation({
+        id: deletingPayment._id as Id<"payments">,
+      })
+      toast.success("Payment record deleted")
+      setDeletingPayment(null)
+    } catch {
+      toast.error("Failed to delete payment record")
+    } finally {
+      setIsDeletingPayment(false)
+    }
+  }
 
   const colorOptions = [
     "#000000", "#555555", "#E50914", "#1DB954", "#00A8E1",
@@ -958,6 +1044,82 @@ export function SubscriptionDetailView({
               </p>
             )}
           </div>
+
+          {/* Payment History Log */}
+          <div className="rounded-lg border border-border bg-background p-4 space-y-3 shadow-xs">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <History className="size-4 text-primary" />
+                <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                  Payment History & Billing Logs
+                </h3>
+              </div>
+              <span className="text-xs text-muted-foreground font-medium">
+                {subPayments?.length || 0} {subPayments?.length === 1 ? "record" : "records"}
+              </span>
+            </div>
+
+            {subPayments && subPayments.length > 0 ? (
+              <div className="space-y-2">
+                {subPayments.map((p) => {
+                  const paymentDate = new Date(p.date)
+                  return (
+                    <div
+                      key={p._id}
+                      className="flex items-center justify-between rounded-lg bg-muted/40 p-2.5 border border-border text-xs shadow-2xs"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div
+                          className="flex size-7 shrink-0 items-center justify-center rounded-md font-bold text-white text-[11px]"
+                          style={{ backgroundColor: p.color || sub.color }}
+                        >
+                          {p.name.charAt(0)}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-foreground truncate">
+                            {format(paymentDate, "MMM d, yyyy")}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {getSymbol(p.currency)}{p.amount} ({p.currency})
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-emerald-600 dark:text-emerald-400 text-xs">
+                          {convertAndFormat(p.amount, p.currency, primaryCurrency, rates)}
+                        </span>
+                        <div className="flex items-center gap-0.5">
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => handleOpenEditPayment(p)}
+                            title="Edit payment"
+                            className="size-7 text-muted-foreground hover:text-foreground cursor-pointer"
+                          >
+                            <Pencil className="size-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => setDeletingPayment(p)}
+                            title="Delete payment"
+                            className="size-7 text-muted-foreground hover:text-destructive cursor-pointer"
+                          >
+                            <Trash2 className="size-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                No payments logged yet. Use &ldquo;Record Payment&rdquo; below to log each billing transaction.
+              </p>
+            )}
+          </div>
         </div>
       )}
 
@@ -1079,6 +1241,104 @@ export function SubscriptionDetailView({
               className="cursor-pointer"
             >
               {savingCancelUrl ? "Saving..." : "Save URL"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Payment Dialog */}
+      <Dialog open={!!editingPayment} onOpenChange={(open) => !open && setEditingPayment(null)}>
+        <DialogContent className="max-w-sm rounded-lg p-5" onClose={() => setEditingPayment(null)}>
+          <DialogHeader className="space-y-1 text-left mb-0">
+            <DialogTitle className="text-base font-semibold">Edit Payment Record</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Update the payment details for {editingPayment?.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Amount</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editPaymentAmount}
+                  onChange={(e) => setEditPaymentAmount(e.target.value)}
+                  className="text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Currency</label>
+                <select
+                  value={editPaymentCurrency}
+                  onChange={(e) => setEditPaymentCurrency(e.target.value)}
+                  className="flex h-9 w-full rounded-lg border border-border bg-background px-2.5 text-xs"
+                >
+                  {currencies.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium">Payment Date</label>
+              <Input
+                type="date"
+                value={editPaymentDate}
+                onChange={(e) => setEditPaymentDate(e.target.value)}
+                className="text-xs"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditingPayment(null)}
+              className="cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSaveEditPayment}
+              disabled={isUpdatingPayment}
+              className="cursor-pointer"
+            >
+              {isUpdatingPayment ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Payment Dialog */}
+      <Dialog open={!!deletingPayment} onOpenChange={(open) => !open && setDeletingPayment(null)}>
+        <DialogContent className="max-w-sm rounded-lg p-5" onClose={() => setDeletingPayment(null)}>
+          <DialogHeader className="space-y-1 text-left mb-0">
+            <DialogTitle className="text-base font-semibold">Delete Payment Record</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to delete this payment record of {deletingPayment?.amount} {deletingPayment?.currency} on {deletingPayment?.date}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDeletingPayment(null)}
+              className="cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleConfirmDeletePayment}
+              disabled={isDeletingPayment}
+              className="cursor-pointer"
+            >
+              {isDeletingPayment ? "Deleting..." : "Delete Payment"}
             </Button>
           </div>
         </DialogContent>

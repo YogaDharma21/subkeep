@@ -1,9 +1,15 @@
 import React, { useMemo, useState } from "react"
-import { View, Text, TouchableOpacity } from "react-native"
+import { View, Text, TouchableOpacity, Modal, TextInput, ScrollView } from "react-native"
 import Svg, { Circle, G, Line, Rect, Text as SvgText } from "react-native-svg"
+import { useMutation } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { Id } from "@/convex/_generated/dataModel"
+import { Pencil, Trash2, X } from "lucide-react-native"
 import { categoryColors } from "@/constants/categories"
+import { currencies } from "@/constants/currencies"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { useAlert } from "@/components/custom-alert-provider"
 
 interface StatsChartsProps {
   subscriptions: {
@@ -49,8 +55,100 @@ export function StatsCharts({
   rates,
 }: StatsChartsProps) {
   const { colors } = useThemeColor()
+  const { showAlert, showToast } = useAlert()
   const [breakdownMetric, setBreakdownMetric] = useState<"cost" | "count">("cost")
   const [breakdownFilter, setBreakdownFilter] = useState<"all" | "paid">("all")
+
+  const updatePaymentMutation = useMutation(api.payments.update)
+  const removePaymentMutation = useMutation(api.payments.remove)
+
+  const [editingPayment, setEditingPayment] = useState<{
+    _id: string
+    name: string
+    amount: number
+    currency: string
+    date: string
+  } | null>(null)
+  const [editAmount, setEditAmount] = useState("")
+  const [editCurrency, setEditCurrency] = useState("USD")
+  const [editDate, setEditDate] = useState("")
+  const [isUpdating, setIsUpdating] = useState(false)
+
+  const handleOpenEdit = (p: {
+    _id: string
+    name: string
+    amount: number
+    currency: string
+    date: string
+  }) => {
+    setEditingPayment({
+      _id: p._id,
+      name: p.name,
+      amount: p.amount,
+      currency: p.currency,
+      date: p.date,
+    })
+    setEditAmount(p.amount.toString())
+    setEditCurrency(p.currency)
+    setEditDate(p.date)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingPayment) return
+    const parsedAmount = parseFloat(editAmount)
+    if (isNaN(parsedAmount) || parsedAmount < 0) {
+      showToast("Please enter a valid amount", "error")
+      return
+    }
+    if (!editDate) {
+      showToast("Please enter a date (YYYY-MM-DD)", "error")
+      return
+    }
+    setIsUpdating(true)
+    try {
+      await updatePaymentMutation({
+        id: editingPayment._id as Id<"payments">,
+        amount: parsedAmount,
+        currency: editCurrency,
+        date: editDate,
+      })
+      showToast("Payment record updated", "success")
+      setEditingPayment(null)
+    } catch {
+      showToast("Failed to update payment record", "error")
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleDeletePayment = (p: {
+    _id: string
+    name: string
+    amount: number
+    currency: string
+    date: string
+  }) => {
+    showAlert({
+      title: "Delete Payment Record",
+      message: `Are you sure you want to delete this payment record of ${p.amount} ${p.currency} for ${p.name}?`,
+      icon: "warning",
+      buttons: [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await removePaymentMutation({ id: p._id as Id<"payments"> })
+              showToast("Payment record deleted", "info")
+            } catch {
+              showToast("Failed to delete payment record", "error")
+            }
+          },
+        },
+      ],
+    })
+  }
 
   // 1. Monthly Total
   const monthlyTotal = useMemo(() => {
@@ -169,30 +267,15 @@ export function StatsCharts({
 
   // 4. Payment History Data
   const paymentHistory = useMemo(() => {
-    if (payments && payments.length > 0) {
-      return payments.slice(0, 10).map((p) => ({
+    return payments
+      .slice(0, 10)
+      .map((p) => ({
         ...p,
         convertedAmount: convertCurrency(p.amount, p.currency, primaryCurrency, rates),
         parsedDate: new Date(p.date),
       }))
-    }
-
-    // Default recent history based on active subscriptions
-    return subscriptions
-      .filter((s) => s.isActive !== false)
-      .slice(0, 5)
-      .map((s, idx) => {
-        const d = s.startDate ? new Date(s.startDate) : new Date()
-        return {
-          _id: s._id || String(idx),
-          name: s.name,
-          icon: s.name.charAt(0),
-          color: s.color || colors.primary,
-          convertedAmount: convertCurrency(s.price, s.currency, primaryCurrency, rates),
-          parsedDate: d,
-        }
-      })
-  }, [payments, subscriptions, primaryCurrency, rates, colors.primary])
+      .sort((a, b) => b.parsedDate.getTime() - a.parsedDate.getTime())
+  }, [payments, primaryCurrency, rates])
 
   // Donut SVG Math
   const donutRadius = 55
@@ -650,15 +733,225 @@ export function StatsCharts({
                   </Text>
                 </View>
 
-                {/* Amount in Red */}
-                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.destructive }}>
-                  -{formatCurrencyAmount(p.convertedAmount, primaryCurrency)}
-                </Text>
+                {/* Amount in Red & Action Buttons */}
+                <View style={{ alignItems: "flex-end", gap: 3 }}>
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: colors.destructive }}>
+                    -{formatCurrencyAmount(p.convertedAmount, primaryCurrency)}
+                  </Text>
+                  {p.currency !== primaryCurrency && (
+                    <Text style={{ fontSize: 10, color: colors.mutedText }}>
+                      {p.amount} {p.currency}
+                    </Text>
+                  )}
+                  <View style={{ flexDirection: "row", gap: 6, marginTop: 2 }}>
+                    <TouchableOpacity
+                      onPress={() => handleOpenEdit(p)}
+                      style={{
+                        padding: 4,
+                        borderRadius: 6,
+                        backgroundColor: colors.surface,
+                      }}
+                    >
+                      <Pencil size={13} color={colors.text} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleDeletePayment(p)}
+                      style={{
+                        padding: 4,
+                        borderRadius: 6,
+                        backgroundColor: colors.surface,
+                      }}
+                    >
+                      <Trash2 size={13} color={colors.destructive} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
             ))}
           </View>
         </View>
       )}
+
+      {/* Edit Payment Modal */}
+      <Modal
+        visible={!!editingPayment}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setEditingPayment(null)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            justifyContent: "center",
+            alignItems: "center",
+            paddingHorizontal: 20,
+          }}
+        >
+          <View
+            style={{
+              width: "100%",
+              maxWidth: 360,
+              backgroundColor: colors.card,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: colors.border,
+              padding: 20,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 10 },
+              shadowOpacity: 0.35,
+              shadowRadius: 20,
+              elevation: 12,
+            }}
+          >
+            {/* Header */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 16,
+              }}
+            >
+              <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
+                Edit Payment Record
+              </Text>
+              <TouchableOpacity
+                onPress={() => setEditingPayment(null)}
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 14,
+                  backgroundColor: colors.surface,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <X size={16} color={colors.mutedText} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Amount input */}
+            <View style={{ marginBottom: 12 }}>
+              <Text style={{ fontSize: 12, fontWeight: "600", color: colors.mutedText, marginBottom: 6 }}>
+                Amount
+              </Text>
+              <TextInput
+                value={editAmount}
+                onChangeText={setEditAmount}
+                keyboardType="numeric"
+                style={{
+                  backgroundColor: colors.surface,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 10,
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  fontSize: 14,
+                  color: colors.text,
+                }}
+                placeholder="0.00"
+                placeholderTextColor={colors.mutedText}
+              />
+            </View>
+
+            {/* Currency selector chips */}
+            <View style={{ marginBottom: 12 }}>
+              <Text style={{ fontSize: 12, fontWeight: "600", color: colors.mutedText, marginBottom: 6 }}>
+                Currency
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: "row" }}>
+                {currencies.slice(0, 10).map((c) => (
+                  <TouchableOpacity
+                    key={c.value}
+                    onPress={() => setEditCurrency(c.value)}
+                    style={{
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
+                      borderRadius: 8,
+                      backgroundColor: editCurrency === c.value ? colors.primary : colors.surface,
+                      marginRight: 6,
+                      borderWidth: 1,
+                      borderColor: editCurrency === c.value ? colors.primary : colors.border,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        fontWeight: "700",
+                        color: editCurrency === c.value ? colors.primaryForeground : colors.text,
+                      }}
+                    >
+                      {c.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* Date input */}
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ fontSize: 12, fontWeight: "600", color: colors.mutedText, marginBottom: 6 }}>
+                Payment Date (YYYY-MM-DD)
+              </Text>
+              <TextInput
+                value={editDate}
+                onChangeText={setEditDate}
+                style={{
+                  backgroundColor: colors.surface,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 10,
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  fontSize: 14,
+                  color: colors.text,
+                }}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={colors.mutedText}
+              />
+            </View>
+
+            {/* Action Buttons */}
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <TouchableOpacity
+                onPress={() => setEditingPayment(null)}
+                style={{
+                  flex: 1,
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                  backgroundColor: colors.surface,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleSaveEdit}
+                disabled={isUpdating}
+                style={{
+                  flex: 1,
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                  backgroundColor: colors.primary,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.primaryForeground }}>
+                  {isUpdating ? "Saving..." : "Save Changes"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   )
 }
