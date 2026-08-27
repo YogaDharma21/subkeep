@@ -1,4 +1,4 @@
-import { ClerkProvider, useAuth } from "@clerk/clerk-expo"
+import { ClerkProvider, useAuth } from "@clerk/expo"
 import { ConvexProviderWithClerk } from "convex/react-clerk"
 import { ConvexReactClient } from "convex/react"
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native"
@@ -7,7 +7,7 @@ import { Stack, useRouter, useSegments } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import React, { useEffect, useMemo } from "react"
 import { View, ActivityIndicator } from "react-native"
-import { tokenCache } from "@/lib/token-cache"
+import { tokenCache } from "@clerk/expo/token-cache"
 import { LandingScreen } from "@/components/landing-screen"
 import { CustomAlertProvider } from "@/components/custom-alert-provider"
 import { AppThemeProvider, useThemeColor } from "@/hooks/use-theme-color"
@@ -49,7 +49,7 @@ const customLightTheme = {
 }
 
 function InitialLayout() {
-  const { isLoaded, isSignedIn } = useAuth()
+  const { isLoaded, isSignedIn } = useAuth({ treatPendingAsSignedOut: false })
   const segments = useSegments()
   const router = useRouter()
   const { colors } = useThemeColor()
