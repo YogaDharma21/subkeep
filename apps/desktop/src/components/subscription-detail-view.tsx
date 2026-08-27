@@ -1,4 +1,4 @@
-import { useState, useRef } from "react"
+import { useState, useRef, useMemo } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/clerk-react"
 import { api } from "@/convex/_generated/api"
@@ -75,10 +75,16 @@ export function SubscriptionDetailView({
     api.subscriptions.get,
     subscriptionId ? { id: subscriptionId as Id<"subscriptions"> } : "skip"
   )
-  const subPayments = useQuery(
-    api.payments.listBySubscription,
-    subscriptionId && isSignedIn ? { subscriptionId: subscriptionId as Id<"subscriptions"> } : "skip"
+  const allPayments = useQuery(
+    api.payments.list,
+    isSignedIn ? {} : "skip"
   )
+  const subPayments = useMemo(() => {
+    if (!allPayments || !subscriptionId) return []
+    return allPayments.filter(
+      (p) => p.subscriptionId === subscriptionId || (sub && p.name === sub.name)
+    )
+  }, [allPayments, subscriptionId, sub])
   const paymentMethods = useQuery(
     api.paymentMethods.list,
     isSignedIn ? {} : "skip"
