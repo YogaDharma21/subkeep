@@ -374,323 +374,324 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
         onChange={handleCsvFileInput}
       />
 
-      <div>
-        <h1 className="text-xl font-extrabold text-foreground">Settings & Preferences</h1>
-        <p className="text-xs text-muted-foreground mt-1">
-          Customize currency, notifications, budget limits, card vault, and data backups.
-        </p>
-      </div>
-
-      {/* Preferences Section */}
-      <div className="rounded-lg border border-border bg-background p-5 shadow-xs space-y-5">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          General Preferences
-        </h3>
-
-        {/* Theme Preference */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              {resolvedTheme === "dark" ? <Moon className="size-4" /> : <Sun className="size-4" />}
-              <span>Theme Appearance</span>
+      {/* User Profile Card */}
+      {user && (
+        <div className="flex items-center justify-between rounded-xl border border-border bg-background p-4 shadow-2xs">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-base shadow-xs">
+              {(user.fullName || user.primaryEmailAddress?.emailAddress || "U").charAt(0).toUpperCase()}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Select dark, light, or system sync (Hotkey: &apos;D&apos;)
-            </p>
-          </div>
-
-          <div className="flex rounded-lg border border-border bg-muted/50 p-0.5 text-xs font-medium">
-            <button
-              onClick={() => setTheme("light")}
-              className={`rounded-md px-3 py-1 transition-all cursor-pointer ${
-                theme === "light" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground"
-              }`}
-            >
-              Light
-            </button>
-            <button
-              onClick={() => setTheme("dark")}
-              className={`rounded-md px-3 py-1 transition-all cursor-pointer ${
-                theme === "dark" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground"
-              }`}
-            >
-              Dark
-            </button>
-            <button
-              onClick={() => setTheme("system")}
-              className={`rounded-md px-3 py-1 transition-all cursor-pointer ${
-                theme === "system" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground"
-              }`}
-            >
-              System
-            </button>
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Primary Currency */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <Globe className="size-4 text-primary" />
-              <span>Primary Currency</span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Used to normalize and convert all subscription totals
-            </p>
-          </div>
-
-          <select
-            value={primaryCurrency}
-            onChange={(e) => handleCurrencyChange(e.target.value)}
-            className="flex h-9 w-44 rounded-lg border border-border bg-background px-3 text-xs font-medium"
-          >
-            {currencies.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label} ({c.value})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <Separator />
-
-        {/* Monthly Budget Cap */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <Target className="size-4 text-primary" />
-                <span>Monthly Budget Limit</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Set a spending cap to receive alerts when subscriptions exceed your budget
+            <div className="min-w-0">
+              <h2 className="text-sm font-bold text-foreground truncate">
+                {user.fullName || "SubKeep User"}
+              </h2>
+              <p className="text-xs text-muted-foreground truncate">
+                {user.primaryEmailAddress?.emailAddress}
               </p>
             </div>
-          </div>
-
-          <div className="flex gap-2 max-w-sm">
-            <Input
-              type="number"
-              placeholder={`e.g. 50 (${primaryCurrency})`}
-              value={budgetCap}
-              onChange={(e) => setBudgetCap(e.target.value)}
-              className="text-xs"
-            />
-            <Button onClick={handleSaveBudgetCap} size="sm" className="cursor-pointer text-xs shrink-0">
-              Save Limit
-            </Button>
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Notifications & Reminders */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <Bell className="size-4 text-primary" />
-                <span>Renewal & Trial Reminder Timing</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                When to trigger desktop alerts before upcoming renewal dates
-              </p>
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleTestNotification}
-              className="text-xs cursor-pointer h-8"
-            >
-              Test Alert
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-4 gap-2 max-w-md">
-            {[
-              { label: "Same day", value: 0 },
-              { label: "1 day before", value: 1 },
-              { label: "3 days before", value: 3 },
-              { label: "7 days before", value: 7 },
-            ].map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => handleReminderDaysChange(opt.value)}
-                className={`rounded-lg border px-2 py-2 text-center text-xs transition-all cursor-pointer ${
-                  reminderDays === opt.value
-                    ? "border-foreground bg-foreground text-background font-bold"
-                    : "border-border bg-muted/40 hover:bg-muted"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Card Vault Quick Access */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <CreditCard className="size-4 text-primary" />
-              <span>Payment Methods & Card Vault</span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Manage connected credit cards, spend breakdown & expiry tracking
-            </p>
-          </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onOpenPaymentMethods}
-            className="cursor-pointer text-xs"
-          >
-            Manage Cards
-          </Button>
-        </div>
-      </div>
-
-      {/* Data Export & Backup Section */}
-      <div className="rounded-lg border border-border bg-background p-5 shadow-xs space-y-4">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Backup, Export & Migration
-        </h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button
-            onClick={handleExportCSV}
-            className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
-          >
-            <FileSpreadsheet className="size-5 text-foreground shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">Export as CSV</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Download spreadsheet formatted for Excel and Google Sheets
-              </p>
-            </div>
-          </button>
-
-          <button
-            onClick={handleExportJSON}
-            className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
-          >
-            <Download className="size-5 text-foreground shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">Export JSON</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Download raw JSON records for subscriptions
-              </p>
-            </div>
-          </button>
-
-          <button
-            onClick={handleOpenCsvFile}
-            className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
-          >
-            <Upload className="size-5 text-foreground shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">Import from CSV</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Upload CSV spreadsheet to batch import subscriptions
-              </p>
-            </div>
-          </button>
-
-          <button
-            onClick={handleBackup}
-            className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
-          >
-            <FileJson className="size-5 text-foreground shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">Full JSON Backup</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Export complete database including payment history
-              </p>
-            </div>
-          </button>
-
-          <button
-            onClick={handleOpenJsonFile}
-            className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer sm:col-span-2"
-          >
-            <Download className="size-5 text-foreground shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">Restore JSON Backup</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Restore subscriptions and payments from a JSON backup file
-              </p>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      {/* Account & Session Section */}
-      <div className="rounded-lg border border-border bg-background p-5 shadow-xs space-y-4">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Account & Session
-        </h3>
-
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <p className="text-sm font-bold text-foreground">
-              {user?.fullName || user?.primaryEmailAddress?.emailAddress?.split("@")[0] || "User"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {user?.primaryEmailAddress?.emailAddress || "Signed in with Google"}
-            </p>
           </div>
 
           <Button
             variant="outline"
             size="sm"
             onClick={() => signOut()}
-            className="text-xs font-semibold gap-1.5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 cursor-pointer"
+            className="text-xs font-semibold gap-1.5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 cursor-pointer shrink-0"
           >
             <LogOut className="size-3.5" />
             <span>Sign Out</span>
           </Button>
         </div>
-      </div>
+      )}
 
-      {/* Danger Zone & About Section */}
-      <div className="rounded-lg border border-border bg-background p-5 shadow-xs space-y-4">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          System & Danger Zone
+      {/* Category: GENERAL & PREFERENCES */}
+      <div className="space-y-2">
+        <h3 className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          General & Preferences
         </h3>
 
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <Info className="size-4" />
-              <span>About SubKeep</span>
+        <div className="rounded-xl border border-border bg-background p-5 shadow-2xs space-y-5">
+          {/* Theme Preference */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                {resolvedTheme === "dark" ? <Moon className="size-4" /> : <Sun className="size-4" />}
+                <span>Theme Appearance</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Select dark, light, or system sync (Hotkey: &apos;D&apos;)
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Desktop Application Info, build runtime & system specs
-            </p>
+
+            <div className="flex rounded-lg border border-border bg-muted/50 p-0.5 text-xs font-medium">
+              <button
+                onClick={() => setTheme("light")}
+                className={`rounded-md px-3 py-1 transition-all cursor-pointer ${
+                  theme === "light" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground"
+                }`}
+              >
+                Light
+              </button>
+              <button
+                onClick={() => setTheme("dark")}
+                className={`rounded-md px-3 py-1 transition-all cursor-pointer ${
+                  theme === "dark" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground"
+                }`}
+              >
+                Dark
+              </button>
+              <button
+                onClick={() => setTheme("system")}
+                className={`rounded-md px-3 py-1 transition-all cursor-pointer ${
+                  theme === "system" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground"
+                }`}
+              >
+                System
+              </button>
+            </div>
           </div>
 
-          <Button variant="outline" size="sm" onClick={() => setAboutOpen(true)} className="cursor-pointer text-xs">
+          <Separator />
+
+          {/* Primary Currency */}
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Globe className="size-4 text-primary" />
+                <span>Primary Currency</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Used to normalize and convert all subscription totals
+              </p>
+            </div>
+
+            <select
+              value={primaryCurrency}
+              onChange={(e) => handleCurrencyChange(e.target.value)}
+              className="flex h-9 w-44 rounded-lg border border-border bg-background px-3 text-xs font-medium"
+            >
+              {currencies.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label} ({c.value})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <Separator />
+
+          {/* Monthly Budget Cap */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <Target className="size-4 text-primary" />
+                  <span>Monthly Budget Limit</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Set a spending cap to receive alerts when subscriptions exceed your budget
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 max-w-sm">
+              <Input
+                type="number"
+                placeholder={`e.g. 50 (${primaryCurrency})`}
+                value={budgetCap}
+                onChange={(e) => setBudgetCap(e.target.value)}
+                className="text-xs"
+              />
+              <Button onClick={handleSaveBudgetCap} size="sm" className="cursor-pointer text-xs shrink-0">
+                Save Limit
+              </Button>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Notifications & Reminders */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <Bell className="size-4 text-primary" />
+                  <span>Renewal & Trial Reminder Timing</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  When to trigger desktop alerts before upcoming renewal dates
+                </p>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleTestNotification}
+                className="text-xs cursor-pointer h-8"
+              >
+                Test Alert
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2 max-w-md">
+              {[
+                { label: "Same day", value: 0 },
+                { label: "1 day before", value: 1 },
+                { label: "3 days before", value: 3 },
+                { label: "7 days before", value: 7 },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleReminderDaysChange(opt.value)}
+                  className={`rounded-lg border px-2 py-2 text-center text-xs transition-all cursor-pointer ${
+                    reminderDays === opt.value
+                      ? "border-foreground bg-foreground text-background font-bold"
+                      : "border-border bg-muted/40 hover:bg-muted"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Card Vault Quick Access */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <CreditCard className="size-4 text-primary" />
+                <span>Payment Methods & Card Vault</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Manage connected credit cards, spend breakdown & expiry tracking
+              </p>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onOpenPaymentMethods}
+              className="cursor-pointer text-xs"
+            >
+              Manage Cards
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Category: DATA & BACKUP */}
+      <div className="space-y-2">
+        <h3 className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Data & Backup
+        </h3>
+
+        <div className="rounded-xl border border-border bg-background p-5 shadow-2xs space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              onClick={handleExportCSV}
+              className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
+            >
+              <FileSpreadsheet className="size-5 text-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">Export as CSV</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Download spreadsheet formatted for Excel and Google Sheets
+                </p>
+              </div>
+            </button>
+
+            <button
+              onClick={handleExportJSON}
+              className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
+            >
+              <Download className="size-5 text-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">Export JSON</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Download raw JSON records for subscriptions
+                </p>
+              </div>
+            </button>
+
+            <button
+              onClick={handleOpenCsvFile}
+              className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
+            >
+              <Upload className="size-5 text-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">Import from CSV</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Upload CSV spreadsheet to batch import subscriptions
+                </p>
+              </div>
+            </button>
+
+            <button
+              onClick={handleBackup}
+              className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
+            >
+              <FileJson className="size-5 text-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">Full JSON Backup</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Export complete database including payment history
+                </p>
+              </div>
+            </button>
+
+            <button
+              onClick={handleOpenJsonFile}
+              className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer sm:col-span-2"
+            >
+              <Download className="size-5 text-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">Restore JSON Backup</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Restore subscriptions and payments from a JSON backup file
+                </p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Category: ABOUT */}
+      <div className="overflow-hidden rounded-xl border border-border bg-background shadow-2xs">
+        <button
+          onClick={() => setAboutOpen(true)}
+          className="flex w-full cursor-pointer items-center justify-between p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+              <Info className="size-4 text-foreground/80" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-foreground">About SubKeep</div>
+              <div className="text-xs text-muted-foreground">Version 0.0.1 · Runtime & System info</div>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); setAboutOpen(true); }} className="cursor-pointer text-xs">
             About App
           </Button>
-        </div>
+        </button>
+      </div>
 
-        <Separator />
-
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
-              <Trash2 className="size-4" />
-              <span>Reset & Wipe Data</span>
+      {/* Category: SYSTEM & DANGER ZONE */}
+      <div className="overflow-hidden rounded-xl border border-border bg-background shadow-2xs">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3.5">
+            <div className="flex size-9 items-center justify-center rounded-lg bg-destructive/10 text-destructive shrink-0">
+              <Trash2 className="size-4 text-destructive" />
             </div>
-            <p className="text-xs text-muted-foreground">
-              Permanently purge all subscriptions, history, and cards
-            </p>
+            <div>
+              <div className="text-sm font-semibold text-destructive">
+                Delete All Data
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Permanently purge all subscriptions, history, and cards
+              </div>
+            </div>
           </div>
 
           <Button
