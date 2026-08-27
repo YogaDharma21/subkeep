@@ -43,7 +43,7 @@ import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { IconPickerModal } from "@/components/icon-picker-modal"
 import { convertAndFormat, formatCycleLabel } from "@/lib/currency"
 import { getSymbol, currencies } from "@/constants/currencies"
-import { categoryColors } from "@/constants/categories"
+import { categoryColors, colorPresets } from "@/constants/categories"
 import { format, differenceInDays } from "date-fns"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
@@ -199,11 +199,6 @@ export default function SubscriptionDetailPage() {
     { name: string; shareAmount: number; isPaid?: boolean }[]
   >([])
 
-  const colorOptions = [
-    "#000000", "#555555", "#E50914", "#1DB954", "#00A8E1",
-    "#4285F4", "#0078D4", "#B535F6", "#F47D31", "#00C4CC",
-    "#E60023", "#107C10", "#003087", "#58CC02", "#FF0000",
-  ]
 
   const startEditing = () => {
     if (!sub) return
@@ -833,27 +828,68 @@ export default function SubscriptionDetailPage() {
               onChangeText={setEditCancelUrl}
             />
 
-            {/* Color Circles */}
-            <View style={{ gap: 6 }}>
+            {/* Color Circles & Custom Hex Input */}
+            <View style={{ gap: 8 }}>
               <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
                 Icon Color
               </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8 }}>
-                {colorOptions.map((c) => (
-                  <TouchableOpacity
-                    key={c}
-                    onPress={() => setEditColor(c)}
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 14,
-                      backgroundColor: c,
-                      borderWidth: editColor === c ? 2 : 0,
-                      borderColor: colors.text,
-                    }}
-                  />
-                ))}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8, alignItems: "center" }}>
+                {colorPresets.map((c) => {
+                  const isSelected = editColor?.toLowerCase() === c.toLowerCase()
+                  return (
+                    <TouchableOpacity
+                      key={c}
+                      onPress={() => setEditColor(c)}
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 14,
+                        backgroundColor: c,
+                        borderWidth: isSelected ? 2.5 : c.toLowerCase() === "#ffffff" ? 1 : 0,
+                        borderColor: isSelected ? colors.primary : colors.border,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    />
+                  )
+                })}
               </ScrollView>
+
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 2 }}>
+                <View
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 14,
+                    backgroundColor: editColor?.startsWith("#") ? editColor : "#FFFFFF",
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                />
+                <TextInput
+                  value={editColor}
+                  onChangeText={(text) => {
+                    let val = text.trim()
+                    if (!val.startsWith("#") && val.length > 0) val = "#" + val
+                    setEditColor(val)
+                  }}
+                  placeholder="#FFFFFF"
+                  placeholderTextColor={colors.mutedText}
+                  maxLength={7}
+                  autoCapitalize="characters"
+                  style={{
+                    flex: 1,
+                    height: 38,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    fontSize: 13,
+                    color: colors.text,
+                    backgroundColor: colors.surface,
+                  }}
+                />
+              </View>
             </View>
 
             <Button onPress={saveEdit} style={{ marginTop: 6 }}>

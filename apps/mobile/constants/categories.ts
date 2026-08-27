@@ -35,17 +35,18 @@ export const billingCycles = [
   { value: "none", label: "No Cycle" },
 ]
 
-export const colorOptions = [
-  "#09090b",
-  "#71717a",
-  "#3b82f6",
-  "#6366f1",
-  "#8b5cf6",
-  "#10b981",
-  "#14b8a6",
-  "#06b6d4",
-  "#f59e0b",
-  "#f97316",
-  "#ec4899",
-  "#ef4444",
+export const colorPresets = [
+  "#FFFFFF",
+  "#09090B",
+  "#64748B",
+  "#3B82F6",
+  "#6366F1",
+  "#8B5CF6",
+  "#EC4899",
+  "#EF4444",
+  "#F59E0B",
+  "#10B981",
 ]
+
+export const colorOptions = colorPresets
+

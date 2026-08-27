@@ -2,7 +2,7 @@ import { useState, useCallback } from "react"
 import { useMutation, useQuery } from "convex/react"
 import { useAuth } from "@clerk/clerk-react"
 import { api } from "@/convex/_generated/api"
-import { ArrowLeft, Plus, Sparkles, Link2, Users, CreditCard, UserPlus, Trash2 } from "lucide-react"
+import { ArrowLeft, Plus, Sparkles, Link2, Users, CreditCard, UserPlus, Trash2, Pipette } from "lucide-react"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import {
   Sheet,
@@ -20,6 +20,7 @@ import {
   categories,
   currencies,
   billingCycles,
+  colorPresets,
 } from "@/lib/constants"
 
 interface AddSubscriptionSheetProps {
@@ -67,11 +68,6 @@ export function AddSubscriptionSheet({
   const [totalMembers, setTotalMembers] = useState("4")
   const [splitMembersList, setSplitMembersList] = useState<Array<{ name: string; shareAmount: number }>>([])
 
-  const colorOptions = [
-    "#000000", "#555555", "#E50914", "#1DB954", "#00A8E1",
-    "#4285F4", "#0078D4", "#B535F6", "#F47D31", "#00C4CC",
-    "#E60023", "#107C10", "#003087", "#58CC02", "#FF0000",
-  ]
 
   const resetForm = () => {
     setStep(1)
@@ -256,21 +252,50 @@ export function AddSubscriptionSheet({
 
               <div className="space-y-2">
                 <label className="text-xs font-medium text-foreground">Icon Color</label>
-                <div className="flex flex-wrap gap-2">
-                  {colorOptions.map((c) => (
+                <div className="flex flex-wrap items-center gap-2">
+                  {colorPresets.map((c) => (
                     <button
                       key={c}
                       type="button"
                       onClick={() => setSelectedColor(c)}
                       className={cn(
-                        "size-7 rounded-lg border-2 transition-all cursor-pointer",
-                        selectedColor === c
-                          ? "border-foreground scale-110"
-                          : "border-transparent"
+                        "size-7 rounded-lg border-2 transition-all cursor-pointer shadow-xs",
+                        selectedColor?.toLowerCase() === c.toLowerCase()
+                          ? "border-primary ring-2 ring-primary/30 scale-110"
+                          : c.toLowerCase() === "#ffffff"
+                            ? "border-muted-foreground/30"
+                            : "border-transparent"
                       )}
                       style={{ backgroundColor: c }}
+                      title={c}
                     />
                   ))}
+                  <div className="flex items-center gap-1.5 ml-1 pl-2 border-l border-border">
+                    <label
+                      className="relative size-7 rounded-lg border border-border cursor-pointer overflow-hidden flex items-center justify-center bg-muted/50 hover:bg-muted transition-colors shrink-0"
+                      title="Pick custom color"
+                    >
+                      <Pipette className="size-3.5 text-muted-foreground" />
+                      <input
+                        type="color"
+                        value={
+                          selectedColor?.startsWith("#") && selectedColor.length === 7
+                            ? selectedColor
+                            : "#FFFFFF"
+                        }
+                        onChange={(e) => setSelectedColor(e.target.value)}
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                      />
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedColor}
+                      onChange={(e) => setSelectedColor(e.target.value)}
+                      placeholder="#FFFFFF"
+                      maxLength={7}
+                      className="w-20 px-2 py-1 text-xs font-mono rounded-md border border-border bg-background focus:outline-hidden focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
                 </div>
               </div>
 
