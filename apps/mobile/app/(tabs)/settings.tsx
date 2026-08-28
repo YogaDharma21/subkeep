@@ -25,8 +25,10 @@ import {
 import * as DocumentPicker from "expo-document-picker"
 import * as FileSystem from "expo-file-system/legacy"
 import * as Sharing from "expo-sharing"
+import * as WebBrowser from "expo-web-browser"
 import { getSymbol } from "@/constants/currencies"
 import { exportSubscriptionsToCSV, parseCSVToSubscriptions } from "@/lib/csv"
+import { getClerkAccountPortalUrl } from "@/lib/clerk-account-portal"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/components/custom-alert-provider"
@@ -46,6 +48,18 @@ export default function SettingsScreen() {
   const restorePayments = useMutation(api.payments.restoreAll)
 
   const { primaryCurrency } = usePrimaryCurrency()
+
+  const handleOpenAccountPortal = async () => {
+    try {
+      await WebBrowser.openBrowserAsync(getClerkAccountPortalUrl())
+    } catch {
+      showAlert({
+        title: "Unable to open account settings",
+        message: "Please try again in a moment.",
+        icon: "error",
+      })
+    }
+  }
 
   const handleExportCSV = async () => {
     if (!subscriptions || subscriptions.length === 0) {
@@ -328,11 +342,11 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40 }}>
-        {/* User profile card (opens Clerk Profile modal) */}
+        {/* User profile card (opens Clerk's hosted Account Portal) */}
         {user ? (
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => router.push("/modal/profile" as never)}
+            onPress={handleOpenAccountPortal}
             style={{
               flexDirection: "row",
               alignItems: "center",
