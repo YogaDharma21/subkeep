@@ -10,7 +10,7 @@ import {
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
-import { useSignUp } from "@clerk/clerk-expo"
+import { useSignUp } from "@clerk/expo"
 import { Lock, Mail, ArrowRight, CheckCircle } from "lucide-react-native"
 import { GoogleOAuthButton } from "@/components/google-oauth-button"
 import { Input } from "@/components/ui/input"
@@ -20,7 +20,7 @@ import { useThemeColor } from "@/hooks/use-theme-color"
 export default function SignUpScreen() {
   const router = useRouter()
   const { colors } = useThemeColor()
-  const { isLoaded, signUp, setActive } = useSignUp()
+  const { signUp, fetchStatus } = useSignUp()
 
   const [emailAddress, setEmailAddress] = useState("")
   const [password, setPassword] = useState("")
@@ -30,8 +30,6 @@ export default function SignUpScreen() {
   const [errorMsg, setErrorMsg] = useState("")
 
   const onSignUpPress = async () => {
-    if (!isLoaded) return
-
     if (!emailAddress.trim() || !password.trim()) {
       setErrorMsg("Please enter an email and password.")
       return
@@ -41,12 +39,18 @@ export default function SignUpScreen() {
     setErrorMsg("")
 
     try {
-      await signUp.create({
+      const createResult = await signUp.create({
         emailAddress: emailAddress.trim(),
         password: password,
       })
 
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" })
+      if (createResult.error) {
+        const msg = createResult.error.longMessage || createResult.error.message || "Failed to create account."
+        setErrorMsg(msg)
+        return
+      }
+
+      await signUp.verifications.sendEmailCode()
       setPendingVerification(true)
     } catch (err: unknown) {
       const error = err as { errors?: { message?: string; longMessage?: string }[] }
@@ -59,8 +63,6 @@ export default function SignUpScreen() {
   }
 
   const onPressVerify = async () => {
-    if (!isLoaded) return
-
     if (!code.trim()) {
       setErrorMsg("Please enter the verification code sent to your email.")
       return
@@ -70,20 +72,26 @@ export default function SignUpScreen() {
     setErrorMsg("")
 
     try {
-      const completeSignUp = await signUp.attemptEmailAddressVerification({
+      const verifyResult = await signUp.verifications.verifyEmailCode({
         code: code.trim(),
       })
 
-      if (completeSignUp.status === "complete") {
-        await setActive({ session: completeSignUp.createdSessionId })
+      if (verifyResult.error) {
+        const msg = verifyResult.error.longMessage || verifyResult.error.message || "Invalid verification code."
+        setErrorMsg(msg)
+        return
+      }
+
+      if (signUp.status === "complete") {
+        await signUp.finalize()
         router.replace("/(tabs)" as never)
       } else {
-        console.error("Verification status not complete:", completeSignUp)
+        console.error("Verification status not complete:", signUp.status)
         setErrorMsg("Verification incomplete.")
       }
     } catch (err: unknown) {
-      const error = err as { errors?: { message?: string; longMessage?: string }[] }
       console.error("Verification error:", err)
+      const error = err as { errors?: { message?: string; longMessage?: string }[] }
       const msg = error.errors?.[0]?.longMessage || error.errors?.[0]?.message || "Invalid verification code."
       setErrorMsg(msg)
     } finally {

@@ -8,7 +8,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { useQuery, useMutation } from "convex/react"
-import { useAuth } from "@clerk/clerk-expo"
+import { useAuth } from "@clerk/expo"
 import { api } from "@/convex/_generated/api"
 import { Globe, Bell, Target, X, Check } from "lucide-react-native"
 import { currencies, getSymbol } from "@/constants/currencies"

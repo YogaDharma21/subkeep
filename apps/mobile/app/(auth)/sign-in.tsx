@@ -10,7 +10,7 @@ import {
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
-import { useSignIn } from "@clerk/clerk-expo"
+import { useSignIn } from "@clerk/expo"
 import { Lock, Mail, ArrowRight } from "lucide-react-native"
 import { GoogleOAuthButton } from "@/components/google-oauth-button"
 import { Input } from "@/components/ui/input"
@@ -20,7 +20,7 @@ import { useThemeColor } from "@/hooks/use-theme-color"
 export default function SignInScreen() {
   const router = useRouter()
   const { colors } = useThemeColor()
-  const { signIn, setActive, isLoaded } = useSignIn()
+  const { signIn, fetchStatus } = useSignIn()
 
   const [emailAddress, setEmailAddress] = useState("")
   const [password, setPassword] = useState("")
@@ -28,8 +28,6 @@ export default function SignInScreen() {
   const [errorMsg, setErrorMsg] = useState("")
 
   const handleSignIn = async () => {
-    if (!isLoaded) return
-
     if (!emailAddress.trim() || !password.trim()) {
       setErrorMsg("Please enter your email and password.")
       return
@@ -39,21 +37,27 @@ export default function SignInScreen() {
     setErrorMsg("")
 
     try {
-      const result = await signIn.create({
+      const result = await signIn!.password({
         identifier: emailAddress.trim(),
         password: password,
       })
 
-      if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId })
+      if (result.error) {
+        const msg = result.error.longMessage || result.error.message || "Failed to log in. Please check your credentials."
+        setErrorMsg(msg)
+        return
+      }
+
+      if (signIn!.status === "complete") {
+        await signIn!.finalize()
         router.replace("/(tabs)" as never)
       } else {
-        console.log("Sign in status not complete:", result)
+        console.log("Sign in status not complete:", signIn!.status)
         setErrorMsg("Further verification required.")
       }
     } catch (err: unknown) {
-      const error = err as { errors?: { message?: string; longMessage?: string }[] }
       console.error("Sign in error:", err)
+      const error = err as { errors?: { message?: string; longMessage?: string }[] }
       const msg = error.errors?.[0]?.longMessage || error.errors?.[0]?.message || "Failed to log in. Please check your credentials."
       setErrorMsg(msg)
     } finally {

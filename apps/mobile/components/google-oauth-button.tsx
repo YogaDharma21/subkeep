@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react"
 import { TouchableOpacity, Text, ActivityIndicator } from "react-native"
-import { useOAuth } from "@clerk/clerk-expo"
+import { useSSO } from "@clerk/expo"
 import * as WebBrowser from "expo-web-browser"
 import * as Linking from "expo-linking"
 import Svg, { Path } from "react-native-svg"
@@ -19,7 +19,7 @@ export function GoogleOAuthButton({
   onSuccess,
   monochrome = true,
 }: GoogleOAuthButtonProps) {
-  const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" })
+    const { startSSOFlow } = useSSO()
   const [loading, setLoading] = useState(false)
   const { showAlert } = useAlert()
 
@@ -27,7 +27,8 @@ export function GoogleOAuthButton({
     setLoading(true)
     try {
       const redirectUrl = Linking.createURL("/(tabs)", { scheme: "mobile" })
-      const { createdSessionId, setActive } = await startOAuthFlow({
+      const { createdSessionId, setActive } = await startSSOFlow({
+        strategy: "oauth_google",
         redirectUrl,
       })
 
@@ -43,7 +44,7 @@ export function GoogleOAuthButton({
     } finally {
       setLoading(false)
     }
-  }, [startOAuthFlow, onSuccess, showAlert])
+  }, [startSSOFlow, onSuccess, showAlert])
 
   return (
     <TouchableOpacity
