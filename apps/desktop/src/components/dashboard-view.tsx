@@ -46,7 +46,7 @@ export function DashboardView({
     api.userSettings.get,
     isSignedIn ? {} : "skip"
   )
-  const startCancelMutation = useMutation(api.subscriptions.startCancel)
+  const suspendMutation = useMutation(api.subscriptions.suspend)
 
   const activeSubs = useMemo(() => {
     if (!subscriptions) return []
@@ -123,8 +123,8 @@ export function DashboardView({
 
   const handleMarkCanceled = async (id: string) => {
     try {
-      await startCancelMutation({ id: id as Id<"subscriptions"> })
-      toast.success("Subscription marked as canceling")
+      await suspendMutation({ id: id as Id<"subscriptions"> })
+      toast.success("Subscription updated")
     } catch {
       toast.error("Failed to update subscription status")
     }
