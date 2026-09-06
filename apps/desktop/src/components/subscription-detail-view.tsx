@@ -51,7 +51,6 @@ import {
 } from "@/lib/constants"
 import { format, differenceInDays } from "date-fns"
 import { convertAndFormat } from "@/lib/currency"
-import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { SubscriptionDetailSkeleton } from "@/components/subscription-detail-skeleton"
 
@@ -70,7 +69,6 @@ export function SubscriptionDetailView({
   const [editing, setEditing] = useState(false)
   const [iconOpen, setIconOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
-  const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const receiptInputRef = useRef<HTMLInputElement>(null)
 
@@ -501,15 +499,6 @@ export function SubscriptionDetailView({
               </p>
             </div>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setCancelModalOpen(true)}
-            className="h-8 text-xs gap-1 cursor-pointer"
-          >
-            <ExternalLink className="size-3.5" />
-            Cancel Guide
-          </Button>
         </div>
       )}
 
@@ -834,23 +823,6 @@ export function SubscriptionDetailView({
             </h3>
 
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
-                  Cancellation Guide
-                </span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setCancelModalOpen(true)}
-                  className="h-7 text-xs gap-1 font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 cursor-pointer"
-                >
-                  <ExternalLink className="size-3" />
-                  Direct Cancel Link & Checklist
-                </Button>
-              </div>
-
-              <Separator />
-
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">
                   Original Price
@@ -1225,16 +1197,6 @@ export function SubscriptionDetailView({
           </Button>
         )}
       </div>
-
-      <CancellationGuideModal
-        open={cancelModalOpen}
-        onOpenChange={setCancelModalOpen}
-        subscription={sub}
-        onMarkCanceled={handleSuspend}
-        onUpdateCancelUrl={handleUpdateCancelUrl}
-        primaryCurrency={primaryCurrency}
-        rates={rates}
-      />
 
       <Dialog open={cancelUrlModalOpen} onOpenChange={setCancelUrlModalOpen}>
         <DialogContent className="max-w-sm rounded-lg p-5" onClose={() => setCancelUrlModalOpen(false)}>

@@ -19,7 +19,6 @@ import * as DocumentPicker from "expo-document-picker"
 import {
   ArrowLeft,
   Pencil,
-  Pause,
   Play,
   Copy,
   Trash2,
@@ -39,7 +38,6 @@ import {
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { IconPickerModal } from "@/components/icon-picker-modal"
 import { convertAndFormat, formatCycleLabel } from "@/lib/currency"
 import { getSymbol, currencies } from "@/constants/currencies"
@@ -59,7 +57,6 @@ export default function SubscriptionDetailPage() {
   const { showAlert, showToast } = useAlert()
 
   const [editing, setEditing] = useState(false)
-  const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [iconPickerOpen, setIconPickerOpen] = useState(false)
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const [cancelUrlModalOpen, setCancelUrlModalOpen] = useState(false)
@@ -261,15 +258,6 @@ export default function SubscriptionDetailPage() {
       showToast(sub.isActive ? "Subscription suspended" : "Subscription resumed", "info")
     } catch {
       showToast("Failed to change subscription state", "error")
-    }
-  }
-
-  const handleSuspend = async (subId: string) => {
-    try {
-      await suspendMutation({ id: subId as Id<"subscriptions"> })
-      showToast("Subscription marked as canceled / suspended", "info")
-    } catch {
-      showToast("Failed to update subscription status", "error")
     }
   }
 
@@ -552,25 +540,6 @@ export default function SubscriptionDetailPage() {
                 </Text>
               </View>
             </View>
-
-            <TouchableOpacity
-              onPress={() => setCancelModalOpen(true)}
-              activeOpacity={0.7}
-              style={{
-                backgroundColor: colors.emerald,
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                borderRadius: 8,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 4,
-              }}
-            >
-              <ExternalLink size={12} color="#ffffff" />
-              <Text style={{ fontSize: 11, fontWeight: "700", color: "#ffffff" }}>
-                Cancel Guide
-              </Text>
-            </TouchableOpacity>
           </View>
         )}
 
@@ -918,34 +887,6 @@ export default function SubscriptionDetailPage() {
               </Text>
 
               <View style={{ gap: 10 }}>
-                {/* Cancellation Guide */}
-                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
-                  <Text style={{ fontSize: 13, color: colors.mutedText }}>
-                    Cancellation Guide
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => setCancelModalOpen(true)}
-                    activeOpacity={0.7}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 4,
-                      backgroundColor: "rgba(16, 185, 129, 0.1)",
-                      borderWidth: 1,
-                      borderColor: "rgba(16, 185, 129, 0.3)",
-                      paddingHorizontal: 8,
-                      paddingVertical: 4,
-                      borderRadius: 6,
-                    }}
-                  >
-                    <ExternalLink size={11} color={colors.emerald} />
-                    <Text style={{ fontSize: 11, fontWeight: "700", color: colors.emerald }}>
-                      Direct Cancel Link & Checklist
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={{ height: 1, backgroundColor: colors.border }} />
-
                 {/* Original Price */}
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
                   <Text style={{ fontSize: 13, color: colors.mutedText }}>
@@ -1406,30 +1347,6 @@ export default function SubscriptionDetailPage() {
           </>
         )}
       </ScrollView>
-
-      {/* Cancellation Guide Modal */}
-      {sub && (
-        <CancellationGuideModal
-          visible={cancelModalOpen}
-          onClose={() => setCancelModalOpen(false)}
-          subscription={{
-            _id: sub._id,
-            name: sub.name,
-            icon: sub.icon,
-            color: sub.color,
-            price: sub.price,
-            currency: sub.currency,
-            cycle: sub.cycle,
-            cancelUrl: sub.cancelUrl,
-            isTrial: sub.isTrial,
-            trialEndDate: sub.trialEndDate,
-          }}
-          onMarkCanceled={handleSuspend}
-          onUpdateCancelUrl={handleUpdateCancelUrl}
-          primaryCurrency={primaryCurrency}
-          rates={rates}
-        />
-      )}
 
       {/* Change Cancel URL Modal */}
       <Modal
