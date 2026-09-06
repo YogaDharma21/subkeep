@@ -1,15 +1,10 @@
 import { useState } from "react"
-import { useMutation } from "convex/react"
-import { api } from "@/convex/_generated/api"
-import { Id } from "@/convex/_generated/dataModel"
 import { Bell, Send, Check, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
 import { getContrastTextColor } from "@/lib/constants"
-import { toast } from "sonner"
 import { findUpcomingReminders, ReminderItem, sendDesktopNotification } from "@/lib/notifications"
-import { CancellationGuideModal } from "./cancellation-guide-modal"
 
 interface UpcomingRemindersProps {
   subscriptions: Array<{
@@ -28,18 +23,14 @@ interface UpcomingRemindersProps {
   }>
   primaryCurrency?: string
   rates?: Record<string, number>
-  onMarkCanceled?: (id: string) => Promise<void>
 }
 
 export function UpcomingReminders({
   subscriptions,
   primaryCurrency = "IDR",
   rates,
-  onMarkCanceled,
 }: UpcomingRemindersProps) {
-  const [selectedSubForCancel, setSelectedSubForCancel] = useState<ReminderItem | null>(null)
   const [sentAlerts, setSentAlerts] = useState<Record<string, boolean>>({})
-  const updateMutation = useMutation(api.subscriptions.update)
 
   const reminders = findUpcomingReminders(subscriptions, 3)
 
@@ -55,18 +46,6 @@ export function UpcomingReminders({
 
     sendDesktopNotification(title, body)
     setSentAlerts((prev) => ({ ...prev, [item._id]: true }))
-  }
-
-  const handleUpdateCancelUrl = async (id: string, url: string) => {
-    try {
-      await updateMutation({
-        id: id as Id<"subscriptions">,
-        cancelUrl: url.trim() || undefined,
-      })
-      toast.success("Cancellation page URL updated")
-    } catch {
-      toast.error("Failed to update cancellation URL")
-    }
   }
 
   return (
@@ -118,11 +97,18 @@ export function UpcomingReminders({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setSelectedSubForCancel(item)}
+                    onClick={() => {
+                      const url = item.cancelUrl || `https://www.google.com/search?q=${encodeURIComponent(`how to cancel ${item.name} subscription`)}`
+                      if (window.electronAPI?.openExternal) {
+                        window.electronAPI.openExternal(url)
+                      } else {
+                        window.open(url, "_blank", "noopener,noreferrer")
+                      }
+                    }}
                     className="h-7 px-2 text-[11px] font-medium gap-1 cursor-pointer"
                   >
                     <ExternalLink className="size-3" />
-                    Cancel Link
+                    Cancel
                   </Button>
 
                   <Button
@@ -143,15 +129,6 @@ export function UpcomingReminders({
         })}
       </div>
 
-      <CancellationGuideModal
-        open={!!selectedSubForCancel}
-        onOpenChange={(o) => { if (!o) setSelectedSubForCancel(null) }}
-        subscription={selectedSubForCancel}
-        onMarkCanceled={onMarkCanceled}
-        onUpdateCancelUrl={handleUpdateCancelUrl}
-        primaryCurrency={primaryCurrency}
-        rates={rates}
-      />
     </div>
   )
 }

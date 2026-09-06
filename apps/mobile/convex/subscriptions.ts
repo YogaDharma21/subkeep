@@ -143,6 +143,7 @@ export const create = mutation({
       receiptStorageId: args.receiptStorageId || undefined,
       receiptFileName: args.receiptFileName || undefined,
       isActive: true,
+      pendingCancel: undefined,
     })
   },
 })
@@ -226,7 +227,7 @@ export const update = mutation({
   },
 })
 
-export const suspend = mutation({
+export const startCancel = mutation({
   args: { id: v.id("subscriptions") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
@@ -234,7 +235,31 @@ export const suspend = mutation({
     const sub = await ctx.db.get(args.id)
     if (!sub) throw new Error("Subscription not found")
     if (sub.userId !== identity.subject) throw new Error("Unauthorized")
-    await ctx.db.patch(args.id, { isActive: !sub.isActive })
+    await ctx.db.patch(args.id, { pendingCancel: true })
+  },
+})
+
+export const confirmCancel = mutation({
+  args: { id: v.id("subscriptions") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Not authenticated")
+    const sub = await ctx.db.get(args.id)
+    if (!sub) throw new Error("Subscription not found")
+    if (sub.userId !== identity.subject) throw new Error("Unauthorized")
+    await ctx.db.patch(args.id, { isActive: false, pendingCancel: false })
+  },
+})
+
+export const resume = mutation({
+  args: { id: v.id("subscriptions") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Not authenticated")
+    const sub = await ctx.db.get(args.id)
+    if (!sub) throw new Error("Subscription not found")
+    if (sub.userId !== identity.subject) throw new Error("Unauthorized")
+    await ctx.db.patch(args.id, { isActive: true, pendingCancel: false })
   },
 })
 
@@ -278,6 +303,7 @@ export const clone = mutation({
         },
       ],
       isActive: true,
+      pendingCancel: undefined,
     })
   },
 })
@@ -376,6 +402,7 @@ export const restoreAll = mutation({
           )
         ),
         isActive: v.boolean(),
+        pendingCancel: v.optional(v.boolean()),
       })
     ),
   },

@@ -24,6 +24,7 @@ export interface SubscriptionItemProps {
   account?: string
   website?: string
   isActive?: boolean
+  pendingCancel?: boolean
   isTrial?: boolean
   trialEndDate?: string
   cancelUrl?: string
@@ -118,6 +119,18 @@ export function SubscriptionCard({
               SPLIT {sub.totalMembers ? `(1/${sub.totalMembers})` : ""}
             </Badge>
           ) : null}
+
+          {sub.pendingCancel && sub.isActive !== false ? (
+            <Badge variant="amber" style={{ paddingHorizontal: 5, paddingVertical: 2 }}>
+              CANCELING
+            </Badge>
+          ) : null}
+
+          {sub.isActive === false ? (
+            <Badge variant="destructive" style={{ paddingHorizontal: 5, paddingVertical: 2 }}>
+              CANCELED
+            </Badge>
+          ) : null}
         </View>
 
         {/* Line 2: Account or email identifier if present */}
@@ -145,7 +158,7 @@ export function SubscriptionCard({
           {isTrial && sub.trialEndDate ? (
             <Text style={{ fontSize: 11, color: colors.emerald, fontWeight: "600" }}>
               Ends {format(new Date(sub.trialEndDate), "MMM d")}
-              {trialDaysLeft !== null ? ` (${trialDaysLeft}d)` : ""}
+              {trialDaysLeft !== null && trialDaysLeft > 0 ? ` (${trialDaysLeft}d)` : trialDaysLeft === 0 ? " (Expired)" : ""}
             </Text>
           ) : (
             <Text style={{ fontSize: 11, color: colors.mutedText }}>
