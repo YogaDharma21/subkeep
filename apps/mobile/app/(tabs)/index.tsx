@@ -33,7 +33,7 @@ import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { differenceInDays } from "date-fns"
 
-export type FilterType = "all" | "due_soon" | "trial" | "regular"
+export type FilterType = "all" | "due_soon" | "trial" | "regular" | "canceled"
 
 export type SortOption =
   | "billing-asc"
@@ -122,6 +122,8 @@ export default function DashboardScreen() {
         const diffDays = differenceInDays(targetDate, today)
         return diffDays >= 0 && diffDays <= 7
       })
+    } else if (filter === "canceled") {
+      list = list.filter((s) => s.isActive === false)
     }
 
     // Sort logic
@@ -444,6 +446,29 @@ export default function DashboardScreen() {
                 }}
               >
                 Regular
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setFilter("canceled")}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 4,
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 8,
+                backgroundColor: filter === "canceled" ? colors.destructive : colors.surface,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 11,
+                  fontWeight: "600",
+                  color: filter === "canceled" ? "#ffffff" : colors.destructive,
+                }}
+              >
+                Canceled
               </Text>
             </TouchableOpacity>
           </ScrollView>
