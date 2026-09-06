@@ -55,7 +55,6 @@ import {
 } from "@/lib/constants"
 import { format, differenceInDays } from "date-fns"
 import { convertAndFormat } from "@/lib/currency"
-import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { SubscriptionDetailSkeleton } from "@/components/subscription-detail-skeleton"
 
@@ -70,7 +69,6 @@ export default function SubscriptionDetailPage({
   const [editing, setEditing] = useState(false)
   const [iconOpen, setIconOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
-  const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const receiptInputRef = useRef<HTMLInputElement>(null)
 
@@ -94,7 +92,9 @@ export default function SubscriptionDetailPage({
   ) as Array<{ _id: string; name: string; type: string; last4?: string }> | undefined
 
   const updateMutation = useMutation(api.subscriptions.update)
-  const suspendMutation = useMutation(api.subscriptions.suspend)
+  const startCancelMutation = useMutation(api.subscriptions.startCancel)
+  const confirmCancelMutation = useMutation(api.subscriptions.confirmCancel)
+  const resumeMutation = useMutation(api.subscriptions.resume)
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
   const recordPaymentMutation = useMutation(api.payments.create)
@@ -259,16 +259,6 @@ export default function SubscriptionDetailPage({
       setEditing(false)
     } catch {
       toast.error("Failed to update subscription")
-    }
-  }
-
-  const handleSuspend = async () => {
-    if (!id || !sub) return
-    try {
-      await suspendMutation({ id: id as Id<"subscriptions"> })
-      toast.success(sub.isActive ? "Subscription paused" : "Subscription resumed")
-    } catch {
-      toast.error("Failed to change subscription state")
     }
   }
 
@@ -491,14 +481,33 @@ export default function SubscriptionDetailPage({
               </p>
             </div>
           </div>
-          <Button
-            size="sm"
-            onClick={() => setCancelModalOpen(true)}
-            className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1 cursor-pointer"
-          >
-            <ExternalLink className="size-3.5" />
-            Cancel Guide
-          </Button>
+          {sub.pendingCancel ? (
+            <Button
+              size="sm"
+              onClick={async () => {
+                await confirmCancelMutation({ id: id as Id<"subscriptions"> })
+                toast.success("Subscription marked as canceled")
+              }}
+              className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1 cursor-pointer"
+            >
+              <Check className="size-3.5" />
+              Mark as Canceled
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              onClick={async () => {
+                const url = sub.cancelUrl || `https://www.google.com/search?q=${encodeURIComponent(`how to cancel ${sub.name} subscription`)}`
+                window.open(url, "_blank", "noopener,noreferrer")
+                await startCancelMutation({ id: id as Id<"subscriptions"> })
+                toast.success("Marked as canceling. Complete cancellation on the provider's site.")
+              }}
+              className="h-8 bg-amber-600 hover:bg-amber-700 text-white text-xs gap-1 cursor-pointer"
+            >
+              <ExternalLink className="size-3.5" />
+              Cancel Subscription
+            </Button>
+          )}
         </div>
       )}
 
@@ -577,10 +586,13 @@ export default function SubscriptionDetailPage({
               )}
 
               <Badge
-                variant={sub.isActive ? "default" : "destructive"}
-                className="text-xs rounded-md"
+                variant={sub.isActive ? (sub.pendingCancel ? "outline" : "default") : "destructive"}
+                className={cn(
+                  "text-xs rounded-md",
+                  sub.pendingCancel && "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                )}
               >
-                {sub.isActive ? "Active" : "Suspended"}
+                {sub.pendingCancel ? "Canceling" : sub.isActive ? "Active" : "Canceled"}
               </Badge>
             </div>
           </div>
@@ -825,17 +837,37 @@ export default function SubscriptionDetailPage({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
-                  Cancellation Guide
+                  Cancel Subscription
                 </span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setCancelModalOpen(true)}
-                  className="h-7 text-xs gap-1 font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 cursor-pointer"
-                >
-                  <ExternalLink className="size-3" />
-                  Direct Cancel Link & Checklist
-                </Button>
+                {sub.pendingCancel ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={async () => {
+                      await confirmCancelMutation({ id: id as Id<"subscriptions"> })
+                      toast.success("Subscription marked as canceled")
+                    }}
+                    className="h-7 text-xs gap-1 font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 cursor-pointer"
+                  >
+                    <Check className="size-3" />
+                    Mark as Canceled
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={async () => {
+                      const url = sub.cancelUrl || `https://www.google.com/search?q=${encodeURIComponent(`how to cancel ${sub.name} subscription`)}`
+                      window.open(url, "_blank", "noopener,noreferrer")
+                      await startCancelMutation({ id: id as Id<"subscriptions"> })
+                      toast.success("Marked as canceling. Complete cancellation on the provider's site.")
+                    }}
+                    className="h-7 text-xs gap-1 font-semibold text-amber-600 dark:text-amber-400 border-amber-500/30 cursor-pointer"
+                  >
+                    <ExternalLink className="size-3" />
+                    Cancel
+                  </Button>
+                )}
               </div>
 
               <Separator />
@@ -1158,11 +1190,17 @@ export default function SubscriptionDetailPage({
         <Button
           variant="outline"
           className="flex-1 cursor-pointer"
-          onClick={handleSuspend}
+          onClick={sub.isActive ? async () => {
+            await startCancelMutation({ id: id as Id<"subscriptions"> })
+            toast.success("Subscription marked as canceling")
+          } : async () => {
+            await resumeMutation({ id: id as Id<"subscriptions"> })
+            toast.success("Subscription resumed")
+          }}
         >
           {sub.isActive ? (
             <>
-              <Pause className="size-4" /> Suspend
+              <Pause className="size-4" /> Cancel
             </>
           ) : (
             <>
@@ -1218,15 +1256,6 @@ export default function SubscriptionDetailPage({
           </Button>
         )}
       </div>
-
-      <CancellationGuideModal
-        open={cancelModalOpen}
-        onOpenChange={setCancelModalOpen}
-        subscription={sub}
-        onMarkCanceled={handleSuspend}
-        onUpdateCancelUrl={handleUpdateCancelUrl}
-        primaryCurrency={primaryCurrency}
-      />
 
       <Dialog open={cancelUrlModalOpen} onOpenChange={setCancelUrlModalOpen}>
         <DialogContent className="max-w-sm rounded-lg p-5">

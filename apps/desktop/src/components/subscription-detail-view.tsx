@@ -51,7 +51,6 @@ import {
 } from "@/lib/constants"
 import { format, differenceInDays } from "date-fns"
 import { convertAndFormat } from "@/lib/currency"
-import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { SubscriptionDetailSkeleton } from "@/components/subscription-detail-skeleton"
 
@@ -70,7 +69,6 @@ export function SubscriptionDetailView({
   const [editing, setEditing] = useState(false)
   const [iconOpen, setIconOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
-  const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const receiptInputRef = useRef<HTMLInputElement>(null)
 
@@ -94,7 +92,9 @@ export function SubscriptionDetailView({
   ) as Array<{ _id: string; name: string; type: string; last4?: string }> | undefined
 
   const updateMutation = useMutation(api.subscriptions.update)
-  const suspendMutation = useMutation(api.subscriptions.suspend)
+  const startCancelMutation = useMutation(api.subscriptions.startCancel)
+  const confirmCancelMutation = useMutation(api.subscriptions.confirmCancel)
+  const resumeMutation = useMutation(api.subscriptions.resume)
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
   const recordPaymentMutation = useMutation(api.payments.create)
@@ -265,8 +265,18 @@ export function SubscriptionDetailView({
   const handleSuspend = async () => {
     if (!subscriptionId || !sub) return
     try {
-      await suspendMutation({ id: subscriptionId as Id<"subscriptions"> })
-      toast.success(sub.isActive ? "Subscription paused" : "Subscription resumed")
+      if (sub.isActive && !sub.pendingCancel) {
+        const url = sub.cancelUrl || `https://www.google.com/search?q=${encodeURIComponent(`how to cancel ${sub.name} subscription`)}`
+        openUrl(url)
+        await startCancelMutation({ id: subscriptionId as Id<"subscriptions"> })
+        toast.success("Subscription marked as canceling")
+      } else if (sub.pendingCancel) {
+        await confirmCancelMutation({ id: subscriptionId as Id<"subscriptions"> })
+        toast.success("Subscription marked as canceled")
+      } else {
+        await resumeMutation({ id: subscriptionId as Id<"subscriptions"> })
+        toast.success("Subscription resumed")
+      }
     } catch {
       toast.error("Failed to change subscription state")
     }
@@ -501,15 +511,29 @@ export function SubscriptionDetailView({
               </p>
             </div>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setCancelModalOpen(true)}
-            className="h-8 text-xs gap-1 cursor-pointer"
-          >
-            <ExternalLink className="size-3.5" />
-            Cancel Guide
-          </Button>
+          <div>
+            {sub.pendingCancel ? (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleSuspend}
+                className="h-8 text-xs gap-1 cursor-pointer"
+              >
+                <Check className="size-3.5" />
+                Mark as Canceled
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleSuspend}
+                className="h-8 text-xs gap-1 cursor-pointer"
+              >
+                <ExternalLink className="size-3.5" />
+                Cancel Subscription
+              </Button>
+            )}
+          </div>
         </div>
       )}
 
@@ -588,10 +612,13 @@ export function SubscriptionDetailView({
               )}
 
               <Badge
-                variant={sub.isActive ? "default" : "destructive"}
-                className="text-xs rounded-md"
+                variant={sub.isActive ? (sub.pendingCancel ? "outline" : "default") : "destructive"}
+                className={cn(
+                  "text-xs rounded-md",
+                  sub.pendingCancel && "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                )}
               >
-                {sub.isActive ? "Active" : "Suspended"}
+                {sub.pendingCancel ? "Canceling" : sub.isActive ? "Active" : "Canceled"}
               </Badge>
             </div>
           </div>
@@ -836,17 +863,29 @@ export function SubscriptionDetailView({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">
-                  Cancellation Guide
+                  Cancel / Confirm
                 </span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setCancelModalOpen(true)}
-                  className="h-7 text-xs gap-1 font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 cursor-pointer"
-                >
-                  <ExternalLink className="size-3" />
-                  Direct Cancel Link & Checklist
-                </Button>
+                {sub.pendingCancel ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleSuspend}
+                    className="h-7 text-xs gap-1 font-semibold cursor-pointer"
+                  >
+                    <Check className="size-3" />
+                    Confirm Canceled
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleSuspend}
+                    className="h-7 text-xs gap-1 font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 cursor-pointer"
+                  >
+                    <ExternalLink className="size-3" />
+                    Cancel Subscription
+                  </Button>
+                )}
               </div>
 
               <Separator />
@@ -1167,9 +1206,13 @@ export function SubscriptionDetailView({
           className="flex-1 cursor-pointer"
           onClick={handleSuspend}
         >
-          {sub.isActive ? (
+          {sub.isActive && !sub.pendingCancel ? (
             <>
-              <Pause className="size-4" /> Suspend
+              <ExternalLink className="size-4" /> Cancel
+            </>
+          ) : sub.pendingCancel ? (
+            <>
+              <Check className="size-4" /> Confirm Canceled
             </>
           ) : (
             <>
@@ -1225,16 +1268,6 @@ export function SubscriptionDetailView({
           </Button>
         )}
       </div>
-
-      <CancellationGuideModal
-        open={cancelModalOpen}
-        onOpenChange={setCancelModalOpen}
-        subscription={sub}
-        onMarkCanceled={handleSuspend}
-        onUpdateCancelUrl={handleUpdateCancelUrl}
-        primaryCurrency={primaryCurrency}
-        rates={rates}
-      />
 
       <Dialog open={cancelUrlModalOpen} onOpenChange={setCancelUrlModalOpen}>
         <DialogContent className="max-w-sm rounded-lg p-5" onClose={() => setCancelUrlModalOpen(false)}>

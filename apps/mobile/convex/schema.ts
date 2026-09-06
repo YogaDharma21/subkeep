@@ -17,6 +17,7 @@ export default defineSchema({
     account: v.optional(v.string()),
     website: v.optional(v.string()),
     isActive: v.boolean(),
+    pendingCancel: v.optional(v.boolean()),
     isTrial: v.optional(v.boolean()),
     trialEndDate: v.optional(v.string()),
     cancelUrl: v.optional(v.string()),

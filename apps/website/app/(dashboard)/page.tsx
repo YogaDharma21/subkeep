@@ -12,6 +12,7 @@ import {
   Sparkles,
   Target,
   AlertTriangle,
+  X,
 } from "lucide-react"
 import { SubscriptionCard } from "@/components/subscription-card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -27,7 +28,7 @@ import { differenceInDays } from "date-fns"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
-export type FilterType = "all" | "due_soon" | "trial" | "regular"
+export type FilterType = "all" | "due_soon" | "trial" | "regular" | "canceled"
 
 export type SortOption =
   | "billing-asc"
@@ -41,7 +42,7 @@ export default function HomePage() {
   const { isSignedIn } = useAuth()
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
-  const suspendMutation = useMutation(api.subscriptions.suspend)
+  const startCancelMutation = useMutation(api.subscriptions.startCancel)
 
   const { primaryCurrency, setPrimaryCurrency, rates } = usePrimaryCurrency()
   const [filter, setFilter] = useState<FilterType>("all")
@@ -54,8 +55,8 @@ export default function HomePage() {
 
   const handleMarkCanceled = async (id: string) => {
     try {
-      await suspendMutation({ id: id as never })
-      toast.success("Subscription status updated")
+      await startCancelMutation({ id: id as never })
+      toast.success("Subscription marked as canceling")
     } catch {
       toast.error("Failed to update status")
     }
@@ -114,6 +115,8 @@ export default function HomePage() {
         const diffDays = differenceInDays(targetDate, today)
         return diffDays >= 0 && diffDays <= 7
       })
+    } else if (filter === "canceled") {
+      list = list.filter((s) => !s.isActive)
     }
 
     // Sort logic
@@ -168,6 +171,11 @@ export default function HomePage() {
         return {
           title: "No regular subscriptions found",
           subtitle: "Only trial subscriptions are currently added",
+        }
+      case "canceled":
+        return {
+          title: "No canceled subscriptions",
+          subtitle: "All your subscriptions are active",
         }
       default:
         return {
@@ -333,6 +341,18 @@ export default function HomePage() {
                 )}
               >
                 Regular
+              </button>
+              <button
+                onClick={() => setFilter("canceled")}
+                className={cn(
+                  "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors flex items-center gap-1 shrink-0 cursor-pointer",
+                  filter === "canceled"
+                    ? "bg-red-500 text-white"
+                    : "text-red-500 dark:text-red-400 hover:bg-red-500/10"
+                )}
+              >
+                <X className="size-3" />
+                Canceled
               </button>
             </div>
 

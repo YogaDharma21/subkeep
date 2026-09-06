@@ -18,6 +18,7 @@ export interface Subscription {
   account?: string
   website?: string
   isActive?: boolean
+  pendingCancel?: boolean
   isTrial?: boolean
   trialEndDate?: string
   cancelUrl?: string
@@ -108,9 +109,14 @@ export function SubscriptionCard({
             </span>
           )}
 
+          {sub.pendingCancel && sub.isActive !== false && (
+            <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-[9px] font-extrabold text-amber-600 dark:text-amber-400 border border-amber-500/30 uppercase tracking-wider shrink-0">
+              CANCELING
+            </span>
+          )}
           {sub.isActive === false && (
             <span className="rounded-md bg-red-500/15 px-2 py-0.5 text-[9px] font-extrabold text-red-600 dark:text-red-400 border border-red-500/30 uppercase tracking-wider shrink-0">
-              PAUSED
+              CANCELED
             </span>
           )}
         </div>
@@ -129,7 +135,7 @@ export function SubscriptionCard({
           {isTrial && sub.trialEndDate ? (
             <span className="text-emerald-600 dark:text-emerald-400 font-medium">
               Expires {format(new Date(sub.trialEndDate), "MMM d")}
-              {trialDaysLeft !== null && ` (${trialDaysLeft}d)`}
+              {trialDaysLeft !== null && trialDaysLeft > 0 ? ` (${trialDaysLeft}d)` : trialDaysLeft === 0 ? " (Expired)" : ""}
             </span>
           ) : (
             <span>Next: {format(new Date(sub.nextBilling), "MMM d, yyyy")}</span>

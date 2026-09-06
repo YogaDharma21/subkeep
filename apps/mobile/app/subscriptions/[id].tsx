@@ -19,7 +19,6 @@ import * as DocumentPicker from "expo-document-picker"
 import {
   ArrowLeft,
   Pencil,
-  Pause,
   Play,
   Copy,
   Trash2,
@@ -39,7 +38,6 @@ import {
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { CancellationGuideModal } from "@/components/cancellation-guide-modal"
 import { IconPickerModal } from "@/components/icon-picker-modal"
 import { convertAndFormat, formatCycleLabel } from "@/lib/currency"
 import { getSymbol, currencies } from "@/constants/currencies"
@@ -59,7 +57,6 @@ export default function SubscriptionDetailPage() {
   const { showAlert, showToast } = useAlert()
 
   const [editing, setEditing] = useState(false)
-  const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [iconPickerOpen, setIconPickerOpen] = useState(false)
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const [cancelUrlModalOpen, setCancelUrlModalOpen] = useState(false)
@@ -86,7 +83,9 @@ export default function SubscriptionDetailPage() {
   )
 
   const updateMutation = useMutation(api.subscriptions.update)
-  const suspendMutation = useMutation(api.subscriptions.suspend)
+  const startCancelMutation = useMutation(api.subscriptions.startCancel)
+  const confirmCancelMutation = useMutation(api.subscriptions.confirmCancel)
+  const resumeMutation = useMutation(api.subscriptions.resume)
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
   const recordPaymentMutation = useMutation(api.payments.create)
@@ -254,22 +253,35 @@ export default function SubscriptionDetailPage() {
     }
   }
 
-  const handleToggleActive = async () => {
+  const handleStartCancel = async () => {
     if (!id || !sub) return
     try {
-      await suspendMutation({ id: id as Id<"subscriptions"> })
-      showToast(sub.isActive ? "Subscription suspended" : "Subscription resumed", "info")
+      const url = sub.cancelUrl || `https://www.google.com/search?q=${encodeURIComponent(`how to cancel ${sub.name} subscription`)}`
+      await Linking.openURL(url)
+      await startCancelMutation({ id: id as Id<"subscriptions"> })
+      showToast("Marked as canceling. Complete cancellation on the provider's site.", "info")
     } catch {
-      showToast("Failed to change subscription state", "error")
+      showToast("Failed to start cancellation", "error")
     }
   }
 
-  const handleSuspend = async (subId: string) => {
+  const handleConfirmCancel = async () => {
+    if (!id) return
     try {
-      await suspendMutation({ id: subId as Id<"subscriptions"> })
-      showToast("Subscription marked as canceled / suspended", "info")
+      await confirmCancelMutation({ id: id as Id<"subscriptions"> })
+      showToast("Subscription marked as canceled", "info")
     } catch {
-      showToast("Failed to update subscription status", "error")
+      showToast("Failed to confirm cancellation", "error")
+    }
+  }
+
+  const handleResume = async () => {
+    if (!id) return
+    try {
+      await resumeMutation({ id: id as Id<"subscriptions"> })
+      showToast("Subscription resumed", "info")
+    } catch {
+      showToast("Failed to resume subscription", "error")
     }
   }
 
@@ -554,10 +566,10 @@ export default function SubscriptionDetailPage() {
             </View>
 
             <TouchableOpacity
-              onPress={() => setCancelModalOpen(true)}
+              onPress={sub.pendingCancel ? handleConfirmCancel : handleStartCancel}
               activeOpacity={0.7}
               style={{
-                backgroundColor: colors.emerald,
+                backgroundColor: sub.pendingCancel ? colors.emerald : colors.amber,
                 paddingHorizontal: 10,
                 paddingVertical: 6,
                 borderRadius: 8,
@@ -566,10 +578,21 @@ export default function SubscriptionDetailPage() {
                 gap: 4,
               }}
             >
-              <ExternalLink size={12} color="#ffffff" />
-              <Text style={{ fontSize: 11, fontWeight: "700", color: "#ffffff" }}>
-                Cancel Guide
-              </Text>
+              {sub.pendingCancel ? (
+                <>
+                  <Check size={12} color="#ffffff" />
+                  <Text style={{ fontSize: 11, fontWeight: "700", color: "#ffffff" }}>
+                    Mark as Canceled
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <ExternalLink size={12} color="#ffffff" />
+                  <Text style={{ fontSize: 11, fontWeight: "700", color: "#ffffff" }}>
+                    Cancel Subscription
+                  </Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
         )}
@@ -667,7 +690,7 @@ export default function SubscriptionDetailPage() {
               {/* Active / Suspended badge */}
               <View
                 style={{
-                  backgroundColor: sub.isActive ? colors.text : colors.destructive,
+                  backgroundColor: sub.pendingCancel ? colors.amber : sub.isActive ? colors.text : colors.destructive,
                   paddingHorizontal: 8,
                   paddingVertical: 3,
                   borderRadius: 6,
@@ -677,10 +700,10 @@ export default function SubscriptionDetailPage() {
                   style={{
                     fontSize: 10,
                     fontWeight: "800",
-                    color: sub.isActive ? colors.background : "#ffffff",
+                    color: sub.pendingCancel ? "#000000" : sub.isActive ? colors.background : "#ffffff",
                   }}
                 >
-                  {sub.isActive ? "Active" : "Suspended"}
+                  {sub.pendingCancel ? "Canceling" : sub.isActive ? "Active" : "Canceled"}
                 </Text>
               </View>
             </View>
@@ -921,28 +944,51 @@ export default function SubscriptionDetailPage() {
                 {/* Cancellation Guide */}
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
                   <Text style={{ fontSize: 13, color: colors.mutedText }}>
-                    Cancellation Guide
+                    Cancel Subscription
                   </Text>
-                  <TouchableOpacity
-                    onPress={() => setCancelModalOpen(true)}
-                    activeOpacity={0.7}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 4,
-                      backgroundColor: "rgba(16, 185, 129, 0.1)",
-                      borderWidth: 1,
-                      borderColor: "rgba(16, 185, 129, 0.3)",
-                      paddingHorizontal: 8,
-                      paddingVertical: 4,
-                      borderRadius: 6,
-                    }}
-                  >
-                    <ExternalLink size={11} color={colors.emerald} />
-                    <Text style={{ fontSize: 11, fontWeight: "700", color: colors.emerald }}>
-                      Direct Cancel Link & Checklist
-                    </Text>
-                  </TouchableOpacity>
+                  {sub.pendingCancel ? (
+                    <TouchableOpacity
+                      onPress={handleConfirmCancel}
+                      activeOpacity={0.7}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 4,
+                        backgroundColor: "rgba(16, 185, 129, 0.1)",
+                        borderWidth: 1,
+                        borderColor: "rgba(16, 185, 129, 0.3)",
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        borderRadius: 6,
+                      }}
+                    >
+                      <Check size={11} color={colors.emerald} />
+                      <Text style={{ fontSize: 11, fontWeight: "700", color: colors.emerald }}>
+                        Mark as Canceled
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={handleStartCancel}
+                      activeOpacity={0.7}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 4,
+                        backgroundColor: "rgba(245, 158, 11, 0.1)",
+                        borderWidth: 1,
+                        borderColor: "rgba(245, 158, 11, 0.3)",
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        borderRadius: 6,
+                      }}
+                    >
+                      <ExternalLink size={11} color={colors.amber} />
+                      <Text style={{ fontSize: 11, fontWeight: "700", color: colors.amber }}>
+                        Cancel
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
                 <View style={{ height: 1, backgroundColor: colors.border }} />
 
@@ -1310,7 +1356,7 @@ export default function SubscriptionDetailPage() {
               {/* Suspend & Clone Row */}
               <View style={{ flexDirection: "row", gap: 10 }}>
                 <TouchableOpacity
-                  onPress={handleToggleActive}
+                  onPress={sub.isActive ? (sub.pendingCancel ? handleConfirmCancel : handleStartCancel) : handleResume}
                   activeOpacity={0.7}
                   style={{
                     flex: 1,
@@ -1325,10 +1371,15 @@ export default function SubscriptionDetailPage() {
                     gap: 6,
                   }}
                 >
-                  {sub.isActive ? (
+                  {sub.pendingCancel ? (
                     <>
-                      <Pause size={15} color={colors.text} />
-                      <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>Suspend</Text>
+                      <Check size={15} color={colors.emerald} />
+                      <Text style={{ fontSize: 13, fontWeight: "700", color: colors.emerald }}>Confirm Canceled</Text>
+                    </>
+                  ) : sub.isActive ? (
+                    <>
+                      <ExternalLink size={15} color={colors.amber} />
+                      <Text style={{ fontSize: 13, fontWeight: "700", color: colors.amber }}>Cancel</Text>
                     </>
                   ) : (
                     <>
@@ -1406,30 +1457,6 @@ export default function SubscriptionDetailPage() {
           </>
         )}
       </ScrollView>
-
-      {/* Cancellation Guide Modal */}
-      {sub && (
-        <CancellationGuideModal
-          visible={cancelModalOpen}
-          onClose={() => setCancelModalOpen(false)}
-          subscription={{
-            _id: sub._id,
-            name: sub.name,
-            icon: sub.icon,
-            color: sub.color,
-            price: sub.price,
-            currency: sub.currency,
-            cycle: sub.cycle,
-            cancelUrl: sub.cancelUrl,
-            isTrial: sub.isTrial,
-            trialEndDate: sub.trialEndDate,
-          }}
-          onMarkCanceled={handleSuspend}
-          onUpdateCancelUrl={handleUpdateCancelUrl}
-          primaryCurrency={primaryCurrency}
-          rates={rates}
-        />
-      )}
 
       {/* Change Cancel URL Modal */}
       <Modal
