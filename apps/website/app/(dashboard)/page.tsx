@@ -42,7 +42,7 @@ export default function HomePage() {
   const { isSignedIn } = useAuth()
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
-  const startCancelMutation = useMutation(api.subscriptions.startCancel)
+  const suspendMutation = useMutation(api.subscriptions.suspend)
 
   const { primaryCurrency, setPrimaryCurrency, rates } = usePrimaryCurrency()
   const [filter, setFilter] = useState<FilterType>("all")
@@ -55,8 +55,8 @@ export default function HomePage() {
 
   const handleMarkCanceled = async (id: string) => {
     try {
-      await startCancelMutation({ id: id as never })
-      toast.success("Subscription marked as canceling")
+      await suspendMutation({ id: id as never })
+      toast.success("Subscription status updated")
     } catch {
       toast.error("Failed to update status")
     }

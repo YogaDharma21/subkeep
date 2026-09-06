@@ -50,7 +50,7 @@ export default function DashboardScreen() {
 
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
-  const startCancelMutation = useMutation(api.subscriptions.startCancel)
+  const suspendMutation = useMutation(api.subscriptions.suspend)
 
   const { primaryCurrency, setPrimaryCurrency, rates } = usePrimaryCurrency()
   const [filter, setFilter] = useState<FilterType>("all")
@@ -60,7 +60,7 @@ export default function DashboardScreen() {
 
   const handleMarkCanceled = async (id: string) => {
     try {
-      await startCancelMutation({ id: id as never })
+      await suspendMutation({ id: id as never })
     } catch (e) {
       console.error(e)
     }

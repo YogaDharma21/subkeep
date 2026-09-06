@@ -92,9 +92,7 @@ export default function SubscriptionDetailPage({
   ) as Array<{ _id: string; name: string; type: string; last4?: string }> | undefined
 
   const updateMutation = useMutation(api.subscriptions.update)
-  const startCancelMutation = useMutation(api.subscriptions.startCancel)
-  const confirmCancelMutation = useMutation(api.subscriptions.confirmCancel)
-  const resumeMutation = useMutation(api.subscriptions.resume)
+  const suspendMutation = useMutation(api.subscriptions.suspend)
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
   const recordPaymentMutation = useMutation(api.payments.create)
@@ -259,6 +257,16 @@ export default function SubscriptionDetailPage({
       setEditing(false)
     } catch {
       toast.error("Failed to update subscription")
+    }
+  }
+
+  const handleSuspend = async () => {
+    if (!id || !sub) return
+    try {
+      await suspendMutation({ id: id as Id<"subscriptions"> })
+      toast.success(sub.isActive ? "Subscription paused" : "Subscription resumed")
+    } catch {
+      toast.error("Failed to change subscription state")
     }
   }
 
@@ -481,33 +489,7 @@ export default function SubscriptionDetailPage({
               </p>
             </div>
           </div>
-          {sub.pendingCancel ? (
-            <Button
-              size="sm"
-              onClick={async () => {
-                await confirmCancelMutation({ id: id as Id<"subscriptions"> })
-                toast.success("Subscription marked as canceled")
-              }}
-              className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1 cursor-pointer"
-            >
-              <Check className="size-3.5" />
-              Mark as Canceled
-            </Button>
-          ) : (
-            <Button
-              size="sm"
-              onClick={async () => {
-                const url = sub.cancelUrl || `https://www.google.com/search?q=${encodeURIComponent(`how to cancel ${sub.name} subscription`)}`
-                window.open(url, "_blank", "noopener,noreferrer")
-                await startCancelMutation({ id: id as Id<"subscriptions"> })
-                toast.success("Marked as canceling. Complete cancellation on the provider's site.")
-              }}
-              className="h-8 bg-amber-600 hover:bg-amber-700 text-white text-xs gap-1 cursor-pointer"
-            >
-              <ExternalLink className="size-3.5" />
-              Cancel Subscription
-            </Button>
-          )}
+
         </div>
       )}
 
@@ -586,13 +568,10 @@ export default function SubscriptionDetailPage({
               )}
 
               <Badge
-                variant={sub.isActive ? (sub.pendingCancel ? "outline" : "default") : "destructive"}
-                className={cn(
-                  "text-xs rounded-md",
-                  sub.pendingCancel && "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30"
-                )}
+                variant={sub.isActive ? "default" : "destructive"}
+                className="text-xs rounded-md"
               >
-                {sub.pendingCancel ? "Canceling" : sub.isActive ? "Active" : "Canceled"}
+                {sub.isActive ? "Active" : "Suspended"}
               </Badge>
             </div>
           </div>
@@ -835,43 +814,6 @@ export default function SubscriptionDetailPage({
             </h3>
 
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Cancel Subscription
-                </span>
-                {sub.pendingCancel ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={async () => {
-                      await confirmCancelMutation({ id: id as Id<"subscriptions"> })
-                      toast.success("Subscription marked as canceled")
-                    }}
-                    className="h-7 text-xs gap-1 font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 cursor-pointer"
-                  >
-                    <Check className="size-3" />
-                    Mark as Canceled
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={async () => {
-                      const url = sub.cancelUrl || `https://www.google.com/search?q=${encodeURIComponent(`how to cancel ${sub.name} subscription`)}`
-                      window.open(url, "_blank", "noopener,noreferrer")
-                      await startCancelMutation({ id: id as Id<"subscriptions"> })
-                      toast.success("Marked as canceling. Complete cancellation on the provider's site.")
-                    }}
-                    className="h-7 text-xs gap-1 font-semibold text-amber-600 dark:text-amber-400 border-amber-500/30 cursor-pointer"
-                  >
-                    <ExternalLink className="size-3" />
-                    Cancel
-                  </Button>
-                )}
-              </div>
-
-              <Separator />
-
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Original Price
@@ -1190,17 +1132,11 @@ export default function SubscriptionDetailPage({
         <Button
           variant="outline"
           className="flex-1 cursor-pointer"
-          onClick={sub.isActive ? async () => {
-            await startCancelMutation({ id: id as Id<"subscriptions"> })
-            toast.success("Subscription marked as canceling")
-          } : async () => {
-            await resumeMutation({ id: id as Id<"subscriptions"> })
-            toast.success("Subscription resumed")
-          }}
+          onClick={handleSuspend}
         >
           {sub.isActive ? (
             <>
-              <Pause className="size-4" /> Cancel
+              <Pause className="size-4" /> Suspend
             </>
           ) : (
             <>
