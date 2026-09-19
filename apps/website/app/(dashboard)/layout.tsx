@@ -22,20 +22,17 @@ export default function DashboardLayout({
     <>
       <Show when="signed-in">
         <div className="min-h-screen bg-muted/20">
-          {/* Unified Top Navigation (all viewports) */}
-          <TopNavbar
-            onAddClick={() => setAddOpen(true)}
-            onSearchClick={() => setCmdPaletteOpen(true)}
-          />
+          {/* Slim Top Brand Bar */}
+          <TopNavbar onSearchClick={() => setCmdPaletteOpen(true)} />
 
           {/* Main Content Area */}
           <div className="flex min-h-[calc(100vh-4rem)] flex-col">
-            <main className="mx-auto w-full max-w-6xl flex-1 p-4 pb-28 sm:p-6 md:pb-8 lg:p-8">
+            <main className="mx-auto w-full max-w-6xl flex-1 p-4 pb-32 sm:p-6 sm:pb-36 lg:p-8 lg:pb-40">
               {children}
             </main>
           </div>
 
-          {/* Mobile Bottom Tab Bar */}
+          {/* Floating Dock Navigation (all viewports) */}
           <BottomNav onAddClick={() => setAddOpen(true)} />
 
           {/* Add Subscription Modal/Sheet */}
