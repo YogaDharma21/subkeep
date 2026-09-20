@@ -1,5 +1,5 @@
 import { Tabs, useRouter, useSegments } from "expo-router"
-import { View, Text, TouchableOpacity, Image, Platform } from "react-native"
+import { View, Text, TouchableOpacity, Image } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/components/custom-alert-provider"
@@ -11,16 +11,21 @@ import {
   Wallet,
   Plus,
   BarChart3,
+  Settings,
   Search,
 } from "lucide-react-native"
 
-const TAB_ITEMS = [
+const LEFT_TABS = [
   { name: "index", label: "Home", icon: Home },
   { name: "transactions", label: "Transactions", icon: ArrowLeftRight },
   { name: "subscriptions", label: "Subscriptions", icon: Repeat },
+] as const
+
+const RIGHT_TABS = [
   { name: "budgets", label: "Budgets", icon: PiggyBank },
   { name: "accounts", label: "Accounts", icon: Wallet },
   { name: "stats", label: "Stats", icon: BarChart3 },
+  { name: "settings", label: "Settings", icon: Settings },
 ] as const
 
 export default function TabLayout() {
@@ -32,6 +37,32 @@ export default function TabLayout() {
 
   const activeTab =
     segments.length >= 2 ? String(segments[1]) : "index"
+
+  const renderTab = (item: { name: string; label: string; icon: typeof Home }) => {
+    const Icon = item.icon
+    const isActive = activeTab === item.name
+    return (
+      <TouchableOpacity
+        key={item.name}
+        activeOpacity={0.7}
+        accessibilityLabel={item.label}
+        onPress={() => router.push(`/(tabs)/${item.name}` as never)}
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: 999,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: isActive ? colors.primary : "transparent",
+        }}
+      >
+        <Icon
+          size={19}
+          color={isActive ? colors.primaryForeground : colors.tabIconDefault}
+        />
+      </TouchableOpacity>
+    )
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -96,11 +127,8 @@ export default function TabLayout() {
           left: 0,
           right: 0,
           bottom: 0,
-          flexDirection: "row",
           alignItems: "center",
-          justifyContent: "center",
-          gap: 10,
-          paddingHorizontal: 16,
+          paddingHorizontal: 12,
           paddingBottom: Math.max(12, insets.bottom),
           pointerEvents: "box-none",
         }}
@@ -109,7 +137,7 @@ export default function TabLayout() {
           style={{
             flexDirection: "row",
             alignItems: "center",
-            gap: 2,
+            gap: 1,
             backgroundColor: colors.card,
             borderWidth: 1,
             borderColor: colors.border,
@@ -123,56 +151,27 @@ export default function TabLayout() {
             elevation: 10,
           }}
         >
-          {TAB_ITEMS.map((item) => {
-            const Icon = item.icon
-            const isActive = activeTab === item.name
-            return (
-              <TouchableOpacity
-                key={item.name}
-                activeOpacity={0.7}
-                accessibilityLabel={item.label}
-                onPress={() => router.push(`/(tabs)/${item.name}` as never)}
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 999,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: isActive ? colors.primary : "transparent",
-                }}
-              >
-                <Icon
-                  size={20}
-                  color={isActive ? colors.primaryForeground : colors.tabIconDefault}
-                />
-              </TouchableOpacity>
-            )
-          })}
+          {LEFT_TABS.map(renderTab)}
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            accessibilityLabel="Add transaction"
+            onPress={() => router.push("/modal/add-transaction" as never)}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 999,
+              backgroundColor: colors.primary,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Plus size={20} color={colors.primaryForeground} strokeWidth={2.5} />
+          </TouchableOpacity>
+
+          {RIGHT_TABS.map(renderTab)}
         </View>
-
-        <TouchableOpacity
-          activeOpacity={0.8}
-          accessibilityLabel="Add transaction"
-          onPress={() => router.push("/modal/add-transaction" as never)}
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: 16,
-            backgroundColor: colors.primary,
-            alignItems: "center",
-            justifyContent: "center",
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.25,
-            shadowRadius: 12,
-            elevation: 10,
-          }}
-        >
-          <Plus size={24} color={colors.primaryForeground} strokeWidth={2.5} />
-        </TouchableOpacity>
       </View>
-
-      {Platform.OS === "android" ? null : null}
     </View>
   )
 }
