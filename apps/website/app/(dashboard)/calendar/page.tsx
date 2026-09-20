@@ -6,8 +6,10 @@ import { api } from "@/convex/_generated/api"
 import { CalendarGrid } from "@/components/calendar-grid"
 import { TransactionCalendar } from "@/components/transaction-calendar"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useDocumentTitle } from "@/hooks/use-document-title"
 
 export default function CalendarPage() {
+  useDocumentTitle("Calendar")
   const { isSignedIn } = useAuth()
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const transactions = useQuery(

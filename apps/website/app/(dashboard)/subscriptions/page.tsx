@@ -23,6 +23,7 @@ import {
 import { currencies } from "@/lib/constants"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
+import { useDocumentTitle } from "@/hooks/use-document-title"
 import { differenceInDays } from "date-fns"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
@@ -38,6 +39,7 @@ export type SortOption =
   | "name-asc"
 
 export default function SubscriptionsPage() {
+  useDocumentTitle("Subscriptions")
   const { isSignedIn } = useAuth()
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")

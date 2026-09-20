@@ -43,6 +43,7 @@ import {
 import { IconPicker } from "@/components/icon-picker"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { toast } from "sonner"
+import { useDocumentTitle } from "@/hooks/use-document-title"
 import { cn } from "@/lib/utils"
 import {
   categories,
@@ -76,6 +77,7 @@ export default function SubscriptionDetailPage({
     api.subscriptions.get,
     id ? { id: id as Id<"subscriptions"> } : "skip"
   )
+  useDocumentTitle(sub?.name ?? "Subscription")
   const allPayments = useQuery(
     api.payments.list,
     isSignedIn ? {} : "skip"

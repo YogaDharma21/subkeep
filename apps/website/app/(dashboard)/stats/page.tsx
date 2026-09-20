@@ -8,9 +8,11 @@ import { StatsCharts } from "@/components/stats-charts"
 import { FinanceAnalytics } from "@/components/finance-analytics"
 import { Skeleton } from "@/components/ui/skeleton"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
+import { useDocumentTitle } from "@/hooks/use-document-title"
 import { currentMonthKey, lastMonths } from "@/lib/finance"
 
 export default function StatsPage() {
+  useDocumentTitle("Stats")
   const { isSignedIn } = useAuth()
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const payments = useQuery(api.payments.list, isSignedIn ? {} : "skip")

@@ -29,6 +29,7 @@ import {
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { AddTransactionSheet } from "@/components/add-transaction-sheet"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
+import { useDocumentTitle } from "@/hooks/use-document-title"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import {
   TransactionType,
@@ -56,6 +57,7 @@ type TxnDoc = {
 }
 
 export default function TransactionsPage() {
+  useDocumentTitle("Transactions")
   const { isSignedIn } = useAuth()
   const [month, setMonth] = useState(currentMonthKey())
   const [search, setSearch] = useState("")
