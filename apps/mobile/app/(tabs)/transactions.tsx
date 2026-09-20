@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
+  Modal,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useMutation, useQuery } from "convex/react"
@@ -452,18 +453,17 @@ export default function TransactionsScreen() {
       </ScrollView>
 
       {/* Edit sheet */}
-      {editing ? (
+      <Modal
+        visible={!!editing}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setEditing(null)}
+      >
         <View
           style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            top: 0,
+            flex: 1,
             backgroundColor: "rgba(0,0,0,0.6)",
             justifyContent: "flex-end",
-            zIndex: 50,
-            elevation: 50,
           }}
         >
           <TouchableOpacity
@@ -597,7 +597,7 @@ export default function TransactionsScreen() {
             </View>
           </View>
         </View>
-      ) : null}
+      </Modal>
     </SafeAreaView>
   )
 }
