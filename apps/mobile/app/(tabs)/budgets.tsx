@@ -242,13 +242,19 @@ export default function BudgetsScreen() {
           <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
             Set Category Budget
           </Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, maxHeight: 150 }}>
-            <ScrollView contentContainerStyle={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+          <ScrollView
+            style={{ maxHeight: 164 }}
+            contentContainerStyle={{ gap: 6, paddingBottom: 2 }}
+            showsVerticalScrollIndicator={false}
+            nestedScrollEnabled
+          >
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
               {(availableCategories.length > 0 ? availableCategories : expenseCategories).map((c) => (
                 <TouchableOpacity
                   key={c.value}
                   onPress={() => setCategory(c.value)}
                   style={{
+                    width: "48.5%",
                     flexDirection: "row",
                     alignItems: "center",
                     gap: 6,
@@ -272,13 +278,16 @@ export default function BudgetsScreen() {
                   >
                     <DynamicIcon name={c.icon} size={12} color="#ffffff" />
                   </View>
-                  <Text style={{ fontSize: 11, fontWeight: "600", color: colors.text }}>
+                  <Text
+                    numberOfLines={1}
+                    style={{ fontSize: 11, fontWeight: "600", color: colors.text, flex: 1 }}
+                  >
                     {c.label}
                   </Text>
                 </TouchableOpacity>
               ))}
-            </ScrollView>
-          </View>
+            </View>
+          </ScrollView>
           <View style={{ flexDirection: "row", gap: 8 }}>
             <TextInput
               value={amount}
