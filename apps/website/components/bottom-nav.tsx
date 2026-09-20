@@ -48,7 +48,7 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
         className={cn(
           "flex size-11 shrink-0 items-center justify-center rounded-full transition-colors",
           isActive
-            ? "bg-foreground text-background"
+            ? "text-foreground"
             : "text-muted-foreground hover:bg-accent hover:text-foreground"
         )}
       >
@@ -69,7 +69,7 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
           onClick={onAddClick}
           title="Add transaction"
           aria-label="Add transaction"
-          className="flex size-12 shrink-0 -translate-y-2.5 items-center justify-center rounded-2xl border border-foreground/15 bg-foreground text-background shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+          className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-foreground/15 bg-foreground text-background shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
         >
           <Plus className="size-6" strokeWidth={2.5} />
         </button>
