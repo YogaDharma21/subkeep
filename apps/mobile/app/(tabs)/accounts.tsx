@@ -409,6 +409,8 @@ export default function AccountsScreen() {
             top: 0,
             backgroundColor: "rgba(0,0,0,0.6)",
             justifyContent: "flex-end",
+            zIndex: 50,
+            elevation: 50,
           }}
         >
           <TouchableOpacity activeOpacity={1} onPress={() => setSheetOpen(false)} style={{ flex: 1 }} />
