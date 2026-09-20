@@ -1,175 +1,133 @@
-import React, { useState, useMemo } from "react"
+import React, { useMemo } from "react"
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Modal,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
-import { useQuery, useMutation } from "convex/react"
+import { useQuery } from "convex/react"
 import { useAuth } from "@clerk/clerk-expo"
 import { api } from "@/convex/_generated/api"
 import {
-  Globe,
-  Plus,
-  Clock,
-  Sparkles,
-  ArrowUpDown,
-  AlertTriangle,
+  Wallet,
+  ArrowDownRight,
+  ArrowUpRight,
+  ArrowLeftRight,
+  Repeat,
+  PiggyBank,
+  ChevronRight,
   Target,
-  ChevronDown,
-  Check,
-  X,
+  AlertTriangle,
+  Sparkles,
 } from "lucide-react-native"
-import { SubscriptionCard } from "@/components/subscription-card"
-import { UpcomingReminders } from "@/components/upcoming-reminders"
+import { DynamicIcon } from "@/components/dynamic-icon"
 import { SmartInsights } from "@/components/smart-insights"
-import { currencies } from "@/constants/currencies"
+import { UpcomingReminders } from "@/components/upcoming-reminders"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
-import { differenceInDays } from "date-fns"
-
-export type FilterType = "all" | "due_soon" | "trial" | "regular" | "canceled"
-
-export type SortOption =
-  | "billing-asc"
-  | "billing-desc"
-  | "price-asc"
-  | "price-desc"
-  | "start-desc"
-  | "name-asc"
+import {
+  currentMonthKey,
+  monthLabel,
+  financeCategoryMeta,
+} from "@/constants/finance"
 
 export default function DashboardScreen() {
   const router = useRouter()
   const { colors } = useThemeColor()
   const { isSignedIn } = useAuth()
+  const month = currentMonthKey()
 
+  const accounts = useQuery(api.accounts.list, isSignedIn ? {} : "skip")
+  const transactions = useQuery(
+    api.transactions.list,
+    isSignedIn ? { month } : "skip"
+  )
+  const budgets = useQuery(api.budgets.list, isSignedIn ? { month } : "skip")
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
-  const suspendMutation = useMutation(api.subscriptions.suspend)
 
-  const { primaryCurrency, setPrimaryCurrency, rates } = usePrimaryCurrency()
-  const [filter, setFilter] = useState<FilterType>("all")
-  const [sortBy, setSortBy] = useState<SortOption>("billing-asc")
-  const [currencyModalOpen, setCurrencyModalOpen] = useState(false)
-  const [sortModalOpen, setSortModalOpen] = useState(false)
+  const { primaryCurrency, rates } = usePrimaryCurrency()
 
-  const handleMarkCanceled = async (id: string) => {
-    try {
-      await suspendMutation({ id: id as never })
-    } catch (e) {
-      console.error(e)
+  const stats = useMemo(() => {
+    let income = 0
+    let expense = 0
+    const byCategory: Record<string, number> = {}
+    for (const t of transactions || []) {
+      const converted = convertCurrency(t.amount, t.currency, primaryCurrency, rates)
+      if (t.type === "income") income += converted
+      else if (t.type === "expense") {
+        expense += converted
+        byCategory[t.category] = (byCategory[t.category] || 0) + converted
+      }
     }
-  }
+    return { income, expense, net: income - expense, byCategory }
+  }, [transactions, primaryCurrency, rates])
 
-  // Multi-Currency Converted Monthly & Yearly Totals
-  const { count, monthlyTotalConverted, yearlyTotalConverted } = useMemo(() => {
-    if (!subscriptions) return { count: 0, monthlyTotalConverted: 0, yearlyTotalConverted: 0 }
+  const netWorth = useMemo(() => {
+    if (!accounts) return 0
+    return accounts.reduce(
+      (sum, a) => sum + convertCurrency(a.balance, a.currency, primaryCurrency, rates),
+      0
+    )
+  }, [accounts, primaryCurrency, rates])
 
-    const activeSubs = subscriptions.filter((s) => s.isActive !== false)
-    const count = activeSubs.length
-
-    const monthlyTotalConverted = activeSubs.reduce((sum, s) => {
-      const cycle = (s.cycle || "monthly").toLowerCase()
-      let nativeMonthly = s.price
-      if (cycle === "quarterly") nativeMonthly = s.price / 3
-      else if (cycle === "semi-annual") nativeMonthly = s.price / 6
-      else if (cycle === "yearly") nativeMonthly = s.price / 12
-      else if (cycle === "weekly") nativeMonthly = s.price * 4.33
-      else if (cycle === "daily") nativeMonthly = s.price * 30
-      else if (cycle === "none") nativeMonthly = 0
-
-      const converted = convertCurrency(nativeMonthly, s.currency, primaryCurrency, rates)
-      return sum + converted
-    }, 0)
-
-    const yearlyTotalConverted = monthlyTotalConverted * 12
-
-    return { count, monthlyTotalConverted, yearlyTotalConverted }
+  const subscriptionMonthly = useMemo(() => {
+    if (!subscriptions) return 0
+    return subscriptions
+      .filter((s) => s.isActive !== false)
+      .reduce((sum, s) => {
+        const cycle = (s.cycle || "monthly").toLowerCase()
+        let nativeMonthly = s.price
+        if (cycle === "quarterly") nativeMonthly = s.price / 3
+        else if (cycle === "semi-annual") nativeMonthly = s.price / 6
+        else if (cycle === "yearly") nativeMonthly = s.price / 12
+        else if (cycle === "weekly") nativeMonthly = s.price * 4.33
+        else if (cycle === "daily") nativeMonthly = s.price * 30
+        else if (cycle === "none") nativeMonthly = 0
+        return sum + convertCurrency(nativeMonthly, s.currency, primaryCurrency, rates)
+      }, 0)
   }, [subscriptions, primaryCurrency, rates])
 
-  // Budget calculations
+  const activeSubCount = subscriptions?.filter((s) => s.isActive !== false).length ?? 0
+
   const budgetCap = userSettings?.monthlyBudgetCap
+  const monthlySpend = stats.expense + subscriptionMonthly
   const budgetUsedPct =
-    budgetCap && budgetCap > 0
-      ? Math.round((monthlyTotalConverted / budgetCap) * 100)
-      : null
-  const isBudgetExceeded = budgetCap && monthlyTotalConverted > budgetCap
+    budgetCap && budgetCap > 0 ? Math.round((monthlySpend / budgetCap) * 100) : null
+  const isBudgetExceeded = !!budgetCap && monthlySpend > budgetCap
 
-  // Filtered and Sorted Subscriptions
-  const filteredSubs = useMemo(() => {
-    if (!subscriptions) return []
-    let list = [...subscriptions]
+  const topCategories = useMemo(() => {
+    const entries = Object.entries(stats.byCategory)
+    const total = stats.expense || 1
+    return entries
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([cat, amt]) => ({
+        ...financeCategoryMeta(cat),
+        amount: amt,
+        pct: Math.round((amt / total) * 100),
+      }))
+  }, [stats])
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+  const recentTransactions = useMemo(() => {
+    return [...(transactions || [])]
+      .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+      .slice(0, 5)
+  }, [transactions])
 
-    // Filter logic
-    if (filter === "trial") {
-      list = list.filter((s) => s.isTrial)
-    } else if (filter === "regular") {
-      list = list.filter((s) => !s.isTrial)
-    } else if (filter === "due_soon") {
-      list = list.filter((s) => {
-        const dateStr = s.isTrial && s.trialEndDate ? s.trialEndDate : s.nextBilling
-        if (!dateStr) return false
-        const targetDate = new Date(dateStr)
-        targetDate.setHours(0, 0, 0, 0)
-        const diffDays = differenceInDays(targetDate, today)
-        return diffDays >= 0 && diffDays <= 7
-      })
-    } else if (filter === "canceled") {
-      list = list.filter((s) => s.isActive === false)
-    }
+  const loading = accounts === undefined || transactions === undefined
+  const monthShort = monthLabel(month).split(" ")[0]
 
-    // Sort logic
-    return list.sort((a, b) => {
-      switch (sortBy) {
-        case "billing-asc": {
-          const dateA = new Date(a.isTrial && a.trialEndDate ? a.trialEndDate : a.nextBilling || "9999-12-31").getTime()
-          const dateB = new Date(b.isTrial && b.trialEndDate ? b.trialEndDate : b.nextBilling || "9999-12-31").getTime()
-          return (isNaN(dateA) ? 0 : dateA) - (isNaN(dateB) ? 0 : dateB)
-        }
-        case "billing-desc": {
-          const dateA = new Date(a.isTrial && a.trialEndDate ? a.trialEndDate : a.nextBilling || "1970-01-01").getTime()
-          const dateB = new Date(b.isTrial && b.trialEndDate ? b.trialEndDate : b.nextBilling || "1970-01-01").getTime()
-          return (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA)
-        }
-        case "start-desc": {
-          const dateA = new Date(a.startDate || "1970-01-01").getTime()
-          const dateB = new Date(b.startDate || "1970-01-01").getTime()
-          return (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA)
-        }
-        case "price-asc": {
-          const pA = convertCurrency(a.price, a.currency, primaryCurrency, rates)
-          const pB = convertCurrency(b.price, b.currency, primaryCurrency, rates)
-          return pA - pB
-        }
-        case "price-desc": {
-          const pA = convertCurrency(a.price, a.currency, primaryCurrency, rates)
-          const pB = convertCurrency(b.price, b.currency, primaryCurrency, rates)
-          return pB - pA
-        }
-        case "name-asc":
-          return a.name.localeCompare(b.name)
-        default:
-          return 0
-      }
-    })
-  }, [subscriptions, filter, sortBy, primaryCurrency, rates])
-
-  const sortLabels: Record<SortOption, string> = {
-    "billing-asc": "Next Billing",
-    "billing-desc": "Furthest Billing",
-    "price-asc": "Price: Low to High",
-    "price-desc": "Price: High to Low",
-    "start-desc": "Start: Newest",
-    "name-asc": "Name: A to Z",
-  }
+  const quickLinks = [
+    { label: "Transactions", icon: ArrowLeftRight, bg: colors.primary, fg: colors.primaryForeground, route: "/(tabs)/transactions" },
+    { label: "Accounts", icon: Wallet, bg: colors.blue, fg: "#ffffff", route: "/(tabs)/accounts" },
+    { label: "Budgets", icon: PiggyBank, bg: colors.emerald, fg: "#ffffff", route: "/(tabs)/budgets" },
+    { label: activeSubCount > 0 ? `Subs (${activeSubCount})` : "Subs", icon: Repeat, bg: "#8b5cf6", fg: "#ffffff", route: "/(tabs)/subscriptions" },
+  ]
 
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
@@ -178,10 +136,10 @@ export default function DashboardScreen() {
           paddingHorizontal: 16,
           paddingVertical: 14,
           gap: 16,
-          paddingBottom: 90,
+          paddingBottom: 110,
         }}
       >
-        {/* Dynamic Summary Banner */}
+        {/* Net Worth + Cash Flow Hero */}
         <View
           style={{
             backgroundColor: colors.card,
@@ -192,7 +150,6 @@ export default function DashboardScreen() {
             gap: 12,
           }}
         >
-          {/* Header Row with Currency Selector */}
           <View
             style={{
               flexDirection: "row",
@@ -204,79 +161,56 @@ export default function DashboardScreen() {
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Globe size={14} color={colors.primary} />
+              <Wallet size={14} color={colors.primary} />
               <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                Primary Currency Summary
+                Money Overview · {monthLabel(month)}
               </Text>
             </View>
-
-            <TouchableOpacity
-              onPress={() => setCurrencyModalOpen(true)}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 4,
-                backgroundColor: colors.surface,
-                paddingHorizontal: 8,
-                paddingVertical: 4,
-                borderRadius: 6,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
-            >
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.text }}>
-                {primaryCurrency}
-              </Text>
-              <ChevronDown size={12} color={colors.mutedText} />
-            </TouchableOpacity>
+            <Text style={{ fontSize: 10, fontWeight: "700", color: colors.mutedText }}>
+              {primaryCurrency}
+            </Text>
           </View>
 
-          {/* 3 Metric Columns */}
-          {subscriptions ? (
+          {loading ? (
+            <ActivityIndicator size="small" color={colors.primary} />
+          ) : (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <View style={{ flex: 1, alignItems: "center", gap: 2 }}>
-                <Text style={{ fontSize: 20, fontWeight: "900", color: colors.text }}>
-                  {count}
+                <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: "900", color: colors.text }}>
+                  {formatCurrencyAmount(netWorth, primaryCurrency)}
                 </Text>
                 <Text style={{ fontSize: 10, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                  Active Subs
+                  Net Worth
                 </Text>
               </View>
-
               <View style={{ width: 1, height: 32, backgroundColor: colors.border }} />
-
-              <View style={{ flex: 1.3, alignItems: "center", gap: 2, paddingHorizontal: 4 }}>
-                <Text
-                  numberOfLines={1}
-                  style={{ fontSize: 16, fontWeight: "900", color: colors.text }}
-                >
-                  {formatCurrencyAmount(monthlyTotalConverted, primaryCurrency)}
-                </Text>
+              <View style={{ flex: 1, alignItems: "center", gap: 2, paddingHorizontal: 4 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+                  <ArrowDownRight size={14} color={colors.emerald} />
+                  <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: "900", color: colors.emerald }}>
+                    {formatCurrencyAmount(stats.income, primaryCurrency)}
+                  </Text>
+                </View>
                 <Text style={{ fontSize: 10, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                  Per Month
+                  In · {monthShort}
                 </Text>
               </View>
-
               <View style={{ width: 1, height: 32, backgroundColor: colors.border }} />
-
-              <View style={{ flex: 1.3, alignItems: "center", gap: 2, paddingHorizontal: 4 }}>
-                <Text
-                  numberOfLines={1}
-                  style={{ fontSize: 16, fontWeight: "900", color: colors.text }}
-                >
-                  {formatCurrencyAmount(yearlyTotalConverted, primaryCurrency)}
-                </Text>
+              <View style={{ flex: 1, alignItems: "center", gap: 2, paddingHorizontal: 4 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+                  <ArrowUpRight size={14} color={colors.destructive} />
+                  <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: "900", color: colors.destructive }}>
+                    {formatCurrencyAmount(stats.expense, primaryCurrency)}
+                  </Text>
+                </View>
                 <Text style={{ fontSize: 10, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                  Per Year
+                  Out · {monthShort}
                 </Text>
               </View>
             </View>
-          ) : (
-            <ActivityIndicator size="small" color={colors.primary} />
           )}
 
-          {/* Monthly Budget Cap Progress Bar */}
-          {budgetCap && budgetCap > 0 ? (
+          {budgetCap && budgetCap > 0 && !loading ? (
             <View
               style={{
                 borderTopWidth: 1,
@@ -289,7 +223,7 @@ export default function DashboardScreen() {
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                   <Target size={14} color={colors.primary} />
                   <Text style={{ fontSize: 12, fontWeight: "600", color: colors.text }}>
-                    Budget Cap
+                    Spend vs Cap
                   </Text>
                 </View>
                 <Text
@@ -299,10 +233,9 @@ export default function DashboardScreen() {
                     color: isBudgetExceeded ? colors.destructive : colors.mutedText,
                   }}
                 >
-                  {formatCurrencyAmount(monthlyTotalConverted, primaryCurrency)} / {formatCurrencyAmount(budgetCap, primaryCurrency)} ({budgetUsedPct}%)
+                  {formatCurrencyAmount(monthlySpend, primaryCurrency)} / {formatCurrencyAmount(budgetCap, primaryCurrency)} ({budgetUsedPct}%)
                 </Text>
               </View>
-
               <View
                 style={{
                   height: 6,
@@ -324,12 +257,11 @@ export default function DashboardScreen() {
                   }}
                 />
               </View>
-
               {isBudgetExceeded ? (
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                   <AlertTriangle size={12} color={colors.destructive} />
                   <Text style={{ fontSize: 10, fontWeight: "600", color: colors.destructive }}>
-                    Budget exceeded by {formatCurrencyAmount(monthlyTotalConverted - budgetCap, primaryCurrency)}!
+                    Over budget by {formatCurrencyAmount(monthlySpend - (budgetCap || 0), primaryCurrency)}
                   </Text>
                 </View>
               ) : null}
@@ -337,386 +269,392 @@ export default function DashboardScreen() {
           ) : null}
         </View>
 
-        {/* Savings Recommendations & Insights */}
         <SmartInsights
           subscriptions={subscriptions || []}
           primaryCurrency={primaryCurrency}
           rates={rates}
         />
 
-        {/* Upcoming Reminders Banner */}
-        <UpcomingReminders
-          subscriptions={subscriptions || []}
-          primaryCurrency={primaryCurrency}
-          rates={rates}
-          onMarkCanceled={handleMarkCanceled}
-        />
-
-        {/* Filter and Sort Toolbar */}
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-          {/* Filter Pills */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{ flex: 1, height: 36 }}
-            contentContainerStyle={{ gap: 6, alignItems: "center" }}
-          >
-            <TouchableOpacity
-              onPress={() => setFilter("all")}
-              style={{
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                borderRadius: 8,
-                backgroundColor: filter === "all" ? colors.primary : colors.surface,
-              }}
-            >
-              <Text
+        {/* Quick Links */}
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {quickLinks.map((q) => {
+            const Icon = q.icon
+            return (
+              <TouchableOpacity
+                key={q.label}
+                activeOpacity={0.7}
+                onPress={() => router.push(q.route as never)}
                 style={{
-                  fontSize: 11,
-                  fontWeight: "600",
-                  color: filter === "all" ? colors.primaryForeground : colors.mutedText,
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 6,
+                  backgroundColor: colors.card,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 12,
+                  padding: 10,
                 }}
               >
-                All
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setFilter("due_soon")}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 4,
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                borderRadius: 8,
-                backgroundColor: filter === "due_soon" ? colors.primary : colors.surface,
-              }}
-            >
-              <Clock size={12} color={filter === "due_soon" ? colors.primaryForeground : colors.mutedText} />
-              <Text
-                style={{
-                  fontSize: 11,
-                  fontWeight: "600",
-                  color: filter === "due_soon" ? colors.primaryForeground : colors.mutedText,
-                }}
-              >
-                Due Soon
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setFilter("trial")}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 4,
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                borderRadius: 8,
-                backgroundColor: filter === "trial" ? colors.emerald : colors.emeraldBackground,
-              }}
-            >
-              <Sparkles size={12} color={filter === "trial" ? "#ffffff" : colors.emerald} />
-              <Text
-                style={{
-                  fontSize: 11,
-                  fontWeight: "700",
-                  color: filter === "trial" ? "#ffffff" : colors.emerald,
-                }}
-              >
-                Trials
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setFilter("regular")}
-              style={{
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                borderRadius: 8,
-                backgroundColor: filter === "regular" ? colors.primary : colors.surface,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 11,
-                  fontWeight: "600",
-                  color: filter === "regular" ? colors.primaryForeground : colors.mutedText,
-                }}
-              >
-                Regular
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setFilter("canceled")}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 4,
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                borderRadius: 8,
-                backgroundColor: filter === "canceled" ? colors.destructive : colors.surface,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 11,
-                  fontWeight: "600",
-                  color: filter === "canceled" ? "#ffffff" : colors.destructive,
-                }}
-              >
-                Canceled
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
-
-          {/* Sort button */}
-          <TouchableOpacity
-            onPress={() => setSortModalOpen(true)}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 4,
-              backgroundColor: colors.surface,
-              paddingHorizontal: 8,
-              paddingVertical: 6,
-              borderRadius: 8,
-              borderWidth: 1,
-              borderColor: colors.border,
-            }}
-          >
-            <ArrowUpDown size={12} color={colors.mutedText} />
-            <Text style={{ fontSize: 11, fontWeight: "600", color: colors.text }}>
-              {sortLabels[sortBy]}
-            </Text>
-          </TouchableOpacity>
+                <View
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 8,
+                    backgroundColor: q.bg,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Icon size={15} color={q.fg} />
+                </View>
+                <Text numberOfLines={1} style={{ fontSize: 11, fontWeight: "700", color: colors.text, flex: 1 }}>
+                  {q.label}
+                </Text>
+              </TouchableOpacity>
+            )
+          })}
         </View>
 
-        {/* Subscriptions List */}
-        {subscriptions === undefined ? (
-          <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
-        ) : filteredSubs.length === 0 ? (
+        {/* Recent Transactions */}
+        <View
+          style={{
+            backgroundColor: colors.card,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: 14,
+            overflow: "hidden",
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: 14,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.border,
+            }}
+          >
+            <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
+              Recent Transactions
+            </Text>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/transactions" as never)}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+                <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText }}>
+                  View all
+                </Text>
+                <ChevronRight size={14} color={colors.mutedText} />
+              </View>
+            </TouchableOpacity>
+          </View>
+          {transactions === undefined ? (
+            <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 20 }} />
+          ) : recentTransactions.length === 0 ? (
+            <View style={{ padding: 24, alignItems: "center", gap: 4 }}>
+              <Text style={{ fontSize: 13, fontWeight: "600", color: colors.mutedText }}>
+                No transactions this month
+              </Text>
+              <Text style={{ fontSize: 11, color: colors.subtleText }}>
+                Use the + button to log your first one
+              </Text>
+            </View>
+          ) : (
+            recentTransactions.map((t, i) => {
+              const meta = financeCategoryMeta(t.category)
+              return (
+                <TouchableOpacity
+                  key={t._id}
+                  activeOpacity={0.7}
+                  onPress={() => router.push("/(tabs)/transactions" as never)}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    padding: 12,
+                    gap: 10,
+                    borderBottomWidth: i < recentTransactions.length - 1 ? 1 : 0,
+                    borderBottomColor: colors.border,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 10,
+                      backgroundColor: t.color || meta.color,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <DynamicIcon name={t.icon || meta.icon} size={16} color="#ffffff" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text numberOfLines={1} style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                      {t.note || meta.label}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: colors.mutedText }}>
+                      {meta.label} · {t.date}
+                    </Text>
+                  </View>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: "800",
+                      color: t.type === "income" ? colors.emerald : t.type === "transfer" ? colors.blue : colors.destructive,
+                    }}
+                  >
+                    {t.type === "income" ? "+" : t.type === "expense" ? "-" : ""}
+                    {formatCurrencyAmount(
+                      convertCurrency(t.amount, t.currency, primaryCurrency, rates),
+                      primaryCurrency
+                    )}
+                  </Text>
+                </TouchableOpacity>
+              )
+            })
+          )}
+        </View>
+
+        {/* Top Spending */}
+        {topCategories.length > 0 ? (
           <View
             style={{
               backgroundColor: colors.card,
               borderWidth: 1,
               borderColor: colors.border,
-              borderStyle: "dashed",
               borderRadius: 14,
-              padding: 24,
+              overflow: "hidden",
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: 14,
+                borderBottomWidth: 1,
+                borderBottomColor: colors.border,
+              }}
+            >
+              <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
+                Top Spending · {monthShort}
+              </Text>
+              <TouchableOpacity onPress={() => router.push("/(tabs)/stats" as never)}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+                  <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText }}>
+                    Analytics
+                  </Text>
+                  <ChevronRight size={14} color={colors.mutedText} />
+                </View>
+              </TouchableOpacity>
+            </View>
+            <View style={{ padding: 14, gap: 12 }}>
+              {topCategories.map((cat) => (
+                <View key={cat.value} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                  <View
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: 8,
+                      backgroundColor: cat.color,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <DynamicIcon name={cat.icon} size={15} color="#ffffff" />
+                  </View>
+                  <View style={{ flex: 1, gap: 4 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                      <Text style={{ fontSize: 12, fontWeight: "600", color: colors.text }}>
+                        {cat.label}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: colors.mutedText }}>
+                        {formatCurrencyAmount(cat.amount, primaryCurrency)}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        height: 5,
+                        borderRadius: 3,
+                        backgroundColor: colors.surface,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <View
+                        style={{
+                          height: "100%",
+                          width: `${cat.pct}%`,
+                          backgroundColor: cat.color,
+                        }}
+                      />
+                    </View>
+                  </View>
+                  <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, width: 34, textAlign: "right" }}>
+                    {cat.pct}%
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : null}
+
+        {/* Budgets snapshot */}
+        <View
+          style={{
+            backgroundColor: colors.card,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: 14,
+            padding: 14,
+            gap: 10,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
               alignItems: "center",
-              gap: 8,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.border,
+              paddingBottom: 10,
             }}
           >
-            <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
-              No subscriptions found
-            </Text>
-            <Text style={{ fontSize: 12, color: colors.mutedText, textAlign: "center" }}>
-              Tap + below to add your recurring subscriptions.
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Sparkles size={14} color={colors.mutedText} />
+              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.text, textTransform: "uppercase" }}>
+                Budgets · {monthShort}
+              </Text>
+            </View>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/budgets" as never)}>
+              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>
+                View
+              </Text>
+            </TouchableOpacity>
           </View>
-        ) : (
-          <View style={{ gap: 10 }}>
-            {filteredSubs.map((sub) => (
-              <SubscriptionCard
-                key={sub._id}
-                sub={sub}
-                primaryCurrency={primaryCurrency}
-                rates={rates}
-              />
-            ))}
+          {budgets === undefined || transactions === undefined ? (
+            <ActivityIndicator size="small" color={colors.primary} />
+          ) : budgets.length === 0 ? (
+            <Text style={{ fontSize: 12, color: colors.mutedText }}>
+              No budgets set for {monthShort}. Set per-category limits to stay on track.
+            </Text>
+          ) : (
+            budgets.slice(0, 4).map((b) => {
+              const spentNative = (transactions || [])
+                .filter((t) => t.type === "expense" && t.category === b.category)
+                .reduce((s, t) => s + t.amount, 0)
+              const spent = convertCurrency(spentNative, b.currency, primaryCurrency, rates)
+              const cap = convertCurrency(b.amount, b.currency, primaryCurrency, rates)
+              const pct = cap > 0 ? Math.min(100, Math.round((spent / cap) * 100)) : 0
+              const meta = financeCategoryMeta(b.category)
+              return (
+                <View key={b._id} style={{ gap: 4 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                    <Text style={{ fontSize: 12, fontWeight: "600", color: colors.text }}>
+                      {meta.label}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        fontWeight: "700",
+                        color: spent > cap ? colors.destructive : colors.mutedText,
+                      }}
+                    >
+                      {pct}%
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      height: 5,
+                      borderRadius: 3,
+                      backgroundColor: colors.surface,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <View
+                      style={{
+                        height: "100%",
+                        width: `${pct}%`,
+                        backgroundColor: spent > cap ? colors.destructive : pct >= 85 ? colors.amber : colors.emerald,
+                      }}
+                    />
+                  </View>
+                </View>
+              )
+            })
+          )}
+        </View>
+
+        {/* Subscriptions preview */}
+        <View
+          style={{
+            backgroundColor: colors.card,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderRadius: 14,
+            padding: 14,
+            gap: 10,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              borderBottomWidth: 1,
+              borderBottomColor: colors.border,
+              paddingBottom: 10,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Repeat size={14} color="#8b5cf6" />
+              <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                Subscriptions
+              </Text>
+            </View>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/subscriptions" as never)}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+                <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText }}>
+                  Manage
+                </Text>
+                <ChevronRight size={14} color={colors.mutedText} />
+              </View>
+            </TouchableOpacity>
           </View>
-        )}
+          {subscriptions === undefined ? (
+            <ActivityIndicator size="small" color={colors.primary} />
+          ) : (
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+              <Text style={{ fontSize: 12, color: colors.mutedText }}>
+                <Text style={{ fontWeight: "800", color: colors.text }}>{activeSubCount}</Text> active ·{" "}
+                <Text style={{ fontWeight: "800", color: colors.text }}>
+                  {formatCurrencyAmount(subscriptionMonthly, primaryCurrency)}
+                </Text>/mo
+              </Text>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => router.push("/(tabs)/subscriptions" as never)}
+                style={{
+                  backgroundColor: colors.surface,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 8,
+                }}
+              >
+                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.text }}>
+                  Open tracker
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
+        <UpcomingReminders
+          subscriptions={subscriptions || []}
+          primaryCurrency={primaryCurrency}
+          rates={rates}
+          onMarkCanceled={async () => {}}
+        />
       </ScrollView>
-
-      {/* Floating Action Button for Add Subscription */}
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => router.push("/modal/add" as never)}
-        style={{
-          position: "absolute",
-          bottom: 20,
-          right: 20,
-          width: 54,
-          height: 54,
-          borderRadius: 27,
-          backgroundColor: colors.primary,
-          alignItems: "center",
-          justifyContent: "center",
-          elevation: 5,
-          shadowColor: "#000000",
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 6,
-        }}
-      >
-        <Plus size={24} color={colors.primaryForeground} />
-      </TouchableOpacity>
-
-      {/* Currency Modal */}
-      {currencyModalOpen && (
-        <Modal
-          visible={currencyModalOpen}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setCurrencyModalOpen(false)}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => setCurrencyModalOpen(false)}
-            style={{
-              flex: 1,
-              backgroundColor: "rgba(0,0,0,0.6)",
-              justifyContent: "flex-end",
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: colors.background,
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20,
-                maxHeight: "70%",
-                paddingBottom: 24,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: 16,
-                  borderBottomWidth: 1,
-                  borderBottomColor: colors.border,
-                }}
-              >
-                <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>
-                  Select Primary Currency
-                </Text>
-                <TouchableOpacity onPress={() => setCurrencyModalOpen(false)}>
-                  <X size={18} color={colors.text} />
-                </TouchableOpacity>
-              </View>
-
-              <ScrollView contentContainerStyle={{ padding: 12, gap: 4 }}>
-                {currencies.map((c) => {
-                  const isSelected = primaryCurrency === c.value
-                  return (
-                    <TouchableOpacity
-                      key={c.value}
-                      onPress={async () => {
-                        await setPrimaryCurrency(c.value)
-                        setCurrencyModalOpen(false)
-                      }}
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        paddingHorizontal: 14,
-                        paddingVertical: 12,
-                        borderRadius: 10,
-                        backgroundColor: isSelected ? colors.surfaceHover : "transparent",
-                      }}
-                    >
-                      <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
-                        {c.label}
-                      </Text>
-                      {isSelected ? <Check size={16} color={colors.primary} /> : null}
-                    </TouchableOpacity>
-                  )
-                })}
-              </ScrollView>
-            </View>
-          </TouchableOpacity>
-        </Modal>
-      )}
-
-      {/* Sort Options Modal */}
-      {sortModalOpen && (
-        <Modal
-          visible={sortModalOpen}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setSortModalOpen(false)}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => setSortModalOpen(false)}
-            style={{
-              flex: 1,
-              backgroundColor: "rgba(0,0,0,0.6)",
-              justifyContent: "flex-end",
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: colors.background,
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20,
-                paddingBottom: 24,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: 16,
-                  borderBottomWidth: 1,
-                  borderBottomColor: colors.border,
-                }}
-              >
-                <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>
-                  Sort Subscriptions
-                </Text>
-                <TouchableOpacity onPress={() => setSortModalOpen(false)}>
-                  <X size={18} color={colors.text} />
-                </TouchableOpacity>
-              </View>
-
-              <View style={{ padding: 12, gap: 4 }}>
-                {(
-                  [
-                    "billing-asc",
-                    "billing-desc",
-                    "price-asc",
-                    "price-desc",
-                    "start-desc",
-                    "name-asc",
-                  ] as SortOption[]
-                ).map((opt) => {
-                  const isSelected = sortBy === opt
-                  return (
-                    <TouchableOpacity
-                      key={opt}
-                      onPress={() => {
-                        setSortBy(opt)
-                        setSortModalOpen(false)
-                      }}
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        paddingHorizontal: 14,
-                        paddingVertical: 12,
-                        borderRadius: 10,
-                        backgroundColor: isSelected ? colors.surfaceHover : "transparent",
-                      }}
-                    >
-                      <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
-                        {sortLabels[opt]}
-                      </Text>
-                      {isSelected ? <Check size={16} color={colors.primary} /> : null}
-                    </TouchableOpacity>
-                  )
-                })}
-              </View>
-            </View>
-          </TouchableOpacity>
-        </Modal>
-      )}
     </SafeAreaView>
   )
 }

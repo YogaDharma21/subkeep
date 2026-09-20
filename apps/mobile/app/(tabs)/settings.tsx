@@ -21,12 +21,16 @@ import {
   LogOut,
   Trash2,
   ChevronRight,
+  ArrowLeftRight,
+  Wallet,
+  PiggyBank,
+  Repeat,
 } from "lucide-react-native"
 import * as DocumentPicker from "expo-document-picker"
 import * as FileSystem from "expo-file-system/legacy"
 import * as Sharing from "expo-sharing"
 import { getSymbol } from "@/constants/currencies"
-import { exportSubscriptionsToCSV, parseCSVToSubscriptions } from "@/lib/csv"
+import { exportSubscriptionsToCSV, parseCSVToSubscriptions, exportTransactionsToCSV } from "@/lib/csv"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/components/custom-alert-provider"
@@ -40,8 +44,12 @@ export default function SettingsScreen() {
 
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const payments = useQuery(api.payments.list, isSignedIn ? {} : "skip")
+  const accounts = useQuery(api.accounts.list, isSignedIn ? { includeArchived: true } : "skip")
+  const transactions = useQuery(api.transactions.list, isSignedIn ? {} : "skip")
+  const budgets = useQuery(api.budgets.list, isSignedIn ? {} : "skip")
 
   const removeAll = useMutation(api.subscriptions.removeAll)
+  const removeAllFinance = useMutation(api.transactions.removeAll)
   const restoreSubscriptions = useMutation(api.subscriptions.restoreAll)
   const restorePayments = useMutation(api.payments.restoreAll)
 
@@ -123,12 +131,41 @@ export default function SettingsScreen() {
     }
   }
 
+  const handleExportTransactionsCSV = async () => {
+    if (!transactions || transactions.length === 0) {
+      showAlert({ title: "Export", message: "No transactions available to export.", icon: "info" })
+      return
+    }
+
+    try {
+      const csvContent = exportTransactionsToCSV(transactions as Record<string, unknown>[])
+      const date = new Date().toISOString().split("T")[0]
+      const fileUri = `${FileSystem.cacheDirectory}subkeep-transactions-${date}.csv`
+
+      await FileSystem.writeAsStringAsync(fileUri, csvContent, {
+        encoding: FileSystem.EncodingType.UTF8,
+      })
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: "text/csv",
+          dialogTitle: "Export Transactions CSV",
+        })
+      } else {
+        showToast("CSV generated successfully", "success")
+      }
+    } catch (e) {
+      console.error(e)
+      showToast("Failed to export CSV", "error")
+    }
+  }
+
   const handleFullBackup = async () => {
     if (!subscriptions || !payments) return
 
     try {
       const data = {
-        version: 1,
+        version: 2,
         exportDate: new Date().toISOString(),
         subscriptions: subscriptions.map((s) => ({
           name: s.name,
@@ -156,6 +193,31 @@ export default function SettingsScreen() {
           currency: p.currency,
           category: p.category,
           date: p.date,
+        })),
+        accounts: (accounts || []).map((a) => ({
+          name: a.name,
+          type: a.type,
+          balance: a.balance,
+          currency: a.currency,
+          icon: a.icon,
+          color: a.color,
+          last4: a.last4,
+        })),
+        transactions: (transactions || []).map((t) => ({
+          type: t.type,
+          amount: t.amount,
+          currency: t.currency,
+          category: t.category,
+          date: t.date,
+          note: t.note,
+          icon: t.icon,
+          color: t.color,
+        })),
+        budgets: (budgets || []).map((b) => ({
+          category: b.category,
+          amount: b.amount,
+          currency: b.currency,
+          month: b.month,
         })),
       }
 
@@ -287,7 +349,7 @@ export default function SettingsScreen() {
   const handleDeleteAll = () => {
     showAlert({
       title: "Delete All Data?",
-      message: "This will permanently delete all your subscriptions and payment logs. This action cannot be undone.",
+      message: "This will permanently delete all subscriptions, transactions, accounts, and budgets. This action cannot be undone.",
       icon: "warning",
       buttons: [
         { text: "Cancel", style: "cancel" },
@@ -296,8 +358,9 @@ export default function SettingsScreen() {
           style: "destructive",
           onPress: async () => {
             try {
+              await removeAllFinance()
               await removeAll()
-              showToast("All subscription records have been deleted.", "info")
+              showToast("All finance records have been deleted.", "info")
             } catch {
               showToast("Failed to delete data", "error")
             }
@@ -325,9 +388,36 @@ export default function SettingsScreen() {
     })
   }
 
+  const moneyRows = [
+    {
+      icon: ArrowLeftRight,
+      title: "Transactions",
+      subtitle: transactions ? `${transactions.length} logged` : "Expenses, income & transfers",
+      route: "/(tabs)/transactions" as never,
+    },
+    {
+      icon: Wallet,
+      title: "Accounts",
+      subtitle: accounts ? `${accounts.filter((a) => !a.isArchived).length} active wallets & banks` : "Wallets, banks & net worth",
+      route: "/(tabs)/accounts" as never,
+    },
+    {
+      icon: PiggyBank,
+      title: "Budgets",
+      subtitle: budgets ? `${budgets.length} category caps` : "Category spending limits",
+      route: "/(tabs)/budgets" as never,
+    },
+    {
+      icon: Repeat,
+      title: "Subscriptions",
+      subtitle: subscriptions ? `${subscriptions.filter((s) => s.isActive !== false).length} active recurring bills` : "Recurring bills & trials",
+      route: "/(tabs)/subscriptions" as never,
+    },
+  ]
+
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 120 }}>
         {/* User profile card (opens Clerk Profile modal) */}
         {user ? (
           <TouchableOpacity
@@ -387,6 +477,51 @@ export default function SettingsScreen() {
             <ChevronRight size={16} color={colors.mutedText} />
           </TouchableOpacity>
         ) : null}
+
+        {/* Money Section */}
+        <View style={{ gap: 8 }}>
+          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
+            MONEY
+          </Text>
+
+          <View
+            style={{
+              backgroundColor: colors.card,
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: 14,
+              overflow: "hidden",
+            }}
+          >
+            {moneyRows.map((row, i) => {
+              const Icon = row.icon
+              return (
+                <TouchableOpacity
+                  key={row.title}
+                  activeOpacity={0.7}
+                  onPress={() => router.push(row.route)}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    padding: 14,
+                    gap: 12,
+                    borderBottomWidth: i < moneyRows.length - 1 ? 1 : 0,
+                    borderBottomColor: colors.border,
+                  }}
+                >
+                  <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" }}>
+                    <Icon size={18} color={colors.text} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>{row.title}</Text>
+                    <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>{row.subtitle}</Text>
+                  </View>
+                  <ChevronRight size={16} color={colors.mutedText} />
+                </TouchableOpacity>
+              )
+            })}
+          </View>
+        </View>
 
         {/* Preferences & Payment Methods Section */}
         <View style={{ gap: 8 }}>
@@ -496,6 +631,28 @@ export default function SettingsScreen() {
           >
             <TouchableOpacity
               activeOpacity={0.7}
+              onPress={handleExportTransactionsCSV}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                padding: 14,
+                gap: 12,
+                borderBottomWidth: 1,
+                borderBottomColor: colors.border,
+              }}
+            >
+              <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" }}>
+                <FileSpreadsheet size={18} color={colors.text} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>Export Transactions CSV</Text>
+                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>Download expenses & income for Excel / Sheets</Text>
+              </View>
+              <ChevronRight size={16} color={colors.mutedText} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.7}
               onPress={handleExportCSV}
               style={{
                 flexDirection: "row",
@@ -510,7 +667,7 @@ export default function SettingsScreen() {
                 <FileSpreadsheet size={18} color={colors.text} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>Export as CSV</Text>
+                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>Export Subscriptions CSV</Text>
                 <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>Download spreadsheet for Excel / Sheets</Text>
               </View>
               <ChevronRight size={16} color={colors.mutedText} />
@@ -577,7 +734,7 @@ export default function SettingsScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>Full Backup</Text>
-                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>Export full backup including payment history</Text>
+                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>Export everything: subs, transactions, accounts, budgets</Text>
               </View>
               <ChevronRight size={16} color={colors.mutedText} />
             </TouchableOpacity>
@@ -714,7 +871,7 @@ export default function SettingsScreen() {
                 Delete All Data
               </Text>
               <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
-                Permanently erase all subscriptions and payments
+                Permanently erase subscriptions, transactions & budgets
               </Text>
             </View>
 

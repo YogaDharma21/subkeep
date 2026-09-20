@@ -20,6 +20,7 @@ import {
   ArrowLeft,
   Pencil,
   Play,
+  Pause,
   Copy,
   Trash2,
   ExternalLink,
@@ -87,6 +88,7 @@ export default function SubscriptionDetailPage() {
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
   const recordPaymentMutation = useMutation(api.payments.create)
+  const recordTransactionMutation = useMutation(api.transactions.create)
   const updatePaymentMutation = useMutation(api.payments.update)
   const removePaymentMutation = useMutation(api.payments.remove)
   const generateUploadUrl = useMutation(api.subscriptions.generateUploadUrl)
@@ -300,6 +302,7 @@ export default function SubscriptionDetailPage() {
   const handleRecordPayment = async () => {
     if (!sub || !id) return
     try {
+      const today = new Date().toISOString().split("T")[0]
       await recordPaymentMutation({
         subscriptionId: id as Id<"subscriptions">,
         name: sub.name,
@@ -308,8 +311,22 @@ export default function SubscriptionDetailPage() {
         amount: sub.price,
         currency: sub.currency,
         category: sub.category,
-        date: new Date().toISOString().split("T")[0],
+        date: today,
       })
+      try {
+        await recordTransactionMutation({
+          type: "expense",
+          amount: sub.price,
+          currency: sub.currency,
+          category: "subscriptions",
+          date: today,
+          note: sub.name,
+          subscriptionId: id as Id<"subscriptions">,
+          icon: sub.icon,
+          color: sub.color,
+        })
+      } catch {
+      }
       showToast(
         `Recorded payment of ${convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)} for ${sub.name}`,
         "success"

@@ -25,10 +25,16 @@ import {
   ArrowRight,
   Sparkles,
   X,
+  ArrowLeftRight,
+  Wallet,
+  PiggyBank,
+  Repeat,
+  Receipt,
 } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { convertAndFormat, formatCycleLabel } from "@/lib/currency"
+import { financeCategoryMeta } from "@/constants/finance"
 import { currencies } from "@/constants/currencies"
 import { useThemeColor } from "@/hooks/use-theme-color"
 
@@ -36,12 +42,14 @@ export interface SearchModalProps {
   visible: boolean
   onClose: () => void
   onAddSubscription?: () => void
+  onAddTransaction?: () => void
 }
 
 export function SearchModal({
   visible,
   onClose,
   onAddSubscription,
+  onAddTransaction,
 }: SearchModalProps) {
   const router = useRouter()
   const { colors } = useThemeColor()
@@ -50,6 +58,10 @@ export function SearchModal({
   const subscriptions = useQuery(
     api.subscriptions.list,
     isSignedIn ? {} : "skip"
+  )
+  const transactions = useQuery(
+    api.transactions.list,
+    isSignedIn ? { limit: 50 } : "skip"
   )
 
   const [query, setQuery] = useState("")
@@ -80,10 +92,42 @@ export function SearchModal({
       .slice(0, 10)
   }, [subscriptions, query])
 
+  // Filter transactions
+  const filteredTxns = useMemo(() => {
+    if (!transactions) return []
+    const q = query.trim().toLowerCase()
+    if (!q) return transactions.slice(0, 3)
+    return transactions
+      .filter((t) => {
+        const meta = financeCategoryMeta(t.category)
+        return (
+          (t.note || "").toLowerCase().includes(q) ||
+          meta.label.toLowerCase().includes(q) ||
+          t.category.toLowerCase().includes(q)
+        )
+      })
+      .slice(0, 4)
+  }, [transactions, query])
+
   // Quick Navigation & Feature Actions
   const quickActions = useMemo(() => {
     const q = query.trim().toLowerCase()
     const actions = [
+      {
+        id: "add-txn",
+        label: "Add Transaction",
+        detail: "Log an expense, income, or transfer",
+        icon: Receipt,
+        category: "Actions",
+        run: () => {
+          onClose()
+          if (onAddTransaction) {
+            onAddTransaction()
+          } else {
+            router.push("/modal/add-transaction" as never)
+          }
+        },
+      },
       {
         id: "add",
         label: "Add New Subscription",
@@ -108,6 +152,50 @@ export function SearchModal({
         run: () => {
           onClose()
           router.push("/modal/cards" as never)
+        },
+      },
+      {
+        id: "nav-txns",
+        label: "Transactions",
+        detail: "View expenses, income & transfers",
+        icon: ArrowLeftRight,
+        category: "Navigation",
+        run: () => {
+          onClose()
+          router.push("/(tabs)/transactions" as never)
+        },
+      },
+      {
+        id: "nav-subs",
+        label: "Subscriptions",
+        detail: "Manage recurring bills & trials",
+        icon: Repeat,
+        category: "Navigation",
+        run: () => {
+          onClose()
+          router.push("/(tabs)/subscriptions" as never)
+        },
+      },
+      {
+        id: "nav-budgets",
+        label: "Budgets",
+        detail: "Category spending limits & progress",
+        icon: PiggyBank,
+        category: "Navigation",
+        run: () => {
+          onClose()
+          router.push("/(tabs)/budgets" as never)
+        },
+      },
+      {
+        id: "nav-accounts",
+        label: "Accounts",
+        detail: "Wallets, banks & net worth",
+        icon: Wallet,
+        category: "Navigation",
+        run: () => {
+          onClose()
+          router.push("/(tabs)/accounts" as never)
         },
       },
       {
@@ -152,7 +240,7 @@ export function SearchModal({
         a.detail.toLowerCase().includes(q) ||
         a.category.toLowerCase().includes(q)
     )
-  }, [query, router, onClose, onAddSubscription])
+  }, [query, router, onClose, onAddSubscription, onAddTransaction])
 
   // Currency search shortcuts
   const currencyActions = useMemo(() => {
@@ -238,7 +326,7 @@ export function SearchModal({
                 ref={inputRef}
                 value={query}
                 onChangeText={setQuery}
-                placeholder="Search..."
+                placeholder="Search transactions, subscriptions, commands..."
                 placeholderTextColor={colors.mutedText}
                 style={{
                   flex: 1,
@@ -331,6 +419,68 @@ export function SearchModal({
                         <ArrowRight size={14} color={colors.mutedText} />
                       </TouchableOpacity>
                     ))}
+                  </View>
+                </View>
+              )}
+
+              {/* Transactions Section */}
+              {filteredTxns.length > 0 && (
+                <View style={{ gap: 6 }}>
+                  <Text style={{ fontSize: 10, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 6 }}>
+                    TRANSACTIONS ({filteredTxns.length})
+                  </Text>
+                  <View style={{ gap: 4 }}>
+                    {filteredTxns.map((txn) => {
+                      const meta = financeCategoryMeta(txn.category)
+                      return (
+                        <TouchableOpacity
+                          key={txn._id}
+                          activeOpacity={0.7}
+                          onPress={() => {
+                            onClose()
+                            router.push("/(tabs)/transactions" as never)
+                          }}
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            padding: 10,
+                            borderRadius: 10,
+                            backgroundColor: colors.surface,
+                            gap: 10,
+                          }}
+                        >
+                          <View
+                            style={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: 8,
+                              backgroundColor: txn.color || meta.color,
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <DynamicIcon name={txn.icon || meta.icon} size={16} color="#ffffff" />
+                          </View>
+
+                          <View style={{ flex: 1 }}>
+                            <Text numberOfLines={1} style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                              {txn.note || meta.label}
+                            </Text>
+                            <Text numberOfLines={1} style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
+                              <Text style={{ textTransform: "capitalize" }}>{txn.type}</Text> · {meta.label} · {txn.date}
+                            </Text>
+                          </View>
+
+                          <View style={{ alignItems: "flex-end" }}>
+                            <Text style={{ fontSize: 12, fontWeight: "700", color: colors.text }}>
+                              {convertAndFormat(txn.amount, txn.currency, primaryCurrency, rates)}
+                            </Text>
+                          </View>
+
+                          <ArrowRight size={14} color={colors.mutedText} />
+                        </TouchableOpacity>
+                      )
+                    })}
                   </View>
                 </View>
               )}
@@ -438,10 +588,10 @@ export function SearchModal({
                 </View>
               )}
 
-              {filteredSubs.length === 0 && quickActions.length === 0 && (
+              {filteredSubs.length === 0 && filteredTxns.length === 0 && quickActions.length === 0 && (
                 <View style={{ paddingVertical: 24, alignItems: "center" }}>
                   <Text style={{ fontSize: 12, color: colors.mutedText }}>
-                    No matching subscriptions found for &quot;{query}&quot;
+                    No matching results found for &quot;{query}&quot;
                   </Text>
                 </View>
               )}
