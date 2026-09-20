@@ -502,13 +502,10 @@ export function CommandPalette({
                         isSelected ? "bg-muted text-foreground" : "hover:bg-muted/60"
                       }`}
                     >
-                      <div
-                        className="flex size-7 shrink-0 items-center justify-center rounded-md"
-                        style={{ backgroundColor: txn.color || meta.color }}
-                      >
+                      <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-foreground">
                         <DynamicIcon
                           name={txn.icon || meta.icon}
-                          className="size-3.5 text-white"
+                          className="size-3.5"
                         />
                       </div>
                       <div className="min-w-0 flex-1">

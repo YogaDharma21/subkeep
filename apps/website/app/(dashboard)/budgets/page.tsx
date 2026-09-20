@@ -213,10 +213,7 @@ export default function BudgetsPage() {
                   : "border-border hover:border-foreground/40"
               )}
             >
-              <span
-                className="flex size-7 shrink-0 items-center justify-center rounded-md text-white"
-                style={{ backgroundColor: c.color }}
-              >
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-foreground">
                 <DynamicIcon name={c.icon} className="size-3.5" />
               </span>
               <span className="text-[11px] font-medium leading-tight">{c.label}</span>
@@ -260,10 +257,7 @@ export default function BudgetsPage() {
             return (
               <div key={budget._id} className="rounded-lg border border-border bg-background p-4">
                 <div className="flex items-center gap-3">
-                  <span
-                    className="flex size-10 shrink-0 items-center justify-center rounded-lg text-white"
-                    style={{ backgroundColor: meta.color }}
-                  >
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
                     <DynamicIcon name={meta.icon} className="size-4" />
                   </span>
                   <div className="min-w-0 flex-1">

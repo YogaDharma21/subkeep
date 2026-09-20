@@ -282,10 +282,7 @@ export default function TransactionsPage() {
                   const meta = financeCategoryMeta(t.category)
                   return (
                     <div key={t._id} className="flex items-center gap-3 px-4 py-3">
-                      <span
-                        className="flex size-9 shrink-0 items-center justify-center rounded-lg text-white"
-                        style={{ backgroundColor: t.color || meta.color }}
-                      >
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
                         <DynamicIcon name={t.icon || meta.icon} className="size-4" />
                       </span>
                       <div className="min-w-0 flex-1">

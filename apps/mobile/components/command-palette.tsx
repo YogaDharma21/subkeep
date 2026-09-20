@@ -456,12 +456,12 @@ export function SearchModal({
                               width: 32,
                               height: 32,
                               borderRadius: 8,
-                              backgroundColor: txn.color || meta.color,
+                              backgroundColor: colors.surfaceHover,
                               alignItems: "center",
                               justifyContent: "center",
                             }}
                           >
-                            <DynamicIcon name={txn.icon || meta.icon} size={16} color="#ffffff" />
+                            <DynamicIcon name={txn.icon || meta.icon} size={16} color={colors.text} />
                           </View>
 
                           <View style={{ flex: 1 }}>

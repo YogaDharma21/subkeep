@@ -159,7 +159,7 @@ export function TransactionCalendar({ transactions }: TransactionCalendarProps) 
                         borderRadius: 6,
                       }}
                     >
-                      <DynamicIcon name={t.icon || meta.icon} size={11} color={t.color || meta.color} />
+                      <DynamicIcon name={t.icon || meta.icon} size={11} color={colors.text} />
                       <Text numberOfLines={1} style={{ fontSize: 10, fontWeight: "600", color: colors.text, maxWidth: 90 }}>
                         {t.note || meta.label}
                       </Text>

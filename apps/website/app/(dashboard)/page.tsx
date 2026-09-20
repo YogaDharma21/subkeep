@@ -210,7 +210,7 @@ export default function HomePage() {
               href="/transactions"
               className="flex items-center gap-2 rounded-lg border border-border bg-background p-3 transition-colors hover:border-foreground/40"
             >
-              <span className="flex size-8 items-center justify-center rounded-lg bg-foreground text-background">
+              <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-foreground">
                 <ArrowLeftRight className="size-4" />
               </span>
               <span className="text-xs font-semibold">Transactions</span>
@@ -219,7 +219,7 @@ export default function HomePage() {
               href="/accounts"
               className="flex items-center gap-2 rounded-lg border border-border bg-background p-3 transition-colors hover:border-foreground/40"
             >
-              <span className="flex size-8 items-center justify-center rounded-lg bg-blue-500 text-white">
+              <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-foreground">
                 <Wallet className="size-4" />
               </span>
               <span className="text-xs font-semibold">Accounts</span>
@@ -228,7 +228,7 @@ export default function HomePage() {
               href="/budgets"
               className="flex items-center gap-2 rounded-lg border border-border bg-background p-3 transition-colors hover:border-foreground/40"
             >
-              <span className="flex size-8 items-center justify-center rounded-lg bg-emerald-500 text-white">
+              <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-foreground">
                 <PiggyBank className="size-4" />
               </span>
               <span className="text-xs font-semibold">Budgets</span>
@@ -237,7 +237,7 @@ export default function HomePage() {
               href="/subscriptions"
               className="flex items-center gap-2 rounded-lg border border-border bg-background p-3 transition-colors hover:border-foreground/40"
             >
-              <span className="flex size-8 items-center justify-center rounded-lg bg-violet-500 text-white">
+              <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-foreground">
                 <Repeat className="size-4" />
               </span>
               <span className="text-xs font-semibold">
@@ -280,10 +280,7 @@ export default function HomePage() {
                       href="/transactions"
                       className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40"
                     >
-                      <span
-                        className="flex size-9 shrink-0 items-center justify-center rounded-lg text-white"
-                        style={{ backgroundColor: t.color || meta.color }}
-                      >
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
                         <DynamicIcon name={t.icon || meta.icon} className="size-4" />
                       </span>
                       <span className="min-w-0 flex-1">
@@ -328,10 +325,7 @@ export default function HomePage() {
               <div className="space-y-3 p-4">
                 {topCategories.map((cat) => (
                   <div key={cat.value} className="flex items-center gap-3">
-                    <span
-                      className="flex size-8 shrink-0 items-center justify-center rounded-lg text-white"
-                      style={{ backgroundColor: cat.color }}
-                    >
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
                       <DynamicIcon name={cat.icon} className="size-4" />
                     </span>
                     <div className="min-w-0 flex-1">

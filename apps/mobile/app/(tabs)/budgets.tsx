@@ -271,12 +271,12 @@ export default function BudgetsScreen() {
                       width: 22,
                       height: 22,
                       borderRadius: 6,
-                      backgroundColor: c.color,
+                      backgroundColor: category === c.value ? colors.background : colors.surfaceHover,
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <DynamicIcon name={c.icon} size={12} color="#ffffff" />
+                    <DynamicIcon name={c.icon} size={12} color={colors.text} />
                   </View>
                   <Text
                     numberOfLines={1}
@@ -369,12 +369,12 @@ export default function BudgetsScreen() {
                       width: 38,
                       height: 38,
                       borderRadius: 10,
-                      backgroundColor: meta.color,
+                      backgroundColor: colors.surface,
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <DynamicIcon name={meta.icon} size={16} color="#ffffff" />
+                    <DynamicIcon name={meta.icon} size={16} color={colors.text} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>

@@ -119,8 +119,7 @@ export function TransactionCalendar({ transactions }: TransactionCalendarProps) 
                     >
                       <DynamicIcon
                         name={t.icon || meta.icon}
-                        className="size-3"
-                        style={{ color: t.color || meta.color }}
+                        className="size-3 text-foreground"
                       />
                       <span className="max-w-24 truncate">{t.note || meta.label}</span>
                     </span>

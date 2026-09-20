@@ -399,12 +399,12 @@ export default function TransactionsScreen() {
                         width: 36,
                         height: 36,
                         borderRadius: 10,
-                        backgroundColor: t.color || meta.color,
+                        backgroundColor: colors.surface,
                         alignItems: "center",
                         justifyContent: "center",
                       }}
                     >
-                      <DynamicIcon name={t.icon || meta.icon} size={16} color="#ffffff" />
+                      <DynamicIcon name={t.icon || meta.icon} size={16} color={colors.text} />
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text numberOfLines={1} style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
