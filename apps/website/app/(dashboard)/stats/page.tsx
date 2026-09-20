@@ -1,19 +1,28 @@
 "use client"
 
+import { useMemo } from "react"
 import { useQuery } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
 import { StatsCharts } from "@/components/stats-charts"
+import { FinanceAnalytics } from "@/components/finance-analytics"
 import { SmartInsights } from "@/components/smart-insights"
 import { Skeleton } from "@/components/ui/skeleton"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
+import { currentMonthKey, lastMonths } from "@/lib/finance"
 
 export default function StatsPage() {
   const { isSignedIn } = useAuth()
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const payments = useQuery(api.payments.list, isSignedIn ? {} : "skip")
+  const transactions = useQuery(
+    api.transactions.list,
+    isSignedIn ? {} : "skip"
+  )
 
   const { primaryCurrency, rates } = usePrimaryCurrency()
+
+  const months = useMemo(() => lastMonths(6), [])
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -23,6 +32,20 @@ export default function StatsPage() {
           primaryCurrency={primaryCurrency}
           rates={rates}
         />
+      )}
+
+      {transactions ? (
+        <FinanceAnalytics
+          transactions={transactions}
+          months={months}
+          currentMonth={currentMonthKey()}
+          primaryCurrency={primaryCurrency}
+          rates={rates}
+        />
+      ) : (
+        <div className="space-y-4">
+          <Skeleton className="h-[250px] rounded-lg" />
+        </div>
       )}
 
       {subscriptions ? (

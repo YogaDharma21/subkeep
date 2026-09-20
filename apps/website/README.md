@@ -1,6 +1,6 @@
-# SubKeep (v0.0.1)
+# SubKeep (v0.1.0)
 
-A sleek, mobile-first subscription tracker built with Next.js 16, Convex, Clerk, and Tailwind CSS v4.
+A sleek, mobile-first personal finance tracker built with Next.js 16, Convex, Clerk, and Tailwind CSS v4 — with a full subscription tracker built in.
 
 ---
 
@@ -28,7 +28,11 @@ A sleek, mobile-first subscription tracker built with Next.js 16, Convex, Clerk,
 
 ## Key Features
 
-- **Subscription Management** — Add, edit, suspend, clone, and delete subscriptions with custom colors and icons.
+- **Money Dashboard** — Net worth, monthly income vs expenses, top spending categories, budget snapshot, and subscription cost preview in one home view.
+- **Transactions** — Log expenses, income, and account-to-account transfers with 20+ categories, per-month browsing, search, and CSV export.
+- **Accounts & Net Worth** — Track checking, savings, cash, e-wallets, credit, and investment balances with monthly in/out flow per account.
+- **Budgets** — Per-category monthly spending caps with progress bars, over-budget alerts, subscription-spend overlays, and copy-last-month.
+- **Subscription Management** — Add, edit, suspend, clone, and delete subscriptions with custom colors and icons. Recording a payment also logs it as an expense transaction.
 - **Flexible Billing Cycles** — Support for Daily, Weekly, Monthly, **3 Months**, **6 Months**, Yearly, and **No Cycle / One-time** payments.
 - **Start Date & End Date** — Track subscription start dates and optional end dates with automatic expiration handling.
 - **Account & Website Links** — Track sub-accounts/emails (`user@gmail.com`) and direct clickable provider links (`netflix.com`).
@@ -114,20 +118,28 @@ npm run dev
 app/
   (auth)/           # Clerk sign-in / sign-up pages
   (dashboard)/      # Main application routes
-    page.tsx        # Dashboard (spending summary & subscription list)
-    calendar/       # Calendar view with projected billing dates
-    stats/          # Spending trend & interactive category breakdown
+    page.tsx        # Money dashboard (net worth, cash flow, budgets, subs preview)
+    transactions/   # Expense / income / transfer ledger
+    accounts/       # Wallets, banks & net worth
+    budgets/        # Per-category monthly spending caps
+    subscriptions/  # Subscription tracker (list + detail)
+    calendar/       # Calendar view with projected billing dates + daily cash flow
+    stats/          # Finance analytics + subscription spending trends
     more/           # Settings, backups, export & restore
-    subscriptions/  # Subscription detail (edit, account, website, clone, delete)
   layout.tsx        # Root layout (Clerk, Convex, NextThemes providers)
 convex/
-  schema.ts         # Database schema (subscriptions, templates, payments)
-  subscriptions.ts  # CRUD mutations & stats calculations
+  schema.ts         # Database schema (subscriptions, templates, payments, accounts, transactions, budgets)
+  subscriptions.ts  # Subscription CRUD mutations & stats calculations
+  transactions.ts   # Expense / income / transfer ledger + monthly summaries
+  accounts.ts       # Account CRUD, archive & net worth balances
+  budgets.ts        # Category budget caps, upsert & month-to-month copy
   templates.ts      # Pre-built templates seed data
-  payments.ts       # Payment history tracking
+  payments.ts       # Subscription payment history tracking
 components/
   dynamic-icon.tsx  # Code-split dynamic icon renderer
   icon-picker.tsx   # Lag-free keyword icon search picker
-  stats-charts.tsx  # Spending trend & category breakdown charts
+  stats-charts.tsx  # Subscription spending trend & category breakdown charts
+  finance-analytics.tsx # Income-vs-expense cash flow & expense category charts
+  transaction-calendar.tsx # Last-7-days daily cash flow strip
   calendar-grid.tsx # Calendar recurrence projection engine
 ```
