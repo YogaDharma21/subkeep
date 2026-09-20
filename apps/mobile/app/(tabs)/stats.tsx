@@ -6,7 +6,6 @@ import { useAuth } from "@clerk/clerk-expo"
 import { api } from "@/convex/_generated/api"
 import { StatsCharts } from "@/components/stats-charts"
 import { FinanceAnalytics } from "@/components/finance-analytics"
-import { SmartInsights } from "@/components/smart-insights"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { currentMonthKey, lastMonths } from "@/constants/finance"
@@ -25,14 +24,6 @@ export default function StatsScreen() {
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 120 }}>
-        {subscriptions && (
-          <SmartInsights
-            subscriptions={subscriptions}
-            primaryCurrency={primaryCurrency}
-            rates={rates}
-          />
-        )}
-
         {transactions ? (
           <FinanceAnalytics
             transactions={transactions}
