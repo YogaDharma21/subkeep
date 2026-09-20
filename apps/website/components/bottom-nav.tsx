@@ -69,9 +69,9 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
           onClick={onAddClick}
           title="Add transaction"
           aria-label="Add transaction"
-          className="flex size-11 shrink-0 -translate-y-2 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg ring-4 ring-background transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+          className="flex size-12 shrink-0 -translate-y-2.5 items-center justify-center rounded-2xl border border-foreground/15 bg-foreground text-background shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
         >
-          <Plus className="size-5" strokeWidth={2.5} />
+          <Plus className="size-6" strokeWidth={2.5} />
         </button>
 
         {rightNavItems.map(renderItem)}

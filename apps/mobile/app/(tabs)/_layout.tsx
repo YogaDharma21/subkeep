@@ -169,15 +169,15 @@ export default function TabLayout() {
               width: 48,
               height: 48,
               borderRadius: 16,
-              marginTop: -18,
-              backgroundColor: colors.emerald,
+              marginTop: -16,
+              backgroundColor: colors.primary,
               alignItems: "center",
               justifyContent: "center",
-              borderWidth: 4,
-              borderColor: colors.card,
+              borderWidth: 1,
+              borderColor: colors.border,
             }}
           >
-            <Plus size={22} color="#ffffff" strokeWidth={2.5} />
+            <Plus size={24} color={colors.primaryForeground} strokeWidth={2.5} />
           </TouchableOpacity>
 
           {RIGHT_TABS.map(renderTab)}
