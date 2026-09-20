@@ -22,7 +22,6 @@ import {
 } from "@/lib/currency"
 import { currencies } from "@/lib/constants"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
-import { SmartInsights } from "@/components/smart-insights"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { differenceInDays } from "date-fns"
 import { cn } from "@/lib/utils"
@@ -280,14 +279,6 @@ export default function SubscriptionsPage() {
         )}
       </div>
 
-      {/* Savings Recommendations & Insights (Visible on smaller screens: < lg) */}
-      <SmartInsights
-        subscriptions={subscriptions || []}
-        primaryCurrency={primaryCurrency}
-        rates={rates}
-        className="lg:hidden"
-      />
-
       {/* Responsive Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Main Column: Filters & Subscriptions */}
@@ -406,14 +397,8 @@ export default function SubscriptionsPage() {
           </div>
         </div>
 
-        {/* Sidebar Column: Smart Insights & Upcoming Reminders */}
+        {/* Sidebar Column: Upcoming Reminders */}
         <div className="lg:col-span-5 xl:col-span-4 space-y-4">
-          <SmartInsights
-            subscriptions={subscriptions || []}
-            primaryCurrency={primaryCurrency}
-            rates={rates}
-            className="hidden lg:block"
-          />
           <UpcomingReminders
             subscriptions={subscriptions || []}
             primaryCurrency={primaryCurrency}

@@ -19,7 +19,6 @@ import {
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DynamicIcon } from "@/components/dynamic-icon"
-import { SmartInsights } from "@/components/smart-insights"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import {
@@ -200,14 +199,6 @@ export default function HomePage() {
           </div>
         )}
       </div>
-
-      {/* Savings Recommendations (mobile) */}
-      <SmartInsights
-        subscriptions={subscriptions || []}
-        primaryCurrency={primaryCurrency}
-        rates={rates}
-        className="lg:hidden"
-      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-7 xl:col-span-8 space-y-4">
@@ -403,13 +394,6 @@ export default function HomePage() {
 
         {/* Sidebar */}
         <div className="lg:col-span-5 xl:col-span-4 space-y-4">
-          <SmartInsights
-            subscriptions={subscriptions || []}
-            primaryCurrency={primaryCurrency}
-            rates={rates}
-            className="hidden lg:block"
-          />
-
           {/* Budget snapshot */}
           <div className="rounded-lg border border-border bg-background p-4">
             <div className="flex items-center justify-between pb-3 mb-3 border-b border-border/60">
