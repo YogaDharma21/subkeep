@@ -249,7 +249,10 @@ export default function HomePage() {
           {/* Recent Transactions */}
           <div className="rounded-lg border border-border bg-background">
             <div className="flex items-center justify-between border-b border-border p-4">
-              <h3 className="text-sm font-semibold">Recent Transactions</h3>
+              <div className="flex items-center gap-2">
+                <ArrowLeftRight className="size-4 text-muted-foreground" />
+                <h3 className="text-sm font-semibold">Recent Transactions</h3>
+              </div>
               <Link
                 href="/transactions"
                 className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
@@ -355,7 +358,7 @@ export default function HomePage() {
           <div className="rounded-lg border border-border bg-background">
             <div className="flex items-center justify-between border-b border-border p-4">
               <div className="flex items-center gap-2">
-                <Repeat className="size-4 text-violet-500" />
+                <Repeat className="size-4 text-muted-foreground" />
                 <h3 className="text-sm font-semibold">Subscriptions</h3>
               </div>
               <Link
