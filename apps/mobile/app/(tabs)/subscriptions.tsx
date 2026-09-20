@@ -26,7 +26,6 @@ import {
 } from "lucide-react-native"
 import { SubscriptionCard } from "@/components/subscription-card"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
-import { SmartInsights } from "@/components/smart-insights"
 import { currencies } from "@/constants/currencies"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
@@ -336,13 +335,6 @@ export default function SubscriptionsScreen() {
             </View>
           ) : null}
         </View>
-
-        {/* Savings Recommendations & Insights */}
-        <SmartInsights
-          subscriptions={subscriptions || []}
-          primaryCurrency={primaryCurrency}
-          rates={rates}
-        />
 
         {/* Upcoming Reminders Banner */}
         <UpcomingReminders

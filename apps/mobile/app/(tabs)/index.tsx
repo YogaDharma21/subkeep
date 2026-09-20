@@ -24,7 +24,6 @@ import {
   Sparkles,
 } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
-import { SmartInsights } from "@/components/smart-insights"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
@@ -268,12 +267,6 @@ export default function DashboardScreen() {
             </View>
           ) : null}
         </View>
-
-        <SmartInsights
-          subscriptions={subscriptions || []}
-          primaryCurrency={primaryCurrency}
-          rates={rates}
-        />
 
         {/* Quick Links */}
         <View style={{ flexDirection: "row", gap: 8 }}>
