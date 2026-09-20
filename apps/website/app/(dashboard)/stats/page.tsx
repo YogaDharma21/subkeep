@@ -25,7 +25,7 @@ export default function StatsPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {transactions ? (
+      {transactions && (
         <FinanceAnalytics
           transactions={transactions}
           months={months}
@@ -33,10 +33,6 @@ export default function StatsPage() {
           primaryCurrency={primaryCurrency}
           rates={rates}
         />
-      ) : (
-        <div className="space-y-4">
-          <Skeleton className="h-[250px] rounded-lg" />
-        </div>
       )}
 
       {subscriptions ? (
