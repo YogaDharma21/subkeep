@@ -10,7 +10,6 @@ import {
   Repeat,
   Plus,
   BarChart3,
-  Settings,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -24,7 +23,6 @@ const rightNavItems = [
   { href: "/budgets", label: "Budgets", icon: PiggyBank },
   { href: "/accounts", label: "Accounts", icon: Wallet },
   { href: "/stats", label: "Stats", icon: BarChart3 },
-  { href: "/more", label: "Settings", icon: Settings },
 ]
 
 interface BottomNavProps {

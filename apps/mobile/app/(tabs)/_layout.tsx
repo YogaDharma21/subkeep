@@ -11,8 +11,8 @@ import {
   Wallet,
   Plus,
   BarChart3,
-  Settings,
   Search,
+  Settings,
 } from "lucide-react-native"
 
 const LEFT_TABS = [
@@ -25,7 +25,6 @@ const RIGHT_TABS = [
   { name: "budgets", label: "Budgets", icon: PiggyBank },
   { name: "accounts", label: "Accounts", icon: Wallet },
   { name: "stats", label: "Stats", icon: BarChart3 },
-  { name: "settings", label: "Settings", icon: Settings },
 ] as const
 
 export default function TabLayout() {
@@ -91,6 +90,14 @@ export default function TabLayout() {
           </Text>
         </View>
         <View style={{ flex: 1 }} />
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push("/(tabs)/settings" as never)}
+          accessibilityLabel="Settings"
+          style={{ padding: 6 }}
+        >
+          <Settings size={20} color={colors.text} />
+        </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={showSearchModal}
