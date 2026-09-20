@@ -330,9 +330,12 @@ export default function DashboardScreen() {
               borderBottomColor: colors.border,
             }}
           >
-            <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
-              Recent Transactions
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <ArrowLeftRight size={14} color={colors.mutedText} />
+              <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
+                Recent Transactions
+              </Text>
+            </View>
             <TouchableOpacity onPress={() => router.push("/(tabs)/transactions" as never)}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
                 <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText }}>
@@ -600,7 +603,7 @@ export default function DashboardScreen() {
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Repeat size={14} color="#8b5cf6" />
+              <Repeat size={14} color={colors.mutedText} />
               <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
                 Subscriptions
               </Text>
