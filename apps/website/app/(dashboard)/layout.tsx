@@ -5,6 +5,7 @@ import { Show } from "@clerk/nextjs"
 import { TopNavbar } from "@/components/top-navbar"
 import { BottomNav } from "@/components/bottom-nav"
 import { AddSubscriptionSheet } from "@/components/add-subscription-sheet"
+import { AddTransactionSheet } from "@/components/add-transaction-sheet"
 import { PaymentMethodsSheet } from "@/components/payment-methods-sheet"
 import { CommandPalette } from "@/components/command-palette"
 import { LandingPage } from "@/components/landing-page"
@@ -15,6 +16,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const [addOpen, setAddOpen] = useState(false)
+  const [addTxnOpen, setAddTxnOpen] = useState(false)
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false)
   const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false)
 
@@ -33,10 +35,13 @@ export default function DashboardLayout({
           </div>
 
           {/* Floating Dock Navigation (all viewports) */}
-          <BottomNav onAddClick={() => setAddOpen(true)} />
+          <BottomNav onAddClick={() => setAddTxnOpen(true)} />
 
           {/* Add Subscription Modal/Sheet */}
           <AddSubscriptionSheet open={addOpen} onOpenChange={setAddOpen} />
+
+          {/* Add Transaction Modal/Sheet */}
+          <AddTransactionSheet open={addTxnOpen} onOpenChange={setAddTxnOpen} />
 
           {/* Card Vault / Payment Methods Sheet */}
           <PaymentMethodsSheet
@@ -49,6 +54,7 @@ export default function DashboardLayout({
             open={cmdPaletteOpen}
             onOpenChange={setCmdPaletteOpen}
             onAddSubscription={() => setAddOpen(true)}
+            onAddTransaction={() => setAddTxnOpen(true)}
             onOpenPaymentMethods={() => setPaymentMethodsOpen(true)}
           />
         </div>

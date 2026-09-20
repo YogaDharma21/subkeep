@@ -69,6 +69,30 @@ export function exportSubscriptionsToCSV(subscriptions: Array<Record<string, unk
   return [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n")
 }
 
+export interface CsvTransactionRow {
+  type: string
+  amount: number
+  currency: string
+  category: string
+  date: string
+  note?: string
+}
+
+export function exportTransactionsToCSV(transactions: Array<Record<string, unknown>>): string {
+  const headers = ["Type", "Amount", "Currency", "Category", "Date", "Note"]
+
+  const rows = transactions.map((t) => [
+    escapeCsvValue(String(t.type || "expense")),
+    escapeCsvValue(String(t.amount ?? 0)),
+    escapeCsvValue(String(t.currency || "USD")),
+    escapeCsvValue(String(t.category || "other-expense")),
+    escapeCsvValue(String(t.date || "")),
+    escapeCsvValue(String(t.note || "")),
+  ])
+
+  return [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n")
+}
+
 function escapeCsvValue(val: string): string {
   if (val.includes(",") || val.includes('"') || val.includes("\n") || val.includes("\r")) {
     return `"${val.replace(/"/g, '""')}"`

@@ -2,14 +2,24 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Calendar, Plus, BarChart3, Settings } from "lucide-react"
+import {
+  Home,
+  ArrowLeftRight,
+  Wallet,
+  PiggyBank,
+  Repeat,
+  Plus,
+  BarChart3,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/calendar", label: "Calendar", icon: Calendar },
+  { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
+  { href: "/subscriptions", label: "Subscriptions", icon: Repeat },
+  { href: "/budgets", label: "Budgets", icon: PiggyBank },
+  { href: "/accounts", label: "Accounts", icon: Wallet },
   { href: "/stats", label: "Stats", icon: BarChart3 },
-  { href: "/more", label: "Settings", icon: Settings },
 ]
 
 interface BottomNavProps {
@@ -23,11 +33,14 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
     <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-center gap-2.5 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <nav
         aria-label="Primary"
-        className="flex items-center gap-1 rounded-full border border-border bg-background/90 p-1.5 shadow-lg backdrop-blur-md"
+        className="flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border bg-background/90 p-1.5 shadow-lg backdrop-blur-md"
       >
         {navItems.map((item) => {
           const Icon = item.icon
-          const isActive = pathname === item.href
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname === item.href || pathname.startsWith(`${item.href}/`)
           return (
             <Link
               key={item.href}
@@ -36,7 +49,7 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
               aria-label={item.label}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex size-11 items-center justify-center rounded-full transition-colors",
+                "flex size-11 shrink-0 items-center justify-center rounded-full transition-colors",
                 isActive
                   ? "bg-foreground text-background"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -50,9 +63,9 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
 
       <button
         onClick={onAddClick}
-        title="Add subscription"
-        aria-label="Add subscription"
-        className="flex size-14 items-center justify-center rounded-2xl bg-foreground text-background shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+        title="Add transaction"
+        aria-label="Add transaction"
+        className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-foreground text-background shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
       >
         <Plus className="size-6" />
       </button>
