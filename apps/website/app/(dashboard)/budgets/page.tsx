@@ -162,8 +162,7 @@ export default function BudgetsPage() {
             <ChevronLeft className="size-4" />
           </Button>
           <div className="text-center">
-            <h2 className="flex items-center justify-center gap-1.5 text-sm font-bold">
-              <PiggyBank className="size-4 text-emerald-500" />
+            <h2 className="text-sm font-bold">
               {monthLabel(month)}
             </h2>
             <p className="text-[11px] text-muted-foreground">

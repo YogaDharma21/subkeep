@@ -166,12 +166,9 @@ export default function BudgetsScreen() {
               <ChevronLeft size={16} color={colors.text} />
             </TouchableOpacity>
             <View style={{ alignItems: "center" }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                <PiggyBank size={15} color={colors.emerald} />
-                <Text style={{ fontSize: 14, fontWeight: "800", color: colors.text }}>
-                  {monthLabel(month)}
-                </Text>
-              </View>
+              <Text style={{ fontSize: 14, fontWeight: "800", color: colors.text }}>
+                {monthLabel(month)}
+              </Text>
               <Text style={{ fontSize: 11, color: colors.mutedText }}>
                 {formatCurrencyAmount(totals.spent, primaryCurrency)} of{" "}
                 {formatCurrencyAmount(totals.cap, primaryCurrency)} ({totals.pct}%)
