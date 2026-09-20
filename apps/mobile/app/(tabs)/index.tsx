@@ -269,7 +269,7 @@ export default function DashboardScreen() {
         </View>
 
         {/* Quick Links */}
-        <View style={{ flexDirection: "row", gap: 8 }}>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
           {quickLinks.map((q) => {
             const Icon = q.icon
             return (
@@ -278,30 +278,31 @@ export default function DashboardScreen() {
                 activeOpacity={0.7}
                 onPress={() => router.push(q.route as never)}
                 style={{
-                  flex: 1,
+                  width: "48.5%",
+                  flexGrow: 1,
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: 6,
+                  gap: 8,
                   backgroundColor: colors.card,
                   borderWidth: 1,
                   borderColor: colors.border,
                   borderRadius: 12,
-                  padding: 10,
+                  padding: 12,
                 }}
               >
                 <View
                   style={{
-                    width: 30,
-                    height: 30,
+                    width: 32,
+                    height: 32,
                     borderRadius: 8,
                     backgroundColor: q.bg,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Icon size={15} color={q.fg} />
+                  <Icon size={16} color={q.fg} />
                 </View>
-                <Text numberOfLines={1} style={{ fontSize: 11, fontWeight: "700", color: colors.text, flex: 1 }}>
+                <Text numberOfLines={1} style={{ fontSize: 12, fontWeight: "700", color: colors.text, flex: 1 }}>
                   {q.label}
                 </Text>
               </TouchableOpacity>
