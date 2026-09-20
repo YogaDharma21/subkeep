@@ -2,5 +2,5 @@ import React from "react"
 import { Redirect } from "expo-router"
 
 export default function AddTabScreen() {
-  return <Redirect href={"/modal/add-transaction" as never} />
+  return <Redirect href={"/modal/add" as never} />
 }

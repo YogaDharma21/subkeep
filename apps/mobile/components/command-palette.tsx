@@ -37,6 +37,7 @@ import { convertAndFormat, formatCycleLabel } from "@/lib/currency"
 import { financeCategoryMeta } from "@/constants/finance"
 import { currencies } from "@/constants/currencies"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { useAlert } from "@/components/custom-alert-provider"
 
 export interface SearchModalProps {
   visible: boolean
@@ -55,6 +56,7 @@ export function SearchModal({
   const { colors } = useThemeColor()
   const { isSignedIn } = useAuth()
   const { primaryCurrency, setPrimaryCurrency, rates } = usePrimaryCurrency()
+  const { showAddTransaction } = useAlert()
   const subscriptions = useQuery(
     api.subscriptions.list,
     isSignedIn ? {} : "skip"
@@ -124,7 +126,7 @@ export function SearchModal({
           if (onAddTransaction) {
             onAddTransaction()
           } else {
-            router.push("/modal/add-transaction" as never)
+            showAddTransaction()
           }
         },
       },
@@ -240,7 +242,7 @@ export function SearchModal({
         a.detail.toLowerCase().includes(q) ||
         a.category.toLowerCase().includes(q)
     )
-  }, [query, router, onClose, onAddSubscription, onAddTransaction])
+  }, [query, router, onClose, onAddSubscription, onAddTransaction, showAddTransaction])
 
   // Currency search shortcuts
   const currencyActions = useMemo(() => {
