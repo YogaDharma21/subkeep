@@ -32,7 +32,7 @@ export default function TabLayout() {
   const router = useRouter()
   const segments = useSegments()
   const { colors } = useThemeColor()
-  const { showSearchModal } = useAlert()
+  const { showSearchModal, showAddTransaction } = useAlert()
   const insets = useSafeAreaInsets()
 
   const activeTab =
@@ -157,7 +157,7 @@ export default function TabLayout() {
           <TouchableOpacity
             activeOpacity={0.8}
             accessibilityLabel="Add transaction"
-            onPress={() => router.push("/modal/add-transaction" as never)}
+            onPress={showAddTransaction}
             style={{
               width: 40,
               height: 40,

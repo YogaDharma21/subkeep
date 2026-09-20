@@ -115,14 +115,6 @@ function InitialLayout() {
         }}
       />
       <Stack.Screen
-        name="modal/add-transaction"
-        options={{
-          presentation: "pageSheet",
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
-        }}
-      />
-      <Stack.Screen
         name="modal/settings"
         options={{
           presentation: "pageSheet",

@@ -22,6 +22,7 @@ import {
 } from "lucide-react-native"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { SearchModal } from "@/components/command-palette"
+import { AddTransactionSheet } from "@/components/add-transaction-sheet"
 
 export interface AlertButton {
   text: string
@@ -46,6 +47,7 @@ interface AlertContextType {
   showToast: (message: string, type?: "success" | "error" | "info") => void
   showAboutModal: () => void
   showSearchModal: () => void
+  showAddTransaction: () => void
 }
 
 const AlertContext = createContext<AlertContextType | null>(null)
@@ -72,6 +74,9 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
 
   // Search Modal State
   const [searchModalOpen, setSearchModalOpen] = useState(false)
+
+  // Add Transaction Sheet State
+  const [addTxnOpen, setAddTxnOpen] = useState(false)
 
   const showAlert = useCallback(
     (options: AlertOptions | string, message?: string, buttons?: AlertButton[]) => {
@@ -101,6 +106,10 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
 
   const showSearchModal = useCallback(() => {
     setSearchModalOpen(true)
+  }, [])
+
+  const showAddTransaction = useCallback(() => {
+    setAddTxnOpen(true)
   }, [])
 
   const closeAlert = () => {
@@ -138,7 +147,7 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AlertContext.Provider value={{ showAlert, showToast, showAboutModal, showSearchModal }}>
+    <AlertContext.Provider value={{ showAlert, showToast, showAboutModal, showSearchModal, showAddTransaction }}>
       {children}
 
       {/* Custom Global Toast */}
@@ -501,6 +510,12 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
       <SearchModal
         visible={searchModalOpen}
         onClose={() => setSearchModalOpen(false)}
+      />
+
+      {/* Global Add Transaction Sheet */}
+      <AddTransactionSheet
+        visible={addTxnOpen}
+        onClose={() => setAddTxnOpen(false)}
       />
     </AlertContext.Provider>
   )
