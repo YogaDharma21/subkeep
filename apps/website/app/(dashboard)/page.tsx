@@ -21,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
+import { useDocumentTitle } from "@/hooks/use-document-title"
 import {
   convertCurrency,
   formatCurrencyAmount,
@@ -33,6 +34,7 @@ import {
 import { cn } from "@/lib/utils"
 
 export default function HomePage() {
+  useDocumentTitle("Dashboard")
   const { isSignedIn } = useAuth()
   const month = currentMonthKey()
 

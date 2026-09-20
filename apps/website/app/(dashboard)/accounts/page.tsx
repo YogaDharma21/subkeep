@@ -12,6 +12,7 @@ import { AddAccountSheet } from "@/components/add-account-sheet"
 import { AddTransactionSheet } from "@/components/add-transaction-sheet"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
+import { useDocumentTitle } from "@/hooks/use-document-title"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { accountTypeMeta, currentMonthKey } from "@/lib/finance"
 import { getContrastTextColor } from "@/lib/constants"
@@ -31,6 +32,7 @@ type AccountDoc = {
 }
 
 export default function AccountsPage() {
+  useDocumentTitle("Accounts")
   const { isSignedIn } = useAuth()
   const accounts = useQuery(
     api.accounts.list,

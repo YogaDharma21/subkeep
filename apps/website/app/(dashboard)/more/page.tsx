@@ -35,10 +35,12 @@ import { SettingsSheet } from "@/components/settings-sheet"
 import { PaymentMethodsSheet } from "@/components/payment-methods-sheet"
 import { exportSubscriptionsToCSV, parseCSVToSubscriptions, exportTransactionsToCSV } from "@/lib/csv"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
+import { useDocumentTitle } from "@/hooks/use-document-title"
 import { getSymbol } from "@/lib/constants"
 import { toast } from "sonner"
 
 export default function MorePage() {
+  useDocumentTitle("Settings")
   const { isSignedIn } = useAuth()
   const { user } = useUser()
   const { signOut } = useClerk()

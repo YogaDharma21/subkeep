@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
+import { useDocumentTitle } from "@/hooks/use-document-title"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import {
   expenseCategories,
@@ -38,6 +39,7 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
 export default function BudgetsPage() {
+  useDocumentTitle("Budgets")
   const { isSignedIn } = useAuth()
   const [month, setMonth] = useState(currentMonthKey())
   const [category, setCategory] = useState("food")
