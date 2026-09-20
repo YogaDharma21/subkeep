@@ -53,12 +53,12 @@ export default function TabLayout() {
           borderRadius: 999,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: isActive ? colors.primary : "transparent",
+          backgroundColor: "transparent",
         }}
       >
         <Icon
           size={19}
-          color={isActive ? colors.primaryForeground : colors.tabIconDefault}
+          color={isActive ? colors.text : colors.tabIconDefault}
         />
       </TouchableOpacity>
     )
@@ -169,7 +169,6 @@ export default function TabLayout() {
               width: 48,
               height: 48,
               borderRadius: 16,
-              marginTop: -16,
               backgroundColor: colors.primary,
               alignItems: "center",
               justifyContent: "center",
