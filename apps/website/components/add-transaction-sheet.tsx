@@ -214,10 +214,7 @@ export function AddTransactionSheet({
                         : "border-border bg-background hover:border-foreground/40"
                     )}
                   >
-                    <span
-                      className="flex size-8 items-center justify-center rounded-lg text-white"
-                      style={{ backgroundColor: c.color }}
-                    >
+                    <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-foreground">
                       <DynamicIcon name={c.icon} className="size-4" />
                     </span>
                     <span className="text-[10px] font-medium leading-tight text-center">

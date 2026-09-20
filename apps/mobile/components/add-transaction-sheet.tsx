@@ -277,12 +277,12 @@ export function AddTransactionSheet({
                           width: 32,
                           height: 32,
                           borderRadius: 10,
-                          backgroundColor: c.color,
+                          backgroundColor: category === c.value ? colors.background : colors.surfaceHover,
                           alignItems: "center",
                           justifyContent: "center",
                         }}
                       >
-                        <DynamicIcon name={c.icon} size={15} color="#ffffff" />
+                        <DynamicIcon name={c.icon} size={15} color={colors.text} />
                       </View>
                       <Text
                         numberOfLines={2}

@@ -122,10 +122,10 @@ export default function DashboardScreen() {
   const monthShort = monthLabel(month).split(" ")[0]
 
   const quickLinks = [
-    { label: "Transactions", icon: ArrowLeftRight, bg: colors.primary, fg: colors.primaryForeground, route: "/(tabs)/transactions" },
-    { label: "Accounts", icon: Wallet, bg: colors.blue, fg: "#ffffff", route: "/(tabs)/accounts" },
-    { label: "Budgets", icon: PiggyBank, bg: colors.emerald, fg: "#ffffff", route: "/(tabs)/budgets" },
-    { label: activeSubCount > 0 ? `Subs (${activeSubCount})` : "Subs", icon: Repeat, bg: "#8b5cf6", fg: "#ffffff", route: "/(tabs)/subscriptions" },
+    { label: "Transactions", icon: ArrowLeftRight, route: "/(tabs)/transactions" },
+    { label: "Accounts", icon: Wallet, route: "/(tabs)/accounts" },
+    { label: "Budgets", icon: PiggyBank, route: "/(tabs)/budgets" },
+    { label: activeSubCount > 0 ? `Subs (${activeSubCount})` : "Subs", icon: Repeat, route: "/(tabs)/subscriptions" },
   ]
 
   return (
@@ -295,12 +295,12 @@ export default function DashboardScreen() {
                     width: 32,
                     height: 32,
                     borderRadius: 8,
-                    backgroundColor: q.bg,
+                    backgroundColor: colors.surface,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Icon size={16} color={q.fg} />
+                  <Icon size={16} color={colors.text} />
                 </View>
                 <Text numberOfLines={1} style={{ fontSize: 12, fontWeight: "700", color: colors.text, flex: 1 }}>
                   {q.label}
@@ -375,12 +375,12 @@ export default function DashboardScreen() {
                       width: 36,
                       height: 36,
                       borderRadius: 10,
-                      backgroundColor: t.color || meta.color,
+                      backgroundColor: colors.surface,
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <DynamicIcon name={t.icon || meta.icon} size={16} color="#ffffff" />
+                    <DynamicIcon name={t.icon || meta.icon} size={16} color={colors.text} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text numberOfLines={1} style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
@@ -450,12 +450,12 @@ export default function DashboardScreen() {
                       width: 30,
                       height: 30,
                       borderRadius: 8,
-                      backgroundColor: cat.color,
+                      backgroundColor: colors.surface,
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <DynamicIcon name={cat.icon} size={15} color="#ffffff" />
+                    <DynamicIcon name={cat.icon} size={15} color={colors.text} />
                   </View>
                   <View style={{ flex: 1, gap: 4 }}>
                     <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
