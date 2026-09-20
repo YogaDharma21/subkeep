@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
+  Modal,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useMutation, useQuery } from "convex/react"
@@ -399,18 +400,17 @@ export default function AccountsScreen() {
       </ScrollView>
 
       {/* Add/Edit sheet */}
-      {sheetOpen ? (
+      <Modal
+        visible={sheetOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSheetOpen(false)}
+      >
         <View
           style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            top: 0,
+            flex: 1,
             backgroundColor: "rgba(0,0,0,0.6)",
             justifyContent: "flex-end",
-            zIndex: 50,
-            elevation: 50,
           }}
         >
           <TouchableOpacity activeOpacity={1} onPress={() => setSheetOpen(false)} style={{ flex: 1 }} />
@@ -591,7 +591,7 @@ export default function AccountsScreen() {
             </ScrollView>
           </View>
         </View>
-      ) : null}
+      </Modal>
     </SafeAreaView>
   )
 }
