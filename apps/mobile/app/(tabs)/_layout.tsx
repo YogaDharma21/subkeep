@@ -1,6 +1,8 @@
 import { Tabs, useRouter, useSegments } from "expo-router"
 import { View, Text, TouchableOpacity, Image } from "react-native"
+import { Image as ExpoImage } from "expo-image"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { useUser } from "@clerk/clerk-expo"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/components/custom-alert-provider"
 import {
@@ -32,7 +34,12 @@ export default function TabLayout() {
   const segments = useSegments()
   const { colors } = useThemeColor()
   const { showSearchModal, showAddTransaction } = useAlert()
+  const { user } = useUser()
   const insets = useSafeAreaInsets()
+
+  const avatarLabel =
+    user?.fullName || user?.primaryEmailAddress?.emailAddress || "Profile"
+  const avatarInitial = (avatarLabel || "U").charAt(0).toUpperCase()
 
   const activeTab =
     segments.length >= 2 ? String(segments[1]) : "index"
@@ -104,6 +111,41 @@ export default function TabLayout() {
           style={{ padding: 6 }}
         >
           <Search size={20} color={colors.text} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push("/modal/profile" as never)}
+          accessibilityLabel={avatarLabel}
+          style={{ marginLeft: 2, padding: 2 }}
+        >
+          {user?.imageUrl ? (
+            <ExpoImage
+              source={{ uri: user.imageUrl }}
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 15,
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}
+              contentFit="cover"
+            />
+          ) : (
+            <View
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 15,
+                backgroundColor: colors.primary,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text style={{ fontSize: 14, fontWeight: "800", color: colors.primaryForeground }}>
+                {avatarInitial}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
