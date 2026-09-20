@@ -403,7 +403,7 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
               }}
             >
               <Text style={{ fontSize: 11, fontWeight: "700", color: colors.primary }}>
-                v0.0.1
+                v0.1.0
               </Text>
             </View>
 
@@ -416,7 +416,7 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
                 marginBottom: 16,
               }}
             >
-              Sleek & modern multi-currency subscription tracker with intelligent budget insights and SplitKeep tracking.
+              Sleek personal finance tracker with budgets, accounts, and a subscription tracker built in.
             </Text>
 
             {/* Feature Badges */}
@@ -433,7 +433,7 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
               >
                 <Layers size={16} color={colors.primary} />
                 <Text style={{ fontSize: 12, fontWeight: "600", color: colors.text }}>
-                  Real-Time Multi-Currency Engine
+                  Expenses, Budgets & Net Worth Tracking
                 </Text>
               </View>
               <View
