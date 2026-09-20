@@ -166,15 +166,18 @@ export default function TabLayout() {
             accessibilityLabel="Add transaction"
             onPress={showAddTransaction}
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: 999,
-              backgroundColor: colors.primary,
+              width: 48,
+              height: 48,
+              borderRadius: 16,
+              marginTop: -18,
+              backgroundColor: colors.emerald,
               alignItems: "center",
               justifyContent: "center",
+              borderWidth: 4,
+              borderColor: colors.card,
             }}
           >
-            <Plus size={20} color={colors.primaryForeground} strokeWidth={2.5} />
+            <Plus size={22} color="#ffffff" strokeWidth={2.5} />
           </TouchableOpacity>
 
           {RIGHT_TABS.map(renderTab)}
