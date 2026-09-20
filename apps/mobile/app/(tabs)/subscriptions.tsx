@@ -177,7 +177,7 @@ export default function SubscriptionsScreen() {
           paddingHorizontal: 16,
           paddingVertical: 14,
           gap: 16,
-          paddingBottom: 90,
+          paddingBottom: 110,
         }}
       >
         {/* Dynamic Summary Banner */}
@@ -485,6 +485,25 @@ export default function SubscriptionsScreen() {
               {sortLabels[sortBy]}
             </Text>
           </TouchableOpacity>
+
+          {/* Add button */}
+          <TouchableOpacity
+            onPress={() => router.push("/modal/add" as never)}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 4,
+              backgroundColor: colors.primary,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: 8,
+            }}
+          >
+            <Plus size={13} color={colors.primaryForeground} strokeWidth={2.5} />
+            <Text style={{ fontSize: 11, fontWeight: "700", color: colors.primaryForeground }}>
+              Add
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Subscriptions List */}
@@ -523,30 +542,6 @@ export default function SubscriptionsScreen() {
           </View>
         )}
       </ScrollView>
-
-      {/* Floating Action Button for Add Subscription */}
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => router.push("/modal/add" as never)}
-        style={{
-          position: "absolute",
-          bottom: 20,
-          right: 20,
-          width: 54,
-          height: 54,
-          borderRadius: 27,
-          backgroundColor: colors.primary,
-          alignItems: "center",
-          justifyContent: "center",
-          elevation: 5,
-          shadowColor: "#000000",
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 6,
-        }}
-      >
-        <Plus size={24} color={colors.primaryForeground} />
-      </TouchableOpacity>
 
       {/* Currency Modal */}
       {currencyModalOpen && (

@@ -9,6 +9,8 @@ import { AddTransactionSheet } from "@/components/add-transaction-sheet"
 import { PaymentMethodsSheet } from "@/components/payment-methods-sheet"
 import { CommandPalette } from "@/components/command-palette"
 import { LandingPage } from "@/components/landing-page"
+import { useEffect } from "react"
+import { OPEN_ADD_SUBSCRIPTION_EVENT } from "@/lib/add-subscription-event"
 
 export default function DashboardLayout({
   children,
@@ -19,6 +21,12 @@ export default function DashboardLayout({
   const [addTxnOpen, setAddTxnOpen] = useState(false)
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false)
   const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false)
+
+  useEffect(() => {
+    const openAdd = () => setAddOpen(true)
+    window.addEventListener(OPEN_ADD_SUBSCRIPTION_EVENT, openAdd)
+    return () => window.removeEventListener(OPEN_ADD_SUBSCRIPTION_EVENT, openAdd)
+  }, [])
 
   return (
     <>
