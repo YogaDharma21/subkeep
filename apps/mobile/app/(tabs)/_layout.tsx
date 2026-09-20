@@ -41,12 +41,13 @@ export default function TabLayout() {
   const renderTab = (item: { name: string; label: string; icon: typeof Home }) => {
     const Icon = item.icon
     const isActive = activeTab === item.name
+    const href = item.name === "index" ? "/(tabs)" : `/(tabs)/${item.name}`
     return (
       <TouchableOpacity
         key={item.name}
         activeOpacity={0.7}
         accessibilityLabel={item.label}
-        onPress={() => router.push(`/(tabs)/${item.name}` as never)}
+        onPress={() => router.push(href as never)}
         style={{
           width: 40,
           height: 40,
