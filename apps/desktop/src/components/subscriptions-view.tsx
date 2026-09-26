@@ -20,15 +20,15 @@ import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { categories } from "@/lib/constants"
 
-interface DashboardViewProps {
+interface SubscriptionsViewProps {
   onSelectSubscription: (id: string) => void
   onAddSubscription: () => void
 }
 
-export function DashboardView({
+export function SubscriptionsView({
   onSelectSubscription,
   onAddSubscription,
-}: DashboardViewProps) {
+}: SubscriptionsViewProps) {
   const { isSignedIn } = useAuth()
   const { primaryCurrency, rates } = usePrimaryCurrency()
   const [searchQuery, setSearchQuery] = useState("")

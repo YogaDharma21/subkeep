@@ -31,7 +31,7 @@ import {
 import { useTheme } from "@/components/theme-provider"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { currencies, getSymbol } from "@/lib/constants"
-import { exportSubscriptionsToCSV, parseCSVToSubscriptions } from "@/lib/csv"
+import { exportSubscriptionsToCSV, parseCSVToSubscriptions, exportTransactionsToCSV } from "@/lib/csv"
 import { sendDesktopNotification, requestWebPushPermission } from "@/lib/notifications"
 import { toast } from "sonner"
 
@@ -50,8 +50,12 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
   const updateSettings = useMutation(api.userSettings.update)
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const payments = useQuery(api.payments.list, isSignedIn ? {} : "skip")
+  const accounts = useQuery(api.accounts.list, isSignedIn ? { includeArchived: true } : "skip")
+  const transactions = useQuery(api.transactions.list, isSignedIn ? {} : "skip")
+  const budgets = useQuery(api.budgets.list, isSignedIn ? {} : "skip")
 
   const removeAll = useMutation(api.subscriptions.removeAll)
+  const removeAllFinance = useMutation(api.transactions.removeAll)
   const restoreSubscriptions = useMutation(api.subscriptions.restoreAll)
   const restorePayments = useMutation(api.payments.restoreAll)
 
@@ -183,7 +187,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
   const handleBackup = async () => {
     if (!subscriptions) return
     const data = {
-      version: 1,
+      version: 2,
       exportDate: new Date().toISOString(),
       subscriptions: subscriptions.map((s: {
         name: string
@@ -237,9 +241,66 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
         category: p.category,
         date: p.date,
       })),
+      accounts: (accounts || []).map((a: {
+        name: string
+        type: string
+        balance: number
+        currency: string
+        icon: string
+        color: string
+        last4?: string
+      }) => ({
+        name: a.name,
+        type: a.type,
+        balance: a.balance,
+        currency: a.currency,
+        icon: a.icon,
+        color: a.color,
+        last4: a.last4,
+      })),
+      transactions: (transactions || []).map((t: {
+        type: string
+        amount: number
+        currency: string
+        category: string
+        date: string
+        note?: string
+        icon?: string
+        color?: string
+      }) => ({
+        type: t.type,
+        amount: t.amount,
+        currency: t.currency,
+        category: t.category,
+        date: t.date,
+        note: t.note,
+        icon: t.icon,
+        color: t.color,
+      })),
+      budgets: (budgets || []).map((b: {
+        category: string
+        amount: number
+        currency: string
+        month: string
+      }) => ({
+        category: b.category,
+        amount: b.amount,
+        currency: b.currency,
+        month: b.month,
+      })),
     }
     const date = new Date().toISOString().split("T")[0]
     await saveFileNativeOrWeb(JSON.stringify(data, null, 2), `subkeep-backup-${date}.json`, "application/json", "json")
+  }
+
+  const handleExportTransactionsCSV = async () => {
+    if (!transactions || transactions.length === 0) {
+      toast.error("No transactions available to export")
+      return
+    }
+    const csvContent = exportTransactionsToCSV(transactions)
+    const date = new Date().toISOString().split("T")[0]
+    await saveFileNativeOrWeb(csvContent, `subkeep-transactions-${date}.csv`, "text/csv;charset=utf-8;", "csv")
   }
 
   const handleOpenJsonFile = async () => {
@@ -349,9 +410,10 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
   const handleDeleteAll = async () => {
     try {
+      await removeAllFinance()
       await removeAll()
       setDeleteConfirm(false)
-      toast.success("All subscription data deleted")
+      toast.success("All finance data deleted")
     } catch {
       toast.error("Failed to delete data")
     }
@@ -589,12 +651,25 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
         <div className="rounded-xl border border-border bg-background p-5 shadow-2xs space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
+              onClick={handleExportTransactionsCSV}
+              className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
+            >
+              <FileSpreadsheet className="size-5 text-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">Export Transactions CSV</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Download expenses & income for Excel and Google Sheets
+                </p>
+              </div>
+            </button>
+
+            <button
               onClick={handleExportCSV}
               className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
             >
               <FileSpreadsheet className="size-5 text-foreground shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-foreground">Export as CSV</p>
+                <p className="text-sm font-semibold text-foreground">Export Subscriptions CSV</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Download spreadsheet formatted for Excel and Google Sheets
                 </p>
@@ -635,7 +710,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
               <div>
                 <p className="text-sm font-semibold text-foreground">Full JSON Backup</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Export complete database including payment history
+                  Export everything: subs, transactions, accounts, budgets
                 </p>
               </div>
             </button>
