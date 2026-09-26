@@ -8,7 +8,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { useQuery, useMutation } from "convex/react"
-import { useAuth } from "@clerk/clerk-expo"
+import { useAuth } from "@clerk/expo"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
 import {
@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button"
 import { convertAndFormat, convertCurrency } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
-import { useAlert } from "@/components/custom-alert-provider"
+import { useAlert } from "@/hooks/use-alert"
 
 const CARD_TYPES = [
   { value: "visa", label: "Visa" },

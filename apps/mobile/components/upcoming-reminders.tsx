@@ -6,7 +6,7 @@ import { convertAndFormat } from "@/lib/currency"
 import { getContrastTextColor } from "@/constants/categories"
 import { findUpcomingReminders, ReminderItem } from "@/lib/notifications"
 import { useThemeColor } from "@/hooks/use-theme-color"
-import { useAlert } from "@/components/custom-alert-provider"
+import { useAlert } from "@/hooks/use-alert"
 
 interface UpcomingRemindersProps {
   subscriptions: {

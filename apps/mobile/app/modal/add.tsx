@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { useMutation, useQuery } from "convex/react"
-import { useAuth } from "@clerk/clerk-expo"
+import { useAuth } from "@clerk/expo"
 import { api } from "@/convex/_generated/api"
 import {
   ArrowLeft,
@@ -30,7 +30,7 @@ import { SubscriptionTemplate } from "@/constants/default-templates"
 import { categories, billingCycles, colorPresets, getContrastTextColor } from "@/constants/categories"
 import { currencies } from "@/constants/currencies"
 import { useThemeColor } from "@/hooks/use-theme-color"
-import { useAlert } from "@/components/custom-alert-provider"
+import { useAlert } from "@/hooks/use-alert"
 
 export default function AddSubscriptionModal() {
   const router = useRouter()

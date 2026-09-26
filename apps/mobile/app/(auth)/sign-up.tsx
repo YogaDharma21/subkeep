@@ -10,7 +10,7 @@ import {
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
-import { useSignUp } from "@clerk/clerk-expo"
+import { useSignUp } from "@clerk/expo/legacy"
 import { Lock, Mail, ArrowRight, CheckCircle } from "lucide-react-native"
 import { GoogleOAuthButton } from "@/components/google-oauth-button"
 import { Input } from "@/components/ui/input"

@@ -2,10 +2,10 @@ import React from "react"
 import { View, Text, TouchableOpacity, Modal } from "react-native"
 import { Image as ExpoImage } from "expo-image"
 import { useRouter } from "expo-router"
-import { useUser, useAuth } from "@clerk/clerk-expo"
+import { useUser, useAuth } from "@clerk/expo"
 import { Settings, LogOut } from "lucide-react-native"
 import { useThemeColor } from "@/hooks/use-theme-color"
-import { useAlert } from "@/components/custom-alert-provider"
+import { useAlert } from "@/hooks/use-alert"
 import { isClerkDevMode } from "@/lib/clerk-portal"
 
 interface ClerkUserMenuProps {

@@ -9,7 +9,7 @@ import {
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useMutation, useQuery } from "convex/react"
-import { useAuth } from "@clerk/clerk-expo"
+import { useAuth } from "@clerk/expo"
 import { api } from "@/convex/_generated/api"
 import {
   ChevronLeft,
@@ -20,7 +20,7 @@ import {
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
-import { useAlert } from "@/components/custom-alert-provider"
+import { useAlert } from "@/hooks/use-alert"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import {
   expenseCategories,

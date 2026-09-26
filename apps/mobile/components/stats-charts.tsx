@@ -9,7 +9,7 @@ import { categoryColors } from "@/constants/categories"
 import { currencies } from "@/constants/currencies"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
-import { useAlert } from "@/components/custom-alert-provider"
+import { useAlert } from "@/hooks/use-alert"
 
 interface StatsChartsProps {
   subscriptions: {

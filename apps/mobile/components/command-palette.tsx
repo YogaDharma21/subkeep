@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { useQuery } from "convex/react"
-import { useAuth } from "@clerk/clerk-expo"
+import { useAuth } from "@clerk/expo"
 import { api } from "@/convex/_generated/api"
 import {
   Search,
@@ -37,7 +37,7 @@ import { convertAndFormat, formatCycleLabel } from "@/lib/currency"
 import { financeCategoryMeta } from "@/constants/finance"
 import { currencies } from "@/constants/currencies"
 import { useThemeColor } from "@/hooks/use-theme-color"
-import { useAlert } from "@/components/custom-alert-provider"
+import { useAlert } from "@/hooks/use-alert"
 
 export interface SearchModalProps {
   visible: boolean
