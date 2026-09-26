@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Search } from "lucide-react"
+import { Search, Settings } from "lucide-react"
 import { UserButton } from "@clerk/nextjs"
 
 function getIsMacSnapshot(): boolean {
@@ -68,6 +68,15 @@ export function TopNavbar({ onSearchClick }: TopNavbarProps) {
           >
             <Search className="size-4" />
           </button>
+
+          <Link
+            href="/more"
+            title="Settings"
+            aria-label="Settings"
+            className="flex size-9 items-center justify-center rounded-lg border border-border bg-muted/50 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Settings className="size-4" />
+          </Link>
 
           <UserButton />
         </div>

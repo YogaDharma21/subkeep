@@ -16,8 +16,11 @@ const fontMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "SubKeep",
-  description: "Track your subscriptions and never miss a payment.",
+  title: {
+    default: "SubKeep",
+    template: "%s - SubKeep",
+  },
+  description: "Track expenses, budgets, accounts, and subscriptions in one place.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

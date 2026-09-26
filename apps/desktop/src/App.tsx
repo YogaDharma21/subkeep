@@ -4,18 +4,27 @@ import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { DesktopTitlebar } from "@/components/desktop-titlebar"
 import { DesktopSidebar, DesktopView } from "@/components/desktop-sidebar"
-import { DashboardView } from "@/components/dashboard-view"
+import { FinanceDashboardView } from "@/components/finance-dashboard-view"
+import { SubscriptionsView } from "@/components/subscriptions-view"
+import { TransactionsView } from "@/components/transactions-view"
+import { AccountsView } from "@/components/accounts-view"
+import { BudgetsView } from "@/components/budgets-view"
 import { CalendarGrid } from "@/components/calendar-grid"
+import { TransactionCalendar } from "@/components/transaction-calendar"
 import { StatsCharts } from "@/components/stats-charts"
+import { FinanceAnalytics } from "@/components/finance-analytics"
 import { SettingsView } from "@/components/settings-view"
 import { SubscriptionDetailView } from "@/components/subscription-detail-view"
 import { AddSubscriptionSheet } from "@/components/add-subscription-sheet"
+import { AddTransactionSheet } from "@/components/add-transaction-sheet"
 import { PaymentMethodsSheet } from "@/components/payment-methods-sheet"
 import { CommandPalette } from "@/components/command-palette"
 import { LandingPage } from "@/components/landing-page"
 import { DesktopCallbackPage } from "@/components/desktop-callback-page"
 import { Toaster } from "@/components/ui/sonner"
 import { useTheme } from "@/components/theme-provider"
+import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
+import { currentMonthKey, lastMonths } from "@/lib/finance"
 
 export function App() {
   const { isSignedIn, isLoaded } = useAuth()
@@ -36,6 +45,7 @@ export function App() {
   const [currentView, setCurrentView] = useState<DesktopView>("dashboard")
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null)
   const [addSheetOpen, setAddSheetOpen] = useState(false)
+  const [addTxnOpen, setAddTxnOpen] = useState(false)
   const [paymentSheetOpen, setPaymentSheetOpen] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 
@@ -47,6 +57,9 @@ export function App() {
     api.payments.list,
     isSignedIn ? {} : "skip"
   )
+  const transactions = useQuery(api.transactions.list, isSignedIn ? {} : "skip")
+
+  const { primaryCurrency, rates } = usePrimaryCurrency()
 
   const activeSubsCount = subscriptions?.filter((s) => s.isActive !== false).length || 0
 
@@ -125,30 +138,42 @@ export function App() {
           currentView={currentView}
           onNavigate={(v) => handleNavigate(v)}
           onAddSubscription={() => setAddSheetOpen(true)}
+          onAddTransaction={() => setAddTxnOpen(true)}
           onSearchClick={() => setCommandPaletteOpen(true)}
           activeSubCount={activeSubsCount}
         />
 
         <main className="flex-1 min-w-0 overflow-y-auto p-4 sm:p-6 bg-background">
           {currentView === "dashboard" && (
-            <DashboardView
+            <FinanceDashboardView onNavigate={(v) => handleNavigate(v)} />
+          )}
+
+          {currentView === "subscriptions" && (
+            <SubscriptionsView
               onSelectSubscription={handleSelectSubscription}
               onAddSubscription={() => setAddSheetOpen(true)}
             />
           )}
 
+          {currentView === "transactions" && <TransactionsView />}
+
+          {currentView === "accounts" && <AccountsView />}
+
+          {currentView === "budgets" && <BudgetsView />}
+
           {currentView === "calendar" && (
             <div className="space-y-4 max-w-5xl mx-auto pb-12">
               <div>
-                <h1 className="text-xl font-extrabold text-foreground">Billing Calendar</h1>
+                <h1 className="text-xl font-extrabold text-foreground">Calendar</h1>
                 <p className="text-xs text-muted-foreground mt-1">
-                  View scheduled renewal dates, free trial deadlines, and subscription start milestones.
+                  Scheduled renewals, trial deadlines, and daily cash flow.
                 </p>
               </div>
               <CalendarGrid
                 subscriptions={subscriptions || []}
                 onSelectSubscription={handleSelectSubscription}
               />
+              <TransactionCalendar transactions={transactions || []} onViewAll={() => handleNavigate("transactions")} />
             </div>
           )}
 
@@ -157,9 +182,16 @@ export function App() {
               <div>
                 <h1 className="text-xl font-extrabold text-foreground">Spending Analytics</h1>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Analyze your recurring spending trends, category breakdown, and payment history.
+                  Income vs expenses, category breakdown, and subscription trends.
                 </p>
               </div>
+              <FinanceAnalytics
+                transactions={transactions || []}
+                months={lastMonths(6)}
+                currentMonth={currentMonthKey()}
+                primaryCurrency={primaryCurrency}
+                rates={rates}
+              />
               <StatsCharts
                 subscriptions={subscriptions || []}
                 payments={payments || []}
@@ -176,7 +208,7 @@ export function App() {
           {currentView === "detail" && selectedSubId && (
             <SubscriptionDetailView
               subscriptionId={selectedSubId}
-              onBack={() => setCurrentView("dashboard")}
+              onBack={() => setCurrentView("subscriptions")}
               onSelectSubscription={handleSelectSubscription}
             />
           )}
@@ -187,6 +219,12 @@ export function App() {
       <AddSubscriptionSheet
         open={addSheetOpen}
         onOpenChange={setAddSheetOpen}
+      />
+
+      {/* Global Add Transaction Sheet */}
+      <AddTransactionSheet
+        open={addTxnOpen}
+        onOpenChange={setAddTxnOpen}
       />
 
       {/* Global Payment Methods / Card Vault Sheet */}
@@ -201,6 +239,7 @@ export function App() {
         onOpenChange={setCommandPaletteOpen}
         onNavigate={handleNavigate}
         onAddSubscription={() => setAddSheetOpen(true)}
+        onAddTransaction={() => setAddTxnOpen(true)}
         onOpenPaymentMethods={() => setPaymentSheetOpen(true)}
       />
 
