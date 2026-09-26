@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { useQuery, useMutation } from "convex/react"
-import { useAuth } from "@clerk/clerk-expo"
+import { useAuth } from "@clerk/expo"
 import { api } from "@/convex/_generated/api"
 import { fetchExchangeRates, fallbackRates } from "@/lib/currency"
 import AsyncStorage from "@react-native-async-storage/async-storage"

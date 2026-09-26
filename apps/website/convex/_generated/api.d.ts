@@ -8,10 +8,13 @@
  * @module
  */
 
+import type * as accounts from "../accounts.js";
+import type * as budgets from "../budgets.js";
 import type * as paymentMethods from "../paymentMethods.js";
 import type * as payments from "../payments.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as templates from "../templates.js";
+import type * as transactions from "../transactions.js";
 import type * as userSettings from "../userSettings.js";
 
 import type {
@@ -21,10 +24,13 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  accounts: typeof accounts;
+  budgets: typeof budgets;
   paymentMethods: typeof paymentMethods;
   payments: typeof payments;
   subscriptions: typeof subscriptions;
   templates: typeof templates;
+  transactions: typeof transactions;
   userSettings: typeof userSettings;
 }>;
 

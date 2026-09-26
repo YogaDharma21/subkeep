@@ -1,10 +1,10 @@
 import React, { useState, useCallback } from "react"
 import { TouchableOpacity, Text, ActivityIndicator } from "react-native"
-import { useOAuth } from "@clerk/clerk-expo"
+import { useOAuth } from "@clerk/expo"
 import * as WebBrowser from "expo-web-browser"
 import * as Linking from "expo-linking"
 import Svg, { Path } from "react-native-svg"
-import { useAlert } from "@/components/custom-alert-provider"
+import { useAlert } from "@/hooks/use-alert"
 
 WebBrowser.maybeCompleteAuthSession()
 

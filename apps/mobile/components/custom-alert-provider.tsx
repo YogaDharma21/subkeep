@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from "react"
+import React, { useState, useCallback, ReactNode } from "react"
 import {
   Modal,
   View,
@@ -21,42 +21,11 @@ import {
   Sparkles,
 } from "lucide-react-native"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { GlobalUiContext, AlertButton, AlertOptions } from "@/hooks/use-alert"
 import { SearchModal } from "@/components/command-palette"
+import { AddTransactionSheet } from "@/components/add-transaction-sheet"
 
-export interface AlertButton {
-  text: string
-  style?: "default" | "cancel" | "destructive"
-  onPress?: () => void
-}
-
-export interface AlertOptions {
-  title: string
-  message?: string
-  buttons?: AlertButton[]
-  icon?: "info" | "warning" | "error" | "success"
-}
-
-export interface ToastOptions {
-  message: string
-  type?: "success" | "error" | "info"
-}
-
-interface AlertContextType {
-  showAlert: (options: AlertOptions | string, message?: string, buttons?: AlertButton[]) => void
-  showToast: (message: string, type?: "success" | "error" | "info") => void
-  showAboutModal: () => void
-  showSearchModal: () => void
-}
-
-const AlertContext = createContext<AlertContextType | null>(null)
-
-export function useAlert() {
-  const context = useContext(AlertContext)
-  if (!context) {
-    throw new Error("useAlert must be used within a CustomAlertProvider")
-  }
-  return context
-}
+export type { AlertButton, AlertOptions }
 
 export function CustomAlertProvider({ children }: { children: ReactNode }) {
   const { colors } = useThemeColor()
@@ -72,6 +41,9 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
 
   // Search Modal State
   const [searchModalOpen, setSearchModalOpen] = useState(false)
+
+  // Add Transaction Sheet State
+  const [addTxnOpen, setAddTxnOpen] = useState(false)
 
   const showAlert = useCallback(
     (options: AlertOptions | string, message?: string, buttons?: AlertButton[]) => {
@@ -101,6 +73,10 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
 
   const showSearchModal = useCallback(() => {
     setSearchModalOpen(true)
+  }, [])
+
+  const showAddTransaction = useCallback(() => {
+    setAddTxnOpen(true)
   }, [])
 
   const closeAlert = () => {
@@ -138,7 +114,7 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AlertContext.Provider value={{ showAlert, showToast, showAboutModal, showSearchModal }}>
+    <GlobalUiContext.Provider value={{ showAlert, showToast, showAboutModal, showSearchModal, showAddTransaction }}>
       {children}
 
       {/* Custom Global Toast */}
@@ -403,7 +379,7 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
               }}
             >
               <Text style={{ fontSize: 11, fontWeight: "700", color: colors.primary }}>
-                v0.0.1
+                v0.1.0
               </Text>
             </View>
 
@@ -416,7 +392,7 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
                 marginBottom: 16,
               }}
             >
-              Sleek & modern multi-currency subscription tracker with intelligent budget insights and SplitKeep tracking.
+              Sleek personal finance tracker with budgets, accounts, and a subscription tracker built in.
             </Text>
 
             {/* Feature Badges */}
@@ -433,7 +409,7 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
               >
                 <Layers size={16} color={colors.primary} />
                 <Text style={{ fontSize: 12, fontWeight: "600", color: colors.text }}>
-                  Real-Time Multi-Currency Engine
+                  Expenses, Budgets & Net Worth Tracking
                 </Text>
               </View>
               <View
@@ -502,6 +478,12 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
         visible={searchModalOpen}
         onClose={() => setSearchModalOpen(false)}
       />
-    </AlertContext.Provider>
+
+      {/* Global Add Transaction Sheet */}
+      <AddTransactionSheet
+        visible={addTxnOpen}
+        onClose={() => setAddTxnOpen(false)}
+      />
+    </GlobalUiContext.Provider>
   )
 }

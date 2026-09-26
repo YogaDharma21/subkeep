@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth, useUser, useClerk } from "@clerk/nextjs"
 import { useTheme } from "next-themes"
@@ -18,6 +19,10 @@ import {
   ExternalLink,
   CreditCard,
   LogOut,
+  ArrowLeftRight,
+  Wallet,
+  PiggyBank,
+  Repeat,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -28,12 +33,14 @@ import {
 } from "@/components/ui/dialog"
 import { SettingsSheet } from "@/components/settings-sheet"
 import { PaymentMethodsSheet } from "@/components/payment-methods-sheet"
-import { exportSubscriptionsToCSV, parseCSVToSubscriptions } from "@/lib/csv"
+import { exportSubscriptionsToCSV, parseCSVToSubscriptions, exportTransactionsToCSV } from "@/lib/csv"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
+import { useDocumentTitle } from "@/hooks/use-document-title"
 import { getSymbol } from "@/lib/constants"
 import { toast } from "sonner"
 
 export default function MorePage() {
+  useDocumentTitle("Settings")
   const { isSignedIn } = useAuth()
   const { user } = useUser()
   const { signOut } = useClerk()
@@ -55,17 +62,22 @@ export default function MorePage() {
   const csvFileInputRef = useRef<HTMLInputElement>(null)
 
   const removeAll = useMutation(api.subscriptions.removeAll)
+  const removeAllFinance = useMutation(api.transactions.removeAll)
   const restoreSubscriptions = useMutation(api.subscriptions.restoreAll)
   const restorePayments = useMutation(api.payments.restoreAll)
 
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const payments = useQuery(api.payments.list, isSignedIn ? {} : "skip")
+  const accounts = useQuery(api.accounts.list, isSignedIn ? { includeArchived: true } : "skip")
+  const transactions = useQuery(api.transactions.list, isSignedIn ? {} : "skip")
+  const budgets = useQuery(api.budgets.list, isSignedIn ? {} : "skip")
 
   const handleDeleteAll = async () => {
     try {
+      await removeAllFinance()
       await removeAll()
       setDeleteConfirm(false)
-      toast.success("All subscription data deleted")
+      toast.success("All finance data deleted")
     } catch {
       toast.error("Failed to delete data")
     }
@@ -123,7 +135,7 @@ export default function MorePage() {
   const handleBackup = () => {
     if (!subscriptions || !payments) return
     const data = {
-      version: 1,
+      version: 2,
       exportDate: new Date().toISOString(),
       subscriptions: subscriptions.map((s) => ({
         name: s.name,
@@ -152,10 +164,46 @@ export default function MorePage() {
         category: p.category,
         date: p.date,
       })),
+      accounts: (accounts || []).map((a) => ({
+        name: a.name,
+        type: a.type,
+        balance: a.balance,
+        currency: a.currency,
+        icon: a.icon,
+        color: a.color,
+        last4: a.last4,
+      })),
+      transactions: (transactions || []).map((t) => ({
+        type: t.type,
+        amount: t.amount,
+        currency: t.currency,
+        category: t.category,
+        date: t.date,
+        note: t.note,
+        icon: t.icon,
+        color: t.color,
+      })),
+      budgets: (budgets || []).map((b) => ({
+        category: b.category,
+        amount: b.amount,
+        currency: b.currency,
+        month: b.month,
+      })),
     }
     const date = new Date().toISOString().split("T")[0]
     downloadFile(JSON.stringify(data, null, 2), `subkeep-backup-${date}.json`, "application/json")
     toast.success("Full system backup exported")
+  }
+
+  const handleExportTransactionsCSV = () => {
+    if (!transactions || transactions.length === 0) {
+      toast.error("No transactions available to export")
+      return
+    }
+    const rows = exportTransactionsToCSV(transactions)
+    const date = new Date().toISOString().split("T")[0]
+    downloadFile(rows, `subkeep-transactions-${date}.csv`, "text/csv;charset=utf-8;")
+    toast.success("Exported transactions to CSV")
   }
 
   const handleJsonFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -249,6 +297,78 @@ export default function MorePage() {
         </div>
       )}
 
+      {/* Category: MONEY */}
+      <div className="space-y-2">
+        <h3 className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Money
+        </h3>
+        <div className="overflow-hidden rounded-xl border border-border bg-background divide-y divide-border shadow-2xs">
+          <Link
+            href="/transactions"
+            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+          >
+            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+              <ArrowLeftRight className="size-4 text-foreground/80" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground">Transactions</div>
+              <div className="text-xs text-muted-foreground">
+                {transactions ? `${transactions.length} logged` : "Expenses, income & transfers"}
+              </div>
+            </div>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          </Link>
+
+          <Link
+            href="/accounts"
+            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+          >
+            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+              <Wallet className="size-4 text-foreground/80" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground">Accounts</div>
+              <div className="text-xs text-muted-foreground">
+                {accounts ? `${accounts.filter((a) => !a.isArchived).length} active wallets & banks` : "Wallets, banks & net worth"}
+              </div>
+            </div>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          </Link>
+
+          <Link
+            href="/budgets"
+            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+          >
+            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+              <PiggyBank className="size-4 text-foreground/80" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground">Budgets</div>
+              <div className="text-xs text-muted-foreground">
+                {budgets ? `${budgets.length} category caps` : "Category spending limits"}
+              </div>
+            </div>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          </Link>
+
+          <Link
+            href="/subscriptions"
+            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+          >
+            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+              <Repeat className="size-4 text-foreground/80" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground">Subscriptions</div>
+              <div className="text-xs text-muted-foreground">
+                {subscriptions ? `${subscriptions.filter((s) => s.isActive).length} active recurring bills` : "Recurring bills & trials"}
+              </div>
+            </div>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          </Link>
+        </div>
+      </div>
+
       {/* Category: GENERAL & PREFERENCES */}
       <div className="space-y-2">
         <h3 className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -298,6 +418,20 @@ export default function MorePage() {
         </h3>
         <div className="overflow-hidden rounded-xl border border-border bg-background divide-y divide-border shadow-2xs">
           <button
+            onClick={handleExportTransactionsCSV}
+            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+          >
+            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+              <FileSpreadsheet className="size-4 text-foreground/80" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground">Export Transactions CSV</div>
+              <div className="text-xs text-muted-foreground">Download expenses & income for Excel / Sheets</div>
+            </div>
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+          </button>
+
+          <button
             onClick={handleExportCSV}
             className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
           >
@@ -305,7 +439,7 @@ export default function MorePage() {
               <FileSpreadsheet className="size-4 text-foreground/80" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">Export as CSV</div>
+              <div className="text-sm font-semibold text-foreground">Export Subscriptions CSV</div>
               <div className="text-xs text-muted-foreground">Download spreadsheet formatted for Excel / Sheets</div>
             </div>
             <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
@@ -348,7 +482,7 @@ export default function MorePage() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-semibold text-foreground">Full Backup</div>
-              <div className="text-xs text-muted-foreground">Export full backup including payment history</div>
+              <div className="text-xs text-muted-foreground">Export everything: subs, transactions, accounts, budgets</div>
             </div>
             <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
           </button>

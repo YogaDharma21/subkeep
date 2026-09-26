@@ -96,6 +96,7 @@ export function SubscriptionDetailView({
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
   const recordPaymentMutation = useMutation(api.payments.create)
+  const recordTransactionMutation = useMutation(api.transactions.create)
   const updatePaymentMutation = useMutation(api.payments.update)
   const removePaymentMutation = useMutation(api.payments.remove)
   const generateUploadUrl = useMutation(api.subscriptions.generateUploadUrl)
@@ -295,6 +296,7 @@ export function SubscriptionDetailView({
   const handleRecordPayment = async () => {
     if (!sub || !subscriptionId) return
     try {
+      const today = new Date().toISOString().split("T")[0]
       await recordPaymentMutation({
         subscriptionId: subscriptionId as Id<"subscriptions">,
         name: sub.name,
@@ -303,8 +305,23 @@ export function SubscriptionDetailView({
         amount: sub.price,
         currency: sub.currency,
         category: sub.category,
-        date: new Date().toISOString().split("T")[0],
+        date: today,
       })
+      try {
+        await recordTransactionMutation({
+          type: "expense",
+          amount: sub.price,
+          currency: sub.currency,
+          category: "subscriptions",
+          date: today,
+          note: sub.name,
+          subscriptionId: subscriptionId as Id<"subscriptions">,
+          icon: sub.icon,
+          color: sub.color,
+        })
+      } catch {
+        // payment log succeeded; transaction mirror is best-effort
+      }
       toast.success(`Recorded payment of ${convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)}`)
     } catch {
       toast.error("Failed to record payment")

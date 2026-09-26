@@ -6,10 +6,10 @@ import {
   ArrowRight,
   Sparkles,
   CreditCard,
-  Users,
   Check,
   Clock,
   ShieldCheck,
+  Wallet,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -37,15 +37,29 @@ export function LandingPage() {
           {/* Main Headline */}
           <div className="space-y-3">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white leading-tight">
-              Never lose track of your subscriptions and recurring bills again.
+              All your money in one place — budgets, bills, and subscriptions.
             </h1>
             <p className="text-sm sm:text-base text-zinc-400 leading-relaxed max-w-xl">
-              Take complete control of your monthly spend, free trial deadlines, card payment methods, and split group expenses in one unified, privacy-friendly hub.
+              Track expenses and income, set category budgets, manage accounts and net worth, and keep every subscription and free trial under control in one privacy-friendly hub.
             </p>
           </div>
 
           {/* 3 Feature Highlights (similar to screenshot cards) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3.5 backdrop-blur-xs flex flex-col justify-between space-y-2">
+              <div className="flex size-7 items-center justify-center rounded-lg bg-zinc-800 text-zinc-300">
+                <Wallet className="size-4 text-zinc-200" />
+              </div>
+              <div>
+                <h2 className="text-xs sm:text-sm font-semibold text-zinc-200">
+                  Money Tracking
+                </h2>
+                <p className="text-[11px] text-zinc-400 mt-0.5 leading-snug">
+                  Expenses, income, accounts & budgets
+                </p>
+              </div>
+            </div>
+
             <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3.5 backdrop-blur-xs flex flex-col justify-between space-y-2">
               <div className="flex size-7 items-center justify-center rounded-lg bg-zinc-800 text-zinc-300">
                 <Sparkles className="size-4 text-zinc-200" />
@@ -55,7 +69,7 @@ export function LandingPage() {
                   Smart Analytics
                 </h2>
                 <p className="text-[11px] text-zinc-400 mt-0.5 leading-snug">
-                  MoM trends, hike alerts & budget caps
+                  Cash flow, trends & budget alerts
                 </p>
               </div>
             </div>
@@ -66,24 +80,10 @@ export function LandingPage() {
               </div>
               <div>
                 <h2 className="text-xs sm:text-sm font-semibold text-zinc-200">
-                  Card Vault
+                  Subscriptions
                 </h2>
                 <p className="text-[11px] text-zinc-400 mt-0.5 leading-snug">
-                  Map renewal cards & avoid surprise fees
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3.5 backdrop-blur-xs flex flex-col justify-between space-y-2">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-zinc-800 text-zinc-300">
-                <Users className="size-4 text-zinc-200" />
-              </div>
-              <div>
-                <h2 className="text-xs sm:text-sm font-semibold text-zinc-200">
-                  SplitKeep
-                </h2>
-                <p className="text-[11px] text-zinc-400 mt-0.5 leading-snug">
-                  Split costs & generate 1-tap reminders
+                  Trials, renewals & split plans
                 </p>
               </div>
             </div>

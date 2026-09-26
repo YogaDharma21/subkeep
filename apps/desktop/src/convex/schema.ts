@@ -101,4 +101,46 @@ export default defineSchema({
     telegramBotToken: v.optional(v.string()),
     telegramChatId: v.optional(v.string()),
   }).index("by_user", ["userId"]),
+
+  accounts: defineTable({
+    userId: v.string(),
+    name: v.string(),
+    type: v.string(),
+    balance: v.number(),
+    currency: v.string(),
+    icon: v.string(),
+    color: v.string(),
+    last4: v.optional(v.string()),
+    isArchived: v.optional(v.boolean()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_and_archived", ["userId", "isArchived"]),
+
+  transactions: defineTable({
+    userId: v.string(),
+    type: v.string(),
+    amount: v.number(),
+    currency: v.string(),
+    category: v.string(),
+    date: v.string(),
+    note: v.optional(v.string()),
+    accountId: v.optional(v.id("accounts")),
+    toAccountId: v.optional(v.id("accounts")),
+    subscriptionId: v.optional(v.id("subscriptions")),
+    icon: v.optional(v.string()),
+    color: v.optional(v.string()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_and_date", ["userId", "date"])
+    .index("by_account", ["accountId"]),
+
+  budgets: defineTable({
+    userId: v.string(),
+    category: v.string(),
+    amount: v.number(),
+    currency: v.string(),
+    month: v.string(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_and_month", ["userId", "month"]),
 })

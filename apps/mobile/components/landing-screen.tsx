@@ -71,8 +71,8 @@ export function LandingScreen() {
             maxWidth: 300,
           }}
         >
-          Double-check your subscriptions before they renew!{"\n"}
-          Never forget a free trial, bill, or card charge again.
+          All your money in one place — budgets, bills, and subscriptions.{"\n"}
+          Track spending, tame trials, and never miss a payment.
         </Text>
 
         {/* Action Button: Continue with Google */}
