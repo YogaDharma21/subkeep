@@ -1,12 +1,10 @@
 import { Tabs, useRouter, useSegments } from "expo-router"
-import { useState } from "react"
 import { View, Text, TouchableOpacity, Image } from "react-native"
 import { Image as ExpoImage } from "expo-image"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useUser } from "@clerk/expo"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
-import { ClerkUserMenu } from "@/components/clerk-user-menu"
 import {
   Home,
   ArrowLeftRight,
@@ -38,7 +36,6 @@ export default function TabLayout() {
   const { showSearchModal, showAddTransaction } = useAlert()
   const { user } = useUser()
   const insets = useSafeAreaInsets()
-  const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   const avatarLabel =
     user?.fullName || user?.primaryEmailAddress?.emailAddress || "Profile"
@@ -117,7 +114,7 @@ export default function TabLayout() {
         </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => setUserMenuOpen(true)}
+          onPress={() => router.push("/modal/profile" as never)}
           accessibilityLabel={avatarLabel}
           style={{ marginLeft: 2, padding: 2 }}
         >
@@ -151,12 +148,6 @@ export default function TabLayout() {
           )}
         </TouchableOpacity>
       </View>
-
-      <ClerkUserMenu
-        visible={userMenuOpen}
-        onClose={() => setUserMenuOpen(false)}
-        topOffset={insets.top + 52}
-      />
 
       {/* Screens */}
       <View style={{ flex: 1 }}>

@@ -11,47 +11,21 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { useUser, useAuth } from "@clerk/expo"
 import { Image } from "expo-image"
-import * as WebBrowser from "expo-web-browser"
 import { format } from "date-fns"
 import {
   User,
   Mail,
   Shield,
-  CheckCircle2,
   Calendar,
   Clock,
-  ExternalLink,
   LogOut,
   X,
   Check,
   Edit3,
-  KeyRound,
-  Globe,
-  ChevronRight,
 } from "lucide-react-native"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
-
-function getClerkPortalUrl(): string {
-  const key =
-    process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ||
-    "pk_test_ZW5nYWdpbmctbW9sZS0xMC5jbGVyay5hY2NvdW50cy5kZXYk"
-  try {
-    const parts = key.split("_")
-    if (parts.length >= 3) {
-      const base64Host = parts[2]
-      if (typeof atob !== "undefined") {
-        const decoded = atob(base64Host).replace(/\$$/, "")
-        return `https://${decoded}/user`
-      }
-    }
-  } catch (e) {
-    console.error(e)
-  }
-  return "https://accounts.clerk.com/user"
-}
 
 export default function ProfileModal() {
   const router = useRouter()
@@ -90,19 +64,6 @@ export default function ProfileModal() {
       })
     } finally {
       setSavingName(false)
-    }
-  }
-
-  const handleOpenClerkPortal = async () => {
-    const url = getClerkPortalUrl()
-    try {
-      await WebBrowser.openBrowserAsync(url)
-    } catch {
-      showAlert({
-        title: "Portal Error",
-        message: `Unable to open Clerk Account Portal: ${url}`,
-        icon: "error",
-      })
     }
   }
 
@@ -243,25 +204,6 @@ export default function ProfileModal() {
               {user.primaryEmailAddress?.emailAddress}
             </Text>
           </View>
-
-          <View style={{ flexDirection: "row", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
-            <Badge variant="emerald">
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                <CheckCircle2 size={10} color={colors.emerald} />
-                <Text style={{ fontSize: 10, fontWeight: "700", color: colors.emerald }}>
-                  Clerk Verified
-                </Text>
-              </View>
-            </Badge>
-
-            {user.externalAccounts && user.externalAccounts.length > 0 && (
-              <Badge variant="blue">
-                <Text style={{ fontSize: 10, fontWeight: "700", color: colors.blue }}>
-                  {user.externalAccounts[0].provider.toUpperCase()} OAuth
-                </Text>
-              </Badge>
-            )}
-          </View>
         </View>
 
         {/* Personal Details Section */}
@@ -399,62 +341,6 @@ export default function ProfileModal() {
           </View>
         </View>
 
-        {/* Connected Accounts Section */}
-        {user.externalAccounts && user.externalAccounts.length > 0 && (
-          <View style={{ gap: 8 }}>
-            <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
-              CONNECTED ACCOUNTS
-            </Text>
-
-            <View
-              style={{
-                backgroundColor: colors.card,
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderRadius: 14,
-                padding: 14,
-                gap: 10,
-              }}
-            >
-              {user.externalAccounts.map((account) => (
-                <View
-                  key={account.id}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                    <View
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 8,
-                        backgroundColor: colors.surface,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Globe size={16} color={colors.text} />
-                    </View>
-                    <View>
-                      <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
-                        {account.provider.charAt(0).toUpperCase() + account.provider.slice(1)}
-                      </Text>
-                      <Text style={{ fontSize: 11, color: colors.mutedText }}>
-                        {account.emailAddress || account.username || "Connected"}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <Badge variant="emerald">Connected</Badge>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
         {/* Security & Metadata Section */}
         <View style={{ gap: 8 }}>
           <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
@@ -471,18 +357,6 @@ export default function ProfileModal() {
               gap: 12,
             }}
           >
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <KeyRound size={16} color={colors.mutedText} />
-                <Text style={{ fontSize: 13, color: colors.mutedText }}>Clerk User ID</Text>
-              </View>
-              <Text style={{ fontSize: 11, fontFamily: "monospace", color: colors.text }}>
-                {user.id.slice(0, 16)}...
-              </Text>
-            </View>
-
-            <View style={{ height: 1, backgroundColor: colors.border }} />
-
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                 <Calendar size={16} color={colors.mutedText} />
@@ -505,53 +379,6 @@ export default function ProfileModal() {
               </Text>
             </View>
           </View>
-        </View>
-
-        {/* Clerk Account Portal Button */}
-        <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
-            CLERK ACCOUNT PORTAL
-          </Text>
-
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={handleOpenClerkPortal}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              backgroundColor: colors.card,
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: 14,
-              padding: 14,
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}>
-              <View
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  backgroundColor: colors.surface,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <ExternalLink size={18} color={colors.primary} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
-                  Manage on Clerk Portal
-                </Text>
-                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
-                  Security, 2FA, password, and active sessions
-                </Text>
-              </View>
-            </View>
-
-            <ChevronRight size={16} color={colors.mutedText} />
-          </TouchableOpacity>
         </View>
 
         {/* Sign Out Button */}

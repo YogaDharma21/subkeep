@@ -418,66 +418,6 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 120 }}>
-        {/* User profile card (opens Clerk Profile modal) */}
-        {user ? (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => router.push("/modal/profile" as never)}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: colors.card,
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: 14,
-              padding: 14,
-              gap: 12,
-            }}
-          >
-            <View
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                backgroundColor: colors.primary,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text style={{ fontSize: 18, fontWeight: "800", color: colors.primaryForeground }}>
-                {(user.fullName || user.primaryEmailAddress?.emailAddress || "U").charAt(0).toUpperCase()}
-              </Text>
-            </View>
-
-            <View style={{ flex: 1 }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>
-                  {user.fullName || "SubKeep User"}
-                </Text>
-                <View
-                  style={{
-                    backgroundColor: colors.surface,
-                    paddingHorizontal: 6,
-                    paddingVertical: 2,
-                    borderRadius: 4,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
-                >
-                  <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
-                    Clerk
-                  </Text>
-                </View>
-              </View>
-              <Text style={{ fontSize: 12, color: colors.mutedText, marginTop: 1 }}>
-                {user.primaryEmailAddress?.emailAddress}
-              </Text>
-            </View>
-
-            <ChevronRight size={16} color={colors.mutedText} />
-          </TouchableOpacity>
-        ) : null}
-
         {/* Money Section */}
         <View style={{ gap: 8 }}>
           <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
