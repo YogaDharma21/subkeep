@@ -7,18 +7,23 @@ import {
   Globe,
   LogOut,
   Search,
+  ArrowLeftRight,
+  Wallet,
+  PiggyBank,
+  Repeat,
 } from "lucide-react"
 import { UserButton, useUser, useClerk } from "@clerk/clerk-react"
 import { Button } from "@/components/ui/button"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { cn } from "@/lib/utils"
 
-export type DesktopView = "dashboard" | "calendar" | "stats" | "settings" | "detail"
+export type DesktopView = "dashboard" | "transactions" | "subscriptions" | "budgets" | "accounts" | "calendar" | "stats" | "settings" | "detail"
 
 interface DesktopSidebarProps {
   currentView: DesktopView
   onNavigate: (view: DesktopView) => void
   onAddSubscription: () => void
+  onAddTransaction: () => void
   onSearchClick?: () => void
   activeSubCount?: number
 }
@@ -27,6 +32,7 @@ export function DesktopSidebar({
   currentView,
   onNavigate,
   onAddSubscription,
+  onAddTransaction,
   onSearchClick,
   activeSubCount = 0,
 }: DesktopSidebarProps) {
@@ -44,7 +50,27 @@ export function DesktopSidebar({
       id: "dashboard" as DesktopView,
       label: "Dashboard",
       icon: LayoutDashboard,
+    },
+    {
+      id: "transactions" as DesktopView,
+      label: "Transactions",
+      icon: ArrowLeftRight,
+    },
+    {
+      id: "subscriptions" as DesktopView,
+      label: "Subscriptions",
+      icon: Repeat,
       badge: activeSubCount > 0 ? activeSubCount : undefined,
+    },
+    {
+      id: "budgets" as DesktopView,
+      label: "Budgets",
+      icon: PiggyBank,
+    },
+    {
+      id: "accounts" as DesktopView,
+      label: "Accounts",
+      icon: Wallet,
     },
     {
       id: "calendar" as DesktopView,
@@ -66,10 +92,19 @@ export function DesktopSidebar({
   return (
     <aside className="w-60 border-r border-border bg-sidebar/50 backdrop-blur-xs flex flex-col justify-between p-3 shrink-0 select-none">
       <div className="space-y-4">
-        {/* Quick Add Button & Search & Commands */}
+        {/* Quick Add Buttons & Search & Commands */}
         <div className="space-y-2">
           <Button
+            onClick={onAddTransaction}
+            className="w-full gap-2 font-bold text-xs h-9 shadow-xs cursor-pointer"
+          >
+            <Plus className="size-4" />
+            Add Transaction
+          </Button>
+
+          <Button
             onClick={onAddSubscription}
+            variant="outline"
             className="w-full gap-2 font-bold text-xs h-9 shadow-xs cursor-pointer"
           >
             <Plus className="size-4" />

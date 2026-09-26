@@ -156,8 +156,8 @@ export function LandingPage() {
 
           {/* Tagline Subtitle */}
           <div className="space-y-1 text-xs sm:text-sm font-medium text-zinc-400 leading-relaxed max-w-xs mx-auto">
-            <p>Track your recurring subscriptions before they renew!</p>
-            <p>Never forget a free trial, bill date, or fee again.</p>
+            <p>All your money in one place — budgets, bills, and subscriptions.</p>
+            <p>Track spending, tame trials, and never miss a payment.</p>
           </div>
         </div>
 

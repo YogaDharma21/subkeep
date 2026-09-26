@@ -1,8 +1,7 @@
 import { useState, useMemo } from "react"
-import { useQuery, useMutation } from "convex/react"
+import { useQuery } from "convex/react"
 import { useAuth } from "@clerk/clerk-react"
 import { api } from "@/convex/_generated/api"
-import { Id } from "@/convex/_generated/dataModel"
 import {
   Plus,
   Search,
@@ -17,11 +16,9 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { SubscriptionCard } from "@/components/subscription-card"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
-import { SmartInsights } from "@/components/smart-insights"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { categories } from "@/lib/constants"
-import { toast } from "sonner"
 
 interface DashboardViewProps {
   onSelectSubscription: (id: string) => void
@@ -46,7 +43,6 @@ export function DashboardView({
     api.userSettings.get,
     isSignedIn ? {} : "skip"
   )
-  const suspendMutation = useMutation(api.subscriptions.suspend)
 
   const activeSubs = useMemo(() => {
     if (!subscriptions) return []
@@ -121,15 +117,6 @@ export function DashboardView({
       })
   }, [subscriptions, selectedCategory, searchQuery, sortBy, primaryCurrency, rates])
 
-  const handleMarkCanceled = async (id: string) => {
-    try {
-      await suspendMutation({ id: id as Id<"subscriptions"> })
-      toast.success("Subscription updated")
-    } catch {
-      toast.error("Failed to update subscription status")
-    }
-  }
-
   return (
     <div className="space-y-6 pb-16">
       {/* Top Stat Banner */}
@@ -188,16 +175,6 @@ export function DashboardView({
       {/* Upcoming Reminders & Trial Alerts */}
       {subscriptions && subscriptions.length > 0 && (
         <UpcomingReminders
-          subscriptions={subscriptions}
-          primaryCurrency={primaryCurrency}
-          rates={rates}
-          onMarkCanceled={handleMarkCanceled}
-        />
-      )}
-
-      {/* Smart Insights & Savings Recommendations */}
-      {subscriptions && subscriptions.length > 0 && (
-        <SmartInsights
           subscriptions={subscriptions}
           primaryCurrency={primaryCurrency}
           rates={rates}
