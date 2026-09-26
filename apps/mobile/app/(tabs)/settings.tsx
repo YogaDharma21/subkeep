@@ -8,7 +8,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { useQuery, useMutation } from "convex/react"
-import { useAuth, useUser } from "@clerk/clerk-expo"
+import { useAuth, useUser } from "@clerk/expo"
 import { api } from "@/convex/_generated/api"
 import {
   SlidersHorizontal,
@@ -33,7 +33,7 @@ import { getSymbol } from "@/constants/currencies"
 import { exportSubscriptionsToCSV, parseCSVToSubscriptions, exportTransactionsToCSV } from "@/lib/csv"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
-import { useAlert } from "@/components/custom-alert-provider"
+import { useAlert } from "@/hooks/use-alert"
 
 export default function SettingsScreen() {
   const router = useRouter()

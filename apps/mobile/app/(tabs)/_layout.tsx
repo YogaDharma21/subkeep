@@ -3,9 +3,9 @@ import { useState } from "react"
 import { View, Text, TouchableOpacity, Image } from "react-native"
 import { Image as ExpoImage } from "expo-image"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { useUser } from "@clerk/clerk-expo"
+import { useUser } from "@clerk/expo"
 import { useThemeColor } from "@/hooks/use-theme-color"
-import { useAlert } from "@/components/custom-alert-provider"
+import { useAlert } from "@/hooks/use-alert"
 import { ClerkUserMenu } from "@/components/clerk-user-menu"
 import {
   Home,

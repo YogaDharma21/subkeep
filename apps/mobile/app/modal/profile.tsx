@@ -9,7 +9,7 @@ import {
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
-import { useUser, useAuth } from "@clerk/clerk-expo"
+import { useUser, useAuth } from "@clerk/expo"
 import { Image } from "expo-image"
 import * as WebBrowser from "expo-web-browser"
 import { format } from "date-fns"
@@ -32,7 +32,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useThemeColor } from "@/hooks/use-theme-color"
-import { useAlert } from "@/components/custom-alert-provider"
+import { useAlert } from "@/hooks/use-alert"
 
 function getClerkPortalUrl(): string {
   const key =
