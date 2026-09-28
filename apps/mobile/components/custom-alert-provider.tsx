@@ -21,9 +21,12 @@ import {
   Sparkles,
 } from "lucide-react-native"
 import { useThemeColor } from "@/hooks/use-theme-color"
-import { GlobalUiContext, AlertButton, AlertOptions } from "@/hooks/use-alert"
+import { GlobalUiContext, AlertButton, AlertOptions, AccountEditing } from "@/hooks/use-alert"
 import { SearchModal } from "@/components/command-palette"
 import { AddTransactionSheet } from "@/components/add-transaction-sheet"
+import { AddSubscriptionSheet } from "@/components/add-subscription-sheet"
+import { AddAccountSheet } from "@/components/add-account-sheet"
+import { AddBudgetSheet } from "@/components/add-budget-sheet"
 
 export type { AlertButton, AlertOptions }
 
@@ -44,6 +47,16 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
 
   // Add Transaction Sheet State
   const [addTxnOpen, setAddTxnOpen] = useState(false)
+
+  // Add Subscription Sheet State
+  const [addSubOpen, setAddSubOpen] = useState(false)
+
+  // Add Account Sheet State
+  const [addAccountOpen, setAddAccountOpen] = useState(false)
+  const [accountEditing, setAccountEditing] = useState<AccountEditing | null>(null)
+
+  // Add Budget Sheet State
+  const [addBudgetOpen, setAddBudgetOpen] = useState(false)
 
   const showAlert = useCallback(
     (options: AlertOptions | string, message?: string, buttons?: AlertButton[]) => {
@@ -77,6 +90,19 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
 
   const showAddTransaction = useCallback(() => {
     setAddTxnOpen(true)
+  }, [])
+
+  const showAddSubscription = useCallback(() => {
+    setAddSubOpen(true)
+  }, [])
+
+  const showAddAccount = useCallback((editing?: AccountEditing | null) => {
+    setAccountEditing(editing ?? null)
+    setAddAccountOpen(true)
+  }, [])
+
+  const showAddBudget = useCallback(() => {
+    setAddBudgetOpen(true)
   }, [])
 
   const closeAlert = () => {
@@ -114,7 +140,7 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <GlobalUiContext.Provider value={{ showAlert, showToast, showAboutModal, showSearchModal, showAddTransaction }}>
+    <GlobalUiContext.Provider value={{ showAlert, showToast, showAboutModal, showSearchModal, showAddTransaction, showAddSubscription, showAddAccount, showAddBudget }}>
       {children}
 
       {/* Custom Global Toast */}
@@ -483,6 +509,28 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
       <AddTransactionSheet
         visible={addTxnOpen}
         onClose={() => setAddTxnOpen(false)}
+      />
+
+      {/* Global Add Subscription Sheet */}
+      <AddSubscriptionSheet
+        visible={addSubOpen}
+        onClose={() => setAddSubOpen(false)}
+      />
+
+      {/* Global Add Account Sheet */}
+      <AddAccountSheet
+        visible={addAccountOpen}
+        onClose={() => {
+          setAddAccountOpen(false)
+          setAccountEditing(null)
+        }}
+        editing={accountEditing}
+      />
+
+      {/* Global Add Budget Sheet */}
+      <AddBudgetSheet
+        visible={addBudgetOpen}
+        onClose={() => setAddBudgetOpen(false)}
       />
     </GlobalUiContext.Provider>
   )

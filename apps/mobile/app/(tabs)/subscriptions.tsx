@@ -8,7 +8,6 @@ import {
   Modal,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { useRouter } from "expo-router"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/expo"
 import { api } from "@/convex/_generated/api"
@@ -30,6 +29,7 @@ import { currencies } from "@/constants/currencies"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { useAlert } from "@/hooks/use-alert"
 import { differenceInDays } from "date-fns"
 
 export type FilterType = "all" | "due_soon" | "trial" | "regular" | "canceled"
@@ -43,8 +43,8 @@ export type SortOption =
   | "name-asc"
 
 export default function SubscriptionsScreen() {
-  const router = useRouter()
   const { colors } = useThemeColor()
+  const { showAddSubscription } = useAlert()
   const { isSignedIn } = useAuth()
 
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
@@ -488,7 +488,7 @@ export default function SubscriptionsScreen() {
 
           {/* Add button */}
           <TouchableOpacity
-            onPress={() => router.push("/modal/add" as never)}
+            onPress={showAddSubscription}
             style={{
               flexDirection: "row",
               alignItems: "center",
