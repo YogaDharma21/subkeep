@@ -166,16 +166,7 @@ export default function BudgetsPage() {
                     <DynamicIcon name={meta.icon} className="size-4" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-semibold truncate">{meta.label}</span>
-                      <button
-                        onClick={() => setDeleteId(budget._id)}
-                        className="text-muted-foreground hover:text-destructive cursor-pointer shrink-0"
-                        title="Remove budget"
-                      >
-                        <Trash2 className="size-3.5" />
-                      </button>
-                    </div>
+                    <span className="block text-sm font-semibold truncate">{meta.label}</span>
                     <div className="text-[11px] text-muted-foreground">
                       {formatCurrencyAmount(spent, primaryCurrency)} spent of{" "}
                       {formatCurrencyAmount(cap, primaryCurrency)}
@@ -184,13 +175,22 @@ export default function BudgetsPage() {
                       )}
                     </div>
                   </div>
-                  <div
-                    className={cn(
-                      "shrink-0 text-sm font-extrabold",
-                      remaining < 0 ? "text-red-500" : pct >= 85 ? "text-amber-500" : "text-emerald-500"
-                    )}
-                  >
-                    {pct}%
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button
+                      onClick={() => setDeleteId(budget._id)}
+                      className="flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                      title="Remove budget"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                    <div
+                      className={cn(
+                        "min-w-10 text-right text-sm font-extrabold",
+                        remaining < 0 ? "text-red-500" : pct >= 85 ? "text-amber-500" : "text-emerald-500"
+                      )}
+                    >
+                      {pct}%
+                    </div>
                   </div>
                 </div>
                 <div className="mt-2.5 h-2 w-full rounded-full bg-muted overflow-hidden">
