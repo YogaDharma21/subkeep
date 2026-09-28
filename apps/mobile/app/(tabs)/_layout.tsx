@@ -1,10 +1,12 @@
 import { Tabs, useRouter, useSegments } from "expo-router"
 import { View, Text, TouchableOpacity, Image } from "react-native"
+import { useState } from "react"
 import { Image as ExpoImage } from "expo-image"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useUser } from "@clerk/expo"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
+import { QuickAddSheet, QuickAddKind } from "@/components/quick-add-sheet"
 import {
   Home,
   ArrowLeftRight,
@@ -33,9 +35,23 @@ export default function TabLayout() {
   const router = useRouter()
   const segments = useSegments()
   const { colors } = useThemeColor()
-  const { showSearchModal, showAddTransaction } = useAlert()
+  const { showSearchModal, showAddTransaction, showAddSubscription, showAddAccount, showAddBudget } = useAlert()
   const { user } = useUser()
   const insets = useSafeAreaInsets()
+  const [quickAddOpen, setQuickAddOpen] = useState(false)
+
+  const handleQuickAddSelect = (kind: QuickAddKind) => {
+    setQuickAddOpen(false)
+    if (kind === "transaction") {
+      showAddTransaction()
+    } else if (kind === "subscription") {
+      showAddSubscription()
+    } else if (kind === "budget") {
+      showAddBudget()
+    } else if (kind === "account") {
+      showAddAccount()
+    }
+  }
 
   const avatarLabel =
     user?.fullName || user?.primaryEmailAddress?.emailAddress || "Profile"
@@ -166,7 +182,6 @@ export default function TabLayout() {
           <Tabs.Screen name="stats" />
           <Tabs.Screen name="calendar" />
           <Tabs.Screen name="settings" />
-          <Tabs.Screen name="add" />
         </Tabs>
       </View>
 
@@ -205,8 +220,8 @@ export default function TabLayout() {
 
           <TouchableOpacity
             activeOpacity={0.8}
-            accessibilityLabel="Add transaction"
-            onPress={showAddTransaction}
+            accessibilityLabel="Quick add"
+            onPress={() => setQuickAddOpen(true)}
             style={{
               width: 48,
               height: 48,
@@ -224,6 +239,12 @@ export default function TabLayout() {
           {RIGHT_TABS.map(renderTab)}
         </View>
       </View>
+
+      <QuickAddSheet
+        visible={quickAddOpen}
+        onClose={() => setQuickAddOpen(false)}
+        onSelect={handleQuickAddSelect}
+      />
     </View>
   )
 }

@@ -3,10 +3,9 @@ import { useMutation, useQuery } from "convex/react"
 import { useAuth } from "@clerk/clerk-react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
-import { ChevronLeft, ChevronRight, PiggyBank, Plus, Trash2, Copy } from "lucide-react"
+import { ChevronLeft, ChevronRight, PiggyBank, Trash2 } from "lucide-react"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Dialog,
   DialogContent,
@@ -17,7 +16,6 @@ import {
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import {
-  expenseCategories,
   financeCategoryMeta,
   currentMonthKey,
   monthLabel,
@@ -29,19 +27,14 @@ import { toast } from "sonner"
 export function BudgetsView() {
   const { isSignedIn } = useAuth()
   const [month, setMonth] = useState(currentMonthKey())
-  const [category, setCategory] = useState("food")
-  const [amount, setAmount] = useState("")
 
   const budgets = useQuery(api.budgets.list, isSignedIn ? { month } : "skip")
   const transactions = useQuery(api.transactions.list, isSignedIn ? { month } : "skip")
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
-  const upsertMutation = useMutation(api.budgets.upsert)
   const removeMutation = useMutation(api.budgets.remove)
-  const copyMutation = useMutation(api.budgets.copyFromPreviousMonth)
 
   const { primaryCurrency, rates } = usePrimaryCurrency()
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
 
   const rows = useMemo(() => {
     const txns = transactions || []
@@ -82,31 +75,6 @@ export function BudgetsView() {
     return { cap, spent, pct: cap > 0 ? Math.round((spent / cap) * 100) : 0 }
   }, [rows])
 
-  const usedCategories = new Set((budgets || []).map((b) => b.category))
-  const availableCategories = expenseCategories.filter((c) => !usedCategories.has(c.value))
-
-  const handleSave = async () => {
-    const parsed = parseFloat(amount)
-    if (isNaN(parsed) || parsed <= 0) {
-      toast.error("Please enter a valid budget amount")
-      return
-    }
-    setIsSaving(true)
-    try {
-      await upsertMutation({ category, amount: parsed, currency: primaryCurrency, month })
-      toast.success(`Budget set for ${financeCategoryMeta(category).label}`)
-      setAmount("")
-      if (availableCategories.length > 1) {
-        const next = availableCategories.find((c) => c.value !== category)
-        if (next) setCategory(next.value)
-      }
-    } catch {
-      toast.error("Failed to save budget")
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
   const handleDelete = async () => {
     if (!deleteId) return
     try {
@@ -115,16 +83,6 @@ export function BudgetsView() {
       setDeleteId(null)
     } catch {
       toast.error("Failed to remove budget")
-    }
-  }
-
-  const handleCopy = async () => {
-    try {
-      const copied = await copyMutation({ month, fromMonth: shiftMonth(month, -1) })
-      if (copied > 0) toast.success(`Copied ${copied} budget${copied > 1 ? "s" : ""} from last month`)
-      else toast.info("No budgets to copy from last month")
-    } catch {
-      toast.error("Failed to copy budgets")
     }
   }
 
@@ -158,40 +116,6 @@ export function BudgetsView() {
             />
           </div>
         )}
-        {(budgets?.length || 0) === 0 && (
-          <Button variant="ghost" size="sm" onClick={handleCopy} className="mt-3 w-full text-xs cursor-pointer gap-1.5">
-            <Copy className="size-3.5" /> Copy last month&apos;s budgets
-          </Button>
-        )}
-      </div>
-
-      {/* Add budget */}
-      <div className="rounded-lg border border-border bg-background p-4 space-y-3">
-        <h3 className="text-sm font-semibold">Set Category Budget</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {(availableCategories.length > 0 ? availableCategories : expenseCategories).map((c) => (
-            <button
-              key={c.value}
-              type="button"
-              onClick={() => setCategory(c.value)}
-              className={cn(
-                "flex items-center gap-2 rounded-lg border-2 p-2 text-left transition-all cursor-pointer",
-                category === c.value ? "border-foreground bg-muted" : "border-border hover:border-foreground/40"
-              )}
-            >
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-foreground">
-                <DynamicIcon name={c.icon} className="size-3.5" />
-              </span>
-              <span className="text-[11px] font-medium leading-tight">{c.label}</span>
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-2">
-          <Input type="number" placeholder={`Monthly cap in ${primaryCurrency}`} step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} className="text-xs" />
-          <Button onClick={handleSave} disabled={isSaving || !amount} className="cursor-pointer gap-1.5">
-            <Plus className="size-4" /> {isSaving ? "Saving..." : "Set"}
-          </Button>
-        </div>
       </div>
 
       {/* Budget rows */}
@@ -204,7 +128,7 @@ export function BudgetsView() {
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 text-center">
           <PiggyBank className="size-6 text-muted-foreground/50 mb-2" />
           <p className="text-sm font-medium text-muted-foreground">No budgets for {monthLabel(month).split(" ")[0]}</p>
-          <p className="mt-1 text-xs text-muted-foreground/60">Set per-category spending limits above to track progress</p>
+          <p className="mt-1 text-xs text-muted-foreground/60">Set per-category spending limits to track progress</p>
         </div>
       ) : (
         <div className="space-y-3">

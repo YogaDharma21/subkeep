@@ -9,13 +9,10 @@ import {
   ChevronLeft,
   ChevronRight,
   PiggyBank,
-  Plus,
   Trash2,
-  Copy,
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Dialog,
   DialogContent,
@@ -29,7 +26,6 @@ import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import {
-  expenseCategories,
   financeCategoryMeta,
   currentMonthKey,
   monthLabel,
@@ -42,8 +38,6 @@ export default function BudgetsPage() {
   useDocumentTitle("Budgets")
   const { isSignedIn } = useAuth()
   const [month, setMonth] = useState(currentMonthKey())
-  const [category, setCategory] = useState("food")
-  const [amount, setAmount] = useState("")
 
   const budgets = useQuery(
     api.budgets.list,
@@ -54,13 +48,10 @@ export default function BudgetsPage() {
     isSignedIn ? { month } : "skip"
   )
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
-  const upsertMutation = useMutation(api.budgets.upsert)
   const removeMutation = useMutation(api.budgets.remove)
-  const copyMutation = useMutation(api.budgets.copyFromPreviousMonth)
 
   const { primaryCurrency, rates } = usePrimaryCurrency()
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
 
   const rows = useMemo(() => {
     const txns = transactions || []
@@ -101,37 +92,6 @@ export default function BudgetsPage() {
     return { cap, spent, pct: cap > 0 ? Math.round((spent / cap) * 100) : 0 }
   }, [rows])
 
-  const usedCategories = new Set((budgets || []).map((b) => b.category))
-  const availableCategories = expenseCategories.filter((c) => !usedCategories.has(c.value))
-
-  const handleSave = async () => {
-    const parsed = parseFloat(amount)
-    if (isNaN(parsed) || parsed <= 0) {
-      toast.error("Please enter a valid budget amount")
-      return
-    }
-    setIsSaving(true)
-    try {
-      await upsertMutation({
-        category,
-        amount: parsed,
-        currency: primaryCurrency,
-        month,
-      })
-      const meta = financeCategoryMeta(category)
-      toast.success(`Budget set for ${meta.label}`)
-      setAmount("")
-      if (availableCategories.length > 1) {
-        const next = availableCategories.find((c) => c.value !== category)
-        if (next) setCategory(next.value)
-      }
-    } catch {
-      toast.error("Failed to save budget")
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
   const handleDelete = async () => {
     if (!deleteId) return
     try {
@@ -140,16 +100,6 @@ export default function BudgetsPage() {
       setDeleteId(null)
     } catch {
       toast.error("Failed to remove budget")
-    }
-  }
-
-  const handleCopy = async () => {
-    try {
-      const copied = await copyMutation({ month, fromMonth: shiftMonth(month, -1) })
-      if (copied > 0) toast.success(`Copied ${copied} budget${copied > 1 ? "s" : ""} from last month`)
-      else toast.info("No budgets to copy from last month")
-    } catch {
-      toast.error("Failed to copy budgets")
     }
   }
 
@@ -189,50 +139,6 @@ export default function BudgetsPage() {
             />
           </div>
         )}
-        {(budgets?.length || 0) === 0 && (
-          <Button variant="ghost" size="sm" onClick={handleCopy} className="mt-3 w-full text-xs cursor-pointer">
-            <Copy className="size-3.5" /> Copy last month&apos;s budgets
-          </Button>
-        )}
-      </div>
-
-      {/* Add budget */}
-      <div className="rounded-lg border border-border bg-background p-4 space-y-3">
-        <h3 className="text-sm font-semibold">Set Category Budget</h3>
-        <div className="grid grid-cols-2 gap-2 max-h-44 overflow-y-auto pr-0.5">
-          {(availableCategories.length > 0 ? availableCategories : expenseCategories).map((c) => (
-            <button
-              key={c.value}
-              type="button"
-              onClick={() => setCategory(c.value)}
-              className={cn(
-                "flex items-center gap-2 rounded-lg border-2 p-2 text-left transition-all cursor-pointer",
-                category === c.value
-                  ? "border-foreground bg-muted"
-                  : "border-border hover:border-foreground/40"
-              )}
-            >
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-foreground">
-                <DynamicIcon name={c.icon} className="size-3.5" />
-              </span>
-              <span className="text-[11px] font-medium leading-tight">{c.label}</span>
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <Input
-              type="number"
-              placeholder={`Monthly cap in ${primaryCurrency}`}
-              step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-            />
-          </div>
-          <Button onClick={handleSave} disabled={isSaving || !amount} className="cursor-pointer">
-            <Plus className="size-4" /> {isSaving ? "Saving..." : "Set"}
-          </Button>
-        </div>
       </div>
 
       {/* Budget rows */}
@@ -246,7 +152,7 @@ export default function BudgetsPage() {
           <PiggyBank className="size-6 text-muted-foreground/50 mb-2" />
           <p className="text-sm font-medium text-muted-foreground">No budgets for {monthLabel(month).split(" ")[0]}</p>
           <p className="mt-1 text-xs text-muted-foreground/60">
-            Set per-category spending limits above to track progress
+            Set per-category spending limits to track progress
           </p>
         </div>
       ) : (
@@ -260,16 +166,7 @@ export default function BudgetsPage() {
                     <DynamicIcon name={meta.icon} className="size-4" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-semibold truncate">{meta.label}</span>
-                      <button
-                        onClick={() => setDeleteId(budget._id)}
-                        className="text-muted-foreground hover:text-destructive cursor-pointer shrink-0"
-                        title="Remove budget"
-                      >
-                        <Trash2 className="size-3.5" />
-                      </button>
-                    </div>
+                    <span className="block text-sm font-semibold truncate">{meta.label}</span>
                     <div className="text-[11px] text-muted-foreground">
                       {formatCurrencyAmount(spent, primaryCurrency)} spent of{" "}
                       {formatCurrencyAmount(cap, primaryCurrency)}
@@ -278,13 +175,22 @@ export default function BudgetsPage() {
                       )}
                     </div>
                   </div>
-                  <div
-                    className={cn(
-                      "shrink-0 text-sm font-extrabold",
-                      remaining < 0 ? "text-red-500" : pct >= 85 ? "text-amber-500" : "text-emerald-500"
-                    )}
-                  >
-                    {pct}%
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button
+                      onClick={() => setDeleteId(budget._id)}
+                      className="flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                      title="Remove budget"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                    <div
+                      className={cn(
+                        "min-w-10 text-right text-sm font-extrabold",
+                        remaining < 0 ? "text-red-500" : pct >= 85 ? "text-amber-500" : "text-emerald-500"
+                      )}
+                    >
+                      {pct}%
+                    </div>
                   </div>
                 </div>
                 <div className="mt-2.5 h-2 w-full rounded-full bg-muted overflow-hidden">

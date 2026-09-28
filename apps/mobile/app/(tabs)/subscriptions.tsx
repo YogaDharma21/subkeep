@@ -8,13 +8,11 @@ import {
   Modal,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { useRouter } from "expo-router"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/expo"
 import { api } from "@/convex/_generated/api"
 import {
   Globe,
-  Plus,
   Clock,
   Sparkles,
   ArrowUpDown,
@@ -43,7 +41,6 @@ export type SortOption =
   | "name-asc"
 
 export default function SubscriptionsScreen() {
-  const router = useRouter()
   const { colors } = useThemeColor()
   const { isSignedIn } = useAuth()
 
@@ -483,25 +480,6 @@ export default function SubscriptionsScreen() {
             <ArrowUpDown size={12} color={colors.mutedText} />
             <Text style={{ fontSize: 11, fontWeight: "600", color: colors.text }}>
               {sortLabels[sortBy]}
-            </Text>
-          </TouchableOpacity>
-
-          {/* Add button */}
-          <TouchableOpacity
-            onPress={() => router.push("/modal/add" as never)}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 4,
-              backgroundColor: colors.primary,
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderRadius: 8,
-            }}
-          >
-            <Plus size={13} color={colors.primaryForeground} strokeWidth={2.5} />
-            <Text style={{ fontSize: 11, fontWeight: "700", color: colors.primaryForeground }}>
-              Add
             </Text>
           </TouchableOpacity>
         </View>
