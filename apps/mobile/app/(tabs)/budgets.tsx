@@ -39,7 +39,6 @@ export default function BudgetsScreen() {
   const transactions = useQuery(api.transactions.list, isSignedIn ? { month } : "skip")
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const removeMutation = useMutation(api.budgets.remove)
-  const copyMutation = useMutation(api.budgets.copyFromPreviousMonth)
 
   const { primaryCurrency, rates } = usePrimaryCurrency()
 
@@ -88,16 +87,6 @@ export default function BudgetsScreen() {
       showToast("Budget removed", "success")
     } catch {
       showToast("Failed to remove budget", "error")
-    }
-  }
-
-  const handleCopy = async () => {
-    try {
-      const copied = await copyMutation({ month, fromMonth: shiftMonth(month, -1) })
-      if (copied > 0) showToast(`Copied ${copied} budget${copied > 1 ? "s" : ""} from last month`, "success")
-      else showToast("No budgets to copy from last month", "info")
-    } catch {
-      showToast("Failed to copy budgets", "error")
     }
   }
 
@@ -185,16 +174,6 @@ export default function BudgetsScreen() {
                 }}
               />
             </View>
-          ) : null}
-          {(budgets?.length || 0) === 0 ? (
-            <TouchableOpacity
-              onPress={handleCopy}
-              style={{ alignItems: "center", paddingVertical: 4 }}
-            >
-              <Text style={{ fontSize: 12, fontWeight: "700", color: colors.primary }}>
-                Copy last month&apos;s budgets
-              </Text>
-            </TouchableOpacity>
           ) : null}
         </View>
 
