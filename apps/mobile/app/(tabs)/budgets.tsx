@@ -14,7 +14,6 @@ import {
   ChevronLeft,
   ChevronRight,
   PiggyBank,
-  Plus,
   Trash2,
 } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
@@ -32,7 +31,7 @@ import {
 export default function BudgetsScreen() {
   const { colors } = useThemeColor()
   const { isSignedIn } = useAuth()
-  const { showToast, showAddBudget } = useAlert()
+  const { showToast } = useAlert()
   const [month, setMonth] = useState(currentMonthKey())
 
   const budgets = useQuery(api.budgets.list, isSignedIn ? { month } : "skip")
@@ -175,27 +174,6 @@ export default function BudgetsScreen() {
               />
             </View>
           ) : null}
-        </View>
-
-        {/* Set budget entry */}
-        <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
-          <TouchableOpacity
-            onPress={showAddBudget}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 6,
-              backgroundColor: colors.primary,
-              paddingHorizontal: 14,
-              paddingVertical: 9,
-              borderRadius: 10,
-            }}
-          >
-            <Plus size={14} color={colors.primaryForeground} />
-            <Text style={{ fontSize: 12, fontWeight: "700", color: colors.primaryForeground }}>
-              Set Budget
-            </Text>
-          </TouchableOpacity>
         </View>
 
         {/* Budget rows */}

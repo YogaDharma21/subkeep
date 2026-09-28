@@ -9,7 +9,6 @@ import {
   ChevronLeft,
   ChevronRight,
   PiggyBank,
-  Plus,
   Trash2,
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -34,7 +33,6 @@ import {
 } from "@/lib/finance"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
-import { openAddBudgetSheet } from "@/lib/add-budget-event"
 
 export default function BudgetsPage() {
   useDocumentTitle("Budgets")
@@ -141,13 +139,6 @@ export default function BudgetsPage() {
             />
           </div>
         )}
-      </div>
-
-      {/* Set budget entry */}
-      <div className="flex justify-end">
-        <Button size="sm" onClick={openAddBudgetSheet} className="cursor-pointer">
-          <Plus className="size-4" /> Set Budget
-        </Button>
       </div>
 
       {/* Budget rows */}

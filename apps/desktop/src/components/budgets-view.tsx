@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "convex/react"
 import { useAuth } from "@clerk/clerk-react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
-import { ChevronLeft, ChevronRight, PiggyBank, Plus, Trash2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, PiggyBank, Trash2 } from "lucide-react"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { Button } from "@/components/ui/button"
 import {
@@ -24,7 +24,7 @@ import {
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
-export function BudgetsView({ onAddBudget }: { onAddBudget: () => void }) {
+export function BudgetsView() {
   const { isSignedIn } = useAuth()
   const [month, setMonth] = useState(currentMonthKey())
 
@@ -88,14 +88,9 @@ export function BudgetsView({ onAddBudget }: { onAddBudget: () => void }) {
 
   return (
     <div className="space-y-4 max-w-5xl mx-auto pb-12">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-extrabold text-foreground">Budgets</h1>
-          <p className="text-xs text-muted-foreground mt-1">Per-category monthly spending limits.</p>
-        </div>
-        <Button size="sm" onClick={onAddBudget} className="cursor-pointer shrink-0">
-          <Plus className="size-4" /> Set Budget
-        </Button>
+      <div>
+        <h1 className="text-xl font-extrabold text-foreground">Budgets</h1>
+        <p className="text-xs text-muted-foreground mt-1">Per-category monthly spending limits.</p>
       </div>
 
       <div className="rounded-lg border border-border bg-background p-4">

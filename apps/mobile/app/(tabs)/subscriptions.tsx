@@ -13,7 +13,6 @@ import { useAuth } from "@clerk/expo"
 import { api } from "@/convex/_generated/api"
 import {
   Globe,
-  Plus,
   Clock,
   Sparkles,
   ArrowUpDown,
@@ -29,7 +28,6 @@ import { currencies } from "@/constants/currencies"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
-import { useAlert } from "@/hooks/use-alert"
 import { differenceInDays } from "date-fns"
 
 export type FilterType = "all" | "due_soon" | "trial" | "regular" | "canceled"
@@ -44,7 +42,6 @@ export type SortOption =
 
 export default function SubscriptionsScreen() {
   const { colors } = useThemeColor()
-  const { showAddSubscription } = useAlert()
   const { isSignedIn } = useAuth()
 
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
@@ -483,25 +480,6 @@ export default function SubscriptionsScreen() {
             <ArrowUpDown size={12} color={colors.mutedText} />
             <Text style={{ fontSize: 11, fontWeight: "600", color: colors.text }}>
               {sortLabels[sortBy]}
-            </Text>
-          </TouchableOpacity>
-
-          {/* Add button */}
-          <TouchableOpacity
-            onPress={showAddSubscription}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 4,
-              backgroundColor: colors.primary,
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderRadius: 8,
-            }}
-          >
-            <Plus size={13} color={colors.primaryForeground} strokeWidth={2.5} />
-            <Text style={{ fontSize: 11, fontWeight: "700", color: colors.primaryForeground }}>
-              Add
             </Text>
           </TouchableOpacity>
         </View>
