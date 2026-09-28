@@ -1,13 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Show } from "@clerk/nextjs"
 import { TopNavbar } from "@/components/top-navbar"
 import { BottomNav } from "@/components/bottom-nav"
 import { AddSubscriptionSheet } from "@/components/add-subscription-sheet"
 import { AddTransactionSheet } from "@/components/add-transaction-sheet"
 import { AddAccountSheet } from "@/components/add-account-sheet"
+import { AddBudgetSheet } from "@/components/add-budget-sheet"
 import { QuickAddSheet, QuickAddKind } from "@/components/quick-add-sheet"
 import { PaymentMethodsSheet } from "@/components/payment-methods-sheet"
 import { CommandPalette } from "@/components/command-palette"
@@ -23,10 +23,10 @@ export default function DashboardLayout({
   const [addOpen, setAddOpen] = useState(false)
   const [addTxnOpen, setAddTxnOpen] = useState(false)
   const [addAccountOpen, setAddAccountOpen] = useState(false)
+  const [addBudgetOpen, setAddBudgetOpen] = useState(false)
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false)
   const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false)
-  const router = useRouter()
 
   useEffect(() => {
     const openAdd = () => setAddOpen(true)
@@ -60,7 +60,7 @@ export default function DashboardLayout({
               if (kind === "transaction") setAddTxnOpen(true)
               else if (kind === "subscription") setAddOpen(true)
               else if (kind === "account") setAddAccountOpen(true)
-              else if (kind === "budget") router.push("/budgets")
+              else if (kind === "budget") setAddBudgetOpen(true)
             }}
           />
 
@@ -72,6 +72,9 @@ export default function DashboardLayout({
 
           {/* Add Account Modal/Sheet */}
           <AddAccountSheet open={addAccountOpen} onOpenChange={setAddAccountOpen} />
+
+          {/* Set Budget Modal/Sheet */}
+          <AddBudgetSheet open={addBudgetOpen} onOpenChange={setAddBudgetOpen} />
 
           {/* Card Vault / Payment Methods Sheet */}
           <PaymentMethodsSheet
@@ -85,6 +88,7 @@ export default function DashboardLayout({
             onOpenChange={setCmdPaletteOpen}
             onAddSubscription={() => setAddOpen(true)}
             onAddTransaction={() => setAddTxnOpen(true)}
+            onAddBudget={() => setAddBudgetOpen(true)}
             onOpenPaymentMethods={() => setPaymentMethodsOpen(true)}
           />
         </div>

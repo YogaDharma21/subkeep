@@ -24,6 +24,7 @@ interface DesktopSidebarProps {
   onNavigate: (view: DesktopView) => void
   onAddSubscription: () => void
   onAddTransaction: () => void
+  onAddBudget: () => void
   onSearchClick?: () => void
   activeSubCount?: number
 }
@@ -33,6 +34,7 @@ export function DesktopSidebar({
   onNavigate,
   onAddSubscription,
   onAddTransaction,
+  onAddBudget,
   onSearchClick,
   activeSubCount = 0,
 }: DesktopSidebarProps) {
@@ -109,6 +111,15 @@ export function DesktopSidebar({
           >
             <Plus className="size-4" />
             Add Subscription
+          </Button>
+
+          <Button
+            onClick={onAddBudget}
+            variant="outline"
+            className="w-full gap-2 font-bold text-xs h-9 shadow-xs cursor-pointer"
+          >
+            <Plus className="size-4" />
+            Set Budget
           </Button>
 
           <button

@@ -35,7 +35,7 @@ export default function TabLayout() {
   const router = useRouter()
   const segments = useSegments()
   const { colors } = useThemeColor()
-  const { showSearchModal, showAddTransaction } = useAlert()
+  const { showSearchModal, showAddTransaction, showAddSubscription, showAddAccount, showAddBudget } = useAlert()
   const { user } = useUser()
   const insets = useSafeAreaInsets()
   const [quickAddOpen, setQuickAddOpen] = useState(false)
@@ -45,11 +45,11 @@ export default function TabLayout() {
     if (kind === "transaction") {
       showAddTransaction()
     } else if (kind === "subscription") {
-      router.push("/modal/add" as never)
+      showAddSubscription()
     } else if (kind === "budget") {
-      router.push("/(tabs)/budgets" as never)
+      showAddBudget()
     } else if (kind === "account") {
-      router.push("/(tabs)/accounts" as never)
+      showAddAccount()
     }
   }
 
@@ -182,7 +182,6 @@ export default function TabLayout() {
           <Tabs.Screen name="stats" />
           <Tabs.Screen name="calendar" />
           <Tabs.Screen name="settings" />
-          <Tabs.Screen name="add" />
         </Tabs>
       </View>
 
