@@ -67,8 +67,8 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
 
         <button
           onClick={onAddClick}
-          title="Add transaction"
-          aria-label="Add transaction"
+          title="Quick add"
+          aria-label="Quick add"
           className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-foreground/15 bg-foreground text-background shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
         >
           <Plus className="size-6" strokeWidth={2.5} />
