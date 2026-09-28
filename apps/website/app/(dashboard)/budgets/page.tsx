@@ -180,9 +180,6 @@ export default function BudgetsPage() {
           <p className="mt-1 text-xs text-muted-foreground/60">
             Set per-category spending limits to track progress
           </p>
-          <Button size="sm" onClick={openAddBudgetSheet} className="mt-4 cursor-pointer">
-            <Plus className="size-4" /> Set your first budget
-          </Button>
         </div>
       ) : (
         <div className="space-y-3">
