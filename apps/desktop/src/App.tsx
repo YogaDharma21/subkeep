@@ -154,7 +154,6 @@ export function App() {
           {currentView === "subscriptions" && (
             <SubscriptionsView
               onSelectSubscription={handleSelectSubscription}
-              onAddSubscription={() => setAddSheetOpen(true)}
             />
           )}
 
@@ -162,7 +161,7 @@ export function App() {
 
           {currentView === "accounts" && <AccountsView />}
 
-          {currentView === "budgets" && <BudgetsView onAddBudget={() => setAddBudgetOpen(true)} />}
+          {currentView === "budgets" && <BudgetsView />}
 
           {currentView === "calendar" && (
             <div className="space-y-4 max-w-5xl mx-auto pb-12">

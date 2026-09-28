@@ -9,12 +9,10 @@ import {
   Search,
   Pencil,
   Trash2,
-  Plus,
   ArrowDownRight,
   ArrowUpRight,
 } from "lucide-react"
 import { DynamicIcon } from "@/components/dynamic-icon"
-import { AddTransactionSheet } from "@/components/add-transaction-sheet"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -56,7 +54,6 @@ export function TransactionsView() {
   const [month, setMonth] = useState(currentMonthKey())
   const [search, setSearch] = useState("")
   const [typeFilter, setTypeFilter] = useState<"all" | TransactionType>("all")
-  const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<TxnDoc | null>(null)
   const [deleting, setDeleting] = useState<TxnDoc | null>(null)
 
@@ -200,15 +197,12 @@ export function TransactionsView() {
         </div>
       </div>
 
-      {/* Search + add */}
+      {/* Search */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder="Search notes, categories, dates..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 text-xs" />
         </div>
-        <Button onClick={() => setAddOpen(true)} size="sm" className="shrink-0 cursor-pointer gap-1.5">
-          <Plus className="size-3.5" /> Add
-        </Button>
       </div>
 
       <div className="flex items-center gap-1">
@@ -299,8 +293,6 @@ export function TransactionsView() {
           ))}
         </div>
       )}
-
-      <AddTransactionSheet open={addOpen} onOpenChange={setAddOpen} />
 
       {/* Edit dialog */}
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>

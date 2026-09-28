@@ -12,7 +12,6 @@ import { useAuth } from "@clerk/expo"
 import { api } from "@/convex/_generated/api"
 import {
   Wallet,
-  Plus,
   Pencil,
   Trash2,
   Archive,
@@ -231,30 +230,11 @@ export default function AccountsScreen() {
             gap: 6,
           }}
         >
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Wallet size={14} color={colors.primary} />
-              <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                Total Net Worth ({primaryCurrency})
-              </Text>
-            </View>
-            <TouchableOpacity
-              onPress={() => showAddAccount()}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 4,
-                backgroundColor: colors.primary,
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                borderRadius: 8,
-              }}
-            >
-              <Plus size={14} color={colors.primaryForeground} />
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.primaryForeground }}>
-                Add
-              </Text>
-            </TouchableOpacity>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Wallet size={14} color={colors.primary} />
+            <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
+              Total Net Worth ({primaryCurrency})
+            </Text>
           </View>
           {accounts === undefined ? (
             <ActivityIndicator size="small" color={colors.primary} />
@@ -290,20 +270,6 @@ export default function AccountsScreen() {
             <Text style={{ fontSize: 11, color: colors.mutedText, textAlign: "center" }}>
               Add checking, savings, cash, or e-wallets to track balances
             </Text>
-            <TouchableOpacity
-              onPress={() => showAddAccount()}
-              style={{
-                marginTop: 8,
-                backgroundColor: colors.primary,
-                paddingHorizontal: 14,
-                paddingVertical: 8,
-                borderRadius: 8,
-              }}
-            >
-              <Text style={{ fontSize: 12, fontWeight: "700", color: colors.primaryForeground }}>
-                Add your first account
-              </Text>
-            </TouchableOpacity>
           </View>
         ) : (
           <>

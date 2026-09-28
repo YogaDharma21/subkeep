@@ -5,7 +5,7 @@ import { useMutation, useQuery } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
-import { Wallet, Plus, Pencil, Trash2, Archive, PlusCircle } from "lucide-react"
+import { Wallet, Pencil, Trash2, Archive, PlusCircle } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { AddAccountSheet } from "@/components/add-account-sheet"
@@ -48,7 +48,6 @@ export default function AccountsPage() {
 
   const { primaryCurrency, rates } = usePrimaryCurrency()
 
-  const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<AccountDoc | null>(null)
   const [txnForAccount, setTxnForAccount] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<AccountDoc | null>(null)
@@ -208,14 +207,9 @@ export default function AccountsPage() {
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-border bg-background p-4 sm:p-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-            <Wallet className="size-3.5 text-primary" />
-            <span>Total Net Worth ({primaryCurrency})</span>
-          </div>
-          <Button size="sm" onClick={() => setAddOpen(true)} className="cursor-pointer">
-            <Plus className="size-4" /> Add Account
-          </Button>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+          <Wallet className="size-3.5 text-primary" />
+          <span>Total Net Worth ({primaryCurrency})</span>
         </div>
         {accounts === undefined ? (
           <Skeleton className="mt-3 h-9 w-40" />
@@ -241,9 +235,6 @@ export default function AccountsPage() {
           <p className="mt-1 text-xs text-muted-foreground/60">
             Add checking, savings, cash, or e-wallets to track balances
           </p>
-          <Button size="sm" onClick={() => setAddOpen(true)} className="mt-4 cursor-pointer">
-            <Plus className="size-4" /> Add your first account
-          </Button>
         </div>
       ) : (
         <>
@@ -263,7 +254,6 @@ export default function AccountsPage() {
         </>
       )}
 
-      <AddAccountSheet open={addOpen} onOpenChange={setAddOpen} />
       <AddAccountSheet
         open={!!editing}
         onOpenChange={(o) => !o && setEditing(null)}
