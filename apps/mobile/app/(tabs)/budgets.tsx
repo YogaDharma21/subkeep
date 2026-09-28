@@ -242,24 +242,6 @@ export default function BudgetsScreen() {
             <Text style={{ fontSize: 11, color: colors.mutedText, textAlign: "center" }}>
               Set per-category spending limits to track progress
             </Text>
-            <TouchableOpacity
-              onPress={showAddBudget}
-              style={{
-                marginTop: 8,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 6,
-                backgroundColor: colors.primary,
-                paddingHorizontal: 14,
-                paddingVertical: 9,
-                borderRadius: 10,
-              }}
-            >
-              <Plus size={14} color={colors.primaryForeground} />
-              <Text style={{ fontSize: 12, fontWeight: "700", color: colors.primaryForeground }}>
-                Set your first budget
-              </Text>
-            </TouchableOpacity>
           </View>
         ) : (
           rows.map(({ budget, meta, spent, cap, pct, remaining }) => {

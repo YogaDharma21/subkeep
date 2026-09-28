@@ -150,9 +150,6 @@ export function BudgetsView({ onAddBudget }: { onAddBudget: () => void }) {
           <PiggyBank className="size-6 text-muted-foreground/50 mb-2" />
           <p className="text-sm font-medium text-muted-foreground">No budgets for {monthLabel(month).split(" ")[0]}</p>
           <p className="mt-1 text-xs text-muted-foreground/60">Set per-category spending limits to track progress</p>
-          <Button size="sm" onClick={onAddBudget} className="mt-4 cursor-pointer">
-            <Plus className="size-4" /> Set your first budget
-          </Button>
         </div>
       ) : (
         <div className="space-y-3">
