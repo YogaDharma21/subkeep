@@ -27,7 +27,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { DynamicIcon } from "@/components/dynamic-icon"
-import { AddTransactionSheet } from "@/components/add-transaction-sheet"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
@@ -62,7 +61,6 @@ export default function TransactionsPage() {
   const [month, setMonth] = useState(currentMonthKey())
   const [search, setSearch] = useState("")
   const [typeFilter, setTypeFilter] = useState<"all" | TransactionType>("all")
-  const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<TxnDoc | null>(null)
   const [deleting, setDeleting] = useState<TxnDoc | null>(null)
 
@@ -222,9 +220,6 @@ export default function TransactionsPage() {
             className="pl-9"
           />
         </div>
-        <Button onClick={() => setAddOpen(true)} size="sm" className="shrink-0 cursor-pointer">
-          Add
-        </Button>
       </div>
 
       <div className="flex items-center gap-1 overflow-x-auto">
@@ -263,7 +258,7 @@ export default function TransactionsPage() {
           <ArrowLeftRight className="size-6 text-muted-foreground/50 mb-2" />
           <p className="text-sm font-medium text-muted-foreground">No transactions found</p>
           <p className="mt-1 text-xs text-muted-foreground/60">
-            {search ? "Try a different search" : "Tap Add to log your first transaction"}
+            {search ? "Try a different search" : "Tap + to log your first transaction"}
           </p>
         </div>
       ) : (
@@ -345,8 +340,6 @@ export default function TransactionsPage() {
           ))}
         </div>
       )}
-
-      <AddTransactionSheet open={addOpen} onOpenChange={setAddOpen} />
 
       {/* Edit dialog */}
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>

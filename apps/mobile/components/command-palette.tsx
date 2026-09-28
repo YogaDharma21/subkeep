@@ -56,7 +56,7 @@ export function SearchModal({
   const { colors } = useThemeColor()
   const { isSignedIn } = useAuth()
   const { primaryCurrency, setPrimaryCurrency, rates } = usePrimaryCurrency()
-  const { showAddTransaction } = useAlert()
+  const { showAddTransaction, showAddSubscription, showAddAccount, showAddBudget } = useAlert()
   const subscriptions = useQuery(
     api.subscriptions.list,
     isSignedIn ? {} : "skip"
@@ -141,8 +141,30 @@ export function SearchModal({
           if (onAddSubscription) {
             onAddSubscription()
           } else {
-            router.push("/modal/add" as never)
+            showAddSubscription()
           }
+        },
+      },
+      {
+        id: "add-account",
+        label: "Add Account",
+        detail: "Create a bank, cash, or e-wallet account",
+        icon: Wallet,
+        category: "Actions",
+        run: () => {
+          onClose()
+          showAddAccount()
+        },
+      },
+      {
+        id: "add-budget",
+        label: "Set Budget",
+        detail: "Set a monthly spending cap for a category",
+        icon: PiggyBank,
+        category: "Actions",
+        run: () => {
+          onClose()
+          showAddBudget()
         },
       },
       {
@@ -242,7 +264,7 @@ export function SearchModal({
         a.detail.toLowerCase().includes(q) ||
         a.category.toLowerCase().includes(q)
     )
-  }, [query, router, onClose, onAddSubscription, onAddTransaction, showAddTransaction])
+  }, [query, router, onClose, onAddSubscription, onAddTransaction, showAddTransaction, showAddSubscription, showAddAccount, showAddBudget])
 
   // Currency search shortcuts
   const currencyActions = useMemo(() => {

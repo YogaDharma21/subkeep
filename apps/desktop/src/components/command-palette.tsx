@@ -36,6 +36,7 @@ interface CommandPaletteProps {
   onNavigate: (view: string, subId?: string) => void
   onAddSubscription?: () => void
   onAddTransaction?: () => void
+  onAddBudget?: () => void
   onOpenPaymentMethods?: () => void
 }
 
@@ -45,6 +46,7 @@ export function CommandPalette({
   onNavigate,
   onAddSubscription,
   onAddTransaction,
+  onAddBudget,
   onOpenPaymentMethods,
 }: CommandPaletteProps) {
   const { isSignedIn } = useAuth()
@@ -145,6 +147,17 @@ export function CommandPalette({
         run: () => {
           onOpenChange(false)
           onAddSubscription?.()
+        },
+      },
+      {
+        id: "add-budget",
+        label: "Set Budget",
+        detail: "Set a monthly spending cap for a category",
+        icon: PiggyBank,
+        category: "Actions",
+        run: () => {
+          onOpenChange(false)
+          onAddBudget?.()
         },
       },
       {
@@ -285,6 +298,7 @@ export function CommandPalette({
     onOpenChange,
     onAddTransaction,
     onAddSubscription,
+    onAddBudget,
     onOpenPaymentMethods,
   ])
 

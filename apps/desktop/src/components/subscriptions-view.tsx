@@ -3,7 +3,6 @@ import { useQuery } from "convex/react"
 import { useAuth } from "@clerk/clerk-react"
 import { api } from "@/convex/_generated/api"
 import {
-  Plus,
   Search,
   SlidersHorizontal,
   DollarSign,
@@ -11,7 +10,6 @@ import {
   AlertCircle,
   Receipt,
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { SubscriptionCard } from "@/components/subscription-card"
@@ -22,12 +20,10 @@ import { categories } from "@/lib/constants"
 
 interface SubscriptionsViewProps {
   onSelectSubscription: (id: string) => void
-  onAddSubscription: () => void
 }
 
 export function SubscriptionsView({
   onSelectSubscription,
-  onAddSubscription,
 }: SubscriptionsViewProps) {
   const { isSignedIn } = useAuth()
   const { primaryCurrency, rates } = usePrimaryCurrency()
@@ -209,15 +205,6 @@ export function SubscriptionsView({
                 <option value="name" className="bg-background text-foreground">Name A-Z</option>
               </select>
             </div>
-
-            <Button
-              size="sm"
-              onClick={onAddSubscription}
-              className="text-xs font-bold gap-1.5 cursor-pointer shrink-0"
-            >
-              <Plus className="size-3.5" />
-              <span>Add</span>
-            </Button>
           </div>
         </div>
 
@@ -258,16 +245,6 @@ export function SubscriptionsView({
               ? `No active subscriptions match "${searchQuery}". Try clearing your search.`
               : "Get started by adding your recurring bills and subscriptions."}
           </p>
-          <div className="mt-4">
-            <Button
-              size="sm"
-              onClick={onAddSubscription}
-              className="gap-1.5 text-xs font-semibold cursor-pointer"
-            >
-              <Plus className="size-3.5" />
-              Add First Subscription
-            </Button>
-          </div>
         </div>
       )}
     </div>
