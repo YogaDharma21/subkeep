@@ -15,7 +15,6 @@ import {
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Dialog,
   DialogContent,
@@ -29,7 +28,6 @@ import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import {
-  expenseCategories,
   financeCategoryMeta,
   currentMonthKey,
   monthLabel,
@@ -37,13 +35,12 @@ import {
 } from "@/lib/finance"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { openAddBudgetSheet } from "@/lib/add-budget-event"
 
 export default function BudgetsPage() {
   useDocumentTitle("Budgets")
   const { isSignedIn } = useAuth()
   const [month, setMonth] = useState(currentMonthKey())
-  const [category, setCategory] = useState("food")
-  const [amount, setAmount] = useState("")
 
   const budgets = useQuery(
     api.budgets.list,
@@ -54,13 +51,11 @@ export default function BudgetsPage() {
     isSignedIn ? { month } : "skip"
   )
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
-  const upsertMutation = useMutation(api.budgets.upsert)
   const removeMutation = useMutation(api.budgets.remove)
   const copyMutation = useMutation(api.budgets.copyFromPreviousMonth)
 
   const { primaryCurrency, rates } = usePrimaryCurrency()
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
 
   const rows = useMemo(() => {
     const txns = transactions || []
@@ -100,37 +95,6 @@ export default function BudgetsPage() {
     const spent = rows.reduce((s, r) => s + r.spent, 0)
     return { cap, spent, pct: cap > 0 ? Math.round((spent / cap) * 100) : 0 }
   }, [rows])
-
-  const usedCategories = new Set((budgets || []).map((b) => b.category))
-  const availableCategories = expenseCategories.filter((c) => !usedCategories.has(c.value))
-
-  const handleSave = async () => {
-    const parsed = parseFloat(amount)
-    if (isNaN(parsed) || parsed <= 0) {
-      toast.error("Please enter a valid budget amount")
-      return
-    }
-    setIsSaving(true)
-    try {
-      await upsertMutation({
-        category,
-        amount: parsed,
-        currency: primaryCurrency,
-        month,
-      })
-      const meta = financeCategoryMeta(category)
-      toast.success(`Budget set for ${meta.label}`)
-      setAmount("")
-      if (availableCategories.length > 1) {
-        const next = availableCategories.find((c) => c.value !== category)
-        if (next) setCategory(next.value)
-      }
-    } catch {
-      toast.error("Failed to save budget")
-    } finally {
-      setIsSaving(false)
-    }
-  }
 
   const handleDelete = async () => {
     if (!deleteId) return
@@ -196,43 +160,11 @@ export default function BudgetsPage() {
         )}
       </div>
 
-      {/* Add budget */}
-      <div className="rounded-lg border border-border bg-background p-4 space-y-3">
-        <h3 className="text-sm font-semibold">Set Category Budget</h3>
-        <div className="grid grid-cols-2 gap-2 max-h-44 overflow-y-auto pr-0.5">
-          {(availableCategories.length > 0 ? availableCategories : expenseCategories).map((c) => (
-            <button
-              key={c.value}
-              type="button"
-              onClick={() => setCategory(c.value)}
-              className={cn(
-                "flex items-center gap-2 rounded-lg border-2 p-2 text-left transition-all cursor-pointer",
-                category === c.value
-                  ? "border-foreground bg-muted"
-                  : "border-border hover:border-foreground/40"
-              )}
-            >
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-foreground">
-                <DynamicIcon name={c.icon} className="size-3.5" />
-              </span>
-              <span className="text-[11px] font-medium leading-tight">{c.label}</span>
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <Input
-              type="number"
-              placeholder={`Monthly cap in ${primaryCurrency}`}
-              step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-            />
-          </div>
-          <Button onClick={handleSave} disabled={isSaving || !amount} className="cursor-pointer">
-            <Plus className="size-4" /> {isSaving ? "Saving..." : "Set"}
-          </Button>
-        </div>
+      {/* Set budget entry */}
+      <div className="flex justify-end">
+        <Button size="sm" onClick={openAddBudgetSheet} className="cursor-pointer">
+          <Plus className="size-4" /> Set Budget
+        </Button>
       </div>
 
       {/* Budget rows */}
@@ -246,8 +178,11 @@ export default function BudgetsPage() {
           <PiggyBank className="size-6 text-muted-foreground/50 mb-2" />
           <p className="text-sm font-medium text-muted-foreground">No budgets for {monthLabel(month).split(" ")[0]}</p>
           <p className="mt-1 text-xs text-muted-foreground/60">
-            Set per-category spending limits above to track progress
+            Set per-category spending limits to track progress
           </p>
+          <Button size="sm" onClick={openAddBudgetSheet} className="mt-4 cursor-pointer">
+            <Plus className="size-4" /> Set your first budget
+          </Button>
         </div>
       ) : (
         <div className="space-y-3">

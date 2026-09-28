@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   ActivityIndicator,
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -15,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   PiggyBank,
+  Plus,
   Trash2,
 } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
@@ -23,7 +23,6 @@ import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import {
-  expenseCategories,
   financeCategoryMeta,
   currentMonthKey,
   monthLabel,
@@ -33,15 +32,12 @@ import {
 export default function BudgetsScreen() {
   const { colors } = useThemeColor()
   const { isSignedIn } = useAuth()
-  const { showToast } = useAlert()
+  const { showToast, showAddBudget } = useAlert()
   const [month, setMonth] = useState(currentMonthKey())
-  const [category, setCategory] = useState("food")
-  const [amount, setAmount] = useState("")
 
   const budgets = useQuery(api.budgets.list, isSignedIn ? { month } : "skip")
   const transactions = useQuery(api.transactions.list, isSignedIn ? { month } : "skip")
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
-  const upsertMutation = useMutation(api.budgets.upsert)
   const removeMutation = useMutation(api.budgets.remove)
   const copyMutation = useMutation(api.budgets.copyFromPreviousMonth)
 
@@ -85,29 +81,6 @@ export default function BudgetsScreen() {
     const spent = rows.reduce((s, r) => s + r.spent, 0)
     return { cap, spent, pct: cap > 0 ? Math.round((spent / cap) * 100) : 0 }
   }, [rows])
-
-  const usedCategories = new Set((budgets || []).map((b) => b.category))
-  const availableCategories = expenseCategories.filter((c) => !usedCategories.has(c.value))
-
-  const handleSave = async () => {
-    const parsed = parseFloat(amount)
-    if (isNaN(parsed) || parsed <= 0) {
-      showToast("Please enter a valid budget amount", "error")
-      return
-    }
-    try {
-      await upsertMutation({ category, amount: parsed, currency: primaryCurrency, month })
-      const meta = financeCategoryMeta(category)
-      showToast(`Budget set for ${meta.label}`, "success")
-      setAmount("")
-      if (availableCategories.length > 1) {
-        const next = availableCategories.find((c) => c.value !== category)
-        if (next) setCategory(next.value)
-      }
-    } catch {
-      showToast("Failed to save budget", "error")
-    }
-  }
 
   const handleDelete = async (id: string) => {
     try {
@@ -225,100 +198,25 @@ export default function BudgetsScreen() {
           ) : null}
         </View>
 
-        {/* Add budget */}
-        <View
-          style={{
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14,
-            gap: 10,
-          }}
-        >
-          <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
-            Set Category Budget
-          </Text>
-          <ScrollView
-            style={{ maxHeight: 164 }}
-            contentContainerStyle={{ gap: 6, paddingBottom: 2 }}
-            showsVerticalScrollIndicator={false}
-            nestedScrollEnabled
+        {/* Set budget entry */}
+        <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
+          <TouchableOpacity
+            onPress={showAddBudget}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+              backgroundColor: colors.primary,
+              paddingHorizontal: 14,
+              paddingVertical: 9,
+              borderRadius: 10,
+            }}
           >
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
-              {(availableCategories.length > 0 ? availableCategories : expenseCategories).map((c) => (
-                <TouchableOpacity
-                  key={c.value}
-                  onPress={() => setCategory(c.value)}
-                  style={{
-                    width: "48.5%",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 6,
-                    paddingHorizontal: 10,
-                    paddingVertical: 7,
-                    borderRadius: 8,
-                    backgroundColor: category === c.value ? colors.surfaceHover : colors.surface,
-                    borderWidth: category === c.value ? 1.5 : 0,
-                    borderColor: colors.primary,
-                  }}
-                >
-                  <View
-                    style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: 6,
-                      backgroundColor: category === c.value ? colors.background : colors.surfaceHover,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <DynamicIcon name={c.icon} size={12} color={colors.text} />
-                  </View>
-                  <Text
-                    numberOfLines={1}
-                    style={{ fontSize: 11, fontWeight: "600", color: colors.text, flex: 1 }}
-                  >
-                    {c.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <TextInput
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="numeric"
-              placeholder={`Monthly cap in ${primaryCurrency}`}
-              placeholderTextColor={colors.mutedText}
-              style={{
-                flex: 1,
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderRadius: 8,
-                paddingHorizontal: 10,
-                paddingVertical: 9,
-                fontSize: 14,
-                color: colors.text,
-                backgroundColor: colors.surface,
-              }}
-            />
-            <TouchableOpacity
-              onPress={handleSave}
-              style={{
-                backgroundColor: colors.primary,
-                paddingHorizontal: 16,
-                borderRadius: 8,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text style={{ fontSize: 13, fontWeight: "700", color: colors.primaryForeground }}>
-                Set
-              </Text>
-            </TouchableOpacity>
-          </View>
+            <Plus size={14} color={colors.primaryForeground} />
+            <Text style={{ fontSize: 12, fontWeight: "700", color: colors.primaryForeground }}>
+              Set Budget
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Budget rows */}
@@ -342,8 +240,26 @@ export default function BudgetsScreen() {
               No budgets for {monthLabel(month).split(" ")[0]}
             </Text>
             <Text style={{ fontSize: 11, color: colors.mutedText, textAlign: "center" }}>
-              Set per-category spending limits above to track progress
+              Set per-category spending limits to track progress
             </Text>
+            <TouchableOpacity
+              onPress={showAddBudget}
+              style={{
+                marginTop: 8,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+                backgroundColor: colors.primary,
+                paddingHorizontal: 14,
+                paddingVertical: 9,
+                borderRadius: 10,
+              }}
+            >
+              <Plus size={14} color={colors.primaryForeground} />
+              <Text style={{ fontSize: 12, fontWeight: "700", color: colors.primaryForeground }}>
+                Set your first budget
+              </Text>
+            </TouchableOpacity>
           </View>
         ) : (
           rows.map(({ budget, meta, spent, cap, pct, remaining }) => {

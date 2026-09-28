@@ -14,6 +14,7 @@ import { CommandPalette } from "@/components/command-palette"
 import { LandingPage } from "@/components/landing-page"
 import { useEffect } from "react"
 import { OPEN_ADD_SUBSCRIPTION_EVENT } from "@/lib/add-subscription-event"
+import { OPEN_ADD_BUDGET_EVENT } from "@/lib/add-budget-event"
 
 export default function DashboardLayout({
   children,
@@ -30,8 +31,13 @@ export default function DashboardLayout({
 
   useEffect(() => {
     const openAdd = () => setAddOpen(true)
+    const openBudget = () => setAddBudgetOpen(true)
     window.addEventListener(OPEN_ADD_SUBSCRIPTION_EVENT, openAdd)
-    return () => window.removeEventListener(OPEN_ADD_SUBSCRIPTION_EVENT, openAdd)
+    window.addEventListener(OPEN_ADD_BUDGET_EVENT, openBudget)
+    return () => {
+      window.removeEventListener(OPEN_ADD_SUBSCRIPTION_EVENT, openAdd)
+      window.removeEventListener(OPEN_ADD_BUDGET_EVENT, openBudget)
+    }
   }, [])
 
   return (
