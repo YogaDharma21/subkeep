@@ -1,5 +1,5 @@
-import React from "react"
-import { Modal, View, Text, TouchableOpacity } from "react-native"
+import React, { useEffect, useRef, useState } from "react"
+import { Animated, Easing, Modal, Text, TouchableOpacity, View } from "react-native"
 import {
   ArrowLeftRight,
   PiggyBank,
@@ -49,25 +49,90 @@ const options: Array<{
   },
 ]
 
+const SHEET_HIDDEN_Y = 500
+
 export function QuickAddSheet({ visible, onClose, onSelect }: QuickAddSheetProps) {
   const { colors } = useThemeColor()
+  const [mounted, setMounted] = useState(false)
+  const backdropOpacity = useRef(new Animated.Value(0)).current
+  const sheetTranslate = useRef(new Animated.Value(SHEET_HIDDEN_Y)).current
+  const exitAnim = useRef<Animated.CompositeAnimation | null>(null)
+
+  // Mount on open, play the exit animation before unmounting on close so the
+  // dim backdrop fades out instead of vanishing mid-slide.
+  useEffect(() => {
+    if (visible) {
+      exitAnim.current?.stop()
+      exitAnim.current = null
+      setMounted(true)
+    } else if (mounted) {
+      exitAnim.current = Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 0,
+          duration: 180,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(sheetTranslate, {
+          toValue: SHEET_HIDDEN_Y,
+          duration: 220,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ])
+      exitAnim.current.start(() => {
+        exitAnim.current = null
+        setMounted(false)
+      })
+    }
+  }, [visible, mounted, backdropOpacity, sheetTranslate])
+
+  // Enter animation once mounted.
+  useEffect(() => {
+    if (mounted && visible) {
+      backdropOpacity.setValue(0)
+      sheetTranslate.setValue(SHEET_HIDDEN_Y)
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 1,
+          duration: 200,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(sheetTranslate, {
+          toValue: 0,
+          duration: 260,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start()
+    }
+  }, [mounted, visible, backdropOpacity, sheetTranslate])
+
+  if (!mounted) return null
 
   return (
     <Modal
-      visible={visible}
+      visible
       transparent
-      animationType="slide"
+      animationType="none"
       onRequestClose={onClose}
     >
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "rgba(0,0,0,0.6)",
-          justifyContent: "flex-end",
-        }}
-      >
-        <TouchableOpacity activeOpacity={1} onPress={onClose} style={{ flex: 1 }} />
-        <View
+      <View style={{ flex: 1, justifyContent: "flex-end" }}>
+        <Animated.View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.6)",
+            opacity: backdropOpacity,
+          }}
+        >
+          <TouchableOpacity activeOpacity={1} onPress={onClose} style={{ flex: 1 }} />
+        </Animated.View>
+        <Animated.View
           style={{
             backgroundColor: colors.card,
             borderTopLeftRadius: 20,
@@ -78,6 +143,7 @@ export function QuickAddSheet({ visible, onClose, onSelect }: QuickAddSheetProps
             padding: 16,
             paddingBottom: 32,
             gap: 12,
+            transform: [{ translateY: sheetTranslate }],
           }}
         >
           <View
@@ -149,7 +215,7 @@ export function QuickAddSheet({ visible, onClose, onSelect }: QuickAddSheetProps
               )
             })}
           </View>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   )
