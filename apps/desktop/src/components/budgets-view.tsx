@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "convex/react"
 import { useAuth } from "@clerk/clerk-react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
-import { ChevronLeft, ChevronRight, PiggyBank, Plus, Trash2, Copy } from "lucide-react"
+import { ChevronLeft, ChevronRight, PiggyBank, Plus, Trash2 } from "lucide-react"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { Button } from "@/components/ui/button"
 import {
@@ -32,7 +32,6 @@ export function BudgetsView({ onAddBudget }: { onAddBudget: () => void }) {
   const transactions = useQuery(api.transactions.list, isSignedIn ? { month } : "skip")
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const removeMutation = useMutation(api.budgets.remove)
-  const copyMutation = useMutation(api.budgets.copyFromPreviousMonth)
 
   const { primaryCurrency, rates } = usePrimaryCurrency()
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -87,16 +86,6 @@ export function BudgetsView({ onAddBudget }: { onAddBudget: () => void }) {
     }
   }
 
-  const handleCopy = async () => {
-    try {
-      const copied = await copyMutation({ month, fromMonth: shiftMonth(month, -1) })
-      if (copied > 0) toast.success(`Copied ${copied} budget${copied > 1 ? "s" : ""} from last month`)
-      else toast.info("No budgets to copy from last month")
-    } catch {
-      toast.error("Failed to copy budgets")
-    }
-  }
-
   return (
     <div className="space-y-4 max-w-5xl mx-auto pb-12">
       <div className="flex items-start justify-between gap-3">
@@ -131,11 +120,6 @@ export function BudgetsView({ onAddBudget }: { onAddBudget: () => void }) {
               style={{ width: `${Math.min(100, totals.pct)}%` }}
             />
           </div>
-        )}
-        {(budgets?.length || 0) === 0 && (
-          <Button variant="ghost" size="sm" onClick={handleCopy} className="mt-3 w-full text-xs cursor-pointer gap-1.5">
-            <Copy className="size-3.5" /> Copy last month&apos;s budgets
-          </Button>
         )}
       </div>
 

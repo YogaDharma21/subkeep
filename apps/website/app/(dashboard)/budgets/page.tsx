@@ -11,7 +11,6 @@ import {
   PiggyBank,
   Plus,
   Trash2,
-  Copy,
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
@@ -52,7 +51,6 @@ export default function BudgetsPage() {
   )
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const removeMutation = useMutation(api.budgets.remove)
-  const copyMutation = useMutation(api.budgets.copyFromPreviousMonth)
 
   const { primaryCurrency, rates } = usePrimaryCurrency()
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -107,16 +105,6 @@ export default function BudgetsPage() {
     }
   }
 
-  const handleCopy = async () => {
-    try {
-      const copied = await copyMutation({ month, fromMonth: shiftMonth(month, -1) })
-      if (copied > 0) toast.success(`Copied ${copied} budget${copied > 1 ? "s" : ""} from last month`)
-      else toast.info("No budgets to copy from last month")
-    } catch {
-      toast.error("Failed to copy budgets")
-    }
-  }
-
   return (
     <div className="space-y-4">
       {/* Month navigator + totals */}
@@ -152,11 +140,6 @@ export default function BudgetsPage() {
               style={{ width: `${Math.min(100, totals.pct)}%` }}
             />
           </div>
-        )}
-        {(budgets?.length || 0) === 0 && (
-          <Button variant="ghost" size="sm" onClick={handleCopy} className="mt-3 w-full text-xs cursor-pointer">
-            <Copy className="size-3.5" /> Copy last month&apos;s budgets
-          </Button>
         )}
       </div>
 
