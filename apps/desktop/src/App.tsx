@@ -162,7 +162,7 @@ export function App() {
 
           {currentView === "accounts" && <AccountsView />}
 
-          {currentView === "budgets" && <BudgetsView />}
+          {currentView === "budgets" && <BudgetsView onAddBudget={() => setAddBudgetOpen(true)} />}
 
           {currentView === "calendar" && (
             <div className="space-y-4 max-w-5xl mx-auto pb-12">
