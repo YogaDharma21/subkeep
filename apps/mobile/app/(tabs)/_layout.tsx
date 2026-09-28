@@ -1,10 +1,12 @@
 import { Tabs, useRouter, useSegments } from "expo-router"
 import { View, Text, TouchableOpacity, Image } from "react-native"
+import { useState } from "react"
 import { Image as ExpoImage } from "expo-image"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useUser } from "@clerk/expo"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
+import { QuickAddSheet, QuickAddKind } from "@/components/quick-add-sheet"
 import {
   Home,
   ArrowLeftRight,
@@ -36,6 +38,20 @@ export default function TabLayout() {
   const { showSearchModal, showAddTransaction } = useAlert()
   const { user } = useUser()
   const insets = useSafeAreaInsets()
+  const [quickAddOpen, setQuickAddOpen] = useState(false)
+
+  const handleQuickAddSelect = (kind: QuickAddKind) => {
+    setQuickAddOpen(false)
+    if (kind === "transaction") {
+      showAddTransaction()
+    } else if (kind === "subscription") {
+      router.push("/modal/add" as never)
+    } else if (kind === "budget") {
+      router.push("/(tabs)/budgets" as never)
+    } else if (kind === "account") {
+      router.push("/(tabs)/accounts" as never)
+    }
+  }
 
   const avatarLabel =
     user?.fullName || user?.primaryEmailAddress?.emailAddress || "Profile"
@@ -205,8 +221,8 @@ export default function TabLayout() {
 
           <TouchableOpacity
             activeOpacity={0.8}
-            accessibilityLabel="Add transaction"
-            onPress={showAddTransaction}
+            accessibilityLabel="Quick add"
+            onPress={() => setQuickAddOpen(true)}
             style={{
               width: 48,
               height: 48,
@@ -224,6 +240,12 @@ export default function TabLayout() {
           {RIGHT_TABS.map(renderTab)}
         </View>
       </View>
+
+      <QuickAddSheet
+        visible={quickAddOpen}
+        onClose={() => setQuickAddOpen(false)}
+        onSelect={handleQuickAddSelect}
+      />
     </View>
   )
 }

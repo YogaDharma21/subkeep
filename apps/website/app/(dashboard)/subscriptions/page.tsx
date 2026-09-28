@@ -23,6 +23,7 @@ import {
 } from "@/lib/currency"
 import { currencies } from "@/lib/constants"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
+import { findUpcomingReminders } from "@/lib/notifications"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
 import { differenceInDays } from "date-fns"
@@ -158,6 +159,11 @@ export default function SubscriptionsPage() {
     })
   }, [subscriptions, filter, sortBy, primaryCurrency, rates])
 
+  const hasReminders = useMemo(
+    () => findUpcomingReminders(subscriptions || [], 3).length > 0,
+    [subscriptions]
+  )
+
   const getEmptyMessage = () => {
     switch (filter) {
       case "due_soon":
@@ -284,9 +290,9 @@ export default function SubscriptionsPage() {
       </div>
 
       {/* Responsive Dashboard Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className={cn(hasReminders && "grid grid-cols-1 lg:grid-cols-12 gap-6 items-start")}>
         {/* Main Column: Filters & Subscriptions */}
-        <div className="lg:col-span-7 xl:col-span-8 space-y-3">
+        <div className={cn("space-y-3", hasReminders && "lg:col-span-7 xl:col-span-8")}>
           {/* Filter and Sort Toolbar */}
           <div className="flex items-center justify-between gap-2 flex-wrap">
             {/* Filter Buttons */}
@@ -410,15 +416,17 @@ export default function SubscriptionsPage() {
           </div>
         </div>
 
-        {/* Sidebar Column: Upcoming Reminders */}
-        <div className="lg:col-span-5 xl:col-span-4 space-y-4">
-          <UpcomingReminders
-            subscriptions={subscriptions || []}
-            primaryCurrency={primaryCurrency}
-            rates={rates}
-            onMarkCanceled={handleMarkCanceled}
-          />
-        </div>
+        {/* Sidebar Column: Upcoming Reminders (only reserves space when items exist) */}
+        {hasReminders && (
+          <div className="lg:col-span-5 xl:col-span-4 space-y-4 mt-6 lg:mt-0">
+            <UpcomingReminders
+              subscriptions={subscriptions || []}
+              primaryCurrency={primaryCurrency}
+              rates={rates}
+              onMarkCanceled={handleMarkCanceled}
+            />
+          </div>
+        )}
       </div>
     </div>
   )

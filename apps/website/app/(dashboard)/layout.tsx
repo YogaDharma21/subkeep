@@ -1,11 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Show } from "@clerk/nextjs"
 import { TopNavbar } from "@/components/top-navbar"
 import { BottomNav } from "@/components/bottom-nav"
 import { AddSubscriptionSheet } from "@/components/add-subscription-sheet"
 import { AddTransactionSheet } from "@/components/add-transaction-sheet"
+import { AddAccountSheet } from "@/components/add-account-sheet"
+import { QuickAddSheet, QuickAddKind } from "@/components/quick-add-sheet"
 import { PaymentMethodsSheet } from "@/components/payment-methods-sheet"
 import { CommandPalette } from "@/components/command-palette"
 import { LandingPage } from "@/components/landing-page"
@@ -19,8 +22,11 @@ export default function DashboardLayout({
 }) {
   const [addOpen, setAddOpen] = useState(false)
   const [addTxnOpen, setAddTxnOpen] = useState(false)
+  const [addAccountOpen, setAddAccountOpen] = useState(false)
+  const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false)
   const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     const openAdd = () => setAddOpen(true)
@@ -43,13 +49,29 @@ export default function DashboardLayout({
           </div>
 
           {/* Floating Dock Navigation (all viewports) */}
-          <BottomNav onAddClick={() => setAddTxnOpen(true)} />
+          <BottomNav onAddClick={() => setQuickAddOpen(true)} />
+
+          {/* Quick Add chooser */}
+          <QuickAddSheet
+            open={quickAddOpen}
+            onOpenChange={setQuickAddOpen}
+            onSelect={(kind: QuickAddKind) => {
+              setQuickAddOpen(false)
+              if (kind === "transaction") setAddTxnOpen(true)
+              else if (kind === "subscription") setAddOpen(true)
+              else if (kind === "account") setAddAccountOpen(true)
+              else if (kind === "budget") router.push("/budgets")
+            }}
+          />
 
           {/* Add Subscription Modal/Sheet */}
           <AddSubscriptionSheet open={addOpen} onOpenChange={setAddOpen} />
 
           {/* Add Transaction Modal/Sheet */}
           <AddTransactionSheet open={addTxnOpen} onOpenChange={setAddTxnOpen} />
+
+          {/* Add Account Modal/Sheet */}
+          <AddAccountSheet open={addAccountOpen} onOpenChange={setAddAccountOpen} />
 
           {/* Card Vault / Payment Methods Sheet */}
           <PaymentMethodsSheet
