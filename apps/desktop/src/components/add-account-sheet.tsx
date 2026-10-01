@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
@@ -46,29 +46,6 @@ export function AddAccountSheet({ open, onOpenChange, editing }: AddAccountSheet
   const [selectedIcon, setSelectedIcon] = useState(editing?.icon || "Wallet")
   const [selectedColor, setSelectedColor] = useState(editing?.color || "#6366F1")
   const [isSaving, setIsSaving] = useState(false)
-
-  // Re-sync fields every time the sheet opens: useState initializers only
-  // run on first mount, so without this the edit form stays blank/stale.
-  useEffect(() => {
-    if (!open) return
-    if (editing) {
-      setName(editing.name)
-      setType(editing.type)
-      setBalance(String(editing.balance))
-      setCurrency(editing.currency)
-      setLast4(editing.last4 || "")
-      setSelectedIcon(editing.icon)
-      setSelectedColor(editing.color)
-    } else {
-      setName("")
-      setType("checking")
-      setBalance("")
-      setCurrency("IDR")
-      setLast4("")
-      setSelectedIcon("Wallet")
-      setSelectedColor("#6366F1")
-    }
-  }, [open, editing])
 
   const resetForm = () => {
     setName("")
