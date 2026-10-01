@@ -245,6 +245,7 @@ export default function AccountsPage() {
       )}
 
       <AddAccountSheet
+        key={editing?._id ?? "new"}
         open={!!editing}
         onOpenChange={(o) => !o && setEditing(null)}
         editing={editing}
