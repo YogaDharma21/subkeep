@@ -5,11 +5,10 @@ import { useMutation, useQuery } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
-import { Wallet, Pencil, Trash2, Archive, PlusCircle } from "lucide-react"
+import { Wallet, Pencil, Trash2, Archive } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { AddAccountSheet } from "@/components/add-account-sheet"
-import { AddTransactionSheet } from "@/components/add-transaction-sheet"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
@@ -49,7 +48,6 @@ export default function AccountsPage() {
   const { primaryCurrency, rates } = usePrimaryCurrency()
 
   const [editing, setEditing] = useState<AccountDoc | null>(null)
-  const [txnForAccount, setTxnForAccount] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<AccountDoc | null>(null)
 
   const { active, archived, totalNetWorth } = useMemo(() => {
@@ -165,14 +163,6 @@ export default function AccountsPage() {
 
         <div className="mt-3 flex items-center gap-1.5">
           <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 h-8 text-xs cursor-pointer"
-            onClick={() => setTxnForAccount(a._id)}
-          >
-            <PlusCircle className="size-3.5" /> Log
-          </Button>
-          <Button
             variant="ghost"
             size="icon-sm"
             onClick={() => setEditing(a)}
@@ -258,11 +248,6 @@ export default function AccountsPage() {
         open={!!editing}
         onOpenChange={(o) => !o && setEditing(null)}
         editing={editing}
-      />
-      <AddTransactionSheet
-        open={txnForAccount !== null}
-        onOpenChange={(o) => !o && setTxnForAccount(null)}
-        defaultAccountId={txnForAccount || undefined}
       />
 
       {deleteTarget && (

@@ -31,14 +31,12 @@ interface AddTransactionSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   defaultType?: TransactionType
-  defaultAccountId?: string
 }
 
 export function AddTransactionSheet({
   open,
   onOpenChange,
   defaultType = "expense",
-  defaultAccountId,
 }: AddTransactionSheetProps) {
   const { isSignedIn } = useAuth()
   const create = useMutation(api.transactions.create)
@@ -52,7 +50,7 @@ export function AddTransactionSheet({
   const [category, setCategory] = useState("food")
   const [date, setDate] = useState(todayKey())
   const [note, setNote] = useState("")
-  const [accountId, setAccountId] = useState(defaultAccountId || "")
+  const [accountId, setAccountId] = useState("")
   const [toAccountId, setToAccountId] = useState("")
   const [isSaving, setIsSaving] = useState(false)
 
@@ -68,7 +66,7 @@ export function AddTransactionSheet({
     setCategory("food")
     setDate(todayKey())
     setNote("")
-    setAccountId(defaultAccountId || "")
+    setAccountId("")
     setToAccountId("")
   }
 
@@ -92,7 +90,11 @@ export function AddTransactionSheet({
       toast.error("Please select a date")
       return
     }
-    if (type === "transfer" && (!accountId || !toAccountId || accountId === toAccountId)) {
+    if (!accountId) {
+      toast.error("Please select an account")
+      return
+    }
+    if (type === "transfer" && (!toAccountId || accountId === toAccountId)) {
       toast.error("Pick two different accounts for a transfer")
       return
     }
@@ -107,10 +109,10 @@ export function AddTransactionSheet({
         category: type === "transfer" ? "transfer" : category,
         date,
         note: note || undefined,
-        accountId: (accountId || undefined) as Id<"accounts"> | undefined,
+        accountId: accountId as Id<"accounts">,
         toAccountId:
           type === "transfer"
-            ? ((toAccountId || undefined) as Id<"accounts"> | undefined)
+            ? (toAccountId as Id<"accounts">)
             : undefined,
         icon: activeCategory.icon,
         color: activeCategory.color,
@@ -229,14 +231,14 @@ export function AddTransactionSheet({
           <div className={cn("grid gap-3", type === "transfer" ? "grid-cols-2" : "grid-cols-1")}>
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                {type === "transfer" ? "From Account" : "Account (Optional)"}
+                {type === "transfer" ? "From Account" : "Account"}
               </label>
               <select
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
                 className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
               >
-                <option value="">No account</option>
+                <option value="">Select account</option>
                 {accounts?.map((a) => (
                   <option key={a._id} value={a._id}>
                     {a.name} · {a.currency}
@@ -295,7 +297,7 @@ export function AddTransactionSheet({
           <Button
             className="w-full cursor-pointer"
             onClick={handleSubmit}
-            disabled={isSaving || !amount || !date}
+            disabled={isSaving || !amount || !date || !accountId || (type === "transfer" && !toAccountId)}
           >
             {isSaving ? "Saving..." : type === "income" ? "Add Income" : type === "transfer" ? "Record Transfer" : "Add Expense"}
           </Button>
