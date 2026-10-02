@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       website: ${{ steps.filter.outputs.website }}
+      mobile: ${{ steps.filter.outputs.mobile }}
+      desktop: ${{ steps.filter.outputs.desktop }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -19,6 +21,12 @@ jobs:
           filters: |
             website:
               - 'apps/website/**'
+              - '.github/workflows/ci.yml'
+            mobile:
+              - 'apps/mobile/**'
+              - '.github/workflows/ci.yml'
+            desktop:
+              - 'apps/desktop/**'
               - '.github/workflows/ci.yml'
 
   build-website:
@@ -53,3 +61,52 @@ jobs:
         env:
           NEXT_PUBLIC_CONVEX_URL: "https://dummy-preview.convex.cloud"
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_dummy_clerk_key"
+
+  lint-mobile:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # No lockfile for mobile (Expo SDK 54 pins react 19.1.0, which the
+      # latest @clerk/react peer range excludes). Install leniently, same
+      # as local dev machines do.
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+        working-directory: apps/mobile
+
+      - name: Lint check
+        run: npm run lint
+        working-directory: apps/mobile
+
+  build-desktop:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.desktop == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: 'apps/desktop/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: apps/desktop
+
+      - name: Type check
+        run: npm run typecheck
+        working-directory: apps/desktop
+
+      - name: Build
+        run: npm run build
+        working-directory: apps/desktop

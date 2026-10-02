@@ -519,6 +519,7 @@ export function CustomAlertProvider({ children }: { children: ReactNode }) {
 
       {/* Global Add Account Sheet */}
       <AddAccountSheet
+        key={accountEditing?._id ?? "new"}
         visible={addAccountOpen}
         onClose={() => {
           setAddAccountOpen(false)

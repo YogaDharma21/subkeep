@@ -1,8 +1,68 @@
 import { query, mutation } from "./_generated/server"
+import type { MutationCtx } from "./_generated/server"
+import type { Id } from "./_generated/dataModel"
 import { v } from "convex/values"
 
 function monthOf(date: string): string {
   return date.slice(0, 7)
+}
+
+function assertValidTransaction(type: string, amount: number) {
+  if (type !== "expense" && type !== "income" && type !== "transfer") {
+    throw new Error("Invalid transaction type")
+  }
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error("Invalid amount")
+  }
+}
+
+async function adjustBalance(
+  ctx: MutationCtx,
+  accountId: Id<"accounts">,
+  userId: string,
+  delta: number,
+  opts?: { lenient?: boolean }
+) {
+  const account = await ctx.db.get(accountId)
+  if (!account || account.userId !== userId) {
+    if (opts?.lenient) return
+    throw new Error("Account not found")
+  }
+  await ctx.db.patch(accountId, { balance: account.balance + delta })
+}
+
+// Applies the balance effect of a transaction (sign = +1).
+// Reverts it when sign = -1 (tolerates deleted accounts so edits/deletes
+// of old transactions never get stuck).
+async function applyBalanceEffect(
+  ctx: MutationCtx,
+  userId: string,
+  txn: {
+    type: string
+    amount: number
+    accountId?: Id<"accounts"> | undefined
+    toAccountId?: Id<"accounts"> | undefined
+  },
+  sign: 1 | -1,
+  opts?: { lenient?: boolean }
+) {
+  const amount = txn.amount * sign
+  if (txn.type === "expense") {
+    if (txn.accountId) {
+      await adjustBalance(ctx, txn.accountId, userId, -amount, opts)
+    }
+  } else if (txn.type === "income") {
+    if (txn.accountId) {
+      await adjustBalance(ctx, txn.accountId, userId, amount, opts)
+    }
+  } else if (txn.type === "transfer") {
+    if (txn.accountId) {
+      await adjustBalance(ctx, txn.accountId, userId, -amount, opts)
+    }
+    if (txn.toAccountId) {
+      await adjustBalance(ctx, txn.toAccountId, userId, amount, opts)
+    }
+  }
 }
 
 export const list = query({
@@ -82,6 +142,8 @@ export const create = mutation({
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new Error("Not authenticated")
 
+    assertValidTransaction(args.type, args.amount)
+
     if (args.accountId) {
       const account = await ctx.db.get(args.accountId)
       if (!account || account.userId !== identity.subject) {
@@ -94,8 +156,16 @@ export const create = mutation({
         throw new Error("Destination account not found")
       }
     }
+    if (
+      args.type === "transfer" &&
+      args.accountId &&
+      args.toAccountId &&
+      args.accountId === args.toAccountId
+    ) {
+      throw new Error("Transfer accounts must be different")
+    }
 
-    return await ctx.db.insert("transactions", {
+    const txnId = await ctx.db.insert("transactions", {
       userId: identity.subject,
       type: args.type,
       amount: args.amount,
@@ -109,6 +179,20 @@ export const create = mutation({
       icon: args.icon || undefined,
       color: args.color || undefined,
     })
+
+    await applyBalanceEffect(
+      ctx,
+      identity.subject,
+      {
+        type: args.type,
+        amount: args.amount,
+        accountId: args.accountId,
+        toAccountId: args.toAccountId,
+      },
+      1
+    )
+
+    return txnId
   },
 })
 
@@ -134,6 +218,41 @@ export const update = mutation({
     if (!txn) throw new Error("Transaction not found")
     if (txn.userId !== identity.subject) throw new Error("Unauthorized")
 
+    const newType = args.type ?? txn.type
+    const newAmount = args.amount ?? txn.amount
+    const newAccountId = args.accountId ?? txn.accountId
+    const newToAccountId = args.toAccountId ?? txn.toAccountId
+
+    assertValidTransaction(newType, newAmount)
+
+    // Validate newly-assigned accounts (old ones were validated at creation).
+    if (args.accountId) {
+      const account = await ctx.db.get(args.accountId)
+      if (!account || account.userId !== identity.subject) {
+        throw new Error("Account not found")
+      }
+    }
+    if (args.toAccountId) {
+      const toAccount = await ctx.db.get(args.toAccountId)
+      if (!toAccount || toAccount.userId !== identity.subject) {
+        throw new Error("Destination account not found")
+      }
+    }
+    if (
+      newType === "transfer" &&
+      newAccountId &&
+      newToAccountId &&
+      newAccountId === newToAccountId
+    ) {
+      throw new Error("Transfer accounts must be different")
+    }
+
+    const balanceAffectingChange =
+      newType !== txn.type ||
+      newAmount !== txn.amount ||
+      newAccountId !== txn.accountId ||
+      newToAccountId !== txn.toAccountId
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id: _, ...updates } = args
     const patchObj: Record<string, unknown> = {}
@@ -142,7 +261,44 @@ export const update = mutation({
         patchObj[k] = val === "" && (k === "note" || k === "icon" || k === "color") ? undefined : val
       }
     }
-    await ctx.db.patch(args.id, patchObj)
+
+    if (!balanceAffectingChange) {
+      if (Object.keys(patchObj).length > 0) {
+        await ctx.db.patch(args.id, patchObj)
+      }
+      return
+    }
+
+    // Reverse the old effect first (lenient: old account may be deleted),
+    // then apply the new effect so the net delta is always correct.
+    await applyBalanceEffect(
+      ctx,
+      identity.subject,
+      {
+        type: txn.type,
+        amount: txn.amount,
+        accountId: txn.accountId,
+        toAccountId: txn.toAccountId,
+      },
+      -1,
+      { lenient: true }
+    )
+
+    if (Object.keys(patchObj).length > 0) {
+      await ctx.db.patch(args.id, patchObj)
+    }
+
+    await applyBalanceEffect(
+      ctx,
+      identity.subject,
+      {
+        type: newType,
+        amount: newAmount,
+        accountId: newAccountId,
+        toAccountId: newToAccountId,
+      },
+      1
+    )
   },
 })
 
@@ -154,6 +310,19 @@ export const remove = mutation({
     const txn = await ctx.db.get(args.id)
     if (!txn) throw new Error("Transaction not found")
     if (txn.userId !== identity.subject) throw new Error("Unauthorized")
+    // Reverse the balance effect before deleting (lenient: account may be gone).
+    await applyBalanceEffect(
+      ctx,
+      identity.subject,
+      {
+        type: txn.type,
+        amount: txn.amount,
+        accountId: txn.accountId,
+        toAccountId: txn.toAccountId,
+      },
+      -1,
+      { lenient: true }
+    )
     await ctx.db.delete(args.id)
   },
 })

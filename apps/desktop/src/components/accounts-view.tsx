@@ -176,7 +176,7 @@ export function AccountsView() {
         </>
       )}
 
-      <AddAccountSheet open={!!editing} onOpenChange={(o) => !o && setEditing(null)} editing={editing} />
+      <AddAccountSheet key={editing?._id ?? "new"} open={!!editing} onOpenChange={(o) => !o && setEditing(null)} editing={editing} />
 
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
