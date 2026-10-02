@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "type": "module",
   "private": true,
+  "packageManager": "pnpm@10.33.4",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -48,5 +49,13 @@
     "lightningcss-linux-x64-gnu": "1.32.0",
     "lightningcss-linux-x64-musl": "1.32.0",
     "lightningcss-win32-x64-msvc": "1.32.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@clerk/shared",
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }

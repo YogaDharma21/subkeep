@@ -28,12 +28,15 @@ SubKeep is a sleek, modern personal finance tracker that helps you log expenses 
 
 ## Applications & Structure
 
-This repository is structured as a monorepo workspace:
+Each application in `apps/` is self-contained with its own dependencies
+and `pnpm-lock.yaml` — install and run commands inside each app directory:
 
 ```text
 subkeep/
 ├── apps/
-│   └── website/    # SubKeep Web App (Next.js 16 + Convex + Clerk + Tailwind CSS v4)
+│   ├── website/    # SubKeep Web App (Next.js 16 + Convex + Clerk + Tailwind CSS v4)
+│   ├── mobile/     # SubKeep Mobile App (Expo SDK 54 + Convex + Clerk)
+│   ├── desktop/    # SubKeep Desktop App (Electron + Vite + Convex + Clerk)
 ├── docker/         # Docker orchestration configurations
 ├── docs/           # Architecture & technical documentation
 └── scripts/        # Utility automation scripts
@@ -46,20 +49,10 @@ For full setup details, environment configuration, and features, see [apps/websi
 ## Quick Start
 
 ```bash
-# 1. Install root workspace dependencies
-npm install
-
-# 2. Start Convex backend & Next.js web application
-npm run dev
-```
-
-Or navigate directly to the web app:
-
-```bash
 cd apps/website
-npm install
-npx convex dev
-npm run dev
+pnpm install
+pnpm dlx convex dev
+pnpm dev
 ```
 
 ---

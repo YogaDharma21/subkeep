@@ -13,6 +13,12 @@ out/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Prevent accidental npm installs now that the repo uses pnpm.
+# The canonical lockfile is pnpm-lock.yaml.
+package-lock.json
 
 # Environment files
 .env

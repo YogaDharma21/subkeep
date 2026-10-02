@@ -25,12 +25,13 @@ Each application in `apps/` is self-contained:
 - Shared type definitions can be imported or generated via Convex
 - Polyglot flexibility for mobile, desktop, or extension apps
 
-### Workspace Scripts
-Root `package.json` coordinates common commands across the workspace:
-- `npm run dev`: Starts the Next.js dev server for `apps/website`
-- `npm run build`: Compiles and produces production assets for `apps/website`
-- `npm run lint`: Runs ESLint across `apps/website`
-- `npm run typecheck`: Validates TypeScript types across `apps/website`
+### Per-App Scripts
+Each application in `apps/` manages its own dependencies with pnpm —
+there is no root workspace. Run commands inside each app directory:
+- `pnpm dev` (website): Starts the Next.js dev server for `apps/website`
+- `pnpm build` (website/desktop): Compiles and produces production assets
+- `pnpm lint` (website/mobile): Runs ESLint for that app
+- `pnpm typecheck` (website/desktop): Validates TypeScript types for that app
 
 ## CI/CD Workflow
 
