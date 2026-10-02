@@ -73,11 +73,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
-          cache-dependency-path: 'apps/mobile/package-lock.json'
 
+      # No lockfile for mobile (Expo SDK 54 pins react 19.1.0, which the
+      # latest @clerk/react peer range excludes). Install leniently, same
+      # as local dev machines do.
       - name: Install dependencies
-        run: npm ci
+        run: npm install --legacy-peer-deps --no-audit --no-fund
         working-directory: apps/mobile
 
       - name: Lint check
