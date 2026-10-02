@@ -88,7 +88,11 @@ export function AddTransactionSheet({
       showToast("Please enter a date (YYYY-MM-DD)", "error")
       return
     }
-    if (type === "transfer" && (!accountId || !toAccountId || accountId === toAccountId)) {
+    if (!accountId) {
+      showToast("Please select an account", "error")
+      return
+    }
+    if (type === "transfer" && (!toAccountId || accountId === toAccountId)) {
       showToast("Pick two different accounts for a transfer", "error")
       return
     }
@@ -103,8 +107,8 @@ export function AddTransactionSheet({
         category: type === "transfer" ? "transfer" : category,
         date,
         note: note.trim() ? note.trim() : undefined,
-        accountId: (accountId || undefined) as never,
-        toAccountId: (type === "transfer" ? toAccountId || undefined : undefined) as never,
+        accountId: accountId as never,
+        toAccountId: (type === "transfer" ? toAccountId : undefined) as never,
         icon: activeCategory.icon,
         color: activeCategory.color,
       })
@@ -300,28 +304,9 @@ export function AddTransactionSheet({
             <View style={{ flexDirection: type === "transfer" ? "row" : "column", gap: 10 }}>
               <View style={{ flex: 1, gap: 4 }}>
                 <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>
-                  {type === "transfer" ? "FROM ACCOUNT" : "ACCOUNT (OPTIONAL)"}
+                  {type === "transfer" ? "FROM ACCOUNT" : "ACCOUNT"}
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
-                  <TouchableOpacity
-                    onPress={() => setAccountId("")}
-                    style={{
-                      paddingHorizontal: 12,
-                      paddingVertical: 8,
-                      borderRadius: 8,
-                      backgroundColor: !accountId ? colors.primary : colors.surface,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        fontWeight: "600",
-                        color: !accountId ? colors.primaryForeground : colors.mutedText,
-                      }}
-                    >
-                      None
-                    </Text>
-                  </TouchableOpacity>
                   {(accounts || []).map((a) => (
                     <TouchableOpacity
                       key={a._id}

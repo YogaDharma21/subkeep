@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import {
   View,
   Text,
@@ -32,33 +32,12 @@ export function AddAccountSheet({ visible, onClose, editing }: AddAccountSheetPr
   const createMutation = useMutation(api.accounts.create)
   const updateMutation = useMutation(api.accounts.update)
 
-  const [name, setName] = useState("")
-  const [type, setType] = useState("checking")
-  const [balance, setBalance] = useState("")
-  const [currency, setCurrency] = useState("IDR")
-  const [last4, setLast4] = useState("")
-  const [selectedColor, setSelectedColor] = useState("#6366F1")
-
-  // (Re)initialize fields every time the sheet opens.
-  useEffect(() => {
-    if (visible) {
-      if (editing) {
-        setName(editing.name)
-        setType(editing.type)
-        setBalance(String(editing.balance))
-        setCurrency(editing.currency)
-        setLast4(editing.last4 || "")
-        setSelectedColor(editing.color)
-      } else {
-        setName("")
-        setType("checking")
-        setBalance("")
-        setCurrency(primaryCurrency)
-        setLast4("")
-        setSelectedColor("#6366F1")
-      }
-    }
-  }, [visible, editing, primaryCurrency])
+  const [name, setName] = useState(editing?.name ?? "")
+  const [type, setType] = useState(editing?.type ?? "checking")
+  const [balance, setBalance] = useState(editing ? String(editing.balance) : "")
+  const [currency, setCurrency] = useState(editing?.currency ?? primaryCurrency)
+  const [last4, setLast4] = useState(editing?.last4 ?? "")
+  const [selectedColor, setSelectedColor] = useState(editing?.color ?? "#6366F1")
 
   const handleSave = async () => {
     if (!name.trim()) {
