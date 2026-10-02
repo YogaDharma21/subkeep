@@ -2,6 +2,7 @@
   "name": "desktop",
   "version": "0.0.1",
   "private": true,
+  "packageManager": "pnpm@10.33.4",
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
@@ -36,5 +37,12 @@
     "typescript": "^5.7.3",
     "vite": "^6.2.0",
     "vite-plugin-electron": "^0.29.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@clerk/shared",
+      "electron",
+      "esbuild"
+    ]
   }
 }
