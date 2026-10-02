@@ -70,7 +70,7 @@ A sleek, mobile-first personal finance tracker built with Next.js 16, Convex, Cl
 1. Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 2. Set up environment variables in `.env.local`:
@@ -88,13 +88,13 @@ CLERK_SECRET_KEY=sk_test_...
 3. Push Convex schema and start Convex dev server:
 
 ```bash
-npx convex dev
+pnpm dlx convex dev
 ```
 
 4. Start the Next.js dev server:
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 ---
@@ -103,12 +103,12 @@ npm run dev
 
 | Command | Description |
 |---|---|
-| `npm run dev` | Start Next.js development server |
-| `npm run build` | Build optimized production bundle |
-| `npm run start` | Start production server |
-| `npm run typecheck` | Run TypeScript type checking |
-| `npm run lint` | Run ESLint check |
-| `npm run format` | Format files with Prettier |
+| `pnpm dev` | Start Next.js development server |
+| `pnpm build` | Build optimized production bundle |
+| `pnpm start` | Start production server |
+| `pnpm typecheck` | Run TypeScript type checking |
+| `pnpm lint` | Run ESLint check |
+| `pnpm format` | Format files with Prettier |
 
 ---
 

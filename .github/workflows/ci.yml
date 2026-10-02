@@ -36,27 +36,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
-          cache-dependency-path: 'apps/website/package-lock.json'
+          cache: 'pnpm'
+          cache-dependency-path: 'apps/website/pnpm-lock.yaml'
 
       - name: Install dependencies
-        run: npm install
+        run: pnpm install --frozen-lockfile
         working-directory: apps/website
 
       - name: Lint check
-        run: npm run lint
+        run: pnpm lint
         working-directory: apps/website
 
       - name: Type check
-        run: npm run typecheck
+        run: pnpm typecheck
         working-directory: apps/website
 
       - name: Next.js Build
-        run: npm run build
+        run: pnpm build
         working-directory: apps/website
         env:
           NEXT_PUBLIC_CONVEX_URL: "https://dummy-preview.convex.cloud"
@@ -69,20 +74,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: 'apps/mobile/pnpm-lock.yaml'
 
-      # No lockfile for mobile (Expo SDK 54 pins react 19.1.0, which the
-      # latest @clerk/react peer range excludes). Install leniently, same
-      # as local dev machines do.
       - name: Install dependencies
-        run: npm install --legacy-peer-deps --no-audit --no-fund
+        run: pnpm install --frozen-lockfile
         working-directory: apps/mobile
 
       - name: Lint check
-        run: npm run lint
+        run: pnpm lint
         working-directory: apps/mobile
 
   build-desktop:
@@ -92,21 +101,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
-          cache-dependency-path: 'apps/desktop/package-lock.json'
+          cache: 'pnpm'
+          cache-dependency-path: 'apps/desktop/pnpm-lock.yaml'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
         working-directory: apps/desktop
 
       - name: Type check
-        run: npm run typecheck
+        run: pnpm typecheck
         working-directory: apps/desktop
 
       - name: Build
-        run: npm run build
+        run: pnpm build
         working-directory: apps/desktop
