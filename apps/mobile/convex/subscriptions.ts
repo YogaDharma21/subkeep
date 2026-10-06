@@ -387,12 +387,56 @@ export const clone = mutation({
   },
 })
 
+const fallbackRatesConvex: Record<string, number> = {
+  USD: 1,
+  IDR: 16200,
+  EUR: 0.92,
+  GBP: 0.79,
+  SGD: 1.35,
+  MYR: 4.7,
+  AUD: 1.52,
+  CAD: 1.36,
+  JPY: 155,
+  CNY: 7.23,
+}
+
+function convertCurrencyConvex(amount: number, fromCurr: string, toCurr: string): number {
+  if (!amount || isNaN(amount)) return 0
+  const from = (fromCurr || "USD").toUpperCase()
+  const to = (toCurr || "IDR").toUpperCase()
+  if (from === to) return amount
+  const fromRate = fallbackRatesConvex[from] ?? 1
+  const toRate = fallbackRatesConvex[to] ?? 1
+  const inUSD = amount / fromRate
+  return Math.round(inUSD * toRate * 100) / 100
+}
+
+function mapSubCategoryToFinanceCategory(subCat?: string): string {
+  const normalized = (subCat || "").toLowerCase().trim()
+  const map: Record<string, string> = {
+    entertainment: "entertainment",
+    music: "entertainment",
+    gaming: "entertainment",
+    news: "entertainment",
+    productivity: "subscriptions",
+    cloud: "utilities",
+    fitness: "health",
+    education: "education",
+    finance: "finance",
+    other: "subscriptions",
+    subscriptions: "subscriptions",
+  }
+  return map[normalized] || "subscriptions"
+}
+
 export const recordPayment = mutation({
   args: {
     id: v.id("subscriptions"),
     amount: v.optional(v.number()),
     date: v.optional(v.string()),
     accountId: v.optional(v.id("accounts")),
+    accountAmount: v.optional(v.number()),
+    exchangeRate: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
@@ -403,9 +447,41 @@ export const recordPayment = mutation({
 
     const paymentDate = args.date || new Date().toISOString().split("T")[0]
     const amount = args.amount ?? sub.price
-    const targetAccountId = args.accountId ?? sub.accountId
 
-    // 1. Insert into payments table
+    // 1. Resolve Account:
+    // If not passed and not in sub, find user's active accounts and pick the matching or primary account
+    let targetAccountId = args.accountId ?? sub.accountId
+    let targetAccount = targetAccountId ? await ctx.db.get(targetAccountId) : null
+
+    if (targetAccount && targetAccount.userId !== identity.subject) {
+      targetAccountId = undefined
+      targetAccount = null
+    }
+
+    if (!targetAccountId) {
+      const userAccounts = await ctx.db
+        .query("accounts")
+        .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+        .collect()
+      const activeAccounts = userAccounts.filter((a) => !a.isArchived)
+      if (activeAccounts.length > 0) {
+        if (sub.account) {
+          const match = activeAccounts.find(
+            (a) => a.name.trim().toLowerCase() === sub.account!.trim().toLowerCase()
+          )
+          if (match) targetAccount = match
+        }
+        if (!targetAccount) {
+          targetAccount = activeAccounts[0]
+        }
+        targetAccountId = targetAccount._id
+      }
+    }
+
+    // Map subscription category to appropriate finance/transaction category
+    const txnCategory = mapSubCategoryToFinanceCategory(sub.category)
+
+    // 2. Insert into payments table
     const paymentId = await ctx.db.insert("payments", {
       userId: identity.subject,
       subscriptionId: sub._id,
@@ -414,17 +490,17 @@ export const recordPayment = mutation({
       color: sub.color,
       amount,
       currency: sub.currency,
-      category: sub.category,
+      category: txnCategory,
       date: paymentDate,
     })
 
-    // 2. Insert into transactions table and adjust account balance
+    // 3. Insert into transactions table and adjust account balance
     const txnId = await ctx.db.insert("transactions", {
       userId: identity.subject,
       type: "expense",
       amount,
       currency: sub.currency,
-      category: sub.category,
+      category: txnCategory,
       date: paymentDate,
       note: `${sub.name} subscription payment`,
       accountId: targetAccountId,
@@ -433,16 +509,24 @@ export const recordPayment = mutation({
       color: sub.color,
     })
 
-    if (targetAccountId) {
-      const account = await ctx.db.get(targetAccountId)
-      if (account && account.userId === identity.subject) {
-        await ctx.db.patch(targetAccountId, {
-          balance: account.balance - amount,
-        })
+    if (targetAccountId && targetAccount) {
+      let deductAmount = amount
+      if (targetAccount.currency !== sub.currency) {
+        if (args.accountAmount && args.accountAmount > 0) {
+          deductAmount = args.accountAmount
+        } else if (args.exchangeRate && args.exchangeRate > 0) {
+          deductAmount = amount * args.exchangeRate
+        } else {
+          deductAmount = convertCurrencyConvex(amount, sub.currency, targetAccount.currency)
+        }
       }
+
+      await ctx.db.patch(targetAccountId, {
+        balance: targetAccount.balance - deductAmount,
+      })
     }
 
-    // 3. Advance nextBilling date
+    // 4. Advance nextBilling date
     let baseDate = sub.nextBilling || paymentDate
     if (baseDate < paymentDate) {
       baseDate = paymentDate
@@ -450,6 +534,11 @@ export const recordPayment = mutation({
     const nextDate = calculateNextBilling(baseDate, sub.cycle)
     const patchObj: Record<string, unknown> = {
       lastPaymentDate: paymentDate,
+    }
+
+    // Persist linked account on subscription if resolved
+    if (targetAccountId && sub.accountId !== targetAccountId) {
+      patchObj.accountId = targetAccountId
     }
 
     if (sub.isTrial) {
@@ -462,6 +551,12 @@ export const recordPayment = mutation({
       patchObj.nextBilling = nextDate
     } else if (sub.cycle && sub.cycle.toLowerCase() !== "none") {
       patchObj.nextBilling = nextDate
+    } else if (!sub.cycle || sub.cycle.toLowerCase() === "none") {
+      if (sub.endDate && sub.endDate > paymentDate) {
+        patchObj.nextBilling = sub.endDate
+      } else {
+        patchObj.nextBilling = paymentDate
+      }
     }
 
     await ctx.db.patch(sub._id, patchObj)
@@ -471,6 +566,7 @@ export const recordPayment = mutation({
       transactionId: txnId,
       nextBilling: (patchObj.nextBilling as string) ?? sub.nextBilling,
       isActive: (patchObj.isActive as boolean) ?? sub.isActive,
+      accountId: targetAccountId,
     }
   },
 })

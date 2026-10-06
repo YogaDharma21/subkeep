@@ -23,6 +23,7 @@ import {
   expenseCategories,
   incomeCategories,
   financeCategoryMeta,
+  mapSubscriptionCategoryToFinanceCategory,
   accountTypes,
   todayKey,
 } from "@/lib/finance"
@@ -94,6 +95,8 @@ export function AddTransactionSheet({
         if (!note) setNote(s.name)
         if (s.accountId && !accountId) setAccountId(s.accountId)
         if (s.price && !amount) setAmount(String(s.price))
+        const mappedCat = mapSubscriptionCategoryToFinanceCategory(s.category)
+        setCategory(mappedCat)
       }
     }
   }

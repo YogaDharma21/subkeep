@@ -24,6 +24,9 @@ interface UpcomingRemindersProps {
     trialEndDate?: string
     cancelUrl?: string
     isActive?: boolean
+    accountId?: Id<"accounts">
+    lastPaymentDate?: string
+    endDate?: string
   }>
   primaryCurrency?: string
   rates?: Record<string, number>
@@ -47,6 +50,7 @@ export function UpcomingReminders({
     try {
       const res = await recordPaymentMutation({
         id: item._id as Id<"subscriptions">,
+        accountId: item.accountId ? (item.accountId as Id<"accounts">) : undefined,
       })
       toast.success(
         res.isActive

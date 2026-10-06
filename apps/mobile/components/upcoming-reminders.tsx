@@ -26,6 +26,8 @@ interface UpcomingRemindersProps {
     cancelUrl?: string
     isActive: boolean
     accountId?: string
+    lastPaymentDate?: string
+    endDate?: string
   }[]
   primaryCurrency?: string
   rates?: Record<string, number>
@@ -54,6 +56,7 @@ export function UpcomingReminders({
       await recordPaymentMutation({
         id: item._id as Id<"subscriptions">,
         amount: item.price,
+        accountId: item.accountId ? (item.accountId as Id<"accounts">) : undefined,
       })
       showAlert({
         title: "Payment Recorded",

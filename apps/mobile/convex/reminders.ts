@@ -29,6 +29,16 @@ export const checkAndSendDueReminders = internalMutation({
       const diffDays = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 
       if (diffDays >= 0 && diffDays <= thresholdDays) {
+        // Skip if payment was already recorded today or for this cycle
+        if (sub.lastPaymentDate) {
+          if (sub.lastPaymentDate === todayStr || sub.lastPaymentDate >= targetDate) {
+            continue
+          }
+          if (sub.cycle && sub.cycle.toLowerCase() === "none") {
+            continue
+          }
+        }
+
         // Check if telegram alert is configured
         if (
           userSetting?.telegramEnabled &&

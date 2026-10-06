@@ -20,6 +20,7 @@ import {
   expenseCategories,
   incomeCategories,
   financeCategoryMeta,
+  mapSubscriptionCategoryToFinanceCategory,
   todayKey,
 } from "@/constants/finance"
 
@@ -84,7 +85,8 @@ export function AddTransactionSheet({
       if (sub.accountId) {
         setAccountId(sub.accountId)
       }
-      setCategory("subscriptions")
+      const mappedCat = mapSubscriptionCategoryToFinanceCategory(sub.category)
+      setCategory(mappedCat)
     }
   }
 
