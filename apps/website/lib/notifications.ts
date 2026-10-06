@@ -12,6 +12,9 @@ export interface ReminderItem {
   cancelUrl?: string
   daysLeft: number
   type: "billing" | "trial"
+  accountId?: string
+  lastPaymentDate?: string
+  endDate?: string
 }
 
 export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
@@ -98,6 +101,9 @@ export function findUpcomingReminders(
     trialEndDate?: string
     cancelUrl?: string
     isActive: boolean
+    accountId?: string
+    lastPaymentDate?: string
+    endDate?: string
   }>,
   targetDays: number = 3
 ): ReminderItem[] {
@@ -105,14 +111,29 @@ export function findUpcomingReminders(
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  const localTodayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
+  const utcTodayStr = today.toISOString().split("T")[0]
 
   const items: ReminderItem[] = []
 
   for (const sub of subscriptions) {
     if (!sub.isActive) continue
 
+    // If payment was recorded today or for a one-time cycle, dismiss alert
+    if (sub.lastPaymentDate) {
+      if (sub.lastPaymentDate === localTodayStr || sub.lastPaymentDate === utcTodayStr) {
+        continue
+      }
+      if (sub.cycle && sub.cycle.toLowerCase() === "none") {
+        continue
+      }
+    }
+
     // Check Trial Expiration
     if (sub.isTrial && sub.trialEndDate) {
+      if (sub.lastPaymentDate && sub.lastPaymentDate >= sub.trialEndDate) {
+        continue
+      }
       const trialDate = new Date(sub.trialEndDate)
       trialDate.setHours(0, 0, 0, 0)
       const diffTime = trialDate.getTime() - today.getTime()
@@ -133,6 +154,9 @@ export function findUpcomingReminders(
           cancelUrl: sub.cancelUrl,
           daysLeft,
           type: "trial",
+          accountId: sub.accountId,
+          lastPaymentDate: sub.lastPaymentDate,
+          endDate: sub.endDate,
         })
         continue
       }
@@ -140,6 +164,9 @@ export function findUpcomingReminders(
 
     // Check Billing Due Date
     if (sub.nextBilling) {
+      if (sub.lastPaymentDate && sub.lastPaymentDate >= sub.nextBilling) {
+        continue
+      }
       const billDate = new Date(sub.nextBilling)
       billDate.setHours(0, 0, 0, 0)
       const diffTime = billDate.getTime() - today.getTime()
@@ -159,6 +186,9 @@ export function findUpcomingReminders(
           cancelUrl: sub.cancelUrl,
           daysLeft,
           type: "billing",
+          accountId: sub.accountId,
+          lastPaymentDate: sub.lastPaymentDate,
+          endDate: sub.endDate,
         })
       }
     }

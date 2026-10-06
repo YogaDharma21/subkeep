@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
-import { Bell, Check, ExternalLink, CheckCircle2, Loader2 } from "lucide-react"
+import { Bell, ExternalLink, CheckCircle2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
@@ -29,6 +29,7 @@ interface UpcomingRemindersProps {
     isActive: boolean
     accountId?: Id<"accounts">
     endDate?: string
+    lastPaymentDate?: string
   }>
   primaryCurrency?: string
   rates?: Record<string, number>
@@ -52,6 +53,7 @@ export function UpcomingReminders({
     try {
       const res = await recordPaymentMutation({
         id: item._id as Id<"subscriptions">,
+        accountId: item.accountId ? (item.accountId as Id<"accounts">) : undefined,
       })
       toast.success(
         res.isActive
