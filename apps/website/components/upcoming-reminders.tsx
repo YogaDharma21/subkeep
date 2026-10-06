@@ -4,13 +4,14 @@ import { useState } from "react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
-import { Bell, Send, Check, ExternalLink } from "lucide-react"
+import { Bell, Check, ExternalLink, CheckCircle2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
 import { getContrastTextColor } from "@/lib/constants"
 import { toast } from "sonner"
-import { findUpcomingReminders, ReminderItem, sendWebPushNotification } from "@/lib/notifications"
+import { findUpcomingReminders, ReminderItem } from "@/lib/notifications"
+import Link from "next/link"
 
 interface UpcomingRemindersProps {
   subscriptions: Array<{
@@ -26,6 +27,8 @@ interface UpcomingRemindersProps {
     trialEndDate?: string
     cancelUrl?: string
     isActive: boolean
+    accountId?: Id<"accounts">
+    endDate?: string
   }>
   primaryCurrency?: string
   rates?: Record<string, number>
@@ -36,41 +39,46 @@ export function UpcomingReminders({
   subscriptions,
   primaryCurrency = "IDR",
   rates,
-  onMarkCanceled,
 }: UpcomingRemindersProps) {
-  const [sentAlerts, setSentAlerts] = useState<Record<string, boolean>>({})
-  const updateMutation = useMutation(api.subscriptions.update)
+  const [payingId, setPayingId] = useState<string | null>(null)
+  const recordPaymentMutation = useMutation(api.subscriptions.recordPayment)
 
   const reminders = findUpcomingReminders(subscriptions, 3)
 
   if (reminders.length === 0) return null
 
-  const handleSendTestNotification = (item: ReminderItem) => {
-    const isTrial = item.isTrial
-    const title = isTrial ? `🎁 Trial Ending Soon: ${item.name}` : `⚠️ Billing Due: ${item.name}`
-    const priceFormatted = convertAndFormat(item.price, item.currency, primaryCurrency, rates)
-    const body = isTrial
-      ? `Your free trial for ${item.name} ends in ${item.daysLeft} day(s). Cancel before auto-renewal!`
-      : `Payment of ${priceFormatted} for ${item.name} is due in ${item.daysLeft} day(s).`
-
-    sendWebPushNotification(title, body)
-    setSentAlerts((prev) => ({ ...prev, [item._id]: true }))
+  const handleRecordPayment = async (item: ReminderItem) => {
+    setPayingId(item._id)
+    try {
+      const res = await recordPaymentMutation({
+        id: item._id as Id<"subscriptions">,
+      })
+      toast.success(
+        res.isActive
+          ? `Recorded payment for ${item.name}! Next renewal: ${res.nextBilling}`
+          : `Recorded final payment for ${item.name}! Term completed.`
+      )
+    } catch {
+      toast.error(`Failed to record payment for ${item.name}`)
+    } finally {
+      setPayingId(null)
+    }
   }
 
   return (
     <div className="mb-4 space-y-2">
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-          <Bell className="size-3.5 text-muted-foreground" />
+          <Bell className="size-3.5 text-amber-500" />
           <span>Upcoming Billing & Trial Alerts ({reminders.length})</span>
         </div>
       </div>
 
       <div className="space-y-2">
         {reminders.map((item) => {
-          const isSent = !!sentAlerts[item._id]
           const isTrial = item.type === "trial"
           const priceFormatted = convertAndFormat(item.price, item.currency, primaryCurrency, rates)
+          const isPaying = payingId === item._id
 
           return (
             <div
@@ -78,7 +86,10 @@ export function UpcomingReminders({
               className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3 text-xs transition-all"
             >
               <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2.5 min-w-0">
+                <Link
+                  href={`/subscriptions/${item._id}`}
+                  className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-80 transition-opacity"
+                >
                   <div
                     className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-black/10 dark:border-white/10 shadow-xs"
                     style={{ backgroundColor: item.color || "#6366F1" }}
@@ -96,11 +107,11 @@ export function UpcomingReminders({
                     </div>
                     <p className="text-[11px] text-muted-foreground">
                       {isTrial
-                        ? `Trial ends in ${item.daysLeft === 0 ? "today" : `${item.daysLeft} d`}`
-                        : `Due in ${item.daysLeft === 0 ? "today" : `${item.daysLeft} d`} (${priceFormatted})`}
+                        ? `Trial ends ${item.daysLeft === 0 ? "today" : `in ${item.daysLeft} d`}`
+                        : `Due ${item.daysLeft === 0 ? "today" : `in ${item.daysLeft} d`} (${priceFormatted})`}
                     </p>
                   </div>
-                </div>
+                </Link>
 
                 <div className="flex items-center gap-1.5 shrink-0">
                   <Button
@@ -118,14 +129,17 @@ export function UpcomingReminders({
 
                   <Button
                     size="sm"
-                    variant="ghost"
-                    onClick={() => handleSendTestNotification(item)}
-                    className={`h-7 px-2 text-[11px] gap-1 cursor-pointer ${
-                      isSent ? "text-emerald-500" : "text-amber-600 dark:text-amber-400"
-                    }`}
+                    variant="default"
+                    disabled={isPaying}
+                    onClick={() => handleRecordPayment(item)}
+                    className="h-7 px-2.5 text-[11px] font-medium gap-1 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
                   >
-                    {isSent ? <Check className="size-3" /> : <Send className="size-3" />}
-                    {isSent ? "Alert Sent" : "Notify"}
+                    {isPaying ? (
+                      <Loader2 className="size-3 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="size-3" />
+                    )}
+                    {isPaying ? "Recording..." : "Record Payment"}
                   </Button>
                 </div>
               </div>
@@ -133,7 +147,6 @@ export function UpcomingReminders({
           )
         })}
       </div>
-
     </div>
   )
 }

@@ -11,6 +11,7 @@ import {
 import { useMutation, useQuery } from "convex/react"
 import { useAuth } from "@clerk/expo"
 import { api } from "@/convex/_generated/api"
+import { Id } from "@/convex/_generated/dataModel"
 import {
   ArrowLeft,
   X,
@@ -19,6 +20,7 @@ import {
   CreditCard,
   UserPlus,
   Trash2,
+  Wallet,
 } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { Input } from "@/components/ui/input"
@@ -43,6 +45,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
 
   const create = useMutation(api.subscriptions.create)
   const paymentMethods = useQuery(api.paymentMethods.list, isSignedIn && visible ? {} : "skip")
+  const accounts = useQuery(api.accounts.list, isSignedIn && visible ? {} : "skip")
 
   const [step, setStep] = useState<1 | 2>(1)
   const [iconPickerOpen, setIconPickerOpen] = useState(false)
@@ -61,6 +64,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
   const [selectedColor, setSelectedColor] = useState("#000000")
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<string>("")
+  const [selectedAccountId, setSelectedAccountId] = useState<string>("")
 
   // Trial additions
   const [isTrial, setIsTrial] = useState(false)
@@ -87,6 +91,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
     setSelectedIcon(null)
     setSelectedColor("#000000")
     setSelectedPaymentMethodId("")
+    setSelectedAccountId("")
     setIsTrial(false)
     setTrialEndDate("")
     setCancelUrl("")
@@ -186,6 +191,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
         totalPlanPrice: isShared && totalPlanPrice.trim() ? parseFloat(totalPlanPrice.trim()) : undefined,
         totalMembers: isShared && totalMembers.trim() ? parseInt(totalMembers.trim()) : undefined,
         paymentMethodId: selectedPaymentMethodId || undefined,
+        accountId: selectedAccountId ? (selectedAccountId as Id<"accounts">) : undefined,
         splitMembers: isShared && splitMembersList.length > 0 ? splitMembersList : undefined,
       })
 
@@ -694,6 +700,77 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                   </View>
                 )}
               </View>
+
+              {/* Financial Account (Deduct Balance) */}
+              {accounts && accounts.length > 0 && (
+                <View
+                  style={{
+                    backgroundColor: colors.card,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    borderRadius: 14,
+                    padding: 14,
+                    gap: 8,
+                  }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <Wallet size={14} color={colors.primary} />
+                    <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+                      Linked Financial Account
+                    </Text>
+                  </View>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8 }}>
+                    <TouchableOpacity
+                      onPress={() => setSelectedAccountId("")}
+                      style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        borderRadius: 8,
+                        backgroundColor: !selectedAccountId ? colors.primary : colors.surface,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: "600",
+                          color: !selectedAccountId ? colors.primaryForeground : colors.mutedText,
+                        }}
+                      >
+                        None (Manual)
+                      </Text>
+                    </TouchableOpacity>
+
+                    {accounts.map((acc) => {
+                      const isSelected = selectedAccountId === acc._id
+                      return (
+                        <TouchableOpacity
+                          key={acc._id}
+                          onPress={() => setSelectedAccountId(acc._id)}
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 6,
+                            paddingHorizontal: 12,
+                            paddingVertical: 8,
+                            borderRadius: 8,
+                            backgroundColor: isSelected ? colors.primary : colors.surface,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 12,
+                              fontWeight: "600",
+                              color: isSelected ? colors.primaryForeground : colors.text,
+                            }}
+                          >
+                            {acc.name} ({acc.currency} {acc.balance.toLocaleString()})
+                          </Text>
+                        </TouchableOpacity>
+                      )
+                    })}
+                  </ScrollView>
+                </View>
+              )}
 
               {/* Payment Method / Card Vault link */}
               {paymentMethods && paymentMethods.length > 0 && (

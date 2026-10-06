@@ -40,6 +40,7 @@ export function AddTransactionSheet({
 
   const create = useMutation(api.transactions.create)
   const accounts = useQuery(api.accounts.list, isSignedIn && visible ? {} : "skip")
+  const subscriptions = useQuery(api.subscriptions.list, isSignedIn && visible ? {} : "skip")
 
   const [type, setType] = useState<TransactionType>(defaultType)
   const [amount, setAmount] = useState("")
@@ -48,6 +49,7 @@ export function AddTransactionSheet({
   const [note, setNote] = useState("")
   const [accountId, setAccountId] = useState("")
   const [toAccountId, setToAccountId] = useState("")
+  const [subscriptionId, setSubscriptionId] = useState("")
   const [loading, setLoading] = useState(false)
 
   const categoryOptions = type === "income" ? incomeCategories : expenseCategories
@@ -61,11 +63,29 @@ export function AddTransactionSheet({
     setNote("")
     setAccountId("")
     setToAccountId("")
+    setSubscriptionId("")
   }
 
   const handleClose = () => {
     resetForm()
     onClose()
+  }
+
+  const handleSelectSubscription = (subId: string) => {
+    if (!subId) {
+      setSubscriptionId("")
+      return
+    }
+    setSubscriptionId(subId)
+    const sub = subscriptions?.find((s) => s._id === subId)
+    if (sub) {
+      setNote(sub.name)
+      setAmount(String(sub.price))
+      if (sub.accountId) {
+        setAccountId(sub.accountId)
+      }
+      setCategory("subscriptions")
+    }
   }
 
   const handleTypeChange = (next: TransactionType) => {
@@ -109,6 +129,7 @@ export function AddTransactionSheet({
         note: note.trim() ? note.trim() : undefined,
         accountId: accountId as never,
         toAccountId: (type === "transfer" ? toAccountId : undefined) as never,
+        subscriptionId: subscriptionId ? (subscriptionId as never) : undefined,
         icon: activeCategory.icon,
         color: activeCategory.color,
       })
@@ -125,7 +146,7 @@ export function AddTransactionSheet({
     }
   }
 
-  const typeTabs: Array<{ value: TransactionType; label: string }> = [
+  const typeTabs: { value: TransactionType; label: string }[] = [
     { value: "expense", label: "Expense" },
     { value: "income", label: "Income" },
     { value: "transfer", label: "Transfer" },
@@ -363,6 +384,58 @@ export function AddTransactionSheet({
                 </View>
               ) : null}
             </View>
+
+            {/* Linked Subscription */}
+            {type === "expense" && subscriptions && subscriptions.length > 0 ? (
+              <View style={{ gap: 4 }}>
+                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>
+                  LINK TO SUBSCRIPTION (OPTIONAL)
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
+                  <TouchableOpacity
+                    onPress={() => handleSelectSubscription("")}
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      borderRadius: 8,
+                      backgroundColor: !subscriptionId ? colors.primary : colors.surface,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        fontWeight: "600",
+                        color: !subscriptionId ? colors.primaryForeground : colors.text,
+                      }}
+                    >
+                      None
+                    </Text>
+                  </TouchableOpacity>
+                  {subscriptions.map((s) => (
+                    <TouchableOpacity
+                      key={s._id}
+                      onPress={() => handleSelectSubscription(s._id)}
+                      style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        borderRadius: 8,
+                        backgroundColor: subscriptionId === s._id ? colors.primary : colors.surface,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: "600",
+                          color: subscriptionId === s._id ? colors.primaryForeground : colors.text,
+                        }}
+                      >
+                        {s.name} ({s.currency} {s.price})
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            ) : null}
 
             {/* Date & Note */}
             <View style={{ flexDirection: "row", gap: 10 }}>

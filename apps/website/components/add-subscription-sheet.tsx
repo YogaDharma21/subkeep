@@ -4,7 +4,8 @@ import { useState, useCallback } from "react"
 import { useMutation, useQuery } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
-import { ArrowLeft, Plus, X, Sparkles, Link2, Users, CreditCard, UserPlus, Trash2, Pipette } from "lucide-react"
+import { Id } from "@/convex/_generated/dataModel"
+import { ArrowLeft, Plus, X, Sparkles, Link2, Users, CreditCard, UserPlus, Trash2, Pipette, Wallet } from "lucide-react"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import {
   Sheet,
@@ -46,6 +47,10 @@ export function AddSubscriptionSheet({
     api.paymentMethods.list,
     isSignedIn && open ? {} : "skip"
   ) as Array<{ _id: string; name: string; type: string; last4?: string }> | undefined
+  const accounts = useQuery(
+    api.accounts.list,
+    isSignedIn && open ? {} : "skip"
+  ) as Array<{ _id: string; name: string; type: string; balance: number; currency: string; isArchived?: boolean }> | undefined
 
   const [step, setStep] = useState(1)
   const [iconOpen, setIconOpen] = useState(false)
@@ -64,6 +69,7 @@ export function AddSubscriptionSheet({
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
   const [selectedColor, setSelectedColor] = useState("#000000")
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<string>("")
+  const [selectedAccountId, setSelectedAccountId] = useState<string>("")
 
   // Trial additions
   const [isTrial, setIsTrial] = useState(false)
@@ -91,6 +97,7 @@ export function AddSubscriptionSheet({
     setSelectedIcon(null)
     setSelectedColor("#000000")
     setSelectedPaymentMethodId("")
+    setSelectedAccountId("")
     setIsTrial(false)
     setTrialEndDate("")
     setCancelUrl("")
@@ -184,6 +191,7 @@ export function AddSubscriptionSheet({
         totalPlanPrice: totalPlanPrice ? parseFloat(totalPlanPrice) : undefined,
         totalMembers: totalMembers ? parseInt(totalMembers) : undefined,
         paymentMethodId: selectedPaymentMethodId || undefined,
+        accountId: selectedAccountId ? (selectedAccountId as Id<"accounts">) : undefined,
         splitMembers: isShared && splitMembersList.length > 0 ? splitMembersList : undefined,
       })
       toast.success(`Added ${name} to your subscriptions!`)
@@ -497,6 +505,31 @@ export function AddSubscriptionSheet({
                         </option>
                       ))}
                     </select>
+                  </div>
+
+                  {/* Financial Account Selector (Budget & Balance Deductions) */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-1.5">
+                      <Wallet className="size-4 text-primary" />
+                      Payment Account (Balance & Transaction Link)
+                    </label>
+                    <select
+                      value={selectedAccountId}
+                      onChange={(e) => setSelectedAccountId(e.target.value)}
+                      className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                    >
+                      <option value="">No linked account (Uses default on payment)</option>
+                      {accounts
+                        ?.filter((a) => !a.isArchived)
+                        .map((acc) => (
+                          <option key={acc._id} value={acc._id}>
+                            {acc.name} ({acc.type}) - {acc.currency} {acc.balance.toLocaleString()}
+                          </option>
+                        ))}
+                    </select>
+                    <p className="text-[11px] text-muted-foreground">
+                      When payments are recorded, an expense transaction is automatically logged and deducted from this account.
+                    </p>
                   </div>
 
                   <div className="space-y-2">

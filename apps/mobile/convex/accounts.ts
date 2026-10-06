@@ -123,6 +123,15 @@ export const remove = mutation({
       }
     }
 
+    // Detach subscriptions linked to this account
+    const linkedSubs = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_account", (q) => q.eq("accountId", args.id))
+      .collect()
+    for (const s of linkedSubs) {
+      await ctx.db.patch(s._id, { accountId: undefined })
+    }
+
     await ctx.db.delete(args.id)
   },
 })

@@ -46,6 +46,7 @@ type TxnDoc = {
   note?: string
   accountId?: string
   toAccountId?: string
+  subscriptionId?: string
   icon?: string
   color?: string
 }
@@ -64,6 +65,7 @@ export default function TransactionsScreen() {
     isSignedIn ? { month } : "skip"
   )
   const accounts = useQuery(api.accounts.list, isSignedIn ? {} : "skip")
+  const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const updateMutation = useMutation(api.transactions.update)
   const removeMutation = useMutation(api.transactions.remove)
 
@@ -408,11 +410,30 @@ export default function TransactionsScreen() {
                       <DynamicIcon name={t.icon || meta.icon} size={16} color={colors.text} />
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text numberOfLines={1} style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
-                        {t.type === "transfer"
-                          ? `Transfer${accountName(t.accountId) ? ` · ${accountName(t.accountId)}` : ""}${accountName(t.toAccountId) ? ` → ${accountName(t.toAccountId)}` : ""}`
-                          : t.note || meta.label}
-                      </Text>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                        <Text numberOfLines={1} style={{ fontSize: 13, fontWeight: "700", color: colors.text, flexShrink: 1 }}>
+                          {t.type === "transfer"
+                            ? `Transfer${accountName(t.accountId) ? ` · ${accountName(t.accountId)}` : ""}${accountName(t.toAccountId) ? ` → ${accountName(t.toAccountId)}` : ""}`
+                            : t.note || meta.label}
+                        </Text>
+                        {t.subscriptionId && subscriptions ? (() => {
+                          const sub = subscriptions.find((s) => s._id === t.subscriptionId)
+                          return sub ? (
+                            <View
+                              style={{
+                                backgroundColor: "rgba(99, 102, 241, 0.15)",
+                                paddingHorizontal: 5,
+                                paddingVertical: 1,
+                                borderRadius: 4,
+                              }}
+                            >
+                              <Text style={{ fontSize: 9, fontWeight: "800", color: colors.primary }}>
+                                {sub.name}
+                              </Text>
+                            </View>
+                          ) : null
+                        })() : null}
+                      </View>
                       <Text numberOfLines={1} style={{ fontSize: 11, color: colors.mutedText }}>
                         {meta.label}
                         {t.type !== "transfer" && accountName(t.accountId) ? ` · ${accountName(t.accountId)}` : ""}
