@@ -1,10 +1,14 @@
 import { useState } from "react"
-import { Bell, Send, Check, ExternalLink } from "lucide-react"
+import { useMutation } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { Id } from "@/convex/_generated/dataModel"
+import { Bell, Send, Check, ExternalLink, CheckCircle2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
 import { getContrastTextColor } from "@/lib/constants"
 import { findUpcomingReminders, ReminderItem, sendDesktopNotification } from "@/lib/notifications"
+import { toast } from "sonner"
 
 interface UpcomingRemindersProps {
   subscriptions: Array<{
@@ -31,10 +35,30 @@ export function UpcomingReminders({
   rates,
 }: UpcomingRemindersProps) {
   const [sentAlerts, setSentAlerts] = useState<Record<string, boolean>>({})
+  const [payingId, setPayingId] = useState<string | null>(null)
+  const recordPaymentMutation = useMutation(api.subscriptions.recordPayment)
 
   const reminders = findUpcomingReminders(subscriptions, 3)
 
   if (reminders.length === 0) return null
+
+  const handleRecordPayment = async (item: ReminderItem) => {
+    setPayingId(item._id)
+    try {
+      const res = await recordPaymentMutation({
+        id: item._id as Id<"subscriptions">,
+      })
+      toast.success(
+        res.isActive
+          ? `Recorded payment for ${item.name}! Next renewal: ${res.nextBilling}`
+          : `Recorded final payment for ${item.name}! Term completed.`
+      )
+    } catch {
+      toast.error(`Failed to record payment for ${item.name}`)
+    } finally {
+      setPayingId(null)
+    }
+  }
 
   const handleSendTestNotification = (item: ReminderItem) => {
     const isTrial = item.isTrial
@@ -109,6 +133,21 @@ export function UpcomingReminders({
                   >
                     <ExternalLink className="size-3" />
                     Cancel
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="default"
+                    disabled={payingId === item._id}
+                    onClick={() => handleRecordPayment(item)}
+                    className="h-7 px-2.5 text-[11px] font-medium gap-1 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    {payingId === item._id ? (
+                      <Loader2 className="size-3 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="size-3" />
+                    )}
+                    {payingId === item._id ? "Recording..." : "Record Payment"}
                   </Button>
 
                   <Button

@@ -1,6 +1,9 @@
 import React, { useState } from "react"
-import { View, Text, TouchableOpacity, Linking } from "react-native"
-import { Bell, Send, Check, ExternalLink } from "lucide-react-native"
+import { View, Text, TouchableOpacity, Linking, ActivityIndicator } from "react-native"
+import { Bell, Send, Check, ExternalLink, CreditCard } from "lucide-react-native"
+import { useMutation } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { Id } from "@/convex/_generated/dataModel"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
 import { getContrastTextColor } from "@/constants/categories"
@@ -22,6 +25,7 @@ interface UpcomingRemindersProps {
     trialEndDate?: string
     cancelUrl?: string
     isActive: boolean
+    accountId?: string
   }[]
   primaryCurrency?: string
   rates?: Record<string, number>
@@ -37,10 +41,35 @@ export function UpcomingReminders({
   const { colors } = useThemeColor()
   const { showAlert } = useAlert()
   const [sentAlerts, setSentAlerts] = useState<Record<string, boolean>>({})
+  const [recordingId, setRecordingId] = useState<string | null>(null)
+  const recordPaymentMutation = useMutation(api.subscriptions.recordPayment)
 
   const reminders = findUpcomingReminders(subscriptions, 7)
 
   if (reminders.length === 0) return null
+
+  const handleRecordPayment = async (item: ReminderItem) => {
+    try {
+      setRecordingId(item._id)
+      await recordPaymentMutation({
+        id: item._id as Id<"subscriptions">,
+        amount: item.price,
+      })
+      showAlert({
+        title: "Payment Recorded",
+        message: `Recorded payment for ${item.name} and advanced next billing date.`,
+        icon: "success",
+      })
+    } catch (e: any) {
+      showAlert({
+        title: "Error",
+        message: e?.message || "Failed to record payment",
+        icon: "error",
+      })
+    } finally {
+      setRecordingId(null)
+    }
+  }
 
   const handleTestAlert = (item: ReminderItem) => {
     const isTrial = item.type === "trial"
@@ -135,6 +164,37 @@ export function UpcomingReminders({
 
               {/* Actions row */}
               <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8 }}>
+                {!isTrial ? (
+                  <TouchableOpacity
+                    onPress={() => handleRecordPayment(item)}
+                    disabled={recordingId === item._id}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 4,
+                      paddingHorizontal: 8,
+                      paddingVertical: 5,
+                      borderRadius: 6,
+                      backgroundColor: colors.primary,
+                    }}
+                  >
+                    {recordingId === item._id ? (
+                      <ActivityIndicator size="small" color={colors.primaryForeground} />
+                    ) : (
+                      <CreditCard size={12} color={colors.primaryForeground} />
+                    )}
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        fontWeight: "600",
+                        color: colors.primaryForeground,
+                      }}
+                    >
+                      {recordingId === item._id ? "Recording..." : "Record Payment"}
+                    </Text>
+                  </TouchableOpacity>
+                ) : null}
+
                 <TouchableOpacity
                   onPress={() => {
                     const url = item.cancelUrl || `https://www.google.com/search?q=${encodeURIComponent(`how to cancel ${item.name} subscription`)}`

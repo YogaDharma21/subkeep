@@ -14,10 +14,26 @@ export interface ReminderItem {
   type: "billing" | "trial"
 }
 
+export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+    return null
+  }
+  try {
+    const reg = await navigator.serviceWorker.register("/sw.js", { scope: "/" })
+    return reg
+  } catch (e) {
+    console.warn("Service worker registration failed:", e)
+    return null
+  }
+}
+
 export async function requestWebPushPermission(): Promise<boolean> {
   if (typeof window === "undefined" || !("Notification" in window)) {
     return false
   }
+
+  // Register service worker if supported
+  await registerServiceWorker()
 
   if (Notification.permission === "granted") {
     return true
@@ -31,18 +47,40 @@ export async function requestWebPushPermission(): Promise<boolean> {
   return false
 }
 
-export function sendWebPushNotification(title: string, body: string, iconUrl?: string) {
+export async function sendWebPushNotification(
+  title: string,
+  body: string,
+  iconUrl?: string,
+  targetUrl: string = "/"
+) {
   if (typeof window === "undefined" || !("Notification" in window)) return
-  if (Notification.permission === "granted") {
-    try {
-      new Notification(title, {
-        body,
-        icon: iconUrl || "/favicon.ico",
-        badge: "/favicon.ico",
-      })
-    } catch (e) {
-      console.warn("Notification error:", e)
+  if (Notification.permission !== "granted") return
+
+  try {
+    if ("serviceWorker" in navigator) {
+      const reg = await navigator.serviceWorker.ready
+      if (reg && reg.showNotification) {
+        await reg.showNotification(title, {
+          body,
+          icon: iconUrl || "/icon-192.png",
+          badge: "/favicon.ico",
+          data: { url: targetUrl },
+        })
+        return
+      }
     }
+  } catch (e) {
+    console.warn("Service worker notification failed, falling back to desktop Notification:", e)
+  }
+
+  try {
+    new Notification(title, {
+      body,
+      icon: iconUrl || "/favicon.ico",
+      badge: "/favicon.ico",
+    })
+  } catch (e) {
+    console.warn("Notification error:", e)
   }
 }
 

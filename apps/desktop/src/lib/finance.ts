@@ -54,6 +54,24 @@ export const financeCategoryColors: Record<string, string> = Object.fromEntries(
   financeCategories.map((c) => [c.value, c.color])
 )
 
+export function mapSubscriptionCategoryToFinanceCategory(subCategory: string): string {
+  const normalized = (subCategory || "").toLowerCase().trim()
+  const map: Record<string, string> = {
+    entertainment: "entertainment",
+    music: "entertainment",
+    gaming: "entertainment",
+    news: "entertainment",
+    productivity: "subscriptions",
+    cloud: "utilities",
+    fitness: "health",
+    education: "education",
+    finance: "finance",
+    other: "subscriptions",
+    subscriptions: "subscriptions",
+  }
+  return map[normalized] || "subscriptions"
+}
+
 export interface AccountType {
   value: string
   label: string

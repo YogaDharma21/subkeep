@@ -52,6 +52,10 @@ export default function AccountsScreen() {
     api.transactions.list,
     isSignedIn ? { month: currentMonthKey() } : "skip"
   )
+  const subscriptions = useQuery(
+    api.subscriptions.list,
+    isSignedIn ? {} : "skip"
+  )
   const archiveMutation = useMutation(api.accounts.archive)
   const removeMutation = useMutation(api.accounts.remove)
 
@@ -67,6 +71,22 @@ export default function AccountsScreen() {
     )
     return { active, archived, totalNetWorth }
   }, [accounts, primaryCurrency, rates])
+
+  const subscriptionsByAccount = useMemo(() => {
+    const map = new Map<string, { count: number; monthlyCommitment: number }>()
+    for (const sub of subscriptions || []) {
+      if (!sub.accountId || !sub.isActive) continue
+      const entry = map.get(sub.accountId) || { count: 0, monthlyCommitment: 0 }
+      entry.count += 1
+      let monthly = sub.price
+      if (sub.cycle === "yearly") monthly = sub.price / 12
+      else if (sub.cycle === "quarterly") monthly = sub.price / 3
+      else if (sub.cycle === "weekly") monthly = sub.price * 4.33
+      entry.monthlyCommitment += convertCurrency(monthly, sub.currency, primaryCurrency, rates)
+      map.set(sub.accountId, entry)
+    }
+    return map
+  }, [subscriptions, primaryCurrency, rates])
 
   const monthFlowByAccount = useMemo(() => {
     const map = new Map<string, { income: number; expense: number }>()
@@ -116,6 +136,7 @@ export default function AccountsScreen() {
   const renderCard = (a: AccountDoc) => {
     const meta = accountTypeMeta(a.type)
     const flow = monthFlowByAccount.get(a._id)
+    const subInfo = subscriptionsByAccount.get(a._id)
     return (
       <View
         key={a._id}
@@ -192,6 +213,27 @@ export default function AccountsScreen() {
               -{formatCurrencyAmount(flow.expense, primaryCurrency)}
             </Text>
             <Text style={{ fontSize: 11, color: colors.mutedText }}>this month</Text>
+          </View>
+        ) : null}
+
+        {subInfo && subInfo.count > 0 ? (
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              backgroundColor: colors.surface,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: 8,
+            }}
+          >
+            <Text style={{ fontSize: 11, color: colors.mutedText }}>
+              {subInfo.count} active subscription{subInfo.count > 1 ? "s" : ""}
+            </Text>
+            <Text style={{ fontSize: 11, fontWeight: "700", color: colors.text }}>
+              ~{formatCurrencyAmount(subInfo.monthlyCommitment, primaryCurrency)}/mo
+            </Text>
           </View>
         ) : null}
 
