@@ -25,31 +25,41 @@ export default function StatsPage() {
 
   const months = useMemo(() => lastMonths(6), [])
 
+  const isLoading =
+    subscriptions === undefined ||
+    transactions === undefined ||
+    payments === undefined
+
   return (
     <div className="space-y-4 sm:space-y-6">
-      {transactions && (
-        <FinanceAnalytics
-          transactions={transactions}
-          months={months}
-          currentMonth={currentMonthKey()}
-          primaryCurrency={primaryCurrency}
-          rates={rates}
-        />
-      )}
-
-      {subscriptions ? (
-        <StatsCharts
-          subscriptions={subscriptions}
-          payments={payments || []}
-          primaryCurrency={primaryCurrency}
-          rates={rates}
-        />
-      ) : (
-        <div className="space-y-4">
-          <Skeleton className="h-[250px] rounded-lg" />
-          <Skeleton className="h-[150px] rounded-lg" />
-          <Skeleton className="h-[250px] rounded-lg" />
+      {isLoading ? (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Skeleton className="h-[340px] rounded-lg" />
+            <Skeleton className="h-[340px] rounded-lg" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Skeleton className="h-[340px] rounded-lg" />
+            <Skeleton className="h-[340px] rounded-lg" />
+          </div>
+          <Skeleton className="h-[260px] rounded-lg" />
         </div>
+      ) : (
+        <>
+          <FinanceAnalytics
+            transactions={transactions}
+            months={months}
+            currentMonth={currentMonthKey()}
+            primaryCurrency={primaryCurrency}
+            rates={rates}
+          />
+          <StatsCharts
+            subscriptions={subscriptions}
+            payments={payments || []}
+            primaryCurrency={primaryCurrency}
+            rates={rates}
+          />
+        </>
       )}
     </div>
   )
