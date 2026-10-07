@@ -13,14 +13,19 @@ import {
   Target,
   AlertTriangle,
   X,
+  Search,
+  SlidersHorizontal,
+  RotateCcw,
 } from "lucide-react"
 import { SubscriptionCard } from "@/components/subscription-card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
 import {
   convertCurrency,
   formatCurrencyAmount,
 } from "@/lib/currency"
-import { currencies } from "@/lib/constants"
+import { currencies, categories, billingCycles } from "@/lib/constants"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
 import { findUpcomingReminders } from "@/lib/notifications"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
@@ -29,7 +34,7 @@ import { differenceInDays } from "date-fns"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
-export type FilterType = "all" | "due_soon" | "trial" | "regular" | "canceled"
+export type StatusFilter = "active" | "due_soon" | "trial" | "canceled" | "all"
 
 export type SortOption =
   | "billing-asc"
@@ -47,7 +52,10 @@ export default function SubscriptionsPage() {
   const suspendMutation = useMutation(api.subscriptions.suspend)
 
   const { primaryCurrency, setPrimaryCurrency, rates } = usePrimaryCurrency()
-  const [filter, setFilter] = useState<FilterType>("all")
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("active")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [cycleFilter, setCycleFilter] = useState("all")
   const [sortBy, setSortBy] = useState<SortOption>("billing-asc")
 
   const handleCurrencyChange = async (newCurr: string) => {
@@ -95,6 +103,45 @@ export default function SubscriptionsPage() {
   const budgetUsedPct = budgetCap && budgetCap > 0 ? Math.round((monthlyTotalConverted / budgetCap) * 100) : null
   const isBudgetExceeded = budgetCap && monthlyTotalConverted > budgetCap
 
+  // Status Counts for Badges
+  const statusCounts = useMemo(() => {
+    if (!subscriptions) return { active: 0, due_soon: 0, trial: 0, canceled: 0, all: 0 }
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    let active = 0
+    let due_soon = 0
+    let trial = 0
+    let canceled = 0
+
+    for (const sub of subscriptions) {
+      const isActive = sub.isActive !== false
+      if (isActive) {
+        active++
+        if (sub.isTrial) trial++
+        const dateStr = sub.isTrial && sub.trialEndDate ? sub.trialEndDate : sub.nextBilling
+        if (dateStr) {
+          const targetDate = new Date(dateStr)
+          targetDate.setHours(0, 0, 0, 0)
+          const diff = differenceInDays(targetDate, today)
+          if (diff >= 0 && diff <= 7) {
+            due_soon++
+          }
+        }
+      } else {
+        canceled++
+      }
+    }
+
+    return {
+      active,
+      due_soon,
+      trial,
+      canceled,
+      all: subscriptions.length,
+    }
+  }, [subscriptions])
+
   // Filtered and Sorted Subscriptions
   const filteredSubs = useMemo(() => {
     if (!subscriptions) return []
@@ -103,13 +150,12 @@ export default function SubscriptionsPage() {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    // Filter logic
-    if (filter === "trial") {
-      list = list.filter((s) => s.isTrial)
-    } else if (filter === "regular") {
-      list = list.filter((s) => !s.isTrial)
-    } else if (filter === "due_soon") {
+    // 1. Status Filter
+    if (statusFilter === "active") {
+      list = list.filter((s) => s.isActive !== false)
+    } else if (statusFilter === "due_soon") {
       list = list.filter((s) => {
+        if (s.isActive === false) return false
         const dateStr = s.isTrial && s.trialEndDate ? s.trialEndDate : s.nextBilling
         if (!dateStr) return false
         const targetDate = new Date(dateStr)
@@ -117,11 +163,35 @@ export default function SubscriptionsPage() {
         const diffDays = differenceInDays(targetDate, today)
         return diffDays >= 0 && diffDays <= 7
       })
-    } else if (filter === "canceled") {
-      list = list.filter((s) => !s.isActive)
+    } else if (statusFilter === "trial") {
+      list = list.filter((s) => s.isActive !== false && !!s.isTrial)
+    } else if (statusFilter === "canceled") {
+      list = list.filter((s) => s.isActive === false)
+    } // "all" displays both active and inactive
+
+    // 2. Search Filter
+    const q = searchQuery.trim().toLowerCase()
+    if (q) {
+      list = list.filter((s) => {
+        const matchesName = s.name.toLowerCase().includes(q)
+        const matchesCategory = s.category.toLowerCase().includes(q)
+        const matchesAccount = s.account ? s.account.toLowerCase().includes(q) : false
+        const matchesWebsite = s.website ? s.website.toLowerCase().includes(q) : false
+        return matchesName || matchesCategory || matchesAccount || matchesWebsite
+      })
     }
 
-    // Sort logic
+    // 3. Category Filter
+    if (categoryFilter !== "all") {
+      list = list.filter((s) => s.category.toLowerCase() === categoryFilter.toLowerCase())
+    }
+
+    // 4. Billing Cycle Filter
+    if (cycleFilter !== "all") {
+      list = list.filter((s) => (s.cycle || "monthly").toLowerCase() === cycleFilter.toLowerCase())
+    }
+
+    // 5. Sort logic
     return list.sort((a, b) => {
       switch (sortBy) {
         case "billing-asc": {
@@ -155,39 +225,53 @@ export default function SubscriptionsPage() {
           return 0
       }
     })
-  }, [subscriptions, filter, sortBy, primaryCurrency, rates])
+  }, [subscriptions, statusFilter, searchQuery, categoryFilter, cycleFilter, sortBy, primaryCurrency, rates])
 
   const hasReminders = useMemo(
     () => findUpcomingReminders(subscriptions || [], 3).length > 0,
     [subscriptions]
   )
 
+  const isFiltered =
+    statusFilter !== "active" ||
+    searchQuery.trim() !== "" ||
+    categoryFilter !== "all" ||
+    cycleFilter !== "all"
+
+  const handleClearFilters = () => {
+    setStatusFilter("active")
+    setSearchQuery("")
+    setCategoryFilter("all")
+    setCycleFilter("all")
+  }
+
   const getEmptyMessage = () => {
-    switch (filter) {
+    if (searchQuery.trim() !== "" || categoryFilter !== "all" || cycleFilter !== "all") {
+      return {
+        title: "No subscriptions match your filters",
+        subtitle: "Try adjusting your search query, category, or billing cycle filters.",
+      }
+    }
+    switch (statusFilter) {
       case "due_soon":
         return {
           title: "No subscriptions due in the next 7 days",
-          subtitle: "All your upcoming payments are further out",
+          subtitle: "All your upcoming payments are further out.",
         }
       case "trial":
         return {
           title: "No active trial subscriptions",
-          subtitle: "Tap + to add a free trial subscription",
-        }
-      case "regular":
-        return {
-          title: "No regular subscriptions found",
-          subtitle: "Only trial subscriptions are currently added",
+          subtitle: "You have no subscriptions currently in a trial period.",
         }
       case "canceled":
         return {
           title: "No canceled subscriptions",
-          subtitle: "All your subscriptions are active",
+          subtitle: "All your subscriptions are currently active.",
         }
       default:
         return {
           title: "No subscriptions yet",
-          subtitle: "Tap + to add your first subscription",
+          subtitle: "Tap + to add your first recurring subscription.",
         }
     }
   }
@@ -289,89 +373,281 @@ export default function SubscriptionsPage() {
 
       {/* Responsive Dashboard Grid */}
       <div className={cn(hasReminders && "grid grid-cols-1 lg:grid-cols-12 gap-6 items-start")}>
-        {/* Main Column: Filters & Subscriptions */}
-        <div className={cn("space-y-3", hasReminders && "lg:col-span-7 xl:col-span-8")}>
-          {/* Filter and Sort Toolbar */}
-          <div className="flex items-center justify-between gap-2 flex-wrap">            {/* Filter Buttons */}
-            <div className="flex items-center gap-1 min-w-0 overflow-x-auto">
+        {/* Main Column: Reimagined Filters & Subscriptions List */}
+        <div className={cn("space-y-4", hasReminders && "lg:col-span-7 xl:col-span-8")}>
+          {/* Reimagined Filter Card */}
+          <div className="rounded-lg border border-border bg-card p-3.5 sm:p-4 space-y-3 shadow-2xs">
+            {/* Top Toolbar: Search + Secondary Filter Controls */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+              {/* Search Bar */}
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name, category, or account..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-8 pl-8 pr-7 text-xs bg-background"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                    aria-label="Clear search"
+                  >
+                    <X className="size-3" />
+                  </button>
+                )}
+              </div>
+
+              {/* Filter Selects Group */}
+              <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
+                {/* Category Select */}
+                <div className="relative inline-flex items-center">
+                  <select
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    aria-label="Filter by category"
+                    className="h-8 rounded-lg border border-border bg-background px-2.5 pr-6 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer"
+                  >
+                    {categories.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.value === "all" ? "All Categories" : c.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-1.5 size-3 text-muted-foreground" />
+                </div>
+
+                {/* Billing Cycle Select */}
+                <div className="relative inline-flex items-center">
+                  <select
+                    value={cycleFilter}
+                    onChange={(e) => setCycleFilter(e.target.value)}
+                    aria-label="Filter by billing cycle"
+                    className="h-8 rounded-lg border border-border bg-background px-2.5 pr-6 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer"
+                  >
+                    <option value="all">All Cycles</option>
+                    {billingCycles.map((bc) => (
+                      <option key={bc.value} value={bc.value}>
+                        {bc.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-1.5 size-3 text-muted-foreground" />
+                </div>
+
+                {/* Sort Select */}
+                <div className="relative inline-flex items-center">
+                  <ArrowUpDown className="pointer-events-none absolute left-2 size-3 text-muted-foreground" />
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                    aria-label="Sort subscriptions"
+                    className="h-8 rounded-lg border border-border bg-background pl-6 pr-6 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer"
+                  >
+                    <option value="billing-asc">Next Renewal</option>
+                    <option value="billing-desc">Furthest Renewal</option>
+                    <option value="price-desc">Highest Price</option>
+                    <option value="price-asc">Lowest Price</option>
+                    <option value="name-asc">Name A-Z</option>
+                    <option value="start-desc">Recently Added</option>
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-1.5 size-3 text-muted-foreground" />
+                </div>
+              </div>
+            </div>
+
+            {/* Status Tabs with Live Count Badges */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-0.5 border-t border-border/50">
+              {/* Active Tab */}
               <button
-                onClick={() => setFilter("all")}
+                onClick={() => setStatusFilter("active")}
                 className={cn(
-                  "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors shrink-0 cursor-pointer",
-                  filter === "all"
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:text-foreground"
+                  "rounded-md px-2.5 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 cursor-pointer",
+                  statusFilter === "active"
+                    ? "bg-foreground text-background shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 )}
               >
-                All
+                <span>Active</span>
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 py-0.2 text-[10px] font-bold",
+                    statusFilter === "active"
+                      ? "bg-background/20 text-background"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {statusCounts.active}
+                </span>
               </button>
+
+              {/* Due Soon Tab */}
               <button
-                onClick={() => setFilter("due_soon")}
+                onClick={() => setStatusFilter("due_soon")}
                 className={cn(
-                  "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors flex items-center gap-1 shrink-0 cursor-pointer",
-                  filter === "due_soon"
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:text-foreground"
+                  "rounded-md px-2.5 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 cursor-pointer",
+                  statusFilter === "due_soon"
+                    ? "bg-amber-600 text-white shadow-xs"
+                    : "text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
                 )}
               >
                 <Clock className="size-3" />
-                Due Soon
+                <span>Due Soon</span>
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 py-0.2 text-[10px] font-bold",
+                    statusFilter === "due_soon"
+                      ? "bg-white/20 text-white"
+                      : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                  )}
+                >
+                  {statusCounts.due_soon}
+                </span>
               </button>
+
+              {/* Trials Tab */}
               <button
-                onClick={() => setFilter("trial")}
+                onClick={() => setStatusFilter("trial")}
                 className={cn(
-                  "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors flex items-center gap-1 shrink-0 cursor-pointer",
-                  filter === "trial"
-                    ? "bg-emerald-500 text-white"
+                  "rounded-md px-2.5 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 cursor-pointer",
+                  statusFilter === "trial"
+                    ? "bg-emerald-600 text-white shadow-xs"
                     : "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
                 )}
               >
                 <Sparkles className="size-3" />
-                Trials
+                <span>Trials</span>
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 py-0.2 text-[10px] font-bold",
+                    statusFilter === "trial"
+                      ? "bg-white/20 text-white"
+                      : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                  )}
+                >
+                  {statusCounts.trial}
+                </span>
               </button>
+
+              {/* Canceled Tab */}
               <button
-                onClick={() => setFilter("regular")}
+                onClick={() => setStatusFilter("canceled")}
                 className={cn(
-                  "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors shrink-0 cursor-pointer",
-                  filter === "regular"
-                    ? "bg-foreground text-background"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Regular
-              </button>
-              <button
-                onClick={() => setFilter("canceled")}
-                className={cn(
-                  "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors flex items-center gap-1 shrink-0 cursor-pointer",
-                  filter === "canceled"
-                    ? "bg-red-500 text-white"
-                    : "text-red-500 dark:text-red-400 hover:bg-red-500/10"
+                  "rounded-md px-2.5 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 cursor-pointer",
+                  statusFilter === "canceled"
+                    ? "bg-red-600 text-white shadow-xs"
+                    : "text-red-600 dark:text-red-400 hover:bg-red-500/10"
                 )}
               >
                 <X className="size-3" />
-                Canceled
+                <span>Canceled</span>
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 py-0.2 text-[10px] font-bold",
+                    statusFilter === "canceled"
+                      ? "bg-white/20 text-white"
+                      : "bg-red-500/15 text-red-600 dark:text-red-400"
+                  )}
+                >
+                  {statusCounts.canceled}
+                </span>
+              </button>
+
+              {/* All Tab */}
+              <button
+                onClick={() => setStatusFilter("all")}
+                className={cn(
+                  "rounded-md px-2.5 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 cursor-pointer",
+                  statusFilter === "all"
+                    ? "bg-foreground text-background shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                )}
+              >
+                <span>All</span>
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 py-0.2 text-[10px] font-bold",
+                    statusFilter === "all"
+                      ? "bg-background/20 text-background"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {statusCounts.all}
+                </span>
               </button>
             </div>
 
-            {/* Sort Selector */}
-            <div className="relative inline-flex items-center shrink-0">
-              <ArrowUpDown className="pointer-events-none absolute left-2 size-3 text-muted-foreground" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="h-7 rounded-lg border border-border bg-background pl-6 pr-6 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer"
-                aria-label="Sort subscriptions"
-              >
-                <option value="billing-asc">Next Billing</option>
-                <option value="billing-desc">Billing: Furthest</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="start-desc">Start: Newest</option>
-                <option value="name-asc">Name: A to Z</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-1.5 size-3 text-muted-foreground" />
-            </div>
+            {/* Active Filters Context Bar */}
+            {isFiltered && (
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/50 text-xs text-muted-foreground flex-wrap">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="font-medium text-foreground">
+                    Showing {filteredSubs.length} of {subscriptions?.length ?? 0}
+                  </span>
+
+                  {statusFilter !== "active" && (
+                    <Badge variant="secondary" className="gap-1 text-[11px] font-normal py-0.5">
+                      Status: {statusFilter === "due_soon" ? "Due Soon" : statusFilter === "trial" ? "Trials" : statusFilter === "canceled" ? "Canceled" : "All"}
+                      <button
+                        onClick={() => setStatusFilter("active")}
+                        className="hover:text-foreground cursor-pointer"
+                        aria-label="Reset status filter"
+                      >
+                        <X className="size-2.5" />
+                      </button>
+                    </Badge>
+                  )}
+
+                  {searchQuery && (
+                    <Badge variant="secondary" className="gap-1 text-[11px] font-normal py-0.5">
+                      Search: &ldquo;{searchQuery}&rdquo;
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="hover:text-foreground cursor-pointer"
+                        aria-label="Clear search query"
+                      >
+                        <X className="size-2.5" />
+                      </button>
+                    </Badge>
+                  )}
+
+                  {categoryFilter !== "all" && (
+                    <Badge variant="secondary" className="gap-1 text-[11px] font-normal py-0.5 capitalize">
+                      Category: {categoryFilter}
+                      <button
+                        onClick={() => setCategoryFilter("all")}
+                        className="hover:text-foreground cursor-pointer"
+                        aria-label="Clear category filter"
+                      >
+                        <X className="size-2.5" />
+                      </button>
+                    </Badge>
+                  )}
+
+                  {cycleFilter !== "all" && (
+                    <Badge variant="secondary" className="gap-1 text-[11px] font-normal py-0.5 capitalize">
+                      Cycle: {billingCycles.find((bc) => bc.value === cycleFilter)?.label || cycleFilter}
+                      <button
+                        onClick={() => setCycleFilter("all")}
+                        className="hover:text-foreground cursor-pointer"
+                        aria-label="Clear cycle filter"
+                      >
+                        <X className="size-2.5" />
+                      </button>
+                    </Badge>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleClearFilters}
+                  className="flex items-center gap-1 text-[11px] font-medium text-primary hover:underline cursor-pointer ml-auto"
+                >
+                  <RotateCcw className="size-3" />
+                  <span>Reset filters</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Subscriptions List / Empty State */}
@@ -383,13 +659,25 @@ export default function SubscriptionsPage() {
                 <Skeleton className="h-20 w-full" />
               </div>
             ) : filteredSubs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 text-center">
-                <p className="text-sm font-medium text-muted-foreground">
+              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 px-4 text-center">
+                <div className="size-10 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground mb-3">
+                  <SlidersHorizontal className="size-5" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">
                   {getEmptyMessage().title}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground/60">
+                <p className="mt-1 text-xs text-muted-foreground max-w-sm">
                   {getEmptyMessage().subtitle}
                 </p>
+                {isFiltered && (
+                  <button
+                    onClick={handleClearFilters}
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
+                  >
+                    <RotateCcw className="size-3" />
+                    <span>Clear all filters</span>
+                  </button>
+                )}
               </div>
             ) : (
               filteredSubs.map((sub) => (
@@ -419,3 +707,4 @@ export default function SubscriptionsPage() {
     </div>
   )
 }
+
