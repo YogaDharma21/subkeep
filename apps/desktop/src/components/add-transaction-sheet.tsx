@@ -23,6 +23,7 @@ import {
   expenseCategories,
   incomeCategories,
   financeCategoryMeta,
+  mapSubscriptionCategoryToFinanceCategory,
   accountTypes,
   todayKey,
 } from "@/lib/finance"
@@ -44,6 +45,10 @@ export function AddTransactionSheet({
     api.accounts.list,
     isSignedIn && open ? {} : "skip"
   )
+  const subscriptions = useQuery(
+    api.subscriptions.list,
+    isSignedIn && open ? {} : "skip"
+  )
 
   const [type, setType] = useState<TransactionType>(defaultType)
   const [amount, setAmount] = useState("")
@@ -52,6 +57,7 @@ export function AddTransactionSheet({
   const [note, setNote] = useState("")
   const [accountId, setAccountId] = useState("")
   const [toAccountId, setToAccountId] = useState("")
+  const [subscriptionId, setSubscriptionId] = useState("")
   const [isSaving, setIsSaving] = useState(false)
 
   const categoryOptions = type === "income" ? incomeCategories : expenseCategories
@@ -68,6 +74,7 @@ export function AddTransactionSheet({
     setNote("")
     setAccountId("")
     setToAccountId("")
+    setSubscriptionId("")
   }
 
   const handleTypeChange = (next: TransactionType) => {
@@ -77,6 +84,20 @@ export function AddTransactionSheet({
     }
     if (next === "expense" && !expenseCategories.some((c) => c.value === category)) {
       setCategory("food")
+    }
+  }
+
+    const handleSelectSubscription = (subId: string) => {
+    setSubscriptionId(subId)
+    if (subId) {
+      const s = subscriptions?.find((sub) => sub._id === subId)
+      if (s) {
+        if (!note) setNote(s.name)
+        if (s.accountId && !accountId) setAccountId(s.accountId)
+        if (s.price && !amount) setAmount(String(s.price))
+        const mappedCat = mapSubscriptionCategoryToFinanceCategory(s.category)
+        setCategory(mappedCat)
+      }
     }
   }
 
@@ -114,6 +135,8 @@ export function AddTransactionSheet({
           type === "transfer"
             ? (toAccountId as Id<"accounts">)
             : undefined,
+        subscriptionId:
+          subscriptionId ? (subscriptionId as Id<"subscriptions">) : undefined,
         icon: activeCategory.icon,
         color: activeCategory.color,
       })
@@ -266,6 +289,24 @@ export function AddTransactionSheet({
               </div>
             )}
           </div>
+
+          {type === "expense" && subscriptions && subscriptions.length > 0 && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Link Subscription (Optional)</label>
+              <select
+                value={subscriptionId}
+                onChange={(e) => handleSelectSubscription(e.target.value)}
+                className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+              >
+                <option value="">None (Standalone Expense)</option>
+                {subscriptions.map((s) => (
+                  <option key={s._id} value={s._id}>
+                    {s.name} ({s.currency} {s.price})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {accounts !== undefined && accounts.length === 0 && (
             <p className="text-[11px] text-muted-foreground">

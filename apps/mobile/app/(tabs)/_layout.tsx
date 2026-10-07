@@ -58,7 +58,7 @@ export default function TabLayout() {
   const avatarInitial = (avatarLabel || "U").charAt(0).toUpperCase()
 
   const activeTab =
-    segments.length >= 2 ? String(segments[1]) : "index"
+    (segments as string[]).length >= 2 ? String((segments as string[])[1]) : "index"
 
   const renderTab = (item: { name: string; label: string; icon: typeof Home }) => {
     const Icon = item.icon

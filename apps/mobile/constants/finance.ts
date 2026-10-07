@@ -25,6 +25,7 @@ export const financeCategories: FinanceCategory[] = [
   { value: "subscriptions", label: "Subscriptions", kind: "expense", color: "#64748b", icon: "RefreshCw" },
   { value: "finance", label: "Fees & Finance", kind: "expense", color: "#0ea5e9", icon: "Landmark" },
   { value: "other-expense", label: "Other Expense", kind: "expense", color: "#71717a", icon: "Receipt" },
+  { value: "other", label: "Other", kind: "expense", color: "#71717a", icon: "Receipt" },
   { value: "salary", label: "Salary", kind: "income", color: "#10b981", icon: "Briefcase" },
   { value: "freelance", label: "Freelance & Side Gigs", kind: "income", color: "#22c55e", icon: "Laptop" },
   { value: "business", label: "Business", kind: "income", color: "#16a34a", icon: "Store" },
@@ -39,15 +40,34 @@ export const expenseCategories = financeCategories.filter((c) => c.kind === "exp
 export const incomeCategories = financeCategories.filter((c) => c.kind === "income")
 
 export function financeCategoryMeta(value: string): FinanceCategory {
+  const normalized = value === "other" ? "subscriptions" : value
   return (
-    financeCategories.find((c) => c.value === value) ?? {
+    financeCategories.find((c) => c.value === normalized || c.value === value) ?? {
       value,
-      label: value.charAt(0).toUpperCase() + value.slice(1),
+      label: value === "other" ? "Subscriptions" : value.charAt(0).toUpperCase() + value.slice(1),
       kind: "expense" as const,
-      color: "#71717a",
-      icon: "Receipt",
+      color: "#64748b",
+      icon: "RefreshCw",
     }
   )
+}
+
+export function mapSubscriptionCategoryToFinanceCategory(subCategory: string): string {
+  const normalized = (subCategory || "").toLowerCase().trim()
+  const map: Record<string, string> = {
+    entertainment: "entertainment",
+    music: "entertainment",
+    gaming: "entertainment",
+    news: "entertainment",
+    productivity: "subscriptions",
+    cloud: "utilities",
+    fitness: "health",
+    education: "education",
+    finance: "finance",
+    other: "subscriptions",
+    subscriptions: "subscriptions",
+  }
+  return map[normalized] || "subscriptions"
 }
 
 export interface AccountType {

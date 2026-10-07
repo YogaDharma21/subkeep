@@ -73,6 +73,62 @@ export const getStats = query({
   },
 })
 
+function addMonths(year: number, month: number, day: number, count: number): string {
+  const totalMonths = month - 1 + count
+  const targetYear = year + Math.floor(totalMonths / 12)
+  const targetMonth = (totalMonths % 12) + 1
+  const daysInTargetMonth = new Date(targetYear, targetMonth, 0).getDate()
+  const targetDay = Math.min(day, daysInTargetMonth)
+
+  const yStr = String(targetYear)
+  const mStr = String(targetMonth).padStart(2, "0")
+  const dStr = String(targetDay).padStart(2, "0")
+  return `${yStr}-${mStr}-${dStr}`
+}
+
+function formatDate(d: Date): string {
+  const yStr = String(d.getFullYear())
+  const mStr = String(d.getMonth() + 1).padStart(2, "0")
+  const dStr = String(d.getDate()).padStart(2, "0")
+  return `${yStr}-${mStr}-${dStr}`
+}
+
+export function calculateNextBilling(dateStr: string, cycle: string): string {
+  const parts = dateStr.split("-").map(Number)
+  if (parts.length !== 3 || parts.some(isNaN)) {
+    const d = new Date()
+    d.setMonth(d.getMonth() + 1)
+    return formatDate(d)
+  }
+
+  const [year, month, day] = parts
+  const c = (cycle || "monthly").toLowerCase()
+
+  if (c === "daily") {
+    const d = new Date(year, month - 1, day)
+    d.setDate(d.getDate() + 1)
+    return formatDate(d)
+  }
+  if (c === "weekly") {
+    const d = new Date(year, month - 1, day)
+    d.setDate(d.getDate() + 7)
+    return formatDate(d)
+  }
+  if (c === "monthly") {
+    return addMonths(year, month, day, 1)
+  }
+  if (c === "quarterly") {
+    return addMonths(year, month, day, 3)
+  }
+  if (c === "semi-annual") {
+    return addMonths(year, month, day, 6)
+  }
+  if (c === "yearly") {
+    return addMonths(year, month, day, 12)
+  }
+  return dateStr
+}
+
 export const create = mutation({
   args: {
     name: v.string(),
@@ -86,6 +142,8 @@ export const create = mutation({
     nextBilling: v.string(),
     endDate: v.optional(v.string()),
     account: v.optional(v.string()),
+    accountId: v.optional(v.id("accounts")),
+    autoRecordPayment: v.optional(v.boolean()),
     website: v.optional(v.string()),
     isTrial: v.optional(v.boolean()),
     trialEndDate: v.optional(v.string()),
@@ -123,6 +181,8 @@ export const create = mutation({
       nextBilling: args.nextBilling,
       endDate: args.endDate || undefined,
       account: args.account || undefined,
+      accountId: args.accountId || undefined,
+      autoRecordPayment: args.autoRecordPayment || undefined,
       website: args.website || undefined,
       isTrial: args.isTrial || undefined,
       trialEndDate: args.trialEndDate || undefined,
@@ -162,6 +222,9 @@ export const update = mutation({
     nextBilling: v.optional(v.string()),
     endDate: v.optional(v.string()),
     account: v.optional(v.string()),
+    accountId: v.optional(v.union(v.id("accounts"), v.null())),
+    autoRecordPayment: v.optional(v.boolean()),
+    lastPaymentDate: v.optional(v.string()),
     website: v.optional(v.string()),
     isTrial: v.optional(v.boolean()),
     trialEndDate: v.optional(v.string()),
@@ -217,6 +280,8 @@ export const update = mutation({
             k === "receiptFileName") &&
           v === ""
         ) {
+          patchObj[k] = undefined
+        } else if (k === "accountId" && (v === null || v === "")) {
           patchObj[k] = undefined
         } else {
           patchObj[k] = v
@@ -297,6 +362,8 @@ export const clone = mutation({
       nextBilling: new Date().toISOString().split("T")[0],
       endDate: sub.endDate,
       account: sub.account,
+      accountId: sub.accountId,
+      autoRecordPayment: sub.autoRecordPayment,
       website: sub.website,
       isTrial: sub.isTrial,
       trialEndDate: sub.trialEndDate,
@@ -317,6 +384,195 @@ export const clone = mutation({
       isActive: true,
       pendingCancel: undefined,
     })
+  },
+})
+
+const fallbackRatesConvex: Record<string, number> = {
+  USD: 1,
+  IDR: 16200,
+  EUR: 0.92,
+  GBP: 0.79,
+  SGD: 1.35,
+  MYR: 4.7,
+  AUD: 1.52,
+  CAD: 1.36,
+  JPY: 155,
+  CNY: 7.23,
+}
+
+function convertCurrencyConvex(amount: number, fromCurr: string, toCurr: string): number {
+  if (!amount || isNaN(amount)) return 0
+  const from = (fromCurr || "USD").toUpperCase()
+  const to = (toCurr || "IDR").toUpperCase()
+  if (from === to) return amount
+  const fromRate = fallbackRatesConvex[from] ?? 1
+  const toRate = fallbackRatesConvex[to] ?? 1
+  const inUSD = amount / fromRate
+  return Math.round(inUSD * toRate * 100) / 100
+}
+
+function mapSubCategoryToFinanceCategory(subCat?: string): string {
+  const normalized = (subCat || "").toLowerCase().trim()
+  const map: Record<string, string> = {
+    entertainment: "entertainment",
+    music: "entertainment",
+    gaming: "entertainment",
+    news: "entertainment",
+    productivity: "subscriptions",
+    cloud: "utilities",
+    fitness: "health",
+    education: "education",
+    finance: "finance",
+    other: "subscriptions",
+    subscriptions: "subscriptions",
+  }
+  return map[normalized] || "subscriptions"
+}
+
+export const recordPayment = mutation({
+  args: {
+    id: v.id("subscriptions"),
+    amount: v.optional(v.number()),
+    date: v.optional(v.string()),
+    accountId: v.optional(v.id("accounts")),
+    accountAmount: v.optional(v.number()),
+    exchangeRate: v.optional(v.number()),
+    linkAccount: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Not authenticated")
+    const sub = await ctx.db.get(args.id)
+    if (!sub) throw new Error("Subscription not found")
+    if (sub.userId !== identity.subject) throw new Error("Unauthorized")
+
+    const paymentDate = args.date || new Date().toISOString().split("T")[0]
+    const amount = args.amount ?? sub.price
+
+    // 1. Resolve Account:
+    // If explicitly passed, use args.accountId. If undefined, fall back to sub.accountId
+    let targetAccountId = args.accountId !== undefined ? args.accountId : sub.accountId
+    let targetAccount = targetAccountId ? await ctx.db.get(targetAccountId) : null
+
+    if (targetAccount && targetAccount.userId !== identity.subject) {
+      targetAccountId = undefined
+      targetAccount = null
+    }
+
+    if (!targetAccountId && args.accountId === undefined) {
+      const userAccounts = await ctx.db
+        .query("accounts")
+        .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+        .collect()
+      const activeAccounts = userAccounts.filter((a) => !a.isArchived)
+      if (activeAccounts.length > 0) {
+        if (sub.account) {
+          const match = activeAccounts.find(
+            (a) => a.name.trim().toLowerCase() === sub.account!.trim().toLowerCase()
+          )
+          if (match) targetAccount = match
+        }
+        if (!targetAccount) {
+          targetAccount = activeAccounts[0]
+        }
+        targetAccountId = targetAccount._id
+      }
+    }
+
+    // Map subscription category to appropriate finance/transaction category
+    const txnCategory = mapSubCategoryToFinanceCategory(sub.category)
+
+    // 2. Insert into payments table
+    const paymentId = await ctx.db.insert("payments", {
+      userId: identity.subject,
+      subscriptionId: sub._id,
+      name: sub.name,
+      icon: sub.icon,
+      color: sub.color,
+      amount,
+      currency: sub.currency,
+      category: txnCategory,
+      date: paymentDate,
+    })
+
+    // 3. Insert into transactions table and adjust account balance
+    const txnId = await ctx.db.insert("transactions", {
+      userId: identity.subject,
+      type: "expense",
+      amount,
+      currency: sub.currency,
+      category: txnCategory,
+      date: paymentDate,
+      note: `${sub.name} subscription payment`,
+      accountId: targetAccountId,
+      subscriptionId: sub._id,
+      paymentId,
+      icon: sub.icon,
+      color: sub.color,
+    })
+
+    // Link transactionId in payments
+    await ctx.db.patch(paymentId, { transactionId: txnId })
+
+    if (targetAccountId && targetAccount) {
+      let deductAmount = amount
+      if (targetAccount.currency !== sub.currency) {
+        if (args.accountAmount && args.accountAmount > 0) {
+          deductAmount = args.accountAmount
+        } else if (args.exchangeRate && args.exchangeRate > 0) {
+          deductAmount = amount * args.exchangeRate
+        } else {
+          deductAmount = convertCurrencyConvex(amount, sub.currency, targetAccount.currency)
+        }
+      }
+
+      await ctx.db.patch(targetAccountId, {
+        balance: targetAccount.balance - deductAmount,
+      })
+    }
+
+    // 4. Advance nextBilling date
+    let baseDate = sub.nextBilling || paymentDate
+    if (baseDate < paymentDate) {
+      baseDate = paymentDate
+    }
+    const nextDate = calculateNextBilling(baseDate, sub.cycle)
+    const patchObj: Record<string, unknown> = {
+      lastPaymentDate: paymentDate,
+    }
+
+    // Persist linked account on subscription ONLY if explicitly requested by user
+    if (args.linkAccount === true && targetAccountId && sub.accountId !== targetAccountId) {
+      patchObj.accountId = targetAccountId
+    }
+
+    if (sub.isTrial) {
+      patchObj.isTrial = false
+      patchObj.trialEndDate = undefined
+    }
+
+    if (sub.endDate && nextDate > sub.endDate) {
+      patchObj.isActive = false
+      patchObj.nextBilling = nextDate
+    } else if (sub.cycle && sub.cycle.toLowerCase() !== "none") {
+      patchObj.nextBilling = nextDate
+    } else if (!sub.cycle || sub.cycle.toLowerCase() === "none") {
+      if (sub.endDate && sub.endDate > paymentDate) {
+        patchObj.nextBilling = sub.endDate
+      } else {
+        patchObj.nextBilling = paymentDate
+      }
+    }
+
+    await ctx.db.patch(sub._id, patchObj)
+
+    return {
+      paymentId,
+      transactionId: txnId,
+      nextBilling: (patchObj.nextBilling as string) ?? sub.nextBilling,
+      isActive: (patchObj.isActive as boolean) ?? sub.isActive,
+      accountId: targetAccountId,
+    }
   },
 })
 
@@ -386,6 +642,9 @@ export const restoreAll = mutation({
         nextBilling: v.string(),
         endDate: v.optional(v.string()),
         account: v.optional(v.string()),
+        accountId: v.optional(v.id("accounts")),
+        autoRecordPayment: v.optional(v.boolean()),
+        lastPaymentDate: v.optional(v.string()),
         website: v.optional(v.string()),
         isTrial: v.optional(v.boolean()),
         trialEndDate: v.optional(v.string()),

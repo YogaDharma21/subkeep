@@ -1,10 +1,12 @@
 import { useState } from "react"
-import { Bell, Send, Check, ExternalLink } from "lucide-react"
+import { Id } from "@/convex/_generated/dataModel"
+import { Bell, Send, Check, ExternalLink, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
 import { getContrastTextColor } from "@/lib/constants"
 import { findUpcomingReminders, ReminderItem, sendDesktopNotification } from "@/lib/notifications"
+import { RecordPaymentDialog, RecordPaymentTarget } from "@/components/record-payment-dialog"
 
 interface UpcomingRemindersProps {
   subscriptions: Array<{
@@ -20,6 +22,9 @@ interface UpcomingRemindersProps {
     trialEndDate?: string
     cancelUrl?: string
     isActive?: boolean
+    accountId?: Id<"accounts">
+    lastPaymentDate?: string
+    endDate?: string
   }>
   primaryCurrency?: string
   rates?: Record<string, number>
@@ -31,10 +36,17 @@ export function UpcomingReminders({
   rates,
 }: UpcomingRemindersProps) {
   const [sentAlerts, setSentAlerts] = useState<Record<string, boolean>>({})
+  const [selectedReminder, setSelectedReminder] = useState<RecordPaymentTarget | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const reminders = findUpcomingReminders(subscriptions, 3)
 
   if (reminders.length === 0) return null
+
+  const handleOpenRecordPayment = (item: ReminderItem) => {
+    setSelectedReminder(item)
+    setDialogOpen(true)
+  }
 
   const handleSendTestNotification = (item: ReminderItem) => {
     const isTrial = item.isTrial
@@ -49,18 +61,18 @@ export function UpcomingReminders({
   }
 
   return (
-    <div className="rounded-lg border border-border bg-background p-4 shadow-xs space-y-2.5">
-      <div className="flex items-center justify-between pb-2 border-b border-border/60">
+    <div className="mb-4 space-y-2">
+      <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-          <Bell className="size-3.5 text-muted-foreground" />
+          <Bell className="size-3.5 text-amber-500" />
           <span>Upcoming Billing & Trial Alerts ({reminders.length})</span>
         </div>
       </div>
 
       <div className="space-y-2">
         {reminders.map((item) => {
-          const isSent = !!sentAlerts[item._id]
           const isTrial = item.type === "trial"
+          const isSent = !!sentAlerts[item._id]
           const priceFormatted = convertAndFormat(item.price, item.currency, primaryCurrency, rates)
 
           return (
@@ -69,7 +81,7 @@ export function UpcomingReminders({
               className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3 text-xs transition-all"
             >
               <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2.5 min-w-0">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
                   <div
                     className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-black/10 dark:border-white/10 shadow-xs"
                     style={{ backgroundColor: item.color || "#6366F1" }}
@@ -113,6 +125,16 @@ export function UpcomingReminders({
 
                   <Button
                     size="sm"
+                    variant="default"
+                    onClick={() => handleOpenRecordPayment(item)}
+                    className="h-7 px-2.5 text-[11px] font-medium gap-1 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    <CheckCircle2 className="size-3" />
+                    Record Payment
+                  </Button>
+
+                  <Button
+                    size="sm"
                     variant="ghost"
                     onClick={() => handleSendTestNotification(item)}
                     className={`h-7 px-2 text-[11px] gap-1 cursor-pointer ${
@@ -129,6 +151,12 @@ export function UpcomingReminders({
         })}
       </div>
 
+      <RecordPaymentDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        subscription={selectedReminder}
+        rates={rates}
+      />
     </div>
   )
 }

@@ -25,6 +25,10 @@ export default defineSchema({
     isShared: v.optional(v.boolean()),
     totalPlanPrice: v.optional(v.number()),
     totalMembers: v.optional(v.number()),
+    // Financial account link
+    accountId: v.optional(v.id("accounts")),
+    autoRecordPayment: v.optional(v.boolean()),
+    lastPaymentDate: v.optional(v.string()),
     // Card Vault / Payment Method link
     paymentMethodId: v.optional(v.string()),
     // SplitKeep member-by-member tracking
@@ -52,7 +56,8 @@ export default defineSchema({
     receiptFileName: v.optional(v.string()),
   })
     .index("by_user", ["userId"])
-    .index("by_user_and_active", ["userId", "isActive"]),
+    .index("by_user_and_active", ["userId", "isActive"])
+    .index("by_account", ["accountId"]),
 
   paymentMethods: defineTable({
     userId: v.string(),
@@ -85,6 +90,7 @@ export default defineSchema({
     currency: v.string(),
     category: v.string(),
     date: v.string(),
+    transactionId: v.optional(v.id("transactions")),
   })
     .index("by_user", ["userId"])
     .index("by_subscription", ["subscriptionId"]),
@@ -95,6 +101,7 @@ export default defineSchema({
     reminderDays: v.number(),
     webPushEnabled: v.boolean(),
     monthlyBudgetCap: v.optional(v.number()),
+    lastNotifiedDate: v.optional(v.string()),
     emailEnabled: v.optional(v.boolean()),
     emailAddress: v.optional(v.string()),
     telegramEnabled: v.optional(v.boolean()),
@@ -127,12 +134,14 @@ export default defineSchema({
     accountId: v.optional(v.id("accounts")),
     toAccountId: v.optional(v.id("accounts")),
     subscriptionId: v.optional(v.id("subscriptions")),
+    paymentId: v.optional(v.id("payments")),
     icon: v.optional(v.string()),
     color: v.optional(v.string()),
   })
     .index("by_user", ["userId"])
     .index("by_user_and_date", ["userId", "date"])
-    .index("by_account", ["accountId"]),
+    .index("by_account", ["accountId"])
+    .index("by_subscription", ["subscriptionId"]),
 
   budgets: defineTable({
     userId: v.string(),
@@ -143,4 +152,17 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_user_and_month", ["userId", "month"]),
+
+  pushSubscriptions: defineTable({
+    userId: v.string(),
+    endpoint: v.string(),
+    expirationTime: v.optional(v.union(v.number(), v.null())),
+    keys: v.object({
+      p256dh: v.string(),
+      auth: v.string(),
+    }),
+    createdAt: v.string(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_endpoint", ["endpoint"]),
 })

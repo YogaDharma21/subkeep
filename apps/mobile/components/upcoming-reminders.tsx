@@ -1,12 +1,13 @@
 import React, { useState } from "react"
 import { View, Text, TouchableOpacity, Linking } from "react-native"
-import { Bell, Send, Check, ExternalLink } from "lucide-react-native"
+import { Bell, Send, Check, ExternalLink, CreditCard } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
 import { getContrastTextColor } from "@/constants/categories"
 import { findUpcomingReminders, ReminderItem } from "@/lib/notifications"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
+import { RecordPaymentSheet, RecordPaymentTarget } from "@/components/record-payment-sheet"
 
 interface UpcomingRemindersProps {
   subscriptions: {
@@ -22,6 +23,9 @@ interface UpcomingRemindersProps {
     trialEndDate?: string
     cancelUrl?: string
     isActive: boolean
+    accountId?: string
+    lastPaymentDate?: string
+    endDate?: string
   }[]
   primaryCurrency?: string
   rates?: Record<string, number>
@@ -32,15 +36,21 @@ export function UpcomingReminders({
   subscriptions,
   primaryCurrency = "USD",
   rates,
-  onMarkCanceled,
 }: UpcomingRemindersProps) {
   const { colors } = useThemeColor()
   const { showAlert } = useAlert()
   const [sentAlerts, setSentAlerts] = useState<Record<string, boolean>>({})
+  const [selectedReminder, setSelectedReminder] = useState<RecordPaymentTarget | null>(null)
+  const [sheetVisible, setSheetVisible] = useState(false)
 
   const reminders = findUpcomingReminders(subscriptions, 7)
 
   if (reminders.length === 0) return null
+
+  const handleOpenRecordPayment = (item: ReminderItem) => {
+    setSelectedReminder(item)
+    setSheetVisible(true)
+  }
 
   const handleTestAlert = (item: ReminderItem) => {
     const isTrial = item.type === "trial"
@@ -135,6 +145,32 @@ export function UpcomingReminders({
 
               {/* Actions row */}
               <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8 }}>
+                {!isTrial ? (
+                  <TouchableOpacity
+                    onPress={() => handleOpenRecordPayment(item)}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 4,
+                      paddingHorizontal: 8,
+                      paddingVertical: 5,
+                      borderRadius: 6,
+                      backgroundColor: colors.primary,
+                    }}
+                  >
+                    <CreditCard size={12} color={colors.primaryForeground} />
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        fontWeight: "600",
+                        color: colors.primaryForeground,
+                      }}
+                    >
+                      Record Payment
+                    </Text>
+                  </TouchableOpacity>
+                ) : null}
+
                 <TouchableOpacity
                   onPress={() => {
                     const url = item.cancelUrl || `https://www.google.com/search?q=${encodeURIComponent(`how to cancel ${item.name} subscription`)}`
@@ -192,6 +228,13 @@ export function UpcomingReminders({
           )
         })}
       </View>
+
+      <RecordPaymentSheet
+        visible={sheetVisible}
+        onClose={() => setSheetVisible(false)}
+        subscription={selectedReminder}
+        rates={rates}
+      />
     </View>
   )
 }

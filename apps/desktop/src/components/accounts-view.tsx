@@ -30,6 +30,7 @@ export function AccountsView() {
   const { isSignedIn } = useAuth()
   const accounts = useQuery(api.accounts.list, isSignedIn ? { includeArchived: true } : "skip")
   const monthTxns = useQuery(api.transactions.list, isSignedIn ? { month: currentMonthKey() } : "skip")
+  const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const archiveMutation = useMutation(api.accounts.archive)
   const removeMutation = useMutation(api.accounts.remove)
 
@@ -61,6 +62,26 @@ export function AccountsView() {
     }
     return map
   }, [monthTxns, primaryCurrency, rates])
+
+  const subscriptionsByAccount = useMemo(() => {
+    const map = new Map<string, { count: number; monthlyCommitment: number }>()
+    for (const s of subscriptions || []) {
+      if (!s.accountId || !s.isActive) continue
+      const entry = map.get(s.accountId) || { count: 0, monthlyCommitment: 0 }
+      entry.count += 1
+      const monthlyCost =
+        s.cycle === "yearly"
+          ? s.price / 12
+          : s.cycle === "weekly"
+          ? (s.price * 52) / 12
+          : s.cycle === "daily"
+          ? s.price * 30
+          : s.price
+      entry.monthlyCommitment += convertCurrency(monthlyCost, s.currency, primaryCurrency, rates)
+      map.set(s.accountId, entry)
+    }
+    return map
+  }, [subscriptions, primaryCurrency, rates])
 
   const handleArchive = async (a: AccountDoc) => {
     try {
@@ -118,6 +139,21 @@ export function AccountsView() {
             <span className="text-muted-foreground">this month</span>
           </div>
         )}
+
+        {(() => {
+          const subInfo = subscriptionsByAccount.get(a._id)
+          if (!subInfo || subInfo.count === 0) return null
+          return (
+            <div className="mt-2.5 flex items-center justify-between rounded-md bg-muted/40 px-2.5 py-1.5 text-[11px] text-muted-foreground border border-border/50">
+              <span>
+                {subInfo.count} linked {subInfo.count === 1 ? "subscription" : "subscriptions"}
+              </span>
+              <span className="font-semibold text-foreground">
+                ~{formatCurrencyAmount(subInfo.monthlyCommitment, primaryCurrency)}/mo
+              </span>
+            </div>
+          )
+        })()}
 
         <div className="mt-3 flex items-center gap-1.5">
           <Button variant="ghost" size="icon-sm" onClick={() => setEditing(a)} title="Edit account" className="cursor-pointer">

@@ -24,6 +24,7 @@ import {
   Paperclip,
   History,
   Pipette,
+  Wallet,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -53,6 +54,7 @@ import { format, differenceInDays } from "date-fns"
 import { convertAndFormat } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { SubscriptionDetailSkeleton } from "@/components/subscription-detail-skeleton"
+import { RecordPaymentDialog } from "@/components/record-payment-dialog"
 
 interface SubscriptionDetailViewProps {
   subscriptionId: string
@@ -68,6 +70,7 @@ export function SubscriptionDetailView({
   const { isSignedIn } = useAuth()
   const [editing, setEditing] = useState(false)
   const [iconOpen, setIconOpen] = useState(false)
+  const [recordPaymentOpen, setRecordPaymentOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const receiptInputRef = useRef<HTMLInputElement>(null)
@@ -90,13 +93,15 @@ export function SubscriptionDetailView({
     api.paymentMethods.list,
     isSignedIn ? {} : "skip"
   ) as Array<{ _id: string; name: string; type: string; last4?: string }> | undefined
+  const accounts = useQuery(
+    api.accounts.list,
+    isSignedIn ? {} : "skip"
+  ) as Array<{ _id: string; name: string; type: string; balance: number; currency: string; isArchived?: boolean }> | undefined
 
   const updateMutation = useMutation(api.subscriptions.update)
   const suspendMutation = useMutation(api.subscriptions.suspend)
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
-  const recordPaymentMutation = useMutation(api.payments.create)
-  const recordTransactionMutation = useMutation(api.transactions.create)
   const updatePaymentMutation = useMutation(api.payments.update)
   const removePaymentMutation = useMutation(api.payments.remove)
   const generateUploadUrl = useMutation(api.subscriptions.generateUploadUrl)
@@ -112,6 +117,7 @@ export function SubscriptionDetailView({
   const [editColor, setEditColor] = useState("#000000")
   const [editEndDate, setEditEndDate] = useState("")
   const [editAccount, setEditAccount] = useState("")
+  const [editAccountId, setEditAccountId] = useState("")
   const [editWebsite, setEditWebsite] = useState("")
   const [editIsTrial, setEditIsTrial] = useState(false)
   const [editTrialEndDate, setEditTrialEndDate] = useState("")
@@ -218,6 +224,7 @@ export function SubscriptionDetailView({
     setEditColor(sub.color)
     setEditEndDate(sub.endDate || "")
     setEditAccount(sub.account || "")
+    setEditAccountId(sub.accountId || "")
     setEditWebsite(sub.website || "")
     setEditIsTrial(!!sub.isTrial)
     setEditTrialEndDate(sub.trialEndDate || "")
@@ -244,6 +251,7 @@ export function SubscriptionDetailView({
         color: editColor,
         endDate: editEndDate,
         account: editAccount,
+        accountId: editAccountId ? (editAccountId as Id<"accounts">) : null,
         website: editWebsite,
         isTrial: editIsTrial,
         trialEndDate: editTrialEndDate,
@@ -290,41 +298,6 @@ export function SubscriptionDetailView({
       onBack()
     } catch {
       toast.error("Failed to delete subscription")
-    }
-  }
-
-  const handleRecordPayment = async () => {
-    if (!sub || !subscriptionId) return
-    try {
-      const today = new Date().toISOString().split("T")[0]
-      await recordPaymentMutation({
-        subscriptionId: subscriptionId as Id<"subscriptions">,
-        name: sub.name,
-        icon: sub.icon,
-        color: sub.color,
-        amount: sub.price,
-        currency: sub.currency,
-        category: sub.category,
-        date: today,
-      })
-      try {
-        await recordTransactionMutation({
-          type: "expense",
-          amount: sub.price,
-          currency: sub.currency,
-          category: "subscriptions",
-          date: today,
-          note: sub.name,
-          subscriptionId: subscriptionId as Id<"subscriptions">,
-          icon: sub.icon,
-          color: sub.color,
-        })
-      } catch {
-        // payment log succeeded; transaction mirror is best-effort
-      }
-      toast.success(`Recorded payment of ${convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)}`)
-    } catch {
-      toast.error("Failed to record payment")
     }
   }
 
@@ -462,6 +435,7 @@ export function SubscriptionDetailView({
   }
 
   const linkedCard = paymentMethods?.find((pm) => pm._id === sub.paymentMethodId)
+  const linkedAccount = accounts?.find((acc) => acc._id === sub.accountId)
 
   const priceHistory = sub.priceHistory || []
   const originalPriceEntry = priceHistory[0]
@@ -718,6 +692,28 @@ export function SubscriptionDetailView({
             </select>
           </div>
 
+          {/* Financial Account Selector (for balance & transaction deductions) */}
+          <div className="space-y-1">
+            <label className="text-xs font-medium flex items-center gap-1">
+              <Wallet className="size-3.5 text-primary" />
+              Payment Account (Financial Balance & Transaction Deduction)
+            </label>
+            <select
+              value={editAccountId}
+              onChange={(e) => setEditAccountId(e.target.value)}
+              className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-xs"
+            >
+              <option value="">No linked account (Uses default on payment)</option>
+              {accounts
+                ?.filter((a) => !a.isArchived)
+                .map((acc) => (
+                  <option key={acc._id} value={acc._id}>
+                    {acc.name} ({acc.type}) - {acc.currency} {acc.balance.toLocaleString()}
+                  </option>
+                ))}
+            </select>
+          </div>
+
           <div className="space-y-1">
             <label className="text-xs font-medium">Billing Cycle</label>
             <div className="grid grid-cols-3 gap-2">
@@ -864,6 +860,25 @@ export function SubscriptionDetailView({
                 ) : (
                   <span className="text-xs text-muted-foreground">
                     None linked
+                  </span>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Linked Financial Account */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">
+                  Financial Account
+                </span>
+                {linkedAccount ? (
+                  <span className="text-xs font-semibold flex items-center gap-1.5">
+                    <Wallet className="size-3.5 text-primary" />
+                    {linkedAccount.name} ({linkedAccount.type})
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    None linked (uses default)
                   </span>
                 )}
               </div>
@@ -1175,7 +1190,7 @@ export function SubscriptionDetailView({
         <Button
           variant="outline"
           className="w-full cursor-pointer"
-          onClick={handleRecordPayment}
+          onClick={() => setRecordPaymentOpen(true)}
         >
           <DollarSign className="size-4" /> Record Payment
         </Button>
@@ -1368,6 +1383,13 @@ export function SubscriptionDetailView({
         open={iconOpen}
         onClose={() => setIconOpen(false)}
         defaultDomain={editWebsite || editName || sub.website || sub.name}
+      />
+
+      <RecordPaymentDialog
+        open={recordPaymentOpen}
+        onOpenChange={setRecordPaymentOpen}
+        subscription={sub ? { ...sub, _id: sub._id } : null}
+        rates={rates}
       />
     </div>
   )
