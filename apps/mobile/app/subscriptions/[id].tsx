@@ -33,7 +33,6 @@ import {
   FileText,
   MessageSquare,
   X,
-  Link2,
   History,
 } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
@@ -48,6 +47,7 @@ import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
 import { SubscriptionDetailSkeleton } from "@/components/subscription-detail-skeleton"
+import { RecordPaymentSheet } from "@/components/record-payment-sheet"
 
 export default function SubscriptionDetailPage() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -59,6 +59,7 @@ export default function SubscriptionDetailPage() {
 
   const [editing, setEditing] = useState(false)
   const [iconPickerOpen, setIconPickerOpen] = useState(false)
+  const [recordPaymentSheetVisible, setRecordPaymentSheetVisible] = useState(false)
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const [cancelUrlModalOpen, setCancelUrlModalOpen] = useState(false)
   const [tempCancelUrl, setTempCancelUrl] = useState("")
@@ -82,13 +83,16 @@ export default function SubscriptionDetailPage() {
     api.paymentMethods.list,
     isSignedIn ? {} : "skip"
   )
+  const accounts = useQuery(
+    api.accounts.list,
+    isSignedIn ? {} : "skip"
+  )
+  const linkedAccount = useMemo(() => accounts?.find((a) => a._id === sub?.accountId), [accounts, sub?.accountId])
 
   const updateMutation = useMutation(api.subscriptions.update)
   const suspendMutation = useMutation(api.subscriptions.suspend)
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
-  const recordPaymentMutation = useMutation(api.payments.create)
-  const recordTransactionMutation = useMutation(api.transactions.create)
   const updatePaymentMutation = useMutation(api.payments.update)
   const removePaymentMutation = useMutation(api.payments.remove)
   const generateUploadUrl = useMutation(api.subscriptions.generateUploadUrl)
@@ -194,6 +198,7 @@ export default function SubscriptionDetailPage() {
   const [editTotalPlanPrice, setEditTotalPlanPrice] = useState("")
   const [editTotalMembers, setEditTotalMembers] = useState("4")
   const [editPaymentMethodId, setEditPaymentMethodId] = useState("")
+  const [editAccountId, setEditAccountId] = useState("")
   const [editSplitMembers, setEditSplitMembers] = useState<
     { name: string; shareAmount: number; isPaid?: boolean }[]
   >([])
@@ -218,6 +223,7 @@ export default function SubscriptionDetailPage() {
     setEditTotalPlanPrice(sub.totalPlanPrice?.toString() || "")
     setEditTotalMembers(sub.totalMembers?.toString() || "4")
     setEditPaymentMethodId(sub.paymentMethodId || "")
+    setEditAccountId(sub.accountId || "")
     setEditSplitMembers(sub.splitMembers ? [...sub.splitMembers] : [])
     setEditing(true)
   }
@@ -244,6 +250,7 @@ export default function SubscriptionDetailPage() {
         totalPlanPrice: editTotalPlanPrice ? parseFloat(editTotalPlanPrice) : undefined,
         totalMembers: editTotalMembers ? parseInt(editTotalMembers) : undefined,
         paymentMethodId: editPaymentMethodId || undefined,
+        accountId: editAccountId ? (editAccountId as Id<"accounts">) : null,
         splitMembers: editIsShared && editSplitMembers.length > 0 ? editSplitMembers : undefined,
       })
       setEditing(false)
@@ -299,41 +306,9 @@ export default function SubscriptionDetailPage() {
     })
   }
 
-  const handleRecordPayment = async () => {
+  const handleRecordPayment = () => {
     if (!sub || !id) return
-    try {
-      const today = new Date().toISOString().split("T")[0]
-      await recordPaymentMutation({
-        subscriptionId: id as Id<"subscriptions">,
-        name: sub.name,
-        icon: sub.icon,
-        color: sub.color,
-        amount: sub.price,
-        currency: sub.currency,
-        category: sub.category,
-        date: today,
-      })
-      try {
-        await recordTransactionMutation({
-          type: "expense",
-          amount: sub.price,
-          currency: sub.currency,
-          category: "subscriptions",
-          date: today,
-          note: sub.name,
-          subscriptionId: id as Id<"subscriptions">,
-          icon: sub.icon,
-          color: sub.color,
-        })
-      } catch {
-      }
-      showToast(
-        `Recorded payment of ${convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)} for ${sub.name}`,
-        "success"
-      )
-    } catch {
-      showToast("Failed to record payment", "error")
-    }
+    setRecordPaymentSheetVisible(true)
   }
 
   const handlePickReceipt = async () => {
@@ -818,6 +793,58 @@ export default function SubscriptionDetailPage() {
               onChangeText={setEditCancelUrl}
             />
 
+            {/* Financial Account Selector */}
+            {accounts && accounts.length > 0 && (
+              <View style={{ gap: 6 }}>
+                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+                  Financial Account
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 6 }}>
+                  <TouchableOpacity
+                    onPress={() => setEditAccountId("")}
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      borderRadius: 8,
+                      backgroundColor: !editAccountId ? colors.primary : colors.surface,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        fontWeight: "700",
+                        color: !editAccountId ? colors.primaryForeground : colors.mutedText,
+                      }}
+                    >
+                      None
+                    </Text>
+                  </TouchableOpacity>
+                  {accounts.map((a) => (
+                    <TouchableOpacity
+                      key={a._id}
+                      onPress={() => setEditAccountId(a._id)}
+                      style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        borderRadius: 8,
+                        backgroundColor: editAccountId === a._id ? colors.primary : colors.surface,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontWeight: "700",
+                          color: editAccountId === a._id ? colors.primaryForeground : colors.text,
+                        }}
+                      >
+                        {a.name} ({a.currency} {a.balance.toLocaleString()})
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
             {/* Color Circles & Custom Hex Input */}
             <View style={{ gap: 8 }}>
               <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
@@ -911,6 +938,17 @@ export default function SubscriptionDetailPage() {
                   </Text>
                   <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
                     {getSymbol(sub.currency)}{sub.price} ({sub.currency})
+                  </Text>
+                </View>
+                <View style={{ height: 1, backgroundColor: colors.border }} />
+
+                {/* Financial Account */}
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 4 }}>
+                  <Text style={{ fontSize: 13, color: colors.mutedText }}>
+                    Financial Account
+                  </Text>
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: linkedAccount ? colors.text : colors.mutedText }}>
+                    {linkedAccount ? `${linkedAccount.name} (${linkedAccount.currency} ${linkedAccount.balance.toLocaleString()})` : "None linked"}
                   </Text>
                 </View>
                 <View style={{ height: 1, backgroundColor: colors.border }} />
@@ -1603,6 +1641,27 @@ export default function SubscriptionDetailPage() {
         selected={editIcon || sub?.icon || null}
         onClose={() => setIconPickerOpen(false)}
         onSelect={(iconName) => setEditIcon(iconName)}
+      />
+
+      <RecordPaymentSheet
+        visible={recordPaymentSheetVisible}
+        onClose={() => setRecordPaymentSheetVisible(false)}
+        subscription={
+          sub
+            ? {
+                _id: sub._id,
+                name: sub.name,
+                price: sub.price,
+                currency: sub.currency,
+                accountId: sub.accountId,
+                cycle: sub.cycle,
+                icon: sub.icon,
+                color: sub.color,
+                nextBilling: sub.nextBilling,
+              }
+            : null
+        }
+        rates={rates}
       />
     </SafeAreaView>
   )

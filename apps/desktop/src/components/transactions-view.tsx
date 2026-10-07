@@ -45,6 +45,7 @@ type TxnDoc = {
   note?: string
   accountId?: string
   toAccountId?: string
+  subscriptionId?: string
   icon?: string
   color?: string
 }
@@ -255,10 +256,20 @@ export function TransactionsView() {
                         <DynamicIcon name={t.icon || meta.icon} className="size-4" />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium">
-                          {t.type === "transfer"
-                            ? `Transfer${accountName(t.accountId) ? ` · ${accountName(t.accountId)}` : ""}${accountName(t.toAccountId) ? ` → ${accountName(t.toAccountId)}` : ""}`
-                            : t.note || meta.label}
+                        <div className="flex items-center gap-1.5 truncate text-sm font-medium">
+                          <span className="truncate">
+                            {t.type === "transfer"
+                              ? `Transfer${accountName(t.accountId) ? ` · ${accountName(t.accountId)}` : ""}${accountName(t.toAccountId) ? ` → ${accountName(t.toAccountId)}` : ""}`
+                              : t.note || meta.label}
+                          </span>
+                          {t.subscriptionId && (
+                            <span
+                              className="inline-flex shrink-0 items-center rounded-xs bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary"
+                              title="Linked to subscription"
+                            >
+                              Subscription
+                            </span>
+                          )}
                         </div>
                         <div className="text-[11px] text-muted-foreground truncate">
                           {meta.label}

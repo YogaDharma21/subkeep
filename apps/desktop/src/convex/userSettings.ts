@@ -29,6 +29,12 @@ export const update = mutation({
     reminderDays: v.optional(v.number()),
     webPushEnabled: v.optional(v.boolean()),
     monthlyBudgetCap: v.optional(v.number()),
+    lastNotifiedDate: v.optional(v.string()),
+    emailEnabled: v.optional(v.boolean()),
+    emailAddress: v.optional(v.string()),
+    telegramEnabled: v.optional(v.boolean()),
+    telegramBotToken: v.optional(v.string()),
+    telegramChatId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()

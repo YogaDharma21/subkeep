@@ -12,12 +12,31 @@ export interface ReminderItem {
   cancelUrl?: string
   daysLeft: number
   type: "billing" | "trial"
+  accountId?: string
+  lastPaymentDate?: string
+  endDate?: string
+}
+
+export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+    return null
+  }
+  try {
+    const reg = await navigator.serviceWorker.register("/sw.js", { scope: "/" })
+    return reg
+  } catch (e) {
+    console.warn("Service worker registration failed:", e)
+    return null
+  }
 }
 
 export async function requestWebPushPermission(): Promise<boolean> {
   if (typeof window === "undefined" || !("Notification" in window)) {
     return false
   }
+
+  // Register service worker if supported
+  await registerServiceWorker()
 
   if (Notification.permission === "granted") {
     return true
@@ -31,18 +50,40 @@ export async function requestWebPushPermission(): Promise<boolean> {
   return false
 }
 
-export function sendWebPushNotification(title: string, body: string, iconUrl?: string) {
+export async function sendWebPushNotification(
+  title: string,
+  body: string,
+  iconUrl?: string,
+  targetUrl: string = "/"
+) {
   if (typeof window === "undefined" || !("Notification" in window)) return
-  if (Notification.permission === "granted") {
-    try {
-      new Notification(title, {
-        body,
-        icon: iconUrl || "/favicon.ico",
-        badge: "/favicon.ico",
-      })
-    } catch (e) {
-      console.warn("Notification error:", e)
+  if (Notification.permission !== "granted") return
+
+  try {
+    if ("serviceWorker" in navigator) {
+      const reg = await navigator.serviceWorker.ready
+      if (reg && reg.showNotification) {
+        await reg.showNotification(title, {
+          body,
+          icon: iconUrl || "/icon-192.png",
+          badge: "/favicon.ico",
+          data: { url: targetUrl },
+        })
+        return
+      }
     }
+  } catch (e) {
+    console.warn("Service worker notification failed, falling back to desktop Notification:", e)
+  }
+
+  try {
+    new Notification(title, {
+      body,
+      icon: iconUrl || "/favicon.ico",
+      badge: "/favicon.ico",
+    })
+  } catch (e) {
+    console.warn("Notification error:", e)
   }
 }
 
@@ -60,6 +101,9 @@ export function findUpcomingReminders(
     trialEndDate?: string
     cancelUrl?: string
     isActive: boolean
+    accountId?: string
+    lastPaymentDate?: string
+    endDate?: string
   }>,
   targetDays: number = 3
 ): ReminderItem[] {
@@ -67,14 +111,29 @@ export function findUpcomingReminders(
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  const localTodayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
+  const utcTodayStr = today.toISOString().split("T")[0]
 
   const items: ReminderItem[] = []
 
   for (const sub of subscriptions) {
     if (!sub.isActive) continue
 
+    // If payment was recorded today or for a one-time cycle, dismiss alert
+    if (sub.lastPaymentDate) {
+      if (sub.lastPaymentDate === localTodayStr || sub.lastPaymentDate === utcTodayStr) {
+        continue
+      }
+      if (sub.cycle && sub.cycle.toLowerCase() === "none") {
+        continue
+      }
+    }
+
     // Check Trial Expiration
     if (sub.isTrial && sub.trialEndDate) {
+      if (sub.lastPaymentDate && sub.lastPaymentDate >= sub.trialEndDate) {
+        continue
+      }
       const trialDate = new Date(sub.trialEndDate)
       trialDate.setHours(0, 0, 0, 0)
       const diffTime = trialDate.getTime() - today.getTime()
@@ -95,6 +154,9 @@ export function findUpcomingReminders(
           cancelUrl: sub.cancelUrl,
           daysLeft,
           type: "trial",
+          accountId: sub.accountId,
+          lastPaymentDate: sub.lastPaymentDate,
+          endDate: sub.endDate,
         })
         continue
       }
@@ -102,6 +164,9 @@ export function findUpcomingReminders(
 
     // Check Billing Due Date
     if (sub.nextBilling) {
+      if (sub.lastPaymentDate && sub.lastPaymentDate >= sub.nextBilling) {
+        continue
+      }
       const billDate = new Date(sub.nextBilling)
       billDate.setHours(0, 0, 0, 0)
       const diffTime = billDate.getTime() - today.getTime()
@@ -121,6 +186,9 @@ export function findUpcomingReminders(
           cancelUrl: sub.cancelUrl,
           daysLeft,
           type: "billing",
+          accountId: sub.accountId,
+          lastPaymentDate: sub.lastPaymentDate,
+          endDate: sub.endDate,
         })
       }
     }

@@ -10,8 +10,11 @@
 
 import type * as accounts from "../accounts.js";
 import type * as budgets from "../budgets.js";
+import type * as crons from "../crons.js";
 import type * as paymentMethods from "../paymentMethods.js";
 import type * as payments from "../payments.js";
+import type * as pushSubscriptions from "../pushSubscriptions.js";
+import type * as reminders from "../reminders.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as templates from "../templates.js";
 import type * as transactions from "../transactions.js";
@@ -26,8 +29,11 @@ import type {
 declare const fullApi: ApiFromModules<{
   accounts: typeof accounts;
   budgets: typeof budgets;
+  crons: typeof crons;
   paymentMethods: typeof paymentMethods;
   payments: typeof payments;
+  pushSubscriptions: typeof pushSubscriptions;
+  reminders: typeof reminders;
   subscriptions: typeof subscriptions;
   templates: typeof templates;
   transactions: typeof transactions;
