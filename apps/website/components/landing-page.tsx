@@ -15,8 +15,12 @@ import { Button } from "@/components/ui/button"
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen w-full bg-zinc-950 text-zinc-100 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8 selection:bg-zinc-800 selection:text-white">
-      <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+    <div className="relative min-h-screen w-full bg-[#090A0F] text-zinc-100 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8 selection:bg-violet-600/30 selection:text-white overflow-hidden">
+      {/* Ambient background glows */}
+      <div className="pointer-events-none absolute -top-40 -left-40 size-[500px] rounded-full bg-violet-600/15 blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 size-[500px] rounded-full bg-indigo-600/15 blur-[120px]" />
+
+      <div className="relative z-10 w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
         {/* Left Column: Brand, Pitch, Mini Features, CTAs */}
         <div className="lg:col-span-7 flex flex-col justify-center space-y-6 sm:space-y-8">
           {/* Brand Header */}
@@ -27,7 +31,7 @@ export function LandingPage() {
               width={56}
               height={56}
               priority
-              className="size-12 sm:size-14 rounded-2xl object-contain shadow-md"
+              className="size-12 sm:size-14 rounded-2xl object-contain shadow-lg shadow-violet-500/25 border border-violet-500/20"
             />
             <span className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-wider text-white uppercase">
               SUBKEEP
@@ -44,14 +48,14 @@ export function LandingPage() {
             </p>
           </div>
 
-          {/* 3 Feature Highlights (similar to screenshot cards) */}
+          {/* 3 Feature Highlights */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-            <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3.5 backdrop-blur-xs flex flex-col justify-between space-y-2">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-zinc-800 text-zinc-300">
-                <Wallet className="size-4 text-zinc-200" />
+            <div className="rounded-2xl border border-white/[0.08] bg-[#11121C]/80 p-3.5 backdrop-blur-md flex flex-col justify-between space-y-2 shadow-md">
+              <div className="flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/20 to-indigo-500/20 border border-violet-500/30 text-violet-300">
+                <Wallet className="size-4 text-violet-300" />
               </div>
               <div>
-                <h2 className="text-xs sm:text-sm font-semibold text-zinc-200">
+                <h2 className="text-xs sm:text-sm font-semibold text-zinc-100">
                   Money Tracking
                 </h2>
                 <p className="text-[11px] text-zinc-400 mt-0.5 leading-snug">
@@ -60,12 +64,12 @@ export function LandingPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3.5 backdrop-blur-xs flex flex-col justify-between space-y-2">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-zinc-800 text-zinc-300">
-                <Sparkles className="size-4 text-zinc-200" />
+            <div className="rounded-2xl border border-white/[0.08] bg-[#11121C]/80 p-3.5 backdrop-blur-md flex flex-col justify-between space-y-2 shadow-md">
+              <div className="flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/20 to-indigo-500/20 border border-violet-500/30 text-violet-300">
+                <Sparkles className="size-4 text-violet-300" />
               </div>
               <div>
-                <h2 className="text-xs sm:text-sm font-semibold text-zinc-200">
+                <h2 className="text-xs sm:text-sm font-semibold text-zinc-100">
                   Smart Analytics
                 </h2>
                 <p className="text-[11px] text-zinc-400 mt-0.5 leading-snug">
@@ -74,12 +78,12 @@ export function LandingPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3.5 backdrop-blur-xs flex flex-col justify-between space-y-2">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-zinc-800 text-zinc-300">
-                <CreditCard className="size-4 text-zinc-200" />
+            <div className="rounded-2xl border border-white/[0.08] bg-[#11121C]/80 p-3.5 backdrop-blur-md flex flex-col justify-between space-y-2 shadow-md">
+              <div className="flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/20 to-indigo-500/20 border border-violet-500/30 text-violet-300">
+                <CreditCard className="size-4 text-violet-300" />
               </div>
               <div>
-                <h2 className="text-xs sm:text-sm font-semibold text-zinc-200">
+                <h2 className="text-xs sm:text-sm font-semibold text-zinc-100">
                   Subscriptions
                 </h2>
                 <p className="text-[11px] text-zinc-400 mt-0.5 leading-snug">
@@ -92,7 +96,7 @@ export function LandingPage() {
           {/* Action CTA Buttons */}
           <div className="flex flex-wrap items-center gap-4 pt-2">
             <SignInButton mode="modal">
-              <Button className="h-12 px-7 cursor-pointer rounded-xl bg-zinc-100 text-zinc-950 font-bold text-xs sm:text-sm tracking-wider uppercase shadow-md transition-all hover:bg-white active:scale-95 flex items-center gap-2">
+              <Button className="h-12 px-8 cursor-pointer rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white font-bold text-xs sm:text-sm tracking-wider uppercase shadow-lg shadow-violet-500/30 hover:from-violet-500 hover:to-indigo-500 hover:shadow-violet-500/50 hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
                 <span>LOG IN</span>
                 <ArrowRight className="size-4" />
               </Button>
@@ -101,7 +105,7 @@ export function LandingPage() {
             <SignUpButton mode="modal">
               <Button
                 variant="outline"
-                className="h-12 px-7 cursor-pointer rounded-xl border border-zinc-800 bg-zinc-900/90 text-zinc-200 font-bold text-xs sm:text-sm tracking-wider uppercase transition-all hover:bg-zinc-800 hover:text-white active:scale-95"
+                className="h-12 px-8 cursor-pointer rounded-full border border-white/[0.12] bg-[#11121C]/80 text-zinc-200 font-bold text-xs sm:text-sm tracking-wider uppercase transition-all hover:bg-white/[0.06] hover:border-violet-500/40 hover:text-white active:scale-95"
               >
                 CREATE ACCOUNT
               </Button>
@@ -111,9 +115,9 @@ export function LandingPage() {
 
         {/* Right Column: App Window Preview Mockup */}
         <div className="lg:col-span-5 flex justify-center w-full">
-          <div className="w-full max-w-md rounded-2xl border border-zinc-800/90 bg-zinc-900/80 p-5 sm:p-6 backdrop-blur-md shadow-2xl space-y-5">
+          <div className="w-full max-w-md rounded-3xl border border-white/[0.08] bg-[#11121C]/90 p-5 sm:p-6 backdrop-blur-md shadow-2xl shadow-violet-950/40 space-y-5">
             {/* Window Title Bar */}
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
+            <div className="flex items-center justify-between pb-2 border-b border-white/[0.08]">
               <div className="flex items-center gap-2">
                 <div className="size-2.5 rounded-full bg-rose-500/80" />
                 <div className="size-2.5 rounded-full bg-amber-500/80" />
@@ -122,28 +126,28 @@ export function LandingPage() {
                   MONTHLY BILLING PREVIEW
                 </span>
               </div>
-              <span className="rounded-md bg-zinc-800/90 px-2 py-0.5 text-[10px] font-semibold text-zinc-300 border border-zinc-700/50">
+              <span className="rounded-full bg-violet-500/15 border border-violet-500/25 px-2.5 py-0.5 text-[10px] font-semibold text-violet-300">
                 4 Active
               </span>
             </div>
 
             {/* Budget Progress Bar Box */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-3.5 space-y-2">
+            <div className="rounded-2xl border border-white/[0.08] bg-[#090A0F]/60 p-3.5 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-zinc-200">72% Monthly Budget Used</span>
                 <span className="text-zinc-400">$144.00 / $200.00</span>
               </div>
               <div className="h-2 w-full rounded-full bg-zinc-800 overflow-hidden">
-                <div className="h-full rounded-full bg-gradient-to-r from-zinc-400 to-zinc-100 w-[72%]" />
+                <div className="h-full rounded-full bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 w-[72%]" />
               </div>
             </div>
 
             {/* Subscriptions Checklist Rows */}
             <div className="space-y-2.5">
               {/* Item 1 */}
-              <div className="flex items-center justify-between rounded-xl border border-zinc-800/80 bg-zinc-950/50 p-3 transition-colors hover:border-zinc-700">
+              <div className="flex items-center justify-between rounded-2xl border border-white/[0.06] bg-[#090A0F]/50 p-3 transition-colors hover:border-violet-500/30">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 text-emerald-400">
+                  <div className="flex size-7 items-center justify-center rounded-xl bg-violet-500/15 border border-violet-500/25 text-violet-300">
                     <Check className="size-4 stroke-[2.5]" />
                   </div>
                   <div>
@@ -153,15 +157,15 @@ export function LandingPage() {
                     <div className="text-[11px] text-zinc-400">$19.99 · Monthly</div>
                   </div>
                 </div>
-                <span className="rounded-full bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 text-[11px] font-medium text-zinc-300">
+                <span className="rounded-full bg-violet-500/15 border border-violet-500/25 px-2.5 py-0.5 text-[11px] font-medium text-violet-300">
                   Paid
                 </span>
               </div>
 
               {/* Item 2 */}
-              <div className="flex items-center justify-between rounded-xl border border-zinc-800/80 bg-zinc-950/50 p-3 transition-colors hover:border-zinc-700">
+              <div className="flex items-center justify-between rounded-2xl border border-white/[0.06] bg-[#090A0F]/50 p-3 transition-colors hover:border-violet-500/30">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 text-emerald-400">
+                  <div className="flex size-7 items-center justify-center rounded-xl bg-violet-500/15 border border-violet-500/25 text-violet-300">
                     <Check className="size-4 stroke-[2.5]" />
                   </div>
                   <div>
@@ -171,15 +175,15 @@ export function LandingPage() {
                     <div className="text-[11px] text-zinc-400">$14.99 · Monthly</div>
                   </div>
                 </div>
-                <span className="rounded-full bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 text-[11px] font-medium text-zinc-300">
+                <span className="rounded-full bg-violet-500/15 border border-violet-500/25 px-2.5 py-0.5 text-[11px] font-medium text-violet-300">
                   Active
                 </span>
               </div>
 
               {/* Item 3 */}
-              <div className="flex items-center justify-between rounded-xl border border-zinc-800/80 bg-zinc-950/50 p-3 transition-colors hover:border-zinc-700">
+              <div className="flex items-center justify-between rounded-2xl border border-white/[0.06] bg-[#090A0F]/50 p-3 transition-colors hover:border-violet-500/30">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 text-emerald-400">
+                  <div className="flex size-7 items-center justify-center rounded-xl bg-violet-500/15 border border-violet-500/25 text-violet-300">
                     <Check className="size-4 stroke-[2.5]" />
                   </div>
                   <div>
@@ -189,15 +193,15 @@ export function LandingPage() {
                     <div className="text-[11px] text-zinc-400">$10.00 · Monthly</div>
                   </div>
                 </div>
-                <span className="rounded-full bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 text-[11px] font-medium text-zinc-300">
+                <span className="rounded-full bg-violet-500/15 border border-violet-500/25 px-2.5 py-0.5 text-[11px] font-medium text-violet-300">
                   Auto-Renew
                 </span>
               </div>
 
-              {/* Item 4 (Alert / Trial ending badge like the Missing badge in reference image) */}
-              <div className="flex items-center justify-between rounded-xl border border-rose-900/40 bg-rose-950/20 p-3 transition-colors hover:border-rose-800/60">
+              {/* Item 4 */}
+              <div className="flex items-center justify-between rounded-2xl border border-rose-500/30 bg-rose-950/20 p-3 transition-colors hover:border-rose-500/50">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-rose-950/80 border border-rose-800/60 text-rose-400">
+                  <div className="flex size-7 items-center justify-center rounded-xl bg-rose-950/80 border border-rose-800/60 text-rose-400">
                     <Clock className="size-4 stroke-[2.5]" />
                   </div>
                   <div>
@@ -207,7 +211,7 @@ export function LandingPage() {
                     <div className="text-[11px] text-rose-300/80">$9.99 · Ends in 2 days</div>
                   </div>
                 </div>
-                <span className="rounded-full bg-rose-600 border border-rose-500 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-xs">
+                <span className="rounded-full bg-rose-500/20 border border-rose-500/40 px-2.5 py-0.5 text-[11px] font-bold text-rose-300 shadow-xs">
                   Due Soon
                 </span>
               </div>

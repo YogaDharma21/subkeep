@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useAuth } from "@clerk/clerk-react"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
@@ -23,13 +23,11 @@ import { CommandPalette } from "@/components/command-palette"
 import { LandingPage } from "@/components/landing-page"
 import { DesktopCallbackPage } from "@/components/desktop-callback-page"
 import { Toaster } from "@/components/ui/sonner"
-import { useTheme } from "@/components/theme-provider"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { currentMonthKey, lastMonths } from "@/lib/finance"
 
 export function App() {
   const { isSignedIn, isLoaded } = useAuth()
-  const { setTheme, resolvedTheme } = useTheme()
 
   const isElectron =
     typeof window !== "undefined" &&
@@ -65,20 +63,7 @@ export function App() {
 
   const activeSubsCount = subscriptions?.filter((s) => s.isActive !== false).length || 0
 
-  // Keyboard shortcut listener for theme toggle ('D') and Command Palette ('Ctrl+K')
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const activeTag = (document.activeElement?.tagName || "").toLowerCase()
-      const isInput = activeTag === "input" || activeTag === "textarea" || activeTag === "select"
 
-      if (!isInput && (e.key === "d" || e.key === "D")) {
-        setTheme(resolvedTheme === "dark" ? "light" : "dark")
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [resolvedTheme, setTheme])
 
   const handleNavigate = (view: DesktopView | string, subId?: string) => {
     if (view === "detail" && subId) {

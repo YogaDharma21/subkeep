@@ -83,7 +83,7 @@ export function FinanceAnalytics({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
       {/* Income vs Expense */}
-      <div className="rounded-lg border border-border bg-background">
+      <div className="rounded-2xl border border-white/[0.08] bg-card shadow-lg">
         <div className="border-b border-border p-4">
           <h3 className="text-sm font-semibold">Income vs Expenses</h3>
           <p className="text-xs text-muted-foreground">
@@ -113,13 +113,13 @@ export function FinanceAnalytics({
                     backgroundColor: "var(--card)",
                     borderColor: "var(--border)",
                     color: "var(--card-foreground)",
-                    borderRadius: "8px",
+                    borderRadius: "16px",
                     fontSize: "12px",
                   }}
                   itemStyle={{ color: "var(--card-foreground)" }}
                 />
-                <Bar dataKey="income" fill="#10b981" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="expense" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="income" fill="#10b981" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="expense" fill="#f43f5e" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -128,14 +128,14 @@ export function FinanceAnalytics({
               <span className="size-2.5 rounded-full bg-emerald-500" /> Income
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-red-500" /> Expenses
+              <span className="size-2.5 rounded-full bg-rose-500" /> Expenses
             </span>
           </div>
         </div>
       </div>
 
       {/* Expense categories this month */}
-      <div className="rounded-lg border border-border bg-background">
+      <div className="rounded-2xl border border-white/[0.08] bg-card shadow-lg">
         <div className="border-b border-border p-4">
           <h3 className="text-sm font-semibold">Where Money Went</h3>
           <p className="text-xs text-muted-foreground">

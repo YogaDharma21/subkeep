@@ -76,12 +76,12 @@ export default function TabLayout() {
           borderRadius: 999,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "transparent",
+          backgroundColor: isActive ? "rgba(168, 85, 247, 0.15)" : "transparent",
         }}
       >
         <Icon
           size={19}
-          color={isActive ? colors.text : colors.tabIconDefault}
+          color={isActive ? colors.primary : colors.tabIconDefault}
         />
       </TouchableOpacity>
     )
@@ -105,7 +105,7 @@ export default function TabLayout() {
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <Image
             source={require("@/assets/images/icon.png")}
-            style={{ width: 30, height: 30, borderRadius: 8 }}
+            style={{ width: 30, height: 30, borderRadius: 10 }}
             resizeMode="contain"
           />
           <Text style={{ fontSize: 18, fontWeight: "900", color: colors.text, letterSpacing: -0.4 }}>
@@ -203,15 +203,15 @@ export default function TabLayout() {
             flexDirection: "row",
             alignItems: "center",
             gap: 1,
-            backgroundColor: colors.card,
+            backgroundColor: "rgba(17, 18, 28, 0.95)",
             borderWidth: 1,
-            borderColor: colors.border,
+            borderColor: "rgba(255, 255, 255, 0.1)",
             borderRadius: 999,
             padding: 6,
             maxWidth: "100%",
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.22,
+            shadowOpacity: 0.35,
             shadowRadius: 14,
             elevation: 10,
           }}
@@ -225,12 +225,17 @@ export default function TabLayout() {
             style={{
               width: 48,
               height: 48,
-              borderRadius: 16,
+              borderRadius: 24,
               backgroundColor: colors.primary,
               alignItems: "center",
               justifyContent: "center",
               borderWidth: 1,
-              borderColor: colors.border,
+              borderColor: "rgba(255, 255, 255, 0.2)",
+              shadowColor: "#A855F7",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.4,
+              shadowRadius: 8,
+              elevation: 4,
             }}
           >
             <Plus size={24} color={colors.primaryForeground} strokeWidth={2.5} />

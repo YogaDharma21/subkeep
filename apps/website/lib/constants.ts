@@ -36,16 +36,16 @@ export const categoryColors: Record<string, string> = {
 }
 
 export const colorPresets = [
-  "#FFFFFF",
-  "#09090B",
-  "#64748B",
-  "#3B82F6",
+  "#A855F7",
   "#6366F1",
   "#8B5CF6",
-  "#EC4899",
-  "#EF4444",
-  "#F59E0B",
+  "#C084FC",
+  "#818CF8",
+  "#38BDF8",
+  "#F43F5E",
   "#10B981",
+  "#F59E0B",
+  "#94A3B8",
 ]
 
 export const colorOptions = colorPresets

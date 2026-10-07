@@ -83,9 +83,9 @@ export function Badge({
     <View
       style={[
         {
-          paddingHorizontal: 8,
-          paddingVertical: 3,
-          borderRadius: 6,
+          paddingHorizontal: 10,
+          paddingVertical: 4,
+          borderRadius: 9999,
           alignSelf: "flex-start",
           alignItems: "center",
           justifyContent: "center",

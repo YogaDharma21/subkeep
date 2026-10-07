@@ -39,7 +39,7 @@ export function Button({
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderRadius: 12,
+      borderRadius: 9999,
       gap: 8,
     }
 

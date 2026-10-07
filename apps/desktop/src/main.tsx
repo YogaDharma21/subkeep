@@ -25,21 +25,21 @@ ReactDOM.createRoot(rootElement).render(
       appearance={{
         baseTheme: dark,
         variables: {
-          colorPrimary: "#ffffff",
-          colorBackground: "#09090b",
-          colorInputBackground: "#18181b",
+          colorPrimary: "#A855F7",
+          colorBackground: "#090A0F",
+          colorInputBackground: "#11121C",
           colorInputText: "#ffffff",
           colorText: "#ffffff",
-          colorTextSecondary: "#a1a1aa",
+          colorTextSecondary: "#94A3B8",
         },
         elements: {
-          card: "bg-zinc-950 border border-zinc-800 text-white shadow-2xl",
-          modalContent: "bg-zinc-950 text-white border border-zinc-800",
+          card: "bg-[#11121C] border border-white/10 text-white shadow-2xl rounded-2xl",
+          modalContent: "bg-[#11121C] text-white border border-white/10 rounded-3xl",
           headerTitle: "text-white font-bold",
           headerSubtitle: "text-zinc-400",
-          socialButtonsBlockButton: "bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-white",
-          formButtonPrimary: "bg-white text-black hover:bg-zinc-200",
-          footerActionLink: "text-white hover:text-zinc-300",
+          socialButtonsBlockButton: "bg-white/[0.04] border-white/10 hover:bg-white/[0.08] text-white rounded-full",
+          formButtonPrimary: "bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white rounded-full",
+          footerActionLink: "text-violet-400 hover:text-violet-300",
         },
       }}
     >

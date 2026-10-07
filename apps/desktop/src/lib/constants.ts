@@ -36,16 +36,16 @@ export const categoryColors: Record<string, string> = {
 }
 
 export const colorPresets = [
-  "#FFFFFF",
-  "#09090B",
-  "#64748B",
-  "#3B82F6",
-  "#6366F1",
-  "#8B5CF6",
-  "#EC4899",
-  "#EF4444",
-  "#F59E0B",
-  "#10B981",
+  "#A855F7", // Purple / Violet (Brand Primary)
+  "#8B5CF6", // Violet Accent
+  "#6366F1", // Indigo
+  "#818CF8", // Periwinkle
+  "#C084FC", // Lilac
+  "#3B82F6", // Blue
+  "#10B981", // Emerald (Success/Income)
+  "#F43F5E", // Rose (Alert/Expense)
+  "#F59E0B", // Amber
+  "#64748B", // Slate
 ]
 
 export const colorOptions = colorPresets

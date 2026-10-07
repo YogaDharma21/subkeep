@@ -38,18 +38,9 @@ export function ThemeProvider({
     const root = window.document.documentElement
 
     const applyTheme = () => {
-      root.classList.remove("light", "dark")
-
-      let active: "dark" | "light" = "dark"
-      if (theme === "system") {
-        const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-        active = systemDark ? "dark" : "light"
-      } else {
-        active = theme
-      }
-
-      root.classList.add(active)
-      setResolvedTheme(active)
+      root.classList.remove("light")
+      root.classList.add("dark")
+      setResolvedTheme("dark")
     }
 
     applyTheme()
@@ -70,31 +61,7 @@ export function ThemeProvider({
     setThemeState(newTheme)
   }
 
-  // Keyboard shortcut 'D' to toggle dark / light mode when not in input
-  React.useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || event.repeat || event.metaKey || event.ctrlKey || event.altKey) {
-        return
-      }
-      if (event.key.toLowerCase() !== "d") return
 
-      const target = event.target as HTMLElement | null
-      if (
-        target &&
-        (target.isContentEditable ||
-          target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.tagName === "SELECT")
-      ) {
-        return
-      }
-
-      setTheme(resolvedTheme === "dark" ? "light" : "dark")
-    }
-
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [resolvedTheme])
 
   const value = {
     theme,

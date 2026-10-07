@@ -51,9 +51,9 @@ export function Input({
           backgroundColor: colors.surface,
           borderWidth: 1,
           borderColor: error ? colors.destructive : colors.border,
-          borderRadius: 10,
-          paddingHorizontal: 12,
-          minHeight: 44,
+          borderRadius: 16,
+          paddingHorizontal: 14,
+          minHeight: 46,
           gap: 8,
         }}
       >

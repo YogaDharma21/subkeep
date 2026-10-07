@@ -44,7 +44,7 @@ export default function DashboardLayout({
   return (
     <>
       <Show when="signed-in">
-        <div className="min-h-screen bg-muted/20">
+        <div className="min-h-screen bg-background text-foreground">
           {/* Slim Top Brand Bar */}
           <TopNavbar onSearchClick={() => setCmdPaletteOpen(true)} />
           <AutoNotificationManager />

@@ -124,13 +124,13 @@ export function DesktopSidebar({
 
           <button
             onClick={onSearchClick}
-            className="flex w-full items-center justify-between rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground cursor-pointer"
+            className="flex w-full items-center justify-between rounded-full border border-white/[0.08] bg-muted/30 px-3.5 py-2 text-xs text-muted-foreground transition-all hover:border-violet-500/40 hover:bg-muted/60 hover:text-foreground cursor-pointer"
           >
             <div className="flex items-center gap-2">
               <Search className="size-3.5" />
               <span>Search & Commands...</span>
             </div>
-            <kbd className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-mono">
+            <kbd className="rounded-full border border-white/[0.08] bg-background/80 px-2 py-0.5 text-[10px] font-mono">
               {isMac ? "⌘K" : "Ctrl+K"}
             </kbd>
           </button>
@@ -138,7 +138,7 @@ export function DesktopSidebar({
 
         {/* Navigation List */}
         <nav className="space-y-1">
-          <p className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p className="px-3 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             Navigation
           </p>
           {navItems.map((item) => {
@@ -149,10 +149,10 @@ export function DesktopSidebar({
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
                 className={cn(
-                  "w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                  "w-full flex items-center justify-between px-3.5 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer",
                   isActive
-                    ? "bg-foreground text-background shadow-xs"
-                    : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                    ? "bg-gradient-to-r from-violet-500/20 to-indigo-500/20 text-violet-300 border border-violet-500/30 shadow-xs shadow-violet-500/10"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 )}
               >
                 <div className="flex items-center gap-2.5">
@@ -162,9 +162,9 @@ export function DesktopSidebar({
                 {item.badge !== undefined && (
                   <span
                     className={cn(
-                      "px-1.5 py-0.2 rounded-md text-[10px] font-bold",
+                      "px-2 py-0.5 rounded-full text-[10px] font-bold",
                       isActive
-                        ? "bg-background/20 text-background"
+                        ? "bg-violet-500/30 text-violet-200 border border-violet-400/30"
                         : "bg-muted text-muted-foreground border border-border/80"
                     )}
                   >

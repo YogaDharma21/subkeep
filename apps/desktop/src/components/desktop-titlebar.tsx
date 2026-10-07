@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
-import { Minus, Square, Copy, X, Sun, Moon, Command } from "lucide-react"
-import { useTheme } from "@/components/theme-provider"
+import { Minus, Square, Copy, X, Command } from "lucide-react"
 
 interface DesktopTitlebarProps {
   activeSubCount?: number
@@ -27,7 +26,6 @@ export function DesktopTitlebar({
   isLanding = false,
 }: DesktopTitlebarProps) {
   const [isMaximized, setIsMaximized] = useState(false)
-  const { setTheme, resolvedTheme } = useTheme()
   const isMac =
     (typeof window !== "undefined" && window.electronAPI?.platform === "darwin") ||
     (typeof navigator !== "undefined" &&
@@ -86,7 +84,7 @@ export function DesktopTitlebar({
   if (isLanding) {
     return (
       <header
-        className={`sticky top-0 z-50 flex h-10 w-full select-none items-center justify-between border-b border-zinc-900 bg-black ${
+        className={`sticky top-0 z-50 flex h-10 w-full select-none items-center justify-between border-b border-white/[0.08] bg-[#090A0F] ${
           isMac ? "pl-20 pr-3" : "px-3"
         }`}
       >
@@ -95,7 +93,7 @@ export function DesktopTitlebar({
           <img
             src="/app-icon.png"
             alt="SubKeep"
-            className="size-5 rounded-md object-contain shadow-xs"
+            className="size-5 rounded-lg object-contain shadow-xs shadow-violet-500/20"
           />
           <span className="text-xs font-black tracking-tight text-white">SubKeep</span>
         </div>
@@ -160,7 +158,7 @@ export function DesktopTitlebar({
         <img
           src="/app-icon.png"
           alt="SubKeep"
-          className="size-5 rounded-md object-contain shadow-xs"
+          className="size-5 rounded-lg object-contain shadow-xs shadow-violet-500/20"
         />
         <span className="text-xs font-black tracking-tight text-foreground">SubKeep</span>
         {sectionName && (
@@ -168,7 +166,7 @@ export function DesktopTitlebar({
             <span className="text-border">/</span>
             <span className="text-foreground/90">{sectionName}</span>
             {totalSubCount > 0 && (
-              <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-extrabold text-foreground border border-border/50">
+              <span className="rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-extrabold text-violet-400 border border-violet-500/20">
                 {countRatio}
               </span>
             )}
@@ -190,26 +188,12 @@ export function DesktopTitlebar({
             type="button"
             onClick={onOpenCommandPalette}
             style={noDragStyle}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-white/[0.06] hover:text-foreground transition-colors cursor-pointer"
             title="Command Palette (Ctrl+K)"
           >
             <Command className="h-3.5 w-3.5 pointer-events-none" />
           </button>
         )}
-
-        <button
-          type="button"
-          onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-          style={noDragStyle}
-          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
-          title="Toggle Theme (D)"
-        >
-          {resolvedTheme === "dark" ? (
-            <Sun className="h-3.5 w-3.5 pointer-events-none" />
-          ) : (
-            <Moon className="h-3.5 w-3.5 pointer-events-none" />
-          )}
-        </button>
 
         {!isMac && (
           <div className="flex items-center ml-1 gap-0.5" style={noDragStyle}>

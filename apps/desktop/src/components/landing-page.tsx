@@ -138,20 +138,27 @@ export function LandingPage() {
   }
 
   return (
-    <div className="min-h-full w-full bg-black text-white flex flex-col items-center justify-center px-4 py-8 selection:bg-zinc-800 selection:text-white select-none">
-      <div className="w-full max-w-sm mx-auto flex flex-col items-center text-center space-y-7 sm:space-y-8 animate-in fade-in zoom-in-95 duration-300">
-        {/* SubKeep App Icon */}
-        <img
-          src="/app-icon.png"
-          alt="SubKeep"
-          className="size-24 sm:size-28 rounded-2xl shadow-2xl shadow-white/10 transition-transform hover:scale-105 object-contain"
-        />
+    <div className="relative min-h-full w-full bg-[#090A0F] text-white flex flex-col items-center justify-center px-4 py-8 selection:bg-violet-600 selection:text-white select-none overflow-hidden">
+      {/* Ambient background glows */}
+      <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-violet-600/15 blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-24 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-indigo-600/15 blur-[120px]" />
 
-        {/* Brand Title: SUB (white) + KEEP (gray) */}
+      <div className="relative z-10 w-full max-w-sm mx-auto flex flex-col items-center text-center space-y-7 sm:space-y-8 animate-in fade-in zoom-in-95 duration-300">
+        {/* SubKeep App Icon */}
+        <div className="relative">
+          <div className="absolute inset-0 rounded-3xl bg-violet-600/30 blur-xl" />
+          <img
+            src="/app-icon.png"
+            alt="SubKeep"
+            className="relative size-24 sm:size-28 rounded-3xl border border-white/10 shadow-2xl shadow-violet-500/30 transition-transform hover:scale-105 object-contain"
+          />
+        </div>
+
+        {/* Brand Title: SUB (white) + KEEP (violet-periwinkle gradient) */}
         <div className="space-y-3">
           <h1 className="text-3xl sm:text-4xl font-black tracking-wider uppercase">
             <span className="text-white">SUB</span>
-            <span className="text-zinc-500">KEEP</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-300">KEEP</span>
           </h1>
 
           {/* Tagline Subtitle */}
@@ -166,11 +173,11 @@ export function LandingPage() {
           <button
             onClick={handleContinueWithGoogle}
             disabled={loading}
-            className="w-full h-13 sm:h-14 rounded-lg bg-white text-black font-extrabold text-xs sm:text-sm tracking-wider uppercase flex items-center justify-center gap-3 transition-all hover:bg-zinc-100 hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-xl shadow-black/60 disabled:opacity-75 disabled:cursor-not-allowed"
+            className="w-full h-13 sm:h-14 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white font-extrabold text-xs sm:text-sm tracking-wider uppercase flex items-center justify-center gap-3 transition-all hover:opacity-95 hover:shadow-violet-600/40 hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-lg shadow-violet-600/25 border border-white/15 disabled:opacity-75 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
-                <Loader2 className="size-5 animate-spin text-black" />
+                <Loader2 className="size-5 animate-spin text-white" />
                 <span>Waiting for browser...</span>
               </>
             ) : (

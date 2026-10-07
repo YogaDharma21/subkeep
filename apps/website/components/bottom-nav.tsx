@@ -46,10 +46,10 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
         aria-label={item.label}
         aria-current={isActive ? "page" : undefined}
         className={cn(
-          "flex size-11 shrink-0 items-center justify-center rounded-full transition-colors",
+          "flex size-11 shrink-0 items-center justify-center rounded-full transition-all",
           isActive
-            ? "text-foreground"
-            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+            ? "bg-gradient-to-r from-violet-500/20 to-indigo-500/20 text-violet-300 border border-violet-500/30 shadow-xs shadow-violet-500/10"
+            : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
         )}
       >
         <Icon className="size-5" />
@@ -61,7 +61,7 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
     <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <nav
         aria-label="Primary"
-        className="flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border bg-background/90 p-1.5 shadow-lg backdrop-blur-md"
+        className="flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-white/[0.08] bg-[#11121C]/90 p-1.5 shadow-2xl shadow-violet-950/40 backdrop-blur-md"
       >
         {leftNavItems.map(renderItem)}
 
@@ -69,7 +69,7 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
           onClick={onAddClick}
           title="Quick add"
           aria-label="Quick add"
-          className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-foreground/15 bg-foreground text-background shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+          className="flex size-12 shrink-0 items-center justify-center rounded-full border border-violet-400/30 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white shadow-lg shadow-violet-500/30 transition-all hover:scale-105 hover:shadow-violet-500/50 active:scale-95 cursor-pointer"
         >
           <Plus className="size-6" strokeWidth={2.5} />
         </button>

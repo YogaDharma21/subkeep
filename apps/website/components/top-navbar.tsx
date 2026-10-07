@@ -39,9 +39,9 @@ export function TopNavbar({ onSearchClick }: TopNavbarProps) {
             alt="SubKeep"
             width={32}
             height={32}
-            className="size-8 rounded-lg object-contain shadow-xs"
+            className="size-8 rounded-xl object-contain shadow-xs"
           />
-          <span className="text-base font-bold tracking-tight text-foreground">
+          <span className="text-base font-bold tracking-tight text-white">
             SubKeep
           </span>
         </Link>
@@ -49,20 +49,20 @@ export function TopNavbar({ onSearchClick }: TopNavbarProps) {
         <div className="ml-auto flex shrink-0 items-center gap-2">
           <button
             onClick={onSearchClick}
-            className="hidden h-9 items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 px-3 text-xs text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground cursor-pointer sm:flex md:w-44 lg:w-52"
+            className="hidden h-9 items-center justify-between gap-3 rounded-full border border-white/[0.08] bg-muted/30 px-3.5 text-xs text-muted-foreground transition-all hover:border-violet-500/40 hover:bg-muted/60 hover:text-foreground cursor-pointer sm:flex md:w-44 lg:w-52"
           >
             <span className="flex items-center gap-2">
               <Search className="size-3.5 shrink-0" />
               <span className="truncate">Search...</span>
             </span>
-            <kbd className="rounded border border-border bg-background px-1.5 py-0.5 font-mono text-[10px] shrink-0">
+            <kbd className="rounded-full border border-white/[0.08] bg-background/80 px-2 py-0.5 font-mono text-[10px] shrink-0">
               {isMac ? "⌘K" : "Ctrl+K"}
             </kbd>
           </button>
 
           <button
             onClick={onSearchClick}
-            className="flex size-9 items-center justify-center rounded-lg border border-border bg-muted/50 text-muted-foreground transition-colors hover:text-foreground cursor-pointer sm:hidden"
+            className="flex size-9 items-center justify-center rounded-full border border-white/[0.08] bg-muted/40 text-muted-foreground transition-all hover:border-violet-500/40 hover:bg-muted/70 hover:text-foreground cursor-pointer sm:hidden"
             title="Search & Commands"
             aria-label="Search & Commands"
           >
@@ -73,7 +73,7 @@ export function TopNavbar({ onSearchClick }: TopNavbarProps) {
             href="/more"
             title="Settings"
             aria-label="Settings"
-            className="flex size-9 items-center justify-center rounded-lg border border-border bg-muted/50 text-muted-foreground transition-colors hover:text-foreground"
+            className="flex size-9 items-center justify-center rounded-full border border-white/[0.08] bg-muted/40 text-muted-foreground transition-all hover:border-violet-500/40 hover:bg-muted/70 hover:text-foreground"
           >
             <Settings className="size-4" />
           </Link>

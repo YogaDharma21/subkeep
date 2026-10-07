@@ -31,7 +31,7 @@ function DialogContent({
   return (
     <div
       className={cn(
-        "relative mx-auto w-full max-w-lg rounded-lg border border-border bg-background p-6 shadow-2xl animate-in fade-in zoom-in-95",
+        "relative mx-auto w-full max-w-lg rounded-3xl border border-white/[0.08] bg-popover p-6 shadow-2xl shadow-violet-950/30 animate-in fade-in zoom-in-95",
         className
       )}
       {...props}
@@ -39,7 +39,7 @@ function DialogContent({
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-md p-1 text-muted-foreground hover:text-foreground cursor-pointer"
+          className="absolute right-4 top-4 rounded-full p-1 text-muted-foreground hover:text-foreground cursor-pointer"
         >
           <X className="size-4" />
         </button>

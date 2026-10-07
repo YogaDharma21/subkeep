@@ -291,8 +291,8 @@ export function StatsCharts({
       {/* 2-Column Responsive Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Spending Trend Chart */}
-        <div className="rounded-lg border border-border bg-background shadow-xs overflow-hidden">
-          <div className="border-b border-border p-4">
+        <div className="rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-sm shadow-sm overflow-hidden">
+          <div className="border-b border-border/80 p-4">
             <h3 className="text-sm font-bold">Spending Trend</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               Historical & projected monthly costs based on active subscriptions
@@ -321,18 +321,18 @@ export function StatsCharts({
                       backgroundColor: "var(--card)",
                       borderColor: "var(--border)",
                       color: "var(--card-foreground)",
-                      borderRadius: "0.625rem",
+                      borderRadius: "1rem",
                       fontSize: "12px",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
                     }}
                     itemStyle={{ color: "var(--card-foreground)" }}
                   />
-                  <Bar dataKey="amount" fill="var(--foreground)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="amount" fill="#8B5CF6" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border/60 pt-4">
-              <div className="rounded-lg bg-muted/40 p-3 text-center min-w-0">
+              <div className="rounded-xl bg-muted/40 p-3 text-center min-w-0 border border-border/40">
                 <div className="text-xs sm:text-sm font-extrabold text-foreground truncate">
                   {formatCurrencyAmount(monthlyTotal * 1.15, primaryCurrency)}
                 </div>
@@ -340,7 +340,7 @@ export function StatsCharts({
                   Highest
                 </div>
               </div>
-              <div className="rounded-lg bg-muted/40 p-3 text-center min-w-0">
+              <div className="rounded-xl bg-muted/40 p-3 text-center min-w-0 border border-border/40">
                 <div className="text-xs sm:text-sm font-extrabold text-foreground truncate">
                   {formatCurrencyAmount(monthlyTotal, primaryCurrency)}
                 </div>
@@ -348,7 +348,7 @@ export function StatsCharts({
                   Avg / Month
                 </div>
               </div>
-              <div className="rounded-lg bg-muted/40 p-3 text-center min-w-0">
+              <div className="rounded-xl bg-muted/40 p-3 text-center min-w-0 border border-border/40">
                 <div className="text-xs sm:text-sm font-extrabold text-foreground truncate">
                   {formatCurrencyAmount(monthlyTotal * 12, primaryCurrency)}
                 </div>
@@ -361,16 +361,16 @@ export function StatsCharts({
         </div>
 
         {/* Category Breakdown Chart */}
-        <div className="rounded-lg border border-border bg-background shadow-xs overflow-hidden">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-4">
+        <div className="rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-sm shadow-sm overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/80 p-4">
             <h3 className="text-sm font-bold">Category Breakdown</h3>
             <div className="flex items-center gap-2">
-              <div className="flex rounded-lg border border-border bg-muted/60 p-0.5 text-xs font-medium">
+              <div className="flex rounded-full border border-border bg-muted/60 p-0.5 text-xs font-medium">
                 <button
                   type="button"
                   onClick={() => setBreakdownMetric("cost")}
                   className={cn(
-                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    "rounded-full px-2.5 py-1 transition-all cursor-pointer",
                     breakdownMetric === "cost"
                       ? "bg-background text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
@@ -382,7 +382,7 @@ export function StatsCharts({
                   type="button"
                   onClick={() => setBreakdownMetric("count")}
                   className={cn(
-                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    "rounded-full px-2.5 py-1 transition-all cursor-pointer",
                     breakdownMetric === "count"
                       ? "bg-background text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
@@ -392,12 +392,12 @@ export function StatsCharts({
                 </button>
               </div>
 
-              <div className="flex rounded-lg border border-border bg-muted/60 p-0.5 text-xs font-medium">
+              <div className="flex rounded-full border border-border bg-muted/60 p-0.5 text-xs font-medium">
                 <button
                   type="button"
                   onClick={() => setBreakdownFilter("all")}
                   className={cn(
-                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    "rounded-full px-2.5 py-1 transition-all cursor-pointer",
                     breakdownFilter === "all"
                       ? "bg-background text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
@@ -409,7 +409,7 @@ export function StatsCharts({
                   type="button"
                   onClick={() => setBreakdownFilter("paid")}
                   className={cn(
-                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    "rounded-full px-2.5 py-1 transition-all cursor-pointer",
                     breakdownFilter === "paid"
                       ? "bg-background text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
@@ -494,8 +494,8 @@ export function StatsCharts({
 
       {/* Payment History */}
       {paymentHistory.length > 0 && (
-        <div className="rounded-lg border border-border bg-background shadow-xs overflow-hidden">
-          <div className="border-b border-border p-4">
+        <div className="rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-sm shadow-sm overflow-hidden">
+          <div className="border-b border-border/80 p-4">
             <h3 className="text-sm font-bold">Recent Payment History</h3>
           </div>
           <div>
@@ -505,7 +505,7 @@ export function StatsCharts({
                 className="flex items-center gap-3 border-b border-border/60 px-4 py-3 last:border-b-0"
               >
                 <div
-                  className="flex size-10 shrink-0 items-center justify-center rounded-lg shadow-xs"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-xl shadow-xs"
                   style={{ backgroundColor: p.color }}
                 >
                   <span className="text-sm font-bold text-white">
