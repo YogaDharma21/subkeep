@@ -135,6 +135,7 @@ export const create = mutation({
     accountId: v.optional(v.id("accounts")),
     toAccountId: v.optional(v.id("accounts")),
     subscriptionId: v.optional(v.id("subscriptions")),
+    paymentId: v.optional(v.id("payments")),
     icon: v.optional(v.string()),
     color: v.optional(v.string()),
   },
@@ -176,6 +177,7 @@ export const create = mutation({
       accountId: args.accountId,
       toAccountId: args.toAccountId,
       subscriptionId: args.subscriptionId,
+      paymentId: args.paymentId,
       icon: args.icon || undefined,
       color: args.color || undefined,
     })
@@ -208,6 +210,7 @@ export const update = mutation({
     accountId: v.optional(v.id("accounts")),
     toAccountId: v.optional(v.id("accounts")),
     subscriptionId: v.optional(v.id("subscriptions")),
+    paymentId: v.optional(v.id("payments")),
     icon: v.optional(v.string()),
     color: v.optional(v.string()),
   },
@@ -266,6 +269,15 @@ export const update = mutation({
       if (Object.keys(patchObj).length > 0) {
         await ctx.db.patch(args.id, patchObj)
       }
+      if (txn.paymentId) {
+        const payment = await ctx.db.get(txn.paymentId)
+        if (payment && payment.userId === identity.subject) {
+          const payUpdates: Record<string, unknown> = {}
+          if (args.date !== undefined) payUpdates.date = args.date
+          if (args.category !== undefined) payUpdates.category = args.category
+          if (Object.keys(payUpdates).length > 0) await ctx.db.patch(txn.paymentId, payUpdates)
+        }
+      }
       return
     }
 
@@ -299,6 +311,18 @@ export const update = mutation({
       },
       1
     )
+
+    if (txn.paymentId) {
+      const payment = await ctx.db.get(txn.paymentId)
+      if (payment && payment.userId === identity.subject) {
+        const payUpdates: Record<string, unknown> = {}
+        if (args.amount !== undefined) payUpdates.amount = args.amount
+        if (args.currency !== undefined) payUpdates.currency = args.currency
+        if (args.date !== undefined) payUpdates.date = args.date
+        if (args.category !== undefined) payUpdates.category = args.category
+        if (Object.keys(payUpdates).length > 0) await ctx.db.patch(txn.paymentId, payUpdates)
+      }
+    }
   },
 })
 
@@ -323,6 +347,30 @@ export const remove = mutation({
       -1,
       { lenient: true }
     )
+
+    // Delete associated payment if this transaction was linked to a payment
+    if (txn.paymentId) {
+      const payment = await ctx.db.get(txn.paymentId)
+      if (payment && payment.userId === identity.subject) {
+        await ctx.db.delete(txn.paymentId)
+      }
+    } else if (txn.subscriptionId) {
+      // Fallback for older transactions that didn't have paymentId stored
+      const matchingPayment = await ctx.db
+        .query("payments")
+        .withIndex("by_subscription", (q) => q.eq("subscriptionId", txn.subscriptionId!))
+        .filter((q) =>
+          q.and(
+            q.eq(q.field("date"), txn.date),
+            q.eq(q.field("amount"), txn.amount)
+          )
+        )
+        .first()
+      if (matchingPayment && matchingPayment.userId === identity.subject) {
+        await ctx.db.delete(matchingPayment._id)
+      }
+    }
+
     await ctx.db.delete(args.id)
   },
 })

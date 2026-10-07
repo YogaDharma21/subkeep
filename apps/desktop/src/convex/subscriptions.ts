@@ -437,6 +437,7 @@ export const recordPayment = mutation({
     accountId: v.optional(v.id("accounts")),
     accountAmount: v.optional(v.number()),
     exchangeRate: v.optional(v.number()),
+    linkAccount: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
@@ -449,8 +450,8 @@ export const recordPayment = mutation({
     const amount = args.amount ?? sub.price
 
     // 1. Resolve Account:
-    // If not passed and not in sub, find user's active accounts and pick the matching or primary account
-    let targetAccountId = args.accountId ?? sub.accountId
+    // If explicitly passed, use args.accountId. If undefined, fall back to sub.accountId
+    let targetAccountId = args.accountId !== undefined ? args.accountId : sub.accountId
     let targetAccount = targetAccountId ? await ctx.db.get(targetAccountId) : null
 
     if (targetAccount && targetAccount.userId !== identity.subject) {
@@ -458,7 +459,7 @@ export const recordPayment = mutation({
       targetAccount = null
     }
 
-    if (!targetAccountId) {
+    if (!targetAccountId && args.accountId === undefined) {
       const userAccounts = await ctx.db
         .query("accounts")
         .withIndex("by_user", (q) => q.eq("userId", identity.subject))
@@ -505,9 +506,13 @@ export const recordPayment = mutation({
       note: `${sub.name} subscription payment`,
       accountId: targetAccountId,
       subscriptionId: sub._id,
+      paymentId,
       icon: sub.icon,
       color: sub.color,
     })
+
+    // Link transactionId in payments
+    await ctx.db.patch(paymentId, { transactionId: txnId })
 
     if (targetAccountId && targetAccount) {
       let deductAmount = amount
@@ -536,8 +541,8 @@ export const recordPayment = mutation({
       lastPaymentDate: paymentDate,
     }
 
-    // Persist linked account on subscription if resolved
-    if (targetAccountId && sub.accountId !== targetAccountId) {
+    // Persist linked account on subscription ONLY if explicitly requested by user
+    if (args.linkAccount === true && targetAccountId && sub.accountId !== targetAccountId) {
       patchObj.accountId = targetAccountId
     }
 
