@@ -90,6 +90,7 @@ export default defineSchema({
     currency: v.string(),
     category: v.string(),
     date: v.string(),
+    transactionId: v.optional(v.id("transactions")),
   })
     .index("by_user", ["userId"])
     .index("by_subscription", ["subscriptionId"]),
@@ -133,6 +134,7 @@ export default defineSchema({
     accountId: v.optional(v.id("accounts")),
     toAccountId: v.optional(v.id("accounts")),
     subscriptionId: v.optional(v.id("subscriptions")),
+    paymentId: v.optional(v.id("payments")),
     icon: v.optional(v.string()),
     color: v.optional(v.string()),
   })

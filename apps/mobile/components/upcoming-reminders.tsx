@@ -1,15 +1,13 @@
 import React, { useState } from "react"
-import { View, Text, TouchableOpacity, Linking, ActivityIndicator } from "react-native"
+import { View, Text, TouchableOpacity, Linking } from "react-native"
 import { Bell, Send, Check, ExternalLink, CreditCard } from "lucide-react-native"
-import { useMutation } from "convex/react"
-import { api } from "@/convex/_generated/api"
-import { Id } from "@/convex/_generated/dataModel"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
 import { getContrastTextColor } from "@/constants/categories"
 import { findUpcomingReminders, ReminderItem } from "@/lib/notifications"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
+import { RecordPaymentSheet, RecordPaymentTarget } from "@/components/record-payment-sheet"
 
 interface UpcomingRemindersProps {
   subscriptions: {
@@ -38,40 +36,20 @@ export function UpcomingReminders({
   subscriptions,
   primaryCurrency = "USD",
   rates,
-  onMarkCanceled,
 }: UpcomingRemindersProps) {
   const { colors } = useThemeColor()
   const { showAlert } = useAlert()
   const [sentAlerts, setSentAlerts] = useState<Record<string, boolean>>({})
-  const [recordingId, setRecordingId] = useState<string | null>(null)
-  const recordPaymentMutation = useMutation(api.subscriptions.recordPayment)
+  const [selectedReminder, setSelectedReminder] = useState<RecordPaymentTarget | null>(null)
+  const [sheetVisible, setSheetVisible] = useState(false)
 
   const reminders = findUpcomingReminders(subscriptions, 7)
 
   if (reminders.length === 0) return null
 
-  const handleRecordPayment = async (item: ReminderItem) => {
-    try {
-      setRecordingId(item._id)
-      await recordPaymentMutation({
-        id: item._id as Id<"subscriptions">,
-        amount: item.price,
-        accountId: item.accountId ? (item.accountId as Id<"accounts">) : undefined,
-      })
-      showAlert({
-        title: "Payment Recorded",
-        message: `Recorded payment for ${item.name} and advanced next billing date.`,
-        icon: "success",
-      })
-    } catch (e: any) {
-      showAlert({
-        title: "Error",
-        message: e?.message || "Failed to record payment",
-        icon: "error",
-      })
-    } finally {
-      setRecordingId(null)
-    }
+  const handleOpenRecordPayment = (item: ReminderItem) => {
+    setSelectedReminder(item)
+    setSheetVisible(true)
   }
 
   const handleTestAlert = (item: ReminderItem) => {
@@ -169,8 +147,7 @@ export function UpcomingReminders({
               <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8 }}>
                 {!isTrial ? (
                   <TouchableOpacity
-                    onPress={() => handleRecordPayment(item)}
-                    disabled={recordingId === item._id}
+                    onPress={() => handleOpenRecordPayment(item)}
                     style={{
                       flexDirection: "row",
                       alignItems: "center",
@@ -181,11 +158,7 @@ export function UpcomingReminders({
                       backgroundColor: colors.primary,
                     }}
                   >
-                    {recordingId === item._id ? (
-                      <ActivityIndicator size="small" color={colors.primaryForeground} />
-                    ) : (
-                      <CreditCard size={12} color={colors.primaryForeground} />
-                    )}
+                    <CreditCard size={12} color={colors.primaryForeground} />
                     <Text
                       style={{
                         fontSize: 11,
@@ -193,7 +166,7 @@ export function UpcomingReminders({
                         color: colors.primaryForeground,
                       }}
                     >
-                      {recordingId === item._id ? "Recording..." : "Record Payment"}
+                      Record Payment
                     </Text>
                   </TouchableOpacity>
                 ) : null}
@@ -255,6 +228,13 @@ export function UpcomingReminders({
           )
         })}
       </View>
+
+      <RecordPaymentSheet
+        visible={sheetVisible}
+        onClose={() => setSheetVisible(false)}
+        subscription={selectedReminder}
+        rates={rates}
+      />
     </View>
   )
 }

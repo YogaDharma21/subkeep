@@ -59,6 +59,7 @@ import { format, differenceInDays } from "date-fns"
 import { convertAndFormat } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { SubscriptionDetailSkeleton } from "@/components/subscription-detail-skeleton"
+import { RecordPaymentDialog } from "@/components/record-payment-dialog"
 
 export default function SubscriptionDetailPage({
   params,
@@ -70,6 +71,7 @@ export default function SubscriptionDetailPage({
   const { isSignedIn } = useAuth()
   const [editing, setEditing] = useState(false)
   const [iconOpen, setIconOpen] = useState(false)
+  const [recordPaymentOpen, setRecordPaymentOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const receiptInputRef = useRef<HTMLInputElement>(null)
@@ -102,7 +104,6 @@ export default function SubscriptionDetailPage({
   const suspendMutation = useMutation(api.subscriptions.suspend)
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
-  const recordPaymentAtomic = useMutation(api.subscriptions.recordPayment)
   const updatePaymentMutation = useMutation(api.payments.update)
   const removePaymentMutation = useMutation(api.payments.remove)
   const generateUploadUrl = useMutation(api.subscriptions.generateUploadUrl)
@@ -252,7 +253,7 @@ export default function SubscriptionDetailPage({
         color: editColor,
         endDate: editEndDate,
         account: editAccount,
-        accountId: editAccountId ? (editAccountId as Id<"accounts">) : undefined,
+        accountId: editAccountId ? (editAccountId as Id<"accounts">) : null,
         website: editWebsite,
         isTrial: editIsTrial,
         trialEndDate: editTrialEndDate,
@@ -299,19 +300,6 @@ export default function SubscriptionDetailPage({
       router.push("/subscriptions")
     } catch {
       toast.error("Failed to delete subscription")
-    }
-  }
-
-  const handleRecordPayment = async () => {
-    if (!sub || !id) return
-    try {
-      await recordPaymentAtomic({
-        id: id as Id<"subscriptions">,
-        accountId: sub.accountId,
-      })
-      toast.success(`Recorded payment of ${convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)} and updated billing cycle!`)
-    } catch {
-      toast.error("Failed to record payment")
     }
   }
 
@@ -1199,7 +1187,7 @@ export default function SubscriptionDetailPage({
         <Button
           variant="outline"
           className="w-full cursor-pointer"
-          onClick={handleRecordPayment}
+          onClick={() => setRecordPaymentOpen(true)}
         >
           <DollarSign className="size-4" /> Record Payment
         </Button>
@@ -1393,6 +1381,13 @@ export default function SubscriptionDetailPage({
         open={iconOpen}
         onClose={() => setIconOpen(false)}
         defaultDomain={editWebsite || editName || sub.website || sub.name}
+      />
+
+      <RecordPaymentDialog
+        open={recordPaymentOpen}
+        onOpenChange={setRecordPaymentOpen}
+        subscription={sub ? { ...sub, _id: sub._id } : null}
+        rates={rates}
       />
     </div>
   )

@@ -47,6 +47,7 @@ import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
 import { SubscriptionDetailSkeleton } from "@/components/subscription-detail-skeleton"
+import { RecordPaymentSheet } from "@/components/record-payment-sheet"
 
 export default function SubscriptionDetailPage() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -58,6 +59,7 @@ export default function SubscriptionDetailPage() {
 
   const [editing, setEditing] = useState(false)
   const [iconPickerOpen, setIconPickerOpen] = useState(false)
+  const [recordPaymentSheetVisible, setRecordPaymentSheetVisible] = useState(false)
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const [cancelUrlModalOpen, setCancelUrlModalOpen] = useState(false)
   const [tempCancelUrl, setTempCancelUrl] = useState("")
@@ -91,7 +93,6 @@ export default function SubscriptionDetailPage() {
   const suspendMutation = useMutation(api.subscriptions.suspend)
   const cloneMutation = useMutation(api.subscriptions.clone)
   const removeMutation = useMutation(api.subscriptions.remove)
-  const recordSubscriptionPaymentMutation = useMutation(api.subscriptions.recordPayment)
   const updatePaymentMutation = useMutation(api.payments.update)
   const removePaymentMutation = useMutation(api.payments.remove)
   const generateUploadUrl = useMutation(api.subscriptions.generateUploadUrl)
@@ -249,7 +250,7 @@ export default function SubscriptionDetailPage() {
         totalPlanPrice: editTotalPlanPrice ? parseFloat(editTotalPlanPrice) : undefined,
         totalMembers: editTotalMembers ? parseInt(editTotalMembers) : undefined,
         paymentMethodId: editPaymentMethodId || undefined,
-        accountId: editAccountId ? (editAccountId as Id<"accounts">) : undefined,
+        accountId: editAccountId ? (editAccountId as Id<"accounts">) : null,
         splitMembers: editIsShared && editSplitMembers.length > 0 ? editSplitMembers : undefined,
       })
       setEditing(false)
@@ -305,23 +306,9 @@ export default function SubscriptionDetailPage() {
     })
   }
 
-  const handleRecordPayment = async () => {
+  const handleRecordPayment = () => {
     if (!sub || !id) return
-    try {
-      const today = new Date().toISOString().split("T")[0]
-      await recordSubscriptionPaymentMutation({
-        id: id as Id<"subscriptions">,
-        accountId: sub.accountId,
-        date: today,
-        amount: sub.price,
-      })
-      showToast(
-        `Recorded payment of ${convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)} for ${sub.name}`,
-        "success"
-      )
-    } catch (e: any) {
-      showToast(e?.message || "Failed to record payment", "error")
-    }
+    setRecordPaymentSheetVisible(true)
   }
 
   const handlePickReceipt = async () => {
@@ -1654,6 +1641,27 @@ export default function SubscriptionDetailPage() {
         selected={editIcon || sub?.icon || null}
         onClose={() => setIconPickerOpen(false)}
         onSelect={(iconName) => setEditIcon(iconName)}
+      />
+
+      <RecordPaymentSheet
+        visible={recordPaymentSheetVisible}
+        onClose={() => setRecordPaymentSheetVisible(false)}
+        subscription={
+          sub
+            ? {
+                _id: sub._id,
+                name: sub.name,
+                price: sub.price,
+                currency: sub.currency,
+                accountId: sub.accountId,
+                cycle: sub.cycle,
+                icon: sub.icon,
+                color: sub.color,
+                nextBilling: sub.nextBilling,
+              }
+            : null
+        }
+        rates={rates}
       />
     </SafeAreaView>
   )

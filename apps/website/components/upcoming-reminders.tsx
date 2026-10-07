@@ -1,17 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import { useMutation } from "convex/react"
-import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
-import { Bell, ExternalLink, CheckCircle2, Loader2 } from "lucide-react"
+import { Bell, ExternalLink, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
 import { getContrastTextColor } from "@/lib/constants"
-import { toast } from "sonner"
 import { findUpcomingReminders, ReminderItem } from "@/lib/notifications"
 import Link from "next/link"
+import { RecordPaymentDialog, RecordPaymentTarget } from "@/components/record-payment-dialog"
 
 interface UpcomingRemindersProps {
   subscriptions: Array<{
@@ -41,30 +39,16 @@ export function UpcomingReminders({
   primaryCurrency = "IDR",
   rates,
 }: UpcomingRemindersProps) {
-  const [payingId, setPayingId] = useState<string | null>(null)
-  const recordPaymentMutation = useMutation(api.subscriptions.recordPayment)
+  const [selectedReminder, setSelectedReminder] = useState<RecordPaymentTarget | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const reminders = findUpcomingReminders(subscriptions, 3)
 
   if (reminders.length === 0) return null
 
-  const handleRecordPayment = async (item: ReminderItem) => {
-    setPayingId(item._id)
-    try {
-      const res = await recordPaymentMutation({
-        id: item._id as Id<"subscriptions">,
-        accountId: item.accountId ? (item.accountId as Id<"accounts">) : undefined,
-      })
-      toast.success(
-        res.isActive
-          ? `Recorded payment for ${item.name}! Next renewal: ${res.nextBilling}`
-          : `Recorded final payment for ${item.name}! Term completed.`
-      )
-    } catch {
-      toast.error(`Failed to record payment for ${item.name}`)
-    } finally {
-      setPayingId(null)
-    }
+  const handleOpenRecordPayment = (item: ReminderItem) => {
+    setSelectedReminder(item)
+    setDialogOpen(true)
   }
 
   return (
@@ -80,7 +64,6 @@ export function UpcomingReminders({
         {reminders.map((item) => {
           const isTrial = item.type === "trial"
           const priceFormatted = convertAndFormat(item.price, item.currency, primaryCurrency, rates)
-          const isPaying = payingId === item._id
 
           return (
             <div
@@ -132,16 +115,11 @@ export function UpcomingReminders({
                   <Button
                     size="sm"
                     variant="default"
-                    disabled={isPaying}
-                    onClick={() => handleRecordPayment(item)}
+                    onClick={() => handleOpenRecordPayment(item)}
                     className="h-7 px-2.5 text-[11px] font-medium gap-1 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
                   >
-                    {isPaying ? (
-                      <Loader2 className="size-3 animate-spin" />
-                    ) : (
-                      <CheckCircle2 className="size-3" />
-                    )}
-                    {isPaying ? "Recording..." : "Record Payment"}
+                    <CheckCircle2 className="size-3" />
+                    Record Payment
                   </Button>
                 </div>
               </div>
@@ -149,6 +127,13 @@ export function UpcomingReminders({
           )
         })}
       </div>
+
+      <RecordPaymentDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        subscription={selectedReminder}
+        rates={rates}
+      />
     </div>
   )
 }
