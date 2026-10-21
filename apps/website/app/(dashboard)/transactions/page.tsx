@@ -260,7 +260,7 @@ export default function TransactionsPage() {
           <ArrowLeftRight className="size-6 text-muted-foreground/50 mb-2" />
           <p className="text-sm font-medium text-muted-foreground">No transactions found</p>
           <p className="mt-1 text-xs text-muted-foreground/60">
-            {search ? "Try a different search" : "Tap + to log your first transaction"}
+            {search ? "Try a different search" : "Use New to log your first transaction"}
           </p>
         </div>
       ) : (

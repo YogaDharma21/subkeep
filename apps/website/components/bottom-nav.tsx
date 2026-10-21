@@ -2,37 +2,25 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {
-  Home,
-  ArrowLeftRight,
-  Wallet,
-  PiggyBank,
-  Repeat,
-  Plus,
-  BarChart3,
-} from "lucide-react"
+import { Home, ArrowLeftRight, Wallet, PiggyBank, Repeat } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const leftNavItems = [
+const navItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
   { href: "/subscriptions", label: "Subscriptions", icon: Repeat },
-]
-
-const rightNavItems = [
   { href: "/budgets", label: "Budgets", icon: PiggyBank },
   { href: "/accounts", label: "Accounts", icon: Wallet },
-  { href: "/stats", label: "Stats", icon: BarChart3 },
 ]
 
-interface BottomNavProps {
-  onAddClick?: () => void
-}
-
-export function BottomNav({ onAddClick }: BottomNavProps) {
+export function BottomNav() {
   const pathname = usePathname()
 
-  const renderItem = (item: { href: string; label: string; icon: typeof Home }) => {
+  const renderItem = (item: {
+    href: string
+    label: string
+    icon: typeof Home
+  }) => {
     const Icon = item.icon
     const isActive =
       item.href === "/"
@@ -46,13 +34,16 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
         aria-label={item.label}
         aria-current={isActive ? "page" : undefined}
         className={cn(
-          "flex size-11 shrink-0 items-center justify-center rounded-full transition-colors",
+          "relative flex size-11 shrink-0 items-center justify-center rounded-full transition-colors",
           isActive
             ? "text-foreground"
             : "text-muted-foreground hover:bg-accent hover:text-foreground"
         )}
       >
         <Icon className="size-5" />
+        {isActive && (
+          <span className="absolute bottom-1.5 size-1 rounded-full bg-current" />
+        )}
       </Link>
     )
   }
@@ -61,20 +52,9 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
     <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <nav
         aria-label="Primary"
-        className="flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border bg-background/90 p-1.5 shadow-lg backdrop-blur-md"
+        className="flex max-w-full items-center gap-0.5 overflow-x-auto rounded-full border border-border bg-background/90 p-1.5 shadow-lg backdrop-blur-md sm:gap-1"
       >
-        {leftNavItems.map(renderItem)}
-
-        <button
-          onClick={onAddClick}
-          title="Quick add"
-          aria-label="Quick add"
-          className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-foreground/15 bg-foreground text-background shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
-        >
-          <Plus className="size-6" strokeWidth={2.5} />
-        </button>
-
-        {rightNavItems.map(renderItem)}
+        {navItems.map(renderItem)}
       </nav>
     </div>
   )

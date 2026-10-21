@@ -271,7 +271,7 @@ export default function SubscriptionsPage() {
       default:
         return {
           title: "No subscriptions yet",
-          subtitle: "Tap + to add your first recurring subscription.",
+          subtitle: "Use New to add your first recurring subscription.",
         }
     }
   }

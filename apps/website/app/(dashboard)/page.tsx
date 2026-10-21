@@ -15,7 +15,6 @@ import {
   ChevronRight,
   Sparkles,
   AlertTriangle,
-  PiggyBank,
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DynamicIcon } from "@/components/dynamic-icon"
@@ -204,48 +203,6 @@ export default function HomePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-7 xl:col-span-8 space-y-4">
-          {/* Quick Actions */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <Link
-              href="/transactions"
-              className="flex items-center gap-2 rounded-lg border border-border bg-background p-3 transition-colors hover:border-foreground/40"
-            >
-              <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-foreground">
-                <ArrowLeftRight className="size-4" />
-              </span>
-              <span className="text-xs font-semibold">Transactions</span>
-            </Link>
-            <Link
-              href="/accounts"
-              className="flex items-center gap-2 rounded-lg border border-border bg-background p-3 transition-colors hover:border-foreground/40"
-            >
-              <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-foreground">
-                <Wallet className="size-4" />
-              </span>
-              <span className="text-xs font-semibold">Accounts</span>
-            </Link>
-            <Link
-              href="/budgets"
-              className="flex items-center gap-2 rounded-lg border border-border bg-background p-3 transition-colors hover:border-foreground/40"
-            >
-              <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-foreground">
-                <PiggyBank className="size-4" />
-              </span>
-              <span className="text-xs font-semibold">Budgets</span>
-            </Link>
-            <Link
-              href="/subscriptions"
-              className="flex items-center gap-2 rounded-lg border border-border bg-background p-3 transition-colors hover:border-foreground/40"
-            >
-              <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-foreground">
-                <Repeat className="size-4" />
-              </span>
-              <span className="text-xs font-semibold">
-                Subs{activeSubCount > 0 ? ` (${activeSubCount})` : ""}
-              </span>
-            </Link>
-          </div>
-
           {/* Recent Transactions */}
           <div className="rounded-lg border border-border bg-background">
             <div className="flex items-center justify-between border-b border-border p-4">
@@ -270,7 +227,7 @@ export default function HomePage() {
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <p className="text-sm font-medium text-muted-foreground">No transactions this month</p>
                 <p className="mt-1 text-xs text-muted-foreground/60">
-                  Tap + to log your first expense or income
+                  Use New to log your first expense or income
                 </p>
               </div>
             ) : (

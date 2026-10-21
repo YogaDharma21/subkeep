@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Search, Settings } from "lucide-react"
+import { Plus, Search, Settings } from "lucide-react"
 import { UserButton } from "@clerk/nextjs"
 
 function getIsMacSnapshot(): boolean {
@@ -21,9 +21,10 @@ function getServerSnapshot(): boolean {
 
 interface TopNavbarProps {
   onSearchClick?: () => void
+  onAddClick?: () => void
 }
 
-export function TopNavbar({ onSearchClick }: TopNavbarProps) {
+export function TopNavbar({ onSearchClick, onAddClick }: TopNavbarProps) {
   const isMac = useSyncExternalStore(
     subscribeToPlatform,
     getIsMacSnapshot,
@@ -49,36 +50,54 @@ export function TopNavbar({ onSearchClick }: TopNavbarProps) {
         <div className="ml-auto flex shrink-0 items-center gap-2">
           <button
             onClick={onSearchClick}
-            className="hidden h-9 items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 px-3 text-xs text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground cursor-pointer sm:flex md:w-44 lg:w-52"
+            className="hidden h-9 cursor-pointer items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 px-3 text-xs text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground sm:flex md:w-44 lg:w-52"
           >
             <span className="flex items-center gap-2">
               <Search className="size-3.5 shrink-0" />
               <span className="truncate">Search...</span>
             </span>
-            <kbd className="rounded border border-border bg-background px-1.5 py-0.5 font-mono text-[10px] shrink-0">
+            <kbd className="shrink-0 rounded border border-border bg-background px-1.5 py-0.5 font-mono text-[10px]">
               {isMac ? "⌘K" : "Ctrl+K"}
             </kbd>
           </button>
 
           <button
             onClick={onSearchClick}
-            className="flex size-9 items-center justify-center rounded-lg border border-border bg-muted/50 text-muted-foreground transition-colors hover:text-foreground cursor-pointer sm:hidden"
+            className="flex size-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted/50 text-muted-foreground transition-colors hover:text-foreground sm:hidden"
             title="Search & Commands"
             aria-label="Search & Commands"
           >
             <Search className="size-4" />
           </button>
 
-          <Link
-            href="/more"
-            title="Settings"
-            aria-label="Settings"
-            className="flex size-9 items-center justify-center rounded-lg border border-border bg-muted/50 text-muted-foreground transition-colors hover:text-foreground"
+          <button
+            onClick={onAddClick}
+            className="hidden h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-foreground px-3 text-xs font-semibold text-background transition-opacity hover:opacity-90 sm:flex"
+            title="New"
+            aria-label="New"
           >
-            <Settings className="size-4" />
-          </Link>
+            <Plus className="size-4" />
+            <span>New</span>
+          </button>
 
-          <UserButton />
+          <button
+            onClick={onAddClick}
+            className="flex size-9 cursor-pointer items-center justify-center rounded-lg bg-foreground text-background transition-opacity hover:opacity-90 sm:hidden"
+            title="New"
+            aria-label="New"
+          >
+            <Plus className="size-4" />
+          </button>
+
+          <UserButton>
+            <UserButton.MenuItems>
+              <UserButton.Link
+                label="Settings"
+                labelIcon={<Settings className="size-4" />}
+                href="/more"
+              />
+            </UserButton.MenuItems>
+          </UserButton>
         </div>
       </div>
     </header>
