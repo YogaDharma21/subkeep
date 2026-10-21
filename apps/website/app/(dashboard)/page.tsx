@@ -279,7 +279,7 @@ export default function HomePage() {
                   href="/stats"
                   className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
                 >
-                  Analytics <ChevronRight className="size-3.5" />
+                  Insights <ChevronRight className="size-3.5" />
                 </Link>
               </div>
               <div className="space-y-3 p-4">

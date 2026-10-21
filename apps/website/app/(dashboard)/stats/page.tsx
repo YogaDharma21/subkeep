@@ -4,12 +4,14 @@ import { useMemo } from "react"
 import { useQuery } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
+import { SectionHeader } from "@/components/section-nav"
 import { StatsCharts } from "@/components/stats-charts"
 import { FinanceAnalytics } from "@/components/finance-analytics"
 import { Skeleton } from "@/components/ui/skeleton"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
 import { currentMonthKey, lastMonths } from "@/lib/finance"
+import { insightTabs } from "@/lib/navigation"
 
 export default function StatsPage() {
   useDocumentTitle("Stats")
@@ -32,6 +34,8 @@ export default function StatsPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      <SectionHeader title="Insights" tabs={insightTabs} />
+
       {isLoading ? (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

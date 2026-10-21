@@ -16,6 +16,7 @@ import {
   ArrowUpRight,
   ArrowLeftRight,
 } from "lucide-react"
+import { SectionHeader } from "@/components/section-nav"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -40,6 +41,7 @@ import {
   shiftMonth,
 } from "@/lib/finance"
 import { cn } from "@/lib/utils"
+import { moneyTabs } from "@/lib/navigation"
 import { toast } from "sonner"
 
 type TxnDoc = {
@@ -173,6 +175,8 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-4">
+      <SectionHeader title="Money" tabs={moneyTabs} />
+
       {/* Month navigator + totals */}
       <div className="rounded-lg border border-border bg-background p-4">
         <div className="flex items-center justify-between">
