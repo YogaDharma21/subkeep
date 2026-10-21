@@ -31,16 +31,13 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
         aria-label={item.label}
         aria-current={isActive ? "page" : undefined}
         className={cn(
-          "flex h-11 shrink-0 items-center justify-center gap-2 rounded-full px-3.5 transition-colors sm:px-4",
+          "flex size-11 shrink-0 items-center justify-center rounded-full transition-colors",
           isActive
             ? "bg-muted text-foreground"
             : "text-muted-foreground hover:bg-accent hover:text-foreground"
         )}
       >
         <Icon className="size-5" />
-        <span className="hidden text-xs font-semibold sm:inline">
-          {item.label}
-        </span>
       </Link>
     )
   }
