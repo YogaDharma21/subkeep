@@ -2,11 +2,48 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { primaryNav } from "@/lib/navigation"
+import { primaryNav, type PrimaryNavItem } from "@/lib/navigation"
 
-export function BottomNav() {
+interface BottomNavProps {
+  onAddClick?: () => void
+}
+
+export function BottomNav({ onAddClick }: BottomNavProps) {
   const pathname = usePathname()
+  const splitIndex = Math.ceil(primaryNav.length / 2)
+  const leftItems = primaryNav.slice(0, splitIndex)
+  const rightItems = primaryNav.slice(splitIndex)
+
+  const renderItem = (item: PrimaryNavItem) => {
+    const Icon = item.icon
+    const isActive = item.match.some((href) =>
+      href === "/"
+        ? pathname === "/"
+        : pathname === href || pathname.startsWith(`${href}/`)
+    )
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        title={item.label}
+        aria-label={item.label}
+        aria-current={isActive ? "page" : undefined}
+        className={cn(
+          "flex h-11 shrink-0 items-center justify-center gap-2 rounded-full px-3.5 transition-colors sm:px-4",
+          isActive
+            ? "bg-muted text-foreground"
+            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+        )}
+      >
+        <Icon className="size-5" />
+        <span className="hidden text-xs font-semibold sm:inline">
+          {item.label}
+        </span>
+      </Link>
+    )
+  }
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-[max(1.5rem,env(safe-area-inset-bottom))]">
@@ -14,34 +51,18 @@ export function BottomNav() {
         aria-label="Primary"
         className="flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border bg-background/90 p-1.5 shadow-lg backdrop-blur-md"
       >
-        {primaryNav.map((item) => {
-          const Icon = item.icon
-          const isActive = item.match.some((href) =>
-            href === "/"
-              ? pathname === "/"
-              : pathname === href || pathname.startsWith(`${href}/`)
-          )
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              title={item.label}
-              aria-label={item.label}
-              aria-current={isActive ? "page" : undefined}
-              className={cn(
-                "flex h-11 shrink-0 items-center justify-center gap-2 rounded-full px-3.5 transition-colors sm:px-4",
-                isActive
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
-              )}
-            >
-              <Icon className="size-5" />
-              <span className="hidden text-xs font-semibold sm:inline">
-                {item.label}
-              </span>
-            </Link>
-          )
-        })}
+        {leftItems.map(renderItem)}
+
+        <button
+          onClick={onAddClick}
+          title="Quick add"
+          aria-label="Quick add"
+          className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-foreground text-background shadow-md transition-transform hover:scale-105 active:scale-95"
+        >
+          <Plus className="size-5" strokeWidth={2.5} />
+        </button>
+
+        {rightItems.map(renderItem)}
       </nav>
     </div>
   )

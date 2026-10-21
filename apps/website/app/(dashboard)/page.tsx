@@ -227,7 +227,7 @@ export default function HomePage() {
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <p className="text-sm font-medium text-muted-foreground">No transactions this month</p>
                 <p className="mt-1 text-xs text-muted-foreground/60">
-                  Use New to log your first expense or income
+                  Tap + to log your first expense or income
                 </p>
               </div>
             ) : (

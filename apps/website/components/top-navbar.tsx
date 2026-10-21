@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Plus, Search, Settings } from "lucide-react"
+import { Search, Settings } from "lucide-react"
 import { UserButton } from "@clerk/nextjs"
 
 function getIsMacSnapshot(): boolean {
@@ -21,10 +21,9 @@ function getServerSnapshot(): boolean {
 
 interface TopNavbarProps {
   onSearchClick?: () => void
-  onAddClick?: () => void
 }
 
-export function TopNavbar({ onSearchClick, onAddClick }: TopNavbarProps) {
+export function TopNavbar({ onSearchClick }: TopNavbarProps) {
   const isMac = useSyncExternalStore(
     subscribeToPlatform,
     getIsMacSnapshot,
@@ -68,25 +67,6 @@ export function TopNavbar({ onSearchClick, onAddClick }: TopNavbarProps) {
             aria-label="Search & Commands"
           >
             <Search className="size-4" />
-          </button>
-
-          <button
-            onClick={onAddClick}
-            className="hidden h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-foreground px-3 text-xs font-semibold text-background transition-opacity hover:opacity-90 sm:flex"
-            title="New"
-            aria-label="New"
-          >
-            <Plus className="size-4" />
-            <span>New</span>
-          </button>
-
-          <button
-            onClick={onAddClick}
-            className="flex size-9 cursor-pointer items-center justify-center rounded-lg bg-foreground text-background transition-opacity hover:opacity-90 sm:hidden"
-            title="New"
-            aria-label="New"
-          >
-            <Plus className="size-4" />
           </button>
 
           <UserButton>

@@ -46,10 +46,7 @@ export default function DashboardLayout({
       <Show when="signed-in">
         <div className="min-h-screen bg-muted/20">
           {/* Slim Top Brand Bar */}
-          <TopNavbar
-            onSearchClick={() => setCmdPaletteOpen(true)}
-            onAddClick={() => setQuickAddOpen(true)}
-          />
+          <TopNavbar onSearchClick={() => setCmdPaletteOpen(true)} />
           <AutoNotificationManager />
 
           {/* Main Content Area */}
@@ -60,7 +57,7 @@ export default function DashboardLayout({
           </div>
 
           {/* Floating Dock Navigation (all viewports) */}
-          <BottomNav />
+          <BottomNav onAddClick={() => setQuickAddOpen(true)} />
 
           {/* Quick Add chooser */}
           <QuickAddSheet
