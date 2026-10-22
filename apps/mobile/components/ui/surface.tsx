@@ -2,7 +2,6 @@ import React from "react"
 import {
   Text,
   TextProps,
-  TextStyle,
   View,
   ViewProps,
   ViewStyle,

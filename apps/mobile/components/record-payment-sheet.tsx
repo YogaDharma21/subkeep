@@ -124,7 +124,7 @@ function RecordPaymentSheetForm({
       <View style={{ gap: 6 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <Wallet size={13} color={colors.primary} />
-          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>
+          <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>
             PAY FROM ACCOUNT
           </Text>
         </View>
@@ -146,17 +146,17 @@ function RecordPaymentSheetForm({
                 style={{
                   paddingHorizontal: 12,
                   paddingVertical: 10,
-                  borderRadius: 10,
+                  borderRadius: 999,
                   borderWidth: 1,
                   borderColor: isSelected ? colors.primary : colors.border,
-                  backgroundColor: isSelected ? `${colors.primary}15` : colors.surface,
+                  backgroundColor: isSelected ? `${colors.primary}15` : colors.surfaceInset,
                   minWidth: 110,
                 }}
               >
                 <Text
                   style={{
                     fontSize: 12,
-                    fontWeight: "700",
+                    fontWeight: "500",
                     color: isSelected ? colors.primary : colors.text,
                   }}
                 >
@@ -187,17 +187,17 @@ function RecordPaymentSheetForm({
             style={{
               paddingHorizontal: 12,
               paddingVertical: 10,
-              borderRadius: 10,
+              borderRadius: 999,
               borderWidth: 1,
               borderColor: !accountId ? colors.primary : colors.border,
-              backgroundColor: !accountId ? `${colors.primary}15` : colors.surface,
+              backgroundColor: !accountId ? `${colors.primary}15` : colors.surfaceInset,
               justifyContent: "center",
             }}
           >
             <Text
               style={{
                 fontSize: 12,
-                fontWeight: "700",
+                fontWeight: "500",
                 color: !accountId ? colors.primary : colors.text,
               }}
             >
@@ -222,7 +222,7 @@ function RecordPaymentSheetForm({
       {/* Amount & Date */}
       <View style={{ flexDirection: "row", gap: 10 }}>
         <View style={{ flex: 1, gap: 4 }}>
-          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>
+          <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>
             AMOUNT ({subscription.currency})
           </Text>
           <TextInput
@@ -234,18 +234,18 @@ function RecordPaymentSheetForm({
             style={{
               borderWidth: 1,
               borderColor: colors.border,
-              borderRadius: 8,
+              borderRadius: 14,
               paddingHorizontal: 10,
               paddingVertical: 9,
               fontSize: 14,
               color: colors.text,
-              backgroundColor: colors.surface,
+              backgroundColor: colors.surfaceInset,
             }}
           />
         </View>
 
         <View style={{ flex: 1, gap: 4 }}>
-          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>
+          <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>
             PAYMENT DATE
           </Text>
           <TextInput
@@ -256,12 +256,12 @@ function RecordPaymentSheetForm({
             style={{
               borderWidth: 1,
               borderColor: colors.border,
-              borderRadius: 8,
+              borderRadius: 14,
               paddingHorizontal: 10,
               paddingVertical: 9,
               fontSize: 14,
               color: colors.text,
-              backgroundColor: colors.surface,
+              backgroundColor: colors.surfaceInset,
             }}
           />
         </View>
@@ -276,10 +276,10 @@ function RecordPaymentSheetForm({
             alignItems: "center",
             gap: 10,
             padding: 12,
-            borderRadius: 10,
+            borderRadius: 999,
             borderWidth: 1,
             borderColor: colors.border,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.surfaceInset,
           }}
         >
           <View
@@ -335,8 +335,8 @@ export function RecordPaymentSheet({
         <View
           style={{
             backgroundColor: colors.card,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+            borderTopLeftRadius: 28,
+            borderTopRightRadius: 28,
             maxHeight: "90%",
             paddingBottom: 28,
           }}
@@ -350,7 +350,7 @@ export function RecordPaymentSheet({
               paddingHorizontal: 16,
               paddingVertical: 14,
               borderBottomWidth: 1,
-              borderBottomColor: colors.border,
+              borderBottomColor: colors.borderLight,
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
@@ -358,7 +358,7 @@ export function RecordPaymentSheet({
                 style={{
                   width: 32,
                   height: 32,
-                  borderRadius: 8,
+                  borderRadius: 14,
                   backgroundColor: subscription.color || colors.primary,
                   alignItems: "center",
                   justifyContent: "center",
@@ -367,7 +367,7 @@ export function RecordPaymentSheet({
                 <DynamicIcon name={subscription.icon || "receipt"} size={16} color="#ffffff" />
               </View>
               <View>
-                <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
+                <Text style={{ fontSize: 18, fontWeight: "600", letterSpacing: -0.4, color: colors.text }}>
                   Record Payment
                 </Text>
                 <Text style={{ fontSize: 11, color: colors.mutedText }}>
@@ -381,7 +381,7 @@ export function RecordPaymentSheet({
                 width: 30,
                 height: 30,
                 borderRadius: 15,
-                backgroundColor: colors.surface,
+                backgroundColor: colors.surfaceInset,
                 alignItems: "center",
                 justifyContent: "center",
               }}

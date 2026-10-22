@@ -42,7 +42,7 @@ export function TemplateList({ onSelect, onCustomCreate }: TemplateListProps) {
           style={{
             flexDirection: "row",
             alignItems: "center",
-            backgroundColor: colors.surface,
+            backgroundColor: colors.surfaceInset,
             borderRadius: 12,
             paddingHorizontal: 12,
             height: 44,
@@ -91,7 +91,7 @@ export function TemplateList({ onSelect, onCustomCreate }: TemplateListProps) {
                   borderRadius: 16,
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: isSelected ? colors.primary : colors.surface,
+                  backgroundColor: isSelected ? colors.primary : colors.surfaceInset,
                   borderWidth: 1,
                   borderColor: isSelected ? colors.primary : colors.border,
                 }}
@@ -119,7 +119,7 @@ export function TemplateList({ onSelect, onCustomCreate }: TemplateListProps) {
           style={{
             flexDirection: "row",
             alignItems: "center",
-            backgroundColor: colors.surface,
+            backgroundColor: colors.surfaceInset,
             borderWidth: 1,
             borderColor: colors.border,
             borderRadius: 12,
@@ -131,7 +131,7 @@ export function TemplateList({ onSelect, onCustomCreate }: TemplateListProps) {
             style={{
               width: 38,
               height: 38,
-              borderRadius: 8,
+              borderRadius: 14,
               backgroundColor: colors.primary,
               alignItems: "center",
               justifyContent: "center",
@@ -140,7 +140,7 @@ export function TemplateList({ onSelect, onCustomCreate }: TemplateListProps) {
             <Plus size={20} color={colors.primaryForeground} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
+            <Text style={{ fontSize: 14, fontWeight: "500", color: colors.text }}>
               Custom Subscription
             </Text>
             <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
@@ -174,7 +174,7 @@ export function TemplateList({ onSelect, onCustomCreate }: TemplateListProps) {
               style={{
                 width: 40,
                 height: 40,
-                borderRadius: 8,
+                borderRadius: 14,
                 backgroundColor: item.color || "#6366F1",
                 borderWidth: 1,
                 borderColor: colors.border,
@@ -185,7 +185,7 @@ export function TemplateList({ onSelect, onCustomCreate }: TemplateListProps) {
               <DynamicIcon name={item.icon} size={18} color={getContrastTextColor(item.color)} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
+              <Text style={{ fontSize: 14, fontWeight: "500", color: colors.text }}>
                 {item.name}
               </Text>
               <Text style={{ fontSize: 11, color: colors.mutedText, textTransform: "capitalize", marginTop: 1 }}>

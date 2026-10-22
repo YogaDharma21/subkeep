@@ -21,7 +21,7 @@ export function SubscriptionDetailSkeleton() {
           paddingHorizontal: 16,
           paddingVertical: 12,
           borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          borderBottomColor: colors.borderLight,
         }}
       >
         <TouchableOpacity
@@ -30,7 +30,7 @@ export function SubscriptionDetailSkeleton() {
             width: 36,
             height: 36,
             borderRadius: 18,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.surfaceInset,
             alignItems: "center",
             justifyContent: "center",
           }}
@@ -38,7 +38,7 @@ export function SubscriptionDetailSkeleton() {
           <ArrowLeft size={18} color={colors.text} />
         </TouchableOpacity>
 
-        <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
+        <Text style={{ fontSize: 18, fontWeight: "600", letterSpacing: -0.4, color: colors.text }}>
           Subscription Details
         </Text>
 
@@ -86,7 +86,7 @@ export function SubscriptionDetailSkeleton() {
                 backgroundColor: colors.card,
                 borderWidth: 1,
                 borderColor: colors.border,
-                borderRadius: 10,
+                borderRadius: 999,
                 paddingVertical: 12,
                 paddingHorizontal: 8,
                 alignItems: "center",
@@ -128,7 +128,7 @@ export function SubscriptionDetailSkeleton() {
                   alignItems: "center",
                   paddingBottom: idx < 4 ? 12 : 0,
                   borderBottomWidth: idx < 4 ? 1 : 0,
-                  borderBottomColor: colors.border,
+                  borderBottomColor: colors.borderLight,
                 }}
               >
                 <Skeleton width={row.w1} height={13} borderRadius={4} />

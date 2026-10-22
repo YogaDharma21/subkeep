@@ -3,11 +3,11 @@ import { View, Text, TouchableOpacity, Linking } from "react-native"
 import { Bell, Send, Check, ExternalLink, CreditCard } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
-import { getContrastTextColor } from "@/constants/categories"
 import { findUpcomingReminders, ReminderItem } from "@/lib/notifications"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
 import { RecordPaymentSheet, RecordPaymentTarget } from "@/components/record-payment-sheet"
+import { Label, Numeral, Surface } from "@/components/ui/surface"
 
 interface UpcomingRemindersProps {
   subscriptions: {
@@ -69,165 +69,182 @@ export function UpcomingReminders({
   }
 
   return (
-    <View style={{ gap: 8 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 4 }}>
-        <Bell size={14} color={colors.mutedText} />
-        <Text style={{ fontSize: 12, fontWeight: "700", color: colors.text }}>
-          Upcoming Billing & Trial Alerts ({reminders.length})
+    <Surface folderTab style={{ padding: 18, paddingTop: 36, gap: 10 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+        }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <Bell size={13} color={colors.mutedText} />
+          <Label>Due soon</Label>
+        </View>
+        <Text style={{ fontSize: 11, color: colors.mutedText }}>
+          {reminders.length} alert{reminders.length === 1 ? "" : "s"}
         </Text>
       </View>
 
-      <View style={{ gap: 8 }}>
-        {reminders.map((item) => {
-          const isSent = !!sentAlerts[item._id]
-          const isTrial = item.type === "trial"
-          const priceFormatted = convertAndFormat(item.price, item.currency, primaryCurrency, rates)
+      {reminders.map((item, index) => {
+        const isSent = !!sentAlerts[item._id]
+        const isTrial = item.type === "trial"
+        const priceFormatted = convertAndFormat(item.price, item.currency, primaryCurrency, rates)
 
-          return (
-            <View
-              key={item._id}
-              style={{
-                backgroundColor: colors.card,
-                borderColor: colors.border,
-                borderWidth: 1,
-                borderRadius: 12,
-                padding: 12,
-                gap: 8,
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <View
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 8,
-                    backgroundColor: item.color || "#6366F1",
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <DynamicIcon name={item.icon} size={18} color={getContrastTextColor(item.color)} />
-                </View>
-
-                <View style={{ flex: 1 }}>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                    <Text
-                      numberOfLines={1}
-                      style={{ fontSize: 13, fontWeight: "700", color: colors.text, flexShrink: 1 }}
-                    >
-                      {item.name}
-                    </Text>
-                    {isTrial ? (
-                      <View
-                        style={{
-                          backgroundColor: "rgba(16, 185, 129, 0.2)",
-                          paddingHorizontal: 5,
-                          paddingVertical: 1,
-                          borderRadius: 4,
-                        }}
-                      >
-                        <Text style={{ fontSize: 9, fontWeight: "800", color: colors.emerald }}>
-                          TRIAL
-                        </Text>
-                      </View>
-                    ) : null}
-                  </View>
-
-                  <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
-                    {isTrial
-                      ? `Trial ends ${item.daysLeft === 0 ? "today" : `in ${item.daysLeft} d`}`
-                      : `Due ${item.daysLeft === 0 ? "today" : `in ${item.daysLeft} d`} (${priceFormatted})`}
-                  </Text>
-                </View>
+        return (
+          <View
+            key={item._id}
+            style={{
+              gap: 10,
+              paddingTop: index === 0 ? 4 : 12,
+              borderTopWidth: index === 0 ? 0 : 1,
+              borderTopColor: colors.borderLight,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <View
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 999,
+                  backgroundColor: colors.surfaceInset,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <DynamicIcon name={item.icon} size={15} color={colors.text} />
               </View>
 
-              {/* Actions row */}
-              <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8 }}>
-                {!isTrial ? (
-                  <TouchableOpacity
-                    onPress={() => handleOpenRecordPayment(item)}
+              <View style={{ flex: 1, gap: 2 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <Text
+                    numberOfLines={1}
                     style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 4,
-                      paddingHorizontal: 8,
-                      paddingVertical: 5,
-                      borderRadius: 6,
-                      backgroundColor: colors.primary,
+                      fontSize: 13,
+                      fontWeight: "500",
+                      color: colors.text,
+                      flexShrink: 1,
                     }}
                   >
-                    <CreditCard size={12} color={colors.primaryForeground} />
-                    <Text
+                    {item.name}
+                  </Text>
+                  {isTrial ? (
+                    <View
                       style={{
-                        fontSize: 11,
-                        fontWeight: "600",
-                        color: colors.primaryForeground,
+                        backgroundColor: colors.surfaceInset,
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                        paddingHorizontal: 6,
+                        paddingVertical: 1,
+                        borderRadius: 999,
                       }}
                     >
-                      Record Payment
-                    </Text>
-                  </TouchableOpacity>
-                ) : null}
+                      <Text
+                        style={{
+                          fontSize: 8,
+                          fontWeight: "500",
+                          letterSpacing: 0.8,
+                          color: colors.emerald,
+                        }}
+                      >
+                        TRIAL
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
 
+                <Text style={{ fontSize: 11, color: colors.mutedText }}>
+                  {isTrial
+                    ? `Trial ends ${item.daysLeft === 0 ? "today" : `in ${item.daysLeft}d`}`
+                    : `Due ${item.daysLeft === 0 ? "today" : `in ${item.daysLeft}d`}`}
+                </Text>
+              </View>
+
+              {!isTrial ? (
+                <Numeral style={{ fontSize: 12 }}>{priceFormatted}</Numeral>
+              ) : null}
+            </View>
+
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingLeft: 44 }}>
+              {!isTrial ? (
                 <TouchableOpacity
-                  onPress={() => {
-                    const url = item.cancelUrl || `https://www.google.com/search?q=${encodeURIComponent(`how to cancel ${item.name} subscription`)}`
-                    Linking.openURL(url)
-                  }}
+                  onPress={() => handleOpenRecordPayment(item)}
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
                     gap: 4,
-                    paddingHorizontal: 8,
+                    paddingHorizontal: 10,
                     paddingVertical: 5,
-                    borderRadius: 6,
-                    backgroundColor: colors.card,
-                    borderWidth: 1,
-                    borderColor: colors.border,
+                    borderRadius: 999,
+                    backgroundColor: colors.primary,
                   }}
                 >
-                  <ExternalLink size={12} color={colors.text} />
-                  <Text style={{ fontSize: 11, fontWeight: "600", color: colors.text }}>
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => handleTestAlert(item)}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 4,
-                    paddingHorizontal: 8,
-                    paddingVertical: 5,
-                    borderRadius: 6,
-                    backgroundColor: colors.card,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
-                >
-                  {isSent ? (
-                    <Check size={12} color={colors.emerald} />
-                  ) : (
-                    <Send size={12} color={colors.amber} />
-                  )}
+                  <CreditCard size={11} color={colors.primaryForeground} />
                   <Text
                     style={{
-                      fontSize: 11,
+                      fontSize: 10,
                       fontWeight: "600",
-                      color: isSent ? colors.emerald : colors.amber,
+                      color: colors.primaryForeground,
                     }}
                   >
-                    {isSent ? "Alert Sent" : "Test Alert"}
+                    Record payment
                   </Text>
                 </TouchableOpacity>
-              </View>
+              ) : null}
+
+              <TouchableOpacity
+                onPress={() => {
+                  const url =
+                    item.cancelUrl ||
+                    `https://www.google.com/search?q=${encodeURIComponent(
+                      `how to cancel ${item.name} subscription`
+                    )}`
+                  Linking.openURL(url)
+                }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 4,
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  borderRadius: 999,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
+              >
+                <ExternalLink size={11} color={colors.mutedText} />
+                <Text style={{ fontSize: 10, fontWeight: "500", color: colors.mutedText }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                accessibilityLabel="Send test alert"
+                onPress={() => handleTestAlert(item)}
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 999,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginLeft: "auto",
+                }}
+              >
+                {isSent ? (
+                  <Check size={12} color={colors.emerald} />
+                ) : (
+                  <Send size={12} color={colors.mutedText} />
+                )}
+              </TouchableOpacity>
             </View>
-          )
-        })}
-      </View>
+          </View>
+        )
+      })}
 
       <RecordPaymentSheet
         visible={sheetVisible}
@@ -235,6 +252,6 @@ export function UpcomingReminders({
         subscription={selectedReminder}
         rates={rates}
       />
-    </View>
+    </Surface>
   )
 }

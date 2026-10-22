@@ -11,19 +11,11 @@ import { useRouter } from "expo-router"
 import { useQuery } from "convex/react"
 import { useAuth } from "@clerk/expo"
 import { api } from "@/convex/_generated/api"
-import {
-  Wallet,
-  ArrowDownRight,
-  ArrowUpRight,
-  ArrowLeftRight,
-  Repeat,
-  ChevronRight,
-  Target,
-  AlertTriangle,
-  Sparkles,
-} from "lucide-react-native"
+import Svg, { Circle } from "react-native-svg"
+import { ChevronRight } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
+import { Label, Numeral, PageTitle, Surface } from "@/components/ui/surface"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
@@ -32,6 +24,184 @@ import {
   monthLabel,
   financeCategoryMeta,
 } from "@/constants/finance"
+
+function localDateKey(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
+function shortDate(value: string) {
+  return new Date(`${value}T12:00:00`).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  })
+}
+
+function ProgressBar({ pct, color }: { pct: number; color: string }) {
+  const { colors } = useThemeColor()
+  return (
+    <View
+      style={{
+        height: 3,
+        borderRadius: 999,
+        backgroundColor: colors.surfaceInset,
+        overflow: "hidden",
+      }}
+    >
+      <View
+        style={{
+          height: "100%",
+          width: `${Math.max(0, Math.min(100, pct))}%`,
+          backgroundColor: color,
+          borderRadius: 999,
+        }}
+      />
+    </View>
+  )
+}
+
+function BudgetRing({ pct }: { pct: number }) {
+  const { colors } = useThemeColor()
+  const size = 116
+  const stroke = 2.5
+  const radius = (size - stroke) / 2
+  const circumference = 2 * Math.PI * radius
+  const clamped = Math.max(0, Math.min(100, pct))
+
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Svg
+        width={size}
+        height={size}
+        style={{ position: "absolute", transform: [{ rotate: "-90deg" }] }}
+      >
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={colors.border}
+          strokeWidth={stroke}
+        />
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={colors.text}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={`${circumference} ${circumference}`}
+          strokeDashoffset={circumference - (clamped / 100) * circumference}
+        />
+      </Svg>
+      <Numeral style={{ fontSize: 24 }}>{Math.round(pct)}%</Numeral>
+      <Label style={{ fontSize: 9, marginTop: 2 }}>used</Label>
+    </View>
+  )
+}
+
+function PanelHead({
+  title,
+  hint,
+  linkLabel,
+  onPress,
+}: {
+  title: string
+  hint?: string
+  linkLabel: string
+  onPress: () => void
+}) {
+  const { colors } = useThemeColor()
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "flex-start",
+        justifyContent: "space-between",
+        gap: 12,
+      }}
+    >
+      <View style={{ flex: 1, gap: 3 }}>
+        <Text style={{ fontSize: 15, fontWeight: "500", letterSpacing: -0.2, color: colors.text }}>
+          {title}
+        </Text>
+        {hint ? (
+          <Text style={{ fontSize: 11, color: colors.mutedText }}>{hint}</Text>
+        ) : null}
+      </View>
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={onPress}
+        style={{ flexDirection: "row", alignItems: "center", gap: 1 }}
+      >
+        <Text style={{ fontSize: 11, fontWeight: "500", color: colors.mutedText }}>
+          {linkLabel}
+        </Text>
+        <ChevronRight size={12} color={colors.mutedText} />
+      </TouchableOpacity>
+    </View>
+  )
+}
+
+function MetricCard({
+  hint,
+  value,
+  label,
+  onPress,
+}: {
+  hint: string
+  value: string
+  label: string
+  onPress: () => void
+}) {
+  const { colors } = useThemeColor()
+  return (
+    <TouchableOpacity
+      activeOpacity={0.75}
+      onPress={onPress}
+      style={{ width: "48%", flexGrow: 1 }}
+    >
+      <Surface
+        folderTab
+        style={{
+          minHeight: 126,
+          padding: 14,
+          paddingTop: 34,
+          justifyContent: "flex-end",
+          gap: 6,
+        }}
+      >
+        <Text
+          style={{
+            position: "absolute",
+            top: 13,
+            right: 14,
+            fontSize: 9,
+            fontWeight: "500",
+            letterSpacing: 1.2,
+            textTransform: "uppercase",
+            color: colors.subtleText,
+          }}
+        >
+          {hint}
+        </Text>
+        <Numeral numberOfLines={1} style={{ fontSize: 22 }}>
+          {value}
+        </Numeral>
+        <Text style={{ fontSize: 11, color: colors.mutedText }}>{label}</Text>
+      </Surface>
+    </TouchableOpacity>
+  )
+}
 
 export default function DashboardScreen() {
   const router = useRouter()
@@ -43,6 +213,10 @@ export default function DashboardScreen() {
   const transactions = useQuery(
     api.transactions.list,
     isSignedIn ? { month } : "skip"
+  )
+  const allTransactions = useQuery(
+    api.transactions.list,
+    isSignedIn ? { limit: 300 } : "skip"
   )
   const budgets = useQuery(api.budgets.list, isSignedIn ? { month } : "skip")
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
@@ -62,7 +236,7 @@ export default function DashboardScreen() {
         byCategory[t.category] = (byCategory[t.category] || 0) + converted
       }
     }
-    return { income, expense, net: income - expense, byCategory }
+    return { income, expense, saved: income - expense, byCategory }
   }, [transactions, primaryCurrency, rates])
 
   const netWorth = useMemo(() => {
@@ -92,11 +266,21 @@ export default function DashboardScreen() {
 
   const activeSubCount = subscriptions?.filter((s) => s.isActive !== false).length ?? 0
 
+  const nextRenewal = useMemo(() => {
+    const active = (subscriptions || []).filter((s) => s.isActive !== false)
+    const dates = active
+      .map((s) => (s.isTrial && s.trialEndDate ? s.trialEndDate : s.nextBilling))
+      .filter((value): value is string => !!value)
+      .sort()
+    return dates[0] ?? null
+  }, [subscriptions])
+
   const budgetCap = userSettings?.monthlyBudgetCap
   const monthlySpend = stats.expense + subscriptionMonthly
   const budgetUsedPct =
     budgetCap && budgetCap > 0 ? Math.round((monthlySpend / budgetCap) * 100) : null
   const isBudgetExceeded = !!budgetCap && monthlySpend > budgetCap
+  const leftToSpend = budgetCap ? budgetCap - monthlySpend : stats.saved
 
   const topCategories = useMemo(() => {
     const entries = Object.entries(stats.byCategory)
@@ -114,375 +298,486 @@ export default function DashboardScreen() {
   const recentTransactions = useMemo(() => {
     return [...(transactions || [])]
       .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
-      .slice(0, 5)
+      .slice(0, 6)
   }, [transactions])
+
+  const activity = useMemo(() => {
+    const spendByDate: Record<string, number> = {}
+    for (const t of allTransactions || []) {
+      if (t.type !== "expense") continue
+      spendByDate[t.date] =
+        (spendByDate[t.date] || 0) +
+        convertCurrency(t.amount, t.currency, primaryCurrency, rates)
+    }
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const start = new Date(today)
+    start.setDate(start.getDate() - 90)
+    start.setDate(start.getDate() - ((start.getDay() + 6) % 7))
+
+    const weeks: { key: string; amount: number; future: boolean }[][] = []
+    const cursor = new Date(start)
+    let activeDays = 0
+    let peak = 0
+
+    while (cursor <= today) {
+      const week: { key: string; amount: number; future: boolean }[] = []
+      for (let i = 0; i < 7; i++) {
+        const day = new Date(cursor)
+        const key = localDateKey(day)
+        const amount = spendByDate[key] || 0
+        if (amount > 0) activeDays++
+        peak = Math.max(peak, amount)
+        week.push({ key, amount, future: day > today })
+        cursor.setDate(cursor.getDate() + 1)
+      }
+      weeks.push(week)
+    }
+
+    return { weeks, activeDays, peak }
+  }, [allTransactions, primaryCurrency, rates])
 
   const loading = accounts === undefined || transactions === undefined
   const monthShort = monthLabel(month).split(" ")[0]
 
   return (
-    <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView
+      edges={["bottom", "left", "right"]}
+      style={{ flex: 1, backgroundColor: colors.background }}
+    >
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingVertical: 14,
-          gap: 16,
-          paddingBottom: 110,
+          paddingVertical: 16,
+          gap: 12,
+          paddingBottom: 120,
         }}
       >
-        {/* Net Worth + Cash Flow Hero */}
-        <View
-          style={{
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 16,
-            padding: 16,
-            gap: 12,
-          }}
-        >
+        <View style={{ gap: 5, paddingBottom: 4 }}>
+          <Label>{monthLabel(month)}</Label>
+          <PageTitle>Overview</PageTitle>
+          <Text style={{ fontSize: 11, color: colors.mutedText }}>
+            Balances, bills, and what is left.
+          </Text>
+        </View>
+
+        <Surface folderTab style={{ padding: 20, paddingTop: 36, gap: 14 }}>
           <View
             style={{
               flexDirection: "row",
-              justifyContent: "space-between",
               alignItems: "center",
-              borderBottomWidth: 1,
-              borderBottomColor: colors.border,
-              paddingBottom: 10,
+              justifyContent: "space-between",
+              gap: 12,
             }}
           >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Wallet size={14} color={colors.primary} />
-              <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                Money Overview · {monthLabel(month)}
+            <Label>Net worth</Label>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 999,
+                paddingHorizontal: 10,
+                paddingVertical: 3,
+              }}
+            >
+              <Text style={{ fontSize: 10, letterSpacing: 1, color: colors.mutedText }}>
+                {primaryCurrency}
               </Text>
             </View>
-            <Text style={{ fontSize: 10, fontWeight: "700", color: colors.mutedText }}>
-              {primaryCurrency}
-            </Text>
           </View>
 
           {loading ? (
-            <ActivityIndicator size="small" color={colors.primary} />
+            <ActivityIndicator size="small" color={colors.mutedText} style={{ alignSelf: "flex-start" }} />
           ) : (
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <View style={{ flex: 1, alignItems: "center", gap: 2 }}>
-                <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: "900", color: colors.text }}>
-                  {formatCurrencyAmount(netWorth, primaryCurrency)}
-                </Text>
-                <Text style={{ fontSize: 10, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                  Net Worth
-                </Text>
-              </View>
-              <View style={{ width: 1, height: 32, backgroundColor: colors.border }} />
-              <View style={{ flex: 1, alignItems: "center", gap: 2, paddingHorizontal: 4 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-                  <ArrowDownRight size={14} color={colors.emerald} />
-                  <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: "900", color: colors.emerald }}>
-                    {formatCurrencyAmount(stats.income, primaryCurrency)}
-                  </Text>
-                </View>
-                <Text style={{ fontSize: 10, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                  In · {monthShort}
-                </Text>
-              </View>
-              <View style={{ width: 1, height: 32, backgroundColor: colors.border }} />
-              <View style={{ flex: 1, alignItems: "center", gap: 2, paddingHorizontal: 4 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-                  <ArrowUpRight size={14} color={colors.destructive} />
-                  <Text numberOfLines={1} style={{ fontSize: 16, fontWeight: "900", color: colors.destructive }}>
-                    {formatCurrencyAmount(stats.expense, primaryCurrency)}
-                  </Text>
-                </View>
-                <Text style={{ fontSize: 10, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                  Out · {monthShort}
-                </Text>
-              </View>
-            </View>
+            <Numeral
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              style={{ fontSize: 40, lineHeight: 42 }}
+            >
+              {formatCurrencyAmount(netWorth, primaryCurrency)}
+            </Numeral>
           )}
 
-          {budgetCap && budgetCap > 0 && !loading ? (
-            <View
-              style={{
-                borderTopWidth: 1,
-                borderTopColor: colors.border,
-                paddingTop: 10,
-                gap: 6,
-              }}
-            >
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                  <Target size={14} color={colors.primary} />
-                  <Text style={{ fontSize: 12, fontWeight: "600", color: colors.text }}>
-                    Spend vs Cap
-                  </Text>
-                </View>
-                <Text
-                  style={{
-                    fontSize: 11,
-                    fontWeight: "700",
-                    color: isBudgetExceeded ? colors.destructive : colors.mutedText,
-                  }}
-                >
-                  {formatCurrencyAmount(monthlySpend, primaryCurrency)} / {formatCurrencyAmount(budgetCap, primaryCurrency)} ({budgetUsedPct}%)
-                </Text>
-              </View>
-              <View
-                style={{
-                  height: 6,
-                  width: "100%",
-                  backgroundColor: colors.surface,
-                  borderRadius: 3,
-                  overflow: "hidden",
-                }}
-              >
-                <View
-                  style={{
-                    height: "100%",
-                    width: `${Math.min(100, budgetUsedPct || 0)}%`,
-                    backgroundColor: isBudgetExceeded
-                      ? colors.destructive
-                      : (budgetUsedPct || 0) >= 85
-                      ? colors.amber
-                      : colors.emerald,
-                  }}
-                />
-              </View>
-              {isBudgetExceeded ? (
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                  <AlertTriangle size={12} color={colors.destructive} />
-                  <Text style={{ fontSize: 10, fontWeight: "600", color: colors.destructive }}>
-                    Over budget by {formatCurrencyAmount(monthlySpend - (budgetCap || 0), primaryCurrency)}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-          ) : null}
-        </View>
+          <Text style={{ fontSize: 11, color: colors.mutedText }}>
+            {accounts?.length ?? 0} accounts · live balances
+          </Text>
 
-        {/* Recent Transactions */}
-        <View
-          style={{
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            overflow: "hidden",
-          }}
-        >
           <View
             style={{
               flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: 14,
-              borderBottomWidth: 1,
-              borderBottomColor: colors.border,
+              gap: 12,
+              borderTopWidth: 1,
+              borderTopColor: colors.border,
+              paddingTop: 13,
             }}
           >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <ArrowLeftRight size={14} color={colors.mutedText} />
-              <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
-                Recent Transactions
+            <View style={{ flex: 1, gap: 5 }}>
+              <Label>In</Label>
+              <Numeral numberOfLines={1} style={{ fontSize: 15, color: colors.positive }}>
+                +{formatCurrencyAmount(stats.income, primaryCurrency)}
+              </Numeral>
+            </View>
+            <View style={{ flex: 1, gap: 5 }}>
+              <Label>Out</Label>
+              <Numeral numberOfLines={1} style={{ fontSize: 15 }}>
+                -{formatCurrencyAmount(stats.expense, primaryCurrency)}
+              </Numeral>
+            </View>
+            <View style={{ flex: 1, gap: 5 }}>
+              <Label>Kept</Label>
+              <Numeral numberOfLines={1} style={{ fontSize: 15 }}>
+                {formatCurrencyAmount(stats.saved, primaryCurrency)}
+              </Numeral>
+            </View>
+          </View>
+        </Surface>
+
+        <Surface style={{ padding: 18, gap: 14 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <View style={{ gap: 3 }}>
+              <Label>{budgetCap ? "Monthly cap" : "Cash flow"}</Label>
+              <Text style={{ fontSize: 11, color: colors.mutedText }}>
+                {monthLabel(month)}
               </Text>
             </View>
-            <TouchableOpacity onPress={() => router.push("/(tabs)/transactions" as never)}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-                <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText }}>
-                  View all
-                </Text>
-                <ChevronRight size={14} color={colors.mutedText} />
-              </View>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => router.push("/(tabs)/budgets" as never)}
+              style={{ flexDirection: "row", alignItems: "center", gap: 1 }}
+            >
+              <Text style={{ fontSize: 11, fontWeight: "500", color: colors.mutedText }}>
+                Budgets
+              </Text>
+              <ChevronRight size={12} color={colors.mutedText} />
             </TouchableOpacity>
           </View>
-          {transactions === undefined ? (
-            <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 20 }} />
-          ) : recentTransactions.length === 0 ? (
-            <View style={{ padding: 24, alignItems: "center", gap: 4 }}>
-              <Text style={{ fontSize: 13, fontWeight: "600", color: colors.mutedText }}>
-                No transactions this month
+
+          {loading ? (
+            <ActivityIndicator size="small" color={colors.mutedText} />
+          ) : budgetCap ? (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
+              <BudgetRing pct={budgetUsedPct ?? 0} />
+              <View style={{ flex: 1, gap: 6 }}>
+                <Numeral numberOfLines={1} style={{ fontSize: 26 }}>
+                  {formatCurrencyAmount(Math.abs(leftToSpend), primaryCurrency)}
+                </Numeral>
+                <Text style={{ fontSize: 12, color: colors.mutedText }}>
+                  {isBudgetExceeded ? "over the cap" : "left to spend"}
+                </Text>
+                <Text style={{ fontSize: 11, lineHeight: 16, color: colors.subtleText }}>
+                  {formatCurrencyAmount(monthlySpend, primaryCurrency)} of{" "}
+                  {formatCurrencyAmount(budgetCap, primaryCurrency)}
+                </Text>
+              </View>
+            </View>
+          ) : (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "flex-end",
+                justifyContent: "space-between",
+                gap: 12,
+              }}
+            >
+              <View style={{ gap: 6 }}>
+                <Numeral numberOfLines={1} style={{ fontSize: 28 }}>
+                  {formatCurrencyAmount(stats.saved, primaryCurrency)}
+                </Numeral>
+                <Text style={{ fontSize: 12, color: colors.mutedText }}>
+                  kept this month
+                </Text>
+              </View>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => router.push("/(tabs)/settings" as never)}
+                style={{
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 999,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                }}
+              >
+                <Text style={{ fontSize: 11, color: colors.mutedText }}>Set a cap</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </Surface>
+
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+          <MetricCard
+            hint="In"
+            value={`+${formatCurrencyAmount(stats.income, primaryCurrency)}`}
+            label="This month"
+            onPress={() => router.push("/(tabs)/transactions" as never)}
+          />
+          <MetricCard
+            hint="Out"
+            value={`-${formatCurrencyAmount(stats.expense, primaryCurrency)}`}
+            label="This month"
+            onPress={() => router.push("/(tabs)/transactions" as never)}
+          />
+          <MetricCard
+            hint="Fixed"
+            value={formatCurrencyAmount(subscriptionMonthly, primaryCurrency)}
+            label={`${activeSubCount} recurring · per month`}
+            onPress={() => router.push("/(tabs)/subscriptions" as never)}
+          />
+          <MetricCard
+            hint="Next"
+            value={nextRenewal ? shortDate(nextRenewal) : "—"}
+            label="Next renewal"
+            onPress={() => router.push("/(tabs)/subscriptions" as never)}
+          />
+        </View>
+
+        <Surface style={{ padding: 18, gap: 14 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            <View style={{ gap: 3 }}>
+              <Text style={{ fontSize: 15, fontWeight: "500", letterSpacing: -0.2, color: colors.text }}>
+                Activity
               </Text>
-              <Text style={{ fontSize: 11, color: colors.subtleText }}>
-                Use the + button to log your first one
+              <Text style={{ fontSize: 11, color: colors.mutedText }}>
+                Daily spending, last 13 weeks
               </Text>
             </View>
+            <Text style={{ fontSize: 11, color: colors.mutedText }}>
+              {activity.activeDays} active days
+            </Text>
+          </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 2 }}
+          >
+            {activity.weeks.map((week, index) => (
+              <View key={index} style={{ gap: 2 }}>
+                {week.map((day) => {
+                  const intensity =
+                    day.amount <= 0 || activity.peak <= 0
+                      ? 0
+                      : 0.18 + 0.82 * Math.sqrt(day.amount / activity.peak)
+                  return (
+                    <View
+                      key={day.key}
+                      style={{
+                        width: 5,
+                        height: 5,
+                        borderRadius: 3,
+                        backgroundColor: colors.text,
+                        opacity: day.future ? 0 : Math.max(0.07, intensity),
+                      }}
+                    />
+                  )
+                })}
+              </View>
+            ))}
+          </ScrollView>
+
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderTopWidth: 1,
+              borderTopColor: colors.border,
+              paddingTop: 12,
+            }}
+          >
+            <Text style={{ fontSize: 11, color: colors.mutedText }}>Peak day</Text>
+            <Numeral style={{ fontSize: 12 }}>
+              {activity.peak > 0
+                ? formatCurrencyAmount(activity.peak, primaryCurrency)
+                : "No spend yet"}
+            </Numeral>
+          </View>
+        </Surface>
+
+        <UpcomingReminders
+          subscriptions={subscriptions || []}
+          primaryCurrency={primaryCurrency}
+          rates={rates}
+          onMarkCanceled={async () => {}}
+        />
+
+        <Surface style={{ padding: 18, gap: 6 }}>
+          <PanelHead
+            title="Recent"
+            hint={`${monthLabel(month)} · latest first`}
+            linkLabel="All"
+            onPress={() => router.push("/(tabs)/transactions" as never)}
+          />
+
+          {transactions === undefined ? (
+            <ActivityIndicator size="small" color={colors.mutedText} style={{ marginVertical: 16 }} />
+          ) : recentTransactions.length === 0 ? (
+            <Text
+              style={{
+                fontSize: 12,
+                color: colors.mutedText,
+                textAlign: "center",
+                paddingVertical: 18,
+              }}
+            >
+              No transactions yet this month.
+            </Text>
           ) : (
             recentTransactions.map((t, i) => {
               const meta = financeCategoryMeta(t.category)
+              const isIncome = t.type === "income"
+              const isTransfer = t.type === "transfer"
               return (
-                <TouchableOpacity
+                <View
                   key={t._id}
-                  activeOpacity={0.7}
-                  onPress={() => router.push("/(tabs)/transactions" as never)}
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
-                    padding: 12,
-                    gap: 10,
-                    borderBottomWidth: i < recentTransactions.length - 1 ? 1 : 0,
-                    borderBottomColor: colors.border,
+                    gap: 12,
+                    paddingVertical: 10,
+                    borderTopWidth: i === 0 ? 0 : 1,
+                    borderTopColor: colors.borderLight,
                   }}
                 >
                   <View
                     style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 10,
-                      backgroundColor: colors.surface,
+                      width: 32,
+                      height: 32,
+                      borderRadius: 999,
+                      backgroundColor: colors.surfaceInset,
+                      borderWidth: 1,
+                      borderColor: colors.border,
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <DynamicIcon name={t.icon || meta.icon} size={16} color={colors.text} />
+                    <DynamicIcon
+                      name={t.icon || meta.icon}
+                      size={14}
+                      color={colors.mutedText}
+                    />
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text numberOfLines={1} style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Text
+                      numberOfLines={1}
+                      style={{ fontSize: 13, color: colors.text }}
+                    >
                       {t.note || meta.label}
                     </Text>
                     <Text style={{ fontSize: 11, color: colors.mutedText }}>
-                      {meta.label} · {t.date}
+                      {meta.label} · {shortDate(t.date)}
                     </Text>
                   </View>
-                  <Text
+                  <Numeral
                     style={{
                       fontSize: 13,
-                      fontWeight: "800",
-                      color: t.type === "income" ? colors.emerald : t.type === "transfer" ? colors.blue : colors.destructive,
+                      color: isIncome
+                        ? colors.positive
+                        : isTransfer
+                        ? colors.mutedText
+                        : colors.text,
                     }}
                   >
-                    {t.type === "income" ? "+" : t.type === "expense" ? "-" : ""}
+                    {isIncome ? "+" : isTransfer ? "" : "-"}
                     {formatCurrencyAmount(
                       convertCurrency(t.amount, t.currency, primaryCurrency, rates),
                       primaryCurrency
                     )}
-                  </Text>
-                </TouchableOpacity>
+                  </Numeral>
+                </View>
               )
             })
           )}
-        </View>
+        </Surface>
 
-        {/* Top Spending */}
         {topCategories.length > 0 ? (
-          <View
-            style={{
-              backgroundColor: colors.card,
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: 14,
-              overflow: "hidden",
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: 14,
-                borderBottomWidth: 1,
-                borderBottomColor: colors.border,
-              }}
-            >
-              <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
-                Top Spending · {monthShort}
-              </Text>
-              <TouchableOpacity onPress={() => router.push("/(tabs)/stats" as never)}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-                  <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText }}>
-                    Analytics
-                  </Text>
-                  <ChevronRight size={14} color={colors.mutedText} />
+          <Surface style={{ padding: 18, gap: 14 }}>
+            <PanelHead
+              title="Top spending"
+              hint={`${monthShort} · by category`}
+              linkLabel="Analytics"
+              onPress={() => router.push("/(tabs)/stats" as never)}
+            />
+
+            {topCategories.map((cat) => (
+              <View key={cat.value} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <View
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 999,
+                    backgroundColor: colors.surfaceInset,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <DynamicIcon name={cat.icon} size={14} color={colors.mutedText} />
                 </View>
-              </TouchableOpacity>
-            </View>
-            <View style={{ padding: 14, gap: 12 }}>
-              {topCategories.map((cat) => (
-                <View key={cat.value} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <View style={{ flex: 1, gap: 6 }}>
                   <View
                     style={{
-                      width: 30,
-                      height: 30,
-                      borderRadius: 8,
-                      backgroundColor: colors.surface,
-                      alignItems: "center",
-                      justifyContent: "center",
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      gap: 8,
                     }}
                   >
-                    <DynamicIcon name={cat.icon} size={15} color={colors.text} />
-                  </View>
-                  <View style={{ flex: 1, gap: 4 }}>
-                    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                      <Text style={{ fontSize: 12, fontWeight: "600", color: colors.text }}>
-                        {cat.label}
-                      </Text>
-                      <Text style={{ fontSize: 11, color: colors.mutedText }}>
-                        {formatCurrencyAmount(cat.amount, primaryCurrency)}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        height: 5,
-                        borderRadius: 3,
-                        backgroundColor: colors.surface,
-                        overflow: "hidden",
-                      }}
+                    <Text
+                      numberOfLines={1}
+                      style={{ fontSize: 12, color: colors.text, flex: 1 }}
                     >
-                      <View
-                        style={{
-                          height: "100%",
-                          width: `${cat.pct}%`,
-                          backgroundColor: cat.color,
-                        }}
-                      />
-                    </View>
+                      {cat.label}
+                    </Text>
+                    <Numeral style={{ fontSize: 11, color: colors.mutedText }}>
+                      {formatCurrencyAmount(cat.amount, primaryCurrency)}
+                    </Numeral>
                   </View>
-                  <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, width: 34, textAlign: "right" }}>
-                    {cat.pct}%
-                  </Text>
+                  <ProgressBar pct={cat.pct} color={cat.color} />
                 </View>
-              ))}
-            </View>
-          </View>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    color: colors.mutedText,
+                    width: 34,
+                    textAlign: "right",
+                  }}
+                >
+                  {cat.pct}%
+                </Text>
+              </View>
+            ))}
+          </Surface>
         ) : null}
 
-        {/* Budgets snapshot */}
-        <View
-          style={{
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14,
-            gap: 10,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              borderBottomWidth: 1,
-              borderBottomColor: colors.border,
-              paddingBottom: 10,
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Sparkles size={14} color={colors.mutedText} />
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.text, textTransform: "uppercase" }}>
-                Budgets · {monthShort}
-              </Text>
-            </View>
-            <TouchableOpacity onPress={() => router.push("/(tabs)/budgets" as never)}>
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>
-                View
-              </Text>
-            </TouchableOpacity>
-          </View>
+        <Surface style={{ padding: 18, gap: 14 }}>
+          <PanelHead
+            title="Budgets"
+            hint={`${monthShort} · limits`}
+            linkLabel="Manage"
+            onPress={() => router.push("/(tabs)/budgets" as never)}
+          />
+
           {budgets === undefined || transactions === undefined ? (
-            <ActivityIndicator size="small" color={colors.primary} />
+            <ActivityIndicator size="small" color={colors.mutedText} />
           ) : budgets.length === 0 ? (
             <Text style={{ fontSize: 12, color: colors.mutedText }}>
-              No budgets set for {monthShort}. Set per-category limits to stay on track.
+              No limits set for {monthShort}.
             </Text>
           ) : (
             budgets.slice(0, 4).map((b) => {
@@ -493,114 +788,80 @@ export default function DashboardScreen() {
               const cap = convertCurrency(b.amount, b.currency, primaryCurrency, rates)
               const pct = cap > 0 ? Math.min(100, Math.round((spent / cap) * 100)) : 0
               const meta = financeCategoryMeta(b.category)
+              const over = spent > cap
               return (
-                <View key={b._id} style={{ gap: 4 }}>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                    <Text style={{ fontSize: 12, fontWeight: "600", color: colors.text }}>
-                      {meta.label}
-                    </Text>
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        fontWeight: "700",
-                        color: spent > cap ? colors.destructive : colors.mutedText,
-                      }}
-                    >
-                      {pct}%
-                    </Text>
-                  </View>
+                <View key={b._id} style={{ gap: 7 }}>
                   <View
                     style={{
-                      height: 5,
-                      borderRadius: 3,
-                      backgroundColor: colors.surface,
-                      overflow: "hidden",
+                      flexDirection: "row",
+                      alignItems: "baseline",
+                      justifyContent: "space-between",
+                      gap: 8,
                     }}
                   >
-                    <View
-                      style={{
-                        height: "100%",
-                        width: `${pct}%`,
-                        backgroundColor: spent > cap ? colors.destructive : pct >= 85 ? colors.amber : colors.emerald,
-                      }}
-                    />
+                    <Text
+                      numberOfLines={1}
+                      style={{ fontSize: 12, color: colors.text, flex: 1 }}
+                    >
+                      {meta.label}
+                    </Text>
+                    <Numeral style={{ fontSize: 11, color: colors.mutedText }}>
+                      {pct}%
+                    </Numeral>
                   </View>
+                  <ProgressBar
+                    pct={pct}
+                    color={over ? colors.negative : pct >= 85 ? colors.warning : colors.text}
+                  />
                 </View>
               )
             })
           )}
-        </View>
+        </Surface>
 
-        {/* Subscriptions preview */}
-        <View
-          style={{
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14,
-            gap: 10,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              borderBottomWidth: 1,
-              borderBottomColor: colors.border,
-              paddingBottom: 10,
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Repeat size={14} color={colors.mutedText} />
-              <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
-                Subscriptions
-              </Text>
-            </View>
-            <TouchableOpacity onPress={() => router.push("/(tabs)/subscriptions" as never)}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-                <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText }}>
-                  Manage
-                </Text>
-                <ChevronRight size={14} color={colors.mutedText} />
-              </View>
-            </TouchableOpacity>
-          </View>
+        <Surface style={{ padding: 18, gap: 12 }}>
+          <PanelHead
+            title="Subscriptions"
+            hint={`${activeSubCount} active · per month`}
+            linkLabel="Manage"
+            onPress={() => router.push("/(tabs)/subscriptions" as never)}
+          />
+
           {subscriptions === undefined ? (
-            <ActivityIndicator size="small" color={colors.primary} />
+            <ActivityIndicator size="small" color={colors.mutedText} />
           ) : (
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-              <Text style={{ fontSize: 12, color: colors.mutedText }}>
-                <Text style={{ fontWeight: "800", color: colors.text }}>{activeSubCount}</Text> active ·{" "}
-                <Text style={{ fontWeight: "800", color: colors.text }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+              }}
+            >
+              <View style={{ gap: 4 }}>
+                <Numeral style={{ fontSize: 24 }}>
                   {formatCurrencyAmount(subscriptionMonthly, primaryCurrency)}
-                </Text>/mo
-              </Text>
+                </Numeral>
+                <Text style={{ fontSize: 11, color: colors.mutedText }}>
+                  fixed monthly cost
+                </Text>
+              </View>
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => router.push("/(tabs)/subscriptions" as never)}
                 style={{
-                  backgroundColor: colors.surface,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 999,
                   paddingHorizontal: 12,
                   paddingVertical: 6,
-                  borderRadius: 8,
                 }}
               >
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.text }}>
-                  Open tracker
-                </Text>
+                <Text style={{ fontSize: 11, color: colors.mutedText }}>Open tracker</Text>
               </TouchableOpacity>
             </View>
           )}
-        </View>
-
-        <UpcomingReminders
-          subscriptions={subscriptions || []}
-          primaryCurrency={primaryCurrency}
-          rates={rates}
-          onMarkCanceled={async () => {}}
-        />
+        </Surface>
       </ScrollView>
     </SafeAreaView>
   )

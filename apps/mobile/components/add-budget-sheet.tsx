@@ -81,8 +81,8 @@ export function AddBudgetSheet({ visible, onClose }: AddBudgetSheetProps) {
         <View
           style={{
             backgroundColor: colors.background,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+            borderTopLeftRadius: 28,
+            borderTopRightRadius: 28,
             maxHeight: "90%",
             paddingBottom: 28,
           }}
@@ -95,10 +95,10 @@ export function AddBudgetSheet({ visible, onClose }: AddBudgetSheetProps) {
               paddingHorizontal: 16,
               paddingVertical: 14,
               borderBottomWidth: 1,
-              borderBottomColor: colors.border,
+              borderBottomColor: colors.borderLight,
             }}
           >
-            <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
+            <Text style={{ fontSize: 18, fontWeight: "600", letterSpacing: -0.4, color: colors.text }}>
               Set Budget
             </Text>
             <TouchableOpacity
@@ -107,7 +107,7 @@ export function AddBudgetSheet({ visible, onClose }: AddBudgetSheetProps) {
                 width: 30,
                 height: 30,
                 borderRadius: 15,
-                backgroundColor: colors.surface,
+                backgroundColor: colors.surfaceInset,
                 alignItems: "center",
                 justifyContent: "center",
               }}
@@ -118,7 +118,7 @@ export function AddBudgetSheet({ visible, onClose }: AddBudgetSheetProps) {
 
           <ScrollView contentContainerStyle={{ padding: 16, gap: 14 }} keyboardShouldPersistTaps="handled">
             <View style={{ gap: 6 }}>
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>CATEGORY</Text>
+              <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>CATEGORY</Text>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
                 {categoryOptions.map((c) => (
                   <TouchableOpacity
@@ -131,8 +131,8 @@ export function AddBudgetSheet({ visible, onClose }: AddBudgetSheetProps) {
                       gap: 6,
                       paddingHorizontal: 10,
                       paddingVertical: 7,
-                      borderRadius: 8,
-                      backgroundColor: category === c.value ? colors.surfaceHover : colors.surface,
+                      borderRadius: 14,
+                      backgroundColor: category === c.value ? colors.surfaceHover : colors.surfaceInset,
                       borderWidth: category === c.value ? 1.5 : 0,
                       borderColor: colors.primary,
                     }}
@@ -161,7 +161,7 @@ export function AddBudgetSheet({ visible, onClose }: AddBudgetSheetProps) {
             </View>
 
             <View style={{ gap: 4 }}>
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>
+              <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>
                 MONTHLY CAP ({primaryCurrency})
               </Text>
               <View style={{ flexDirection: "row", gap: 8 }}>
@@ -175,12 +175,12 @@ export function AddBudgetSheet({ visible, onClose }: AddBudgetSheetProps) {
                     flex: 1,
                     borderWidth: 1,
                     borderColor: colors.border,
-                    borderRadius: 8,
+                    borderRadius: 14,
                     paddingHorizontal: 10,
                     paddingVertical: 9,
                     fontSize: 14,
                     color: colors.text,
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.surfaceInset,
                   }}
                 />
                 <TouchableOpacity
@@ -188,12 +188,12 @@ export function AddBudgetSheet({ visible, onClose }: AddBudgetSheetProps) {
                   style={{
                     backgroundColor: colors.primary,
                     paddingHorizontal: 20,
-                    borderRadius: 8,
+                    borderRadius: 14,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: colors.primaryForeground }}>
+                  <Text style={{ fontSize: 13, fontWeight: "500", color: colors.primaryForeground }}>
                     Set
                   </Text>
                 </TouchableOpacity>

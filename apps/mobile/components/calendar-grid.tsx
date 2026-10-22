@@ -6,6 +6,7 @@ import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat, formatCurrencyAmount, convertCurrency } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { Label, Numeral, Surface } from "@/components/ui/surface"
 
 export type CalendarEventType = "start" | "renewal" | "trial_end" | "end"
 
@@ -237,13 +238,13 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
           backgroundColor: colors.card,
           borderWidth: 1,
           borderColor: colors.border,
-          borderRadius: 14,
-          padding: 14,
-          gap: 12,
+          borderRadius: 24,
+          padding: 18,
+          gap: 14,
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>
+          <Text style={{ fontSize: 16, fontWeight: "500", letterSpacing: -0.4, color: colors.text }}>
             {monthName}
           </Text>
 
@@ -251,28 +252,32 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
             <TouchableOpacity
               onPress={prevMonth}
               style={{
-                width: 32,
-                height: 32,
-                borderRadius: 8,
-                backgroundColor: colors.surface,
+                width: 30,
+                height: 30,
+                borderRadius: 999,
+                backgroundColor: colors.surfaceInset,
+                borderWidth: 1,
+                borderColor: colors.border,
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <ChevronLeft size={16} color={colors.text} />
+              <ChevronLeft size={15} color={colors.text} />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={nextMonth}
               style={{
-                width: 32,
-                height: 32,
-                borderRadius: 8,
-                backgroundColor: colors.surface,
+                width: 30,
+                height: 30,
+                borderRadius: 999,
+                backgroundColor: colors.surfaceInset,
+                borderWidth: 1,
+                borderColor: colors.border,
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <ChevronRight size={16} color={colors.text} />
+              <ChevronRight size={15} color={colors.text} />
             </TouchableOpacity>
           </View>
         </View>
@@ -281,7 +286,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
         <View style={{ flexDirection: "row" }}>
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, i) => (
             <View key={i} style={{ flex: 1, alignItems: "center" }}>
-              <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText }}>
+              <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.1, textTransform: "uppercase", color: colors.mutedText }}>
                 {day}
               </Text>
             </View>
@@ -311,11 +316,11 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                   height: 42,
                   alignItems: "center",
                   justifyContent: "center",
-                  borderRadius: 8,
+                  borderRadius: 12,
                   backgroundColor: isSelected
                     ? colors.primary
                     : isToday
-                    ? colors.surface
+                    ? colors.surfaceInset
                     : "transparent",
                   borderWidth: isToday && !isSelected ? 1 : 0,
                   borderColor: colors.border,
@@ -324,7 +329,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                 <Text
                   style={{
                     fontSize: 12,
-                    fontWeight: isSelected || isToday ? "700" : "500",
+                    fontWeight: isSelected || isToday ? "600" : "400",
                     color: isSelected
                       ? colors.primaryForeground
                       : isToday
@@ -370,7 +375,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
             gap: 16,
             paddingTop: 10,
             borderTopWidth: 1,
-            borderTopColor: colors.border,
+            borderTopColor: colors.borderLight,
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
@@ -403,39 +408,18 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
       </View>
 
       {/* Month Summary Banner */}
-      <View
-        style={{
-          backgroundColor: colors.card,
-          borderWidth: 1,
-          borderColor: colors.border,
-          borderRadius: 12,
-          padding: 14,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>
+      <Surface folderTab style={{ padding: 18, paddingTop: 36, gap: 4 }}>
+        <Label>Total projected spend</Label>
+        <Numeral style={{ fontSize: 26 }}>
           {formatCurrencyAmount(monthTotal, primaryCurrency)}
-        </Text>
-        <Text style={{ fontSize: 10, color: colors.mutedText, textTransform: "uppercase", marginTop: 2 }}>
-          Total Projected Spend
-        </Text>
-      </View>
+        </Numeral>
+      </Surface>
 
       {/* Selected Day Events List */}
       {selectedDay && (
-        <View
-          style={{
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14,
-            gap: 10,
-          }}
-        >
-          <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
-            Events on {currentDate.toLocaleDateString("en-US", { month: "short" })} {selectedDay}, {year}
+        <Surface folderTab style={{ padding: 18, paddingTop: 36, gap: 12 }}>
+          <Text style={{ fontSize: 15, fontWeight: "500", letterSpacing: -0.2, color: colors.text }}>
+            {currentDate.toLocaleDateString("en-US", { month: "short" })} {selectedDay}, {year}
           </Text>
 
           {selectedEvents.length === 0 ? (
@@ -457,8 +441,8 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                     style={{
                       flexDirection: "row",
                       alignItems: "center",
-                      backgroundColor: colors.surface,
-                      borderRadius: 10,
+                      backgroundColor: colors.surfaceInset,
+                      borderRadius: 14,
                       padding: 10,
                       gap: 10,
                     }}
@@ -467,39 +451,41 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                       style={{
                         width: 34,
                         height: 34,
-                        borderRadius: 8,
-                        backgroundColor: sub.color || "#000000",
+                        borderRadius: 12,
+                        backgroundColor: colors.card,
+                        borderWidth: 1,
+                        borderColor: colors.border,
                         alignItems: "center",
                         justifyContent: "center",
                       }}
                     >
-                      <DynamicIcon name={sub.icon} size={16} color="#ffffff" />
+                      <DynamicIcon name={sub.icon} size={15} color={colors.text} />
                     </View>
 
                     <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                      <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                         {sub.name}
                       </Text>
                       <Text style={{ fontSize: 11, color: colors.mutedText }}>
                         {isTrialEnd ? (
-                          <Text style={{ color: colors.amber, fontWeight: "600" }}>Trial Ending</Text>
+                          <Text style={{ color: colors.amber, fontWeight: "500" }}>Trial ending</Text>
                         ) : isStart ? (
-                          <Text style={{ color: colors.blue, fontWeight: "600" }}>Start Date</Text>
+                          <Text style={{ color: colors.blue, fontWeight: "500" }}>Start date</Text>
                         ) : (
-                          "Renewal Payment"
+                          "Renewal payment"
                         )}
                       </Text>
                     </View>
 
-                    <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                    <Numeral style={{ fontSize: 12 }}>
                       {convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)}
-                    </Text>
+                    </Numeral>
                   </TouchableOpacity>
                 )
               })}
             </View>
           )}
-        </View>
+        </Surface>
       )}
     </View>
   )

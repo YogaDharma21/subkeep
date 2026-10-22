@@ -217,8 +217,8 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
         <View
           style={{
             backgroundColor: colors.background,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+            borderTopLeftRadius: 28,
+            borderTopRightRadius: 28,
             maxHeight: "92%",
             paddingBottom: 28,
           }}
@@ -232,7 +232,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
               paddingHorizontal: 16,
               paddingVertical: 14,
               borderBottomWidth: 1,
-              borderBottomColor: colors.border,
+              borderBottomColor: colors.borderLight,
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
@@ -241,7 +241,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                   <ArrowLeft size={18} color={colors.text} />
                 </TouchableOpacity>
               ) : null}
-              <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
+              <Text style={{ fontSize: 18, fontWeight: "600", letterSpacing: -0.4, color: colors.text }}>
                 {step === 1 ? "Add Subscription" : "Subscription Details"}
               </Text>
             </View>
@@ -252,7 +252,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                 width: 30,
                 height: 30,
                 borderRadius: 15,
-                backgroundColor: colors.surface,
+                backgroundColor: colors.surfaceInset,
                 alignItems: "center",
                 justifyContent: "center",
               }}
@@ -300,7 +300,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
 
                   <View style={{ flex: 1, gap: 4 }}>
                     <TouchableOpacity onPress={() => setIconPickerOpen(true)}>
-                      <Text style={{ fontSize: 14, fontWeight: "700", color: colors.primary }}>
+                      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.primary }}>
                         Change Icon or Logo
                       </Text>
                     </TouchableOpacity>
@@ -312,7 +312,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
 
                 {/* Color circles & Custom Hex Input */}
                 <View style={{ gap: 8 }}>
-                  <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+                  <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>
                     Brand Color
                   </Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8, alignItems: "center" }}>
@@ -364,11 +364,11 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                         height: 38,
                         borderWidth: 1,
                         borderColor: colors.border,
-                        borderRadius: 8,
+                        borderRadius: 14,
                         paddingHorizontal: 12,
                         fontSize: 13,
                         color: colors.text,
-                        backgroundColor: colors.surface,
+                        backgroundColor: colors.surfaceInset,
                       }}
                     />
                   </View>
@@ -395,7 +395,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
 
                 {/* Category selection */}
                 <View style={{ gap: 6 }}>
-                  <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+                  <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>
                     Category
                   </Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 6 }}>
@@ -406,8 +406,8 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                         style={{
                           paddingHorizontal: 12,
                           paddingVertical: 6,
-                          borderRadius: 8,
-                          backgroundColor: category === cat.value ? colors.primary : colors.surface,
+                          borderRadius: 14,
+                          backgroundColor: category === cat.value ? colors.primary : colors.surfaceInset,
                           borderWidth: 1,
                           borderColor: category === cat.value ? colors.primary : colors.border,
                         }}
@@ -438,7 +438,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                     />
                   </View>
                   <View style={{ flex: 1, gap: 6 }}>
-                    <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+                    <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>
                       Currency
                     </Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 4 }}>
@@ -449,8 +449,8 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                           style={{
                             paddingHorizontal: 12,
                             paddingVertical: 10,
-                            borderRadius: 8,
-                            backgroundColor: currency === curr ? colors.primary : colors.surface,
+                            borderRadius: 14,
+                            backgroundColor: currency === curr ? colors.primary : colors.surfaceInset,
                             borderWidth: 1,
                             borderColor: currency === curr ? colors.primary : colors.border,
                           }}
@@ -458,7 +458,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                           <Text
                             style={{
                               fontSize: 12,
-                              fontWeight: "700",
+                              fontWeight: "500",
                               color: currency === curr ? colors.primaryForeground : colors.mutedText,
                             }}
                           >
@@ -472,7 +472,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
 
                 {/* Billing Cycle */}
                 <View style={{ gap: 6 }}>
-                  <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+                  <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>
                     Billing Cycle
                   </Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 6 }}>
@@ -483,8 +483,8 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                         style={{
                           paddingHorizontal: 12,
                           paddingVertical: 6,
-                          borderRadius: 8,
-                          backgroundColor: cycle === bc.value ? colors.primary : colors.surface,
+                          borderRadius: 14,
+                          backgroundColor: cycle === bc.value ? colors.primary : colors.surfaceInset,
                           borderWidth: 1,
                           borderColor: cycle === bc.value ? colors.primary : colors.border,
                         }}
@@ -553,9 +553,9 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
               >
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                    <Sparkles size={18} color={colors.emerald} />
+                    <Sparkles size={18} color={colors.positive} />
                     <View>
-                      <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
+                      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.text }}>
                         Free Trial Period
                       </Text>
                       <Text style={{ fontSize: 11, color: colors.mutedText }}>
@@ -601,7 +601,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                     <Users size={18} color={colors.blue} />
                     <View>
-                      <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
+                      <Text style={{ fontSize: 14, fontWeight: "500", color: colors.text }}>
                         SplitKeep (Shared Plan)
                       </Text>
                       <Text style={{ fontSize: 11, color: colors.mutedText }}>
@@ -642,7 +642,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                     {/* Member list */}
                     <View style={{ gap: 8, marginTop: 4 }}>
                       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                        <Text style={{ fontSize: 12, fontWeight: "700", color: colors.text }}>
+                        <Text style={{ fontSize: 12, fontWeight: "500", color: colors.text }}>
                           Member Breakdown ({splitMembersList.length})
                         </Text>
                         <TouchableOpacity
@@ -654,11 +654,11 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                             paddingHorizontal: 8,
                             paddingVertical: 4,
                             borderRadius: 6,
-                            backgroundColor: colors.surface,
+                            backgroundColor: colors.surfaceInset,
                           }}
                         >
                           <UserPlus size={12} color={colors.primary} />
-                          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.primary }}>
+                          <Text style={{ fontSize: 11, fontWeight: "500", color: colors.primary }}>
                             Add Member
                           </Text>
                         </TouchableOpacity>
@@ -671,8 +671,8 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                             flexDirection: "row",
                             alignItems: "center",
                             gap: 8,
-                            backgroundColor: colors.surface,
-                            borderRadius: 8,
+                            backgroundColor: colors.surfaceInset,
+                            borderRadius: 14,
                             padding: 8,
                           }}
                         >
@@ -692,7 +692,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                             style={{ height: 36, paddingVertical: 4 }}
                           />
                           <TouchableOpacity onPress={() => removeSplitMember(idx)} style={{ padding: 4 }}>
-                            <Trash2 size={16} color={colors.destructive} />
+                            <Trash2 size={16} color={colors.negative} />
                           </TouchableOpacity>
                         </View>
                       ))}
@@ -715,7 +715,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                 >
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                     <Wallet size={14} color={colors.primary} />
-                    <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+                    <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>
                       Linked Financial Account
                     </Text>
                   </View>
@@ -725,8 +725,8 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                       style={{
                         paddingHorizontal: 12,
                         paddingVertical: 8,
-                        borderRadius: 8,
-                        backgroundColor: !selectedAccountId ? colors.primary : colors.surface,
+                        borderRadius: 14,
+                        backgroundColor: !selectedAccountId ? colors.primary : colors.surfaceInset,
                       }}
                     >
                       <Text
@@ -752,8 +752,8 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                             gap: 6,
                             paddingHorizontal: 12,
                             paddingVertical: 8,
-                            borderRadius: 8,
-                            backgroundColor: isSelected ? colors.primary : colors.surface,
+                            borderRadius: 14,
+                            backgroundColor: isSelected ? colors.primary : colors.surfaceInset,
                           }}
                         >
                           <Text
@@ -784,7 +784,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                     gap: 8,
                   }}
                 >
-                  <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+                  <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>
                     Linked Payment Card
                   </Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8 }}>
@@ -793,8 +793,8 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                       style={{
                         paddingHorizontal: 12,
                         paddingVertical: 8,
-                        borderRadius: 8,
-                        backgroundColor: !selectedPaymentMethodId ? colors.primary : colors.surface,
+                        borderRadius: 14,
+                        backgroundColor: !selectedPaymentMethodId ? colors.primary : colors.surfaceInset,
                       }}
                     >
                       <Text
@@ -820,8 +820,8 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                             gap: 6,
                             paddingHorizontal: 12,
                             paddingVertical: 8,
-                            borderRadius: 8,
-                            backgroundColor: isSelected ? colors.primary : colors.surface,
+                            borderRadius: 14,
+                            backgroundColor: isSelected ? colors.primary : colors.surfaceInset,
                           }}
                         >
                           <CreditCard size={14} color={isSelected ? colors.primaryForeground : colors.mutedText} />

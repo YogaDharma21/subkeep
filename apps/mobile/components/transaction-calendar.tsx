@@ -7,9 +7,10 @@ import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { financeCategoryMeta } from "@/constants/finance"
+import { Label, Surface } from "@/components/ui/surface"
 
 interface TransactionCalendarProps {
-  transactions: Array<{
+  transactions: {
     _id: string
     type: string
     amount: number
@@ -19,7 +20,7 @@ interface TransactionCalendarProps {
     note?: string
     icon?: string
     color?: string
-  }>
+  }[]
 }
 
 export function TransactionCalendar({ transactions }: TransactionCalendarProps) {
@@ -29,13 +30,13 @@ export function TransactionCalendar({ transactions }: TransactionCalendarProps) 
 
   const dailyTotals = useMemo(() => {
     const now = new Date()
-    const days: Array<{
+    const days: {
       date: string
       label: string
       income: number
       expense: number
       items: TransactionCalendarProps["transactions"]
-    }> = []
+    }[] = []
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i)
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
@@ -61,55 +62,43 @@ export function TransactionCalendar({ transactions }: TransactionCalendarProps) 
   const maxFlow = Math.max(1, ...dailyTotals.map((d) => d.income + d.expense))
 
   return (
-    <View
-      style={{
-        backgroundColor: colors.card,
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: 14,
-        overflow: "hidden",
-      }}
-    >
+    <Surface folderTab style={{ padding: 18, paddingTop: 36, gap: 12 }}>
       <View
         style={{
           flexDirection: "row",
           justifyContent: "space-between",
-          alignItems: "center",
-          padding: 14,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          alignItems: "flex-start",
+          gap: 12,
         }}
       >
-        <View>
-          <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
-            Daily Cash Flow · 7 Days
+        <View style={{ flex: 1, gap: 3 }}>
+          <Text style={{ fontSize: 15, fontWeight: "500", letterSpacing: -0.2, color: colors.text }}>
+            Daily cash flow
           </Text>
-          <Text style={{ fontSize: 11, color: colors.mutedText }}>
-            Logged income and expenses per day
-          </Text>
+          <Label>Last 7 days</Label>
         </View>
         <TouchableOpacity onPress={() => router.push("/(tabs)/transactions" as never)}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-            <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText }}>All</Text>
-            <ChevronRight size={14} color={colors.mutedText} />
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 1 }}>
+            <Text style={{ fontSize: 11, fontWeight: "500", color: colors.mutedText }}>All</Text>
+            <ChevronRight size={12} color={colors.mutedText} />
           </View>
         </TouchableOpacity>
       </View>
-      <View style={{ padding: 14, gap: 12 }}>
+      <View style={{ gap: 12 }}>
         {dailyTotals.map((d) => (
-          <View key={d.date} style={{ gap: 4 }}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-              <Text style={{ fontSize: 12, fontWeight: "600", color: colors.text }}>
+          <View key={d.date} style={{ gap: 5 }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 8 }}>
+              <Text style={{ fontSize: 12, color: colors.text }}>
                 {d.label}
               </Text>
               {d.items.length === 0 ? (
                 <Text style={{ fontSize: 11, color: colors.subtleText }}>—</Text>
               ) : (
-                <Text style={{ fontSize: 11, color: colors.mutedText }}>
-                  <Text style={{ color: colors.emerald, fontWeight: "700" }}>
+                <Text style={{ fontSize: 11, fontVariant: ["tabular-nums"] }}>
+                  <Text style={{ color: colors.positive, fontWeight: "500" }}>
                     +{formatCurrencyAmount(d.income, primaryCurrency)}
                   </Text>{" "}
-                  <Text style={{ color: colors.destructive, fontWeight: "700" }}>
+                  <Text style={{ color: colors.negative, fontWeight: "500" }}>
                     -{formatCurrencyAmount(d.expense, primaryCurrency)}
                   </Text>
                 </Text>
@@ -118,9 +107,9 @@ export function TransactionCalendar({ transactions }: TransactionCalendarProps) 
             <View
               style={{
                 flexDirection: "row",
-                height: 7,
-                borderRadius: 4,
-                backgroundColor: colors.surface,
+                height: 3,
+                borderRadius: 999,
+                backgroundColor: colors.surfaceInset,
                 overflow: "hidden",
                 gap: 2,
               }}
@@ -129,14 +118,14 @@ export function TransactionCalendar({ transactions }: TransactionCalendarProps) 
                 style={{
                   height: "100%",
                   width: `${((d.income / maxFlow) * 100).toFixed(1)}%` as `${number}%`,
-                  backgroundColor: colors.emerald,
+                  backgroundColor: colors.positive,
                 }}
               />
               <View
                 style={{
                   height: "100%",
                   width: `${((d.expense / maxFlow) * 100).toFixed(1)}%` as `${number}%`,
-                  backgroundColor: colors.destructive,
+                  backgroundColor: colors.negative,
                 }}
               />
             </View>
@@ -151,16 +140,16 @@ export function TransactionCalendar({ transactions }: TransactionCalendarProps) 
                         flexDirection: "row",
                         alignItems: "center",
                         gap: 4,
-                        backgroundColor: colors.surface,
+                        backgroundColor: colors.surfaceInset,
                         borderWidth: 1,
                         borderColor: colors.border,
-                        paddingHorizontal: 6,
+                        paddingHorizontal: 7,
                         paddingVertical: 3,
-                        borderRadius: 6,
+                        borderRadius: 999,
                       }}
                     >
-                      <DynamicIcon name={t.icon || meta.icon} size={11} color={colors.text} />
-                      <Text numberOfLines={1} style={{ fontSize: 10, fontWeight: "600", color: colors.text, maxWidth: 90 }}>
+                      <DynamicIcon name={t.icon || meta.icon} size={10} color={colors.mutedText} />
+                      <Text numberOfLines={1} style={{ fontSize: 10, fontWeight: "500", color: colors.mutedText, maxWidth: 90 }}>
                         {t.note || meta.label}
                       </Text>
                     </View>
@@ -176,6 +165,6 @@ export function TransactionCalendar({ transactions }: TransactionCalendarProps) 
           </View>
         ))}
       </View>
-    </View>
+    </Surface>
   )
 }

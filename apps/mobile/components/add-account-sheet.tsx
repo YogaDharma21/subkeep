@@ -93,8 +93,8 @@ export function AddAccountSheet({ visible, onClose, editing }: AddAccountSheetPr
         <View
           style={{
             backgroundColor: colors.background,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+            borderTopLeftRadius: 28,
+            borderTopRightRadius: 28,
             maxHeight: "90%",
             paddingBottom: 28,
           }}
@@ -107,10 +107,10 @@ export function AddAccountSheet({ visible, onClose, editing }: AddAccountSheetPr
               paddingHorizontal: 16,
               paddingVertical: 14,
               borderBottomWidth: 1,
-              borderBottomColor: colors.border,
+              borderBottomColor: colors.borderLight,
             }}
           >
-            <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
+            <Text style={{ fontSize: 18, fontWeight: "600", letterSpacing: -0.4, color: colors.text }}>
               {editing ? "Edit Account" : "Add Account"}
             </Text>
             <TouchableOpacity
@@ -119,7 +119,7 @@ export function AddAccountSheet({ visible, onClose, editing }: AddAccountSheetPr
                 width: 30,
                 height: 30,
                 borderRadius: 15,
-                backgroundColor: colors.surface,
+                backgroundColor: colors.surfaceInset,
                 alignItems: "center",
                 justifyContent: "center",
               }}
@@ -130,7 +130,7 @@ export function AddAccountSheet({ visible, onClose, editing }: AddAccountSheetPr
 
           <ScrollView contentContainerStyle={{ padding: 16, gap: 14 }} keyboardShouldPersistTaps="handled">
             <View style={{ gap: 4 }}>
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>TYPE</Text>
+              <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>TYPE</Text>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
                 {accountTypes.map((t) => (
                   <TouchableOpacity
@@ -142,8 +142,8 @@ export function AddAccountSheet({ visible, onClose, editing }: AddAccountSheetPr
                       gap: 4,
                       paddingHorizontal: 10,
                       paddingVertical: 7,
-                      borderRadius: 8,
-                      backgroundColor: type === t.value ? colors.primary : colors.surface,
+                      borderRadius: 14,
+                      backgroundColor: type === t.value ? colors.primary : colors.surfaceInset,
                     }}
                   >
                     <DynamicIcon
@@ -166,7 +166,7 @@ export function AddAccountSheet({ visible, onClose, editing }: AddAccountSheetPr
             </View>
 
             <View style={{ gap: 4 }}>
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>NAME</Text>
+              <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>NAME</Text>
               <TextInput
                 value={name}
                 onChangeText={setName}
@@ -175,19 +175,19 @@ export function AddAccountSheet({ visible, onClose, editing }: AddAccountSheetPr
                 style={{
                   borderWidth: 1,
                   borderColor: colors.border,
-                  borderRadius: 8,
+                  borderRadius: 14,
                   paddingHorizontal: 10,
                   paddingVertical: 9,
                   fontSize: 14,
                   color: colors.text,
-                  backgroundColor: colors.surface,
+                  backgroundColor: colors.surfaceInset,
                 }}
               />
             </View>
 
             <View style={{ flexDirection: "row", gap: 10 }}>
               <View style={{ flex: 1, gap: 4 }}>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>BALANCE</Text>
+                <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>BALANCE</Text>
                 <TextInput
                   value={balance}
                   onChangeText={setBalance}
@@ -197,17 +197,17 @@ export function AddAccountSheet({ visible, onClose, editing }: AddAccountSheetPr
                   style={{
                     borderWidth: 1,
                     borderColor: colors.border,
-                    borderRadius: 8,
+                    borderRadius: 14,
                     paddingHorizontal: 10,
                     paddingVertical: 9,
                     fontSize: 14,
                     color: colors.text,
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.surfaceInset,
                   }}
                 />
               </View>
               <View style={{ flex: 1, gap: 4 }}>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>CURRENCY</Text>
+                <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>CURRENCY</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 4 }}>
                   {currencies.map((c) => (
                     <TouchableOpacity
@@ -216,14 +216,14 @@ export function AddAccountSheet({ visible, onClose, editing }: AddAccountSheetPr
                       style={{
                         paddingHorizontal: 10,
                         paddingVertical: 9,
-                        borderRadius: 8,
-                        backgroundColor: currency === c.value ? colors.primary : colors.surface,
+                        borderRadius: 14,
+                        backgroundColor: currency === c.value ? colors.primary : colors.surfaceInset,
                       }}
                     >
                       <Text
                         style={{
                           fontSize: 12,
-                          fontWeight: "700",
+                          fontWeight: "500",
                           color: currency === c.value ? colors.primaryForeground : colors.mutedText,
                         }}
                       >
@@ -236,7 +236,7 @@ export function AddAccountSheet({ visible, onClose, editing }: AddAccountSheetPr
             </View>
 
             <View style={{ gap: 4 }}>
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>COLOR</Text>
+              <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>COLOR</Text>
               <View style={{ flexDirection: "row", gap: 8 }}>
                 {colorPresets.slice(0, 8).map((c) => (
                   <TouchableOpacity
@@ -256,7 +256,7 @@ export function AddAccountSheet({ visible, onClose, editing }: AddAccountSheetPr
             </View>
 
             <View style={{ gap: 4 }}>
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>LAST 4 (OPTIONAL)</Text>
+              <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>LAST 4 (OPTIONAL)</Text>
               <TextInput
                 value={last4}
                 onChangeText={(v) => setLast4(v.replace(/[^0-9]/g, ""))}
@@ -267,12 +267,12 @@ export function AddAccountSheet({ visible, onClose, editing }: AddAccountSheetPr
                 style={{
                   borderWidth: 1,
                   borderColor: colors.border,
-                  borderRadius: 8,
+                  borderRadius: 14,
                   paddingHorizontal: 10,
                   paddingVertical: 9,
                   fontSize: 14,
                   color: colors.text,
-                  backgroundColor: colors.surface,
+                  backgroundColor: colors.surfaceInset,
                 }}
               />
             </View>
@@ -280,15 +280,15 @@ export function AddAccountSheet({ visible, onClose, editing }: AddAccountSheetPr
             <View style={{ flexDirection: "row", gap: 10 }}>
               <TouchableOpacity
                 onPress={onClose}
-                style={{ flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: colors.surface, alignItems: "center" }}
+                style={{ flex: 1, paddingVertical: 12, borderRadius: 999, backgroundColor: colors.surfaceInset, alignItems: "center" }}
               >
-                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>Cancel</Text>
+                <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleSave}
-                style={{ flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: colors.primary, alignItems: "center" }}
+                style={{ flex: 1, paddingVertical: 12, borderRadius: 999, backgroundColor: colors.primary, alignItems: "center" }}
               >
-                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.primaryForeground }}>
+                <Text style={{ fontSize: 13, fontWeight: "500", color: colors.primaryForeground }}>
                   {editing ? "Save" : "Add"}
                 </Text>
               </TouchableOpacity>
