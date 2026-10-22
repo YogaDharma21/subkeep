@@ -39,8 +39,10 @@ export function Button({
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderRadius: 12,
+      borderRadius: 999,
       gap: 8,
+      borderWidth: 1,
+      borderColor: "transparent",
     }
 
     if (size === "sm") {
@@ -60,15 +62,17 @@ export function Button({
     if (variant === "primary") {
       base.backgroundColor = colors.primary
     } else if (variant === "secondary") {
-      base.backgroundColor = colors.secondary
+      base.backgroundColor = colors.surfaceInset
+      base.borderColor = colors.border
     } else if (variant === "outline") {
       base.backgroundColor = "transparent"
-      base.borderWidth = 1
       base.borderColor = colors.border
     } else if (variant === "destructive") {
       base.backgroundColor = colors.destructiveBackground
+      base.borderColor = colors.border
     } else if (variant === "ghost") {
       base.backgroundColor = "transparent"
+      base.borderWidth = 0
     }
 
     if (disabled || loading) {
@@ -81,6 +85,7 @@ export function Button({
   const getTextStyle = (): TextStyle => {
     const base: TextStyle = {
       fontWeight: "600",
+      letterSpacing: -0.1,
     }
 
     if (size === "sm") {
@@ -94,7 +99,7 @@ export function Button({
     if (variant === "primary") {
       base.color = colors.primaryForeground
     } else if (variant === "secondary") {
-      base.color = colors.secondaryForeground
+      base.color = colors.text
     } else if (variant === "outline" || variant === "ghost") {
       base.color = colors.text
     } else if (variant === "destructive") {
