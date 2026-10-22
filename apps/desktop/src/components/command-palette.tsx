@@ -36,6 +36,7 @@ interface CommandPaletteProps {
   onNavigate: (view: string, subId?: string) => void
   onAddSubscription?: () => void
   onAddTransaction?: () => void
+  onAddAccount?: () => void
   onAddBudget?: () => void
   onOpenPaymentMethods?: () => void
 }
@@ -46,6 +47,7 @@ export function CommandPalette({
   onNavigate,
   onAddSubscription,
   onAddTransaction,
+  onAddAccount,
   onAddBudget,
   onOpenPaymentMethods,
 }: CommandPaletteProps) {
@@ -150,6 +152,17 @@ export function CommandPalette({
         },
       },
       {
+        id: "add-account",
+        label: "Add Account",
+        detail: "Create a bank, cash, or e-wallet account",
+        icon: Wallet,
+        category: "Actions",
+        run: () => {
+          onOpenChange(false)
+          onAddAccount?.()
+        },
+      },
+      {
         id: "add-budget",
         label: "Set Budget",
         detail: "Set a monthly spending cap for a category",
@@ -173,8 +186,8 @@ export function CommandPalette({
       },
       {
         id: "nav-dashboard",
-        label: "Go to Dashboard",
-        detail: "Net worth, cash flow, budgets & subs preview",
+        label: "Go to Home",
+        detail: "Your money overview",
         icon: LayoutDashboard,
         category: "Navigation",
         run: () => {
@@ -185,7 +198,7 @@ export function CommandPalette({
       {
         id: "nav-txns",
         label: "Go to Transactions",
-        detail: "View expenses, income & transfers",
+        detail: "Money · Expenses, income & transfers",
         icon: ArrowLeftRight,
         category: "Navigation",
         run: () => {
@@ -194,31 +207,9 @@ export function CommandPalette({
         },
       },
       {
-        id: "nav-subs",
-        label: "Go to Subscriptions",
-        detail: "Manage recurring bills & trials",
-        icon: Repeat,
-        category: "Navigation",
-        run: () => {
-          onOpenChange(false)
-          onNavigate("subscriptions")
-        },
-      },
-      {
-        id: "nav-budgets",
-        label: "Go to Budgets",
-        detail: "Category spending limits & progress",
-        icon: PiggyBank,
-        category: "Navigation",
-        run: () => {
-          onOpenChange(false)
-          onNavigate("budgets")
-        },
-      },
-      {
         id: "nav-accounts",
         label: "Go to Accounts",
-        detail: "Wallets, banks & net worth",
+        detail: "Money · Wallets, banks & net worth",
         icon: Wallet,
         category: "Navigation",
         run: () => {
@@ -227,9 +218,20 @@ export function CommandPalette({
         },
       },
       {
+        id: "nav-subs",
+        label: "Go to Subscriptions",
+        detail: "Subscriptions · Recurring bills & trials",
+        icon: Repeat,
+        category: "Navigation",
+        run: () => {
+          onOpenChange(false)
+          onNavigate("subscriptions")
+        },
+      },
+      {
         id: "nav-calendar",
         label: "Go to Calendar",
-        detail: "View billing projections and renewal dates",
+        detail: "Subscriptions · Billing projections & renewal dates",
         icon: Calendar,
         category: "Navigation",
         run: () => {
@@ -239,13 +241,24 @@ export function CommandPalette({
       },
       {
         id: "nav-stats",
-        label: "Go to Spending Analytics",
-        detail: "View charts, category breakdown & insights",
+        label: "Go to Analytics",
+        detail: "Insights · Charts, category breakdown & trends",
         icon: BarChart3,
         category: "Navigation",
         run: () => {
           onOpenChange(false)
           onNavigate("stats")
+        },
+      },
+      {
+        id: "nav-budgets",
+        label: "Go to Budgets",
+        detail: "Insights · Category spending limits & progress",
+        icon: PiggyBank,
+        category: "Navigation",
+        run: () => {
+          onOpenChange(false)
+          onNavigate("budgets")
         },
       },
       {
@@ -298,6 +311,7 @@ export function CommandPalette({
     onOpenChange,
     onAddTransaction,
     onAddSubscription,
+    onAddAccount,
     onAddBudget,
     onOpenPaymentMethods,
   ])

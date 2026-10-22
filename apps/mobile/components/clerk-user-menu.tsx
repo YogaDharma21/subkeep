@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Modal } from "react-native"
 import { Image as ExpoImage } from "expo-image"
 import { useRouter } from "expo-router"
 import { useUser, useAuth } from "@clerk/expo"
-import { Settings, LogOut } from "lucide-react-native"
+import { Settings, LogOut, User } from "lucide-react-native"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
 import { isClerkDevMode } from "@/lib/clerk-portal"
@@ -26,9 +26,14 @@ export function ClerkUserMenu({ visible, onClose, topOffset }: ClerkUserMenuProp
   const email = user?.primaryEmailAddress?.emailAddress || ""
   const initial = (displayName || "U").charAt(0).toUpperCase()
 
-  const handleManageAccount = async () => {
+  const handleManageAccount = () => {
     onClose()
     router.push("/modal/profile" as never)
+  }
+
+  const handleSettings = () => {
+    onClose()
+    router.push("/(tabs)/settings" as never)
   }
 
   const handleSignOut = () => {
@@ -50,6 +55,16 @@ export function ClerkUserMenu({ visible, onClose, topOffset }: ClerkUserMenuProp
     })
   }
 
+  const rowStyle = {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 13,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  }
+
   return (
     <Modal
       visible={visible}
@@ -60,7 +75,7 @@ export function ClerkUserMenu({ visible, onClose, topOffset }: ClerkUserMenuProp
       <TouchableOpacity
         activeOpacity={1}
         onPress={onClose}
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }}
       >
         <View
           style={{
@@ -68,12 +83,14 @@ export function ClerkUserMenu({ visible, onClose, topOffset }: ClerkUserMenuProp
             top: topOffset,
             right: 12,
             width: 300,
-            backgroundColor: "#1c1c1e",
+            backgroundColor: colors.card,
+            borderWidth: 1,
+            borderColor: colors.border,
             borderRadius: 16,
             overflow: "hidden",
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.4,
+            shadowOpacity: 0.28,
             shadowRadius: 16,
             elevation: 16,
           }}
@@ -85,8 +102,6 @@ export function ClerkUserMenu({ visible, onClose, topOffset }: ClerkUserMenuProp
               alignItems: "center",
               gap: 12,
               padding: 14,
-              borderBottomWidth: 1,
-              borderBottomColor: "rgba(255,255,255,0.08)",
             }}
           >
             {user?.imageUrl ? (
@@ -112,60 +127,63 @@ export function ClerkUserMenu({ visible, onClose, topOffset }: ClerkUserMenuProp
               </View>
             )}
             <View style={{ flex: 1 }}>
-              <Text numberOfLines={1} style={{ fontSize: 15, fontWeight: "700", color: "#ffffff" }}>
+              <Text numberOfLines={1} style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>
                 {displayName}
               </Text>
-              <Text numberOfLines={1} style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 1 }}>
+              <Text numberOfLines={1} style={{ fontSize: 12, color: colors.mutedText, marginTop: 1 }}>
                 {email}
               </Text>
             </View>
           </View>
 
-          {/* Manage account */}
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={handleManageAccount}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 12,
-              paddingHorizontal: 16,
-              paddingVertical: 13,
-              borderBottomWidth: 1,
-              borderBottomColor: "rgba(255,255,255,0.08)",
-            }}
+            style={rowStyle}
           >
-            <Settings size={18} color="rgba(255,255,255,0.8)" />
-            <Text style={{ fontSize: 14, fontWeight: "600", color: "#ffffff" }}>
+            <User size={18} color={colors.mutedText} />
+            <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
               Manage account
             </Text>
           </TouchableOpacity>
 
-          {/* Sign out */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={handleSettings}
+            style={rowStyle}
+          >
+            <Settings size={18} color={colors.mutedText} />
+            <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
+              Settings & Backup
+            </Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={handleSignOut}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 12,
-              paddingHorizontal: 16,
-              paddingVertical: 13,
-            }}
+            style={rowStyle}
           >
-            <LogOut size={18} color="rgba(255,255,255,0.8)" />
-            <Text style={{ fontSize: 14, fontWeight: "600", color: "#ffffff" }}>
+            <LogOut size={18} color={colors.destructive} />
+            <Text style={{ fontSize: 14, fontWeight: "600", color: colors.destructive }}>
               Sign out
             </Text>
           </TouchableOpacity>
 
           {/* Footer */}
-          <View style={{ alignItems: "center", paddingVertical: 12, gap: 4 }}>
-            <Text style={{ fontSize: 12, fontWeight: "600", color: "rgba(255,255,255,0.7)" }}>
-              Secured by clerk
+          <View
+            style={{
+              alignItems: "center",
+              paddingVertical: 12,
+              gap: 4,
+              borderTopWidth: 1,
+              borderTopColor: colors.border,
+            }}
+          >
+            <Text style={{ fontSize: 12, fontWeight: "600", color: colors.mutedText }}>
+              Secured by Clerk
             </Text>
             {isClerkDevMode() ? (
-              <Text style={{ fontSize: 12, fontWeight: "600", color: "#f97316" }}>
+              <Text style={{ fontSize: 12, fontWeight: "600", color: colors.amber }}>
                 Development mode
               </Text>
             ) : null}

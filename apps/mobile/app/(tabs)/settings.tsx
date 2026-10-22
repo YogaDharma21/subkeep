@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React from "react"
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useRouter } from "expo-router"
 import { useQuery, useMutation } from "convex/react"
-import { useAuth, useUser } from "@clerk/expo"
+import { useAuth } from "@clerk/expo"
 import { api } from "@/convex/_generated/api"
 import {
   SlidersHorizontal,
@@ -21,10 +21,6 @@ import {
   LogOut,
   Trash2,
   ChevronRight,
-  ArrowLeftRight,
-  Wallet,
-  PiggyBank,
-  Repeat,
 } from "lucide-react-native"
 import * as DocumentPicker from "expo-document-picker"
 import * as FileSystem from "expo-file-system/legacy"
@@ -39,7 +35,6 @@ export default function SettingsScreen() {
   const router = useRouter()
   const { colors, isDark } = useThemeColor()
   const { isSignedIn, signOut } = useAuth()
-  const { user } = useUser()
   const { showAlert, showToast, showAboutModal } = useAlert()
 
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
@@ -388,81 +383,9 @@ export default function SettingsScreen() {
     })
   }
 
-  const moneyRows = [
-    {
-      icon: ArrowLeftRight,
-      title: "Transactions",
-      subtitle: transactions ? `${transactions.length} logged` : "Expenses, income & transfers",
-      route: "/(tabs)/transactions" as never,
-    },
-    {
-      icon: Wallet,
-      title: "Accounts",
-      subtitle: accounts ? `${accounts.filter((a) => !a.isArchived).length} active wallets & banks` : "Wallets, banks & net worth",
-      route: "/(tabs)/accounts" as never,
-    },
-    {
-      icon: PiggyBank,
-      title: "Budgets",
-      subtitle: budgets ? `${budgets.length} category caps` : "Category spending limits",
-      route: "/(tabs)/budgets" as never,
-    },
-    {
-      icon: Repeat,
-      title: "Subscriptions",
-      subtitle: subscriptions ? `${subscriptions.filter((s) => s.isActive !== false).length} active recurring bills` : "Recurring bills & trials",
-      route: "/(tabs)/subscriptions" as never,
-    },
-  ]
-
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 120 }}>
-        {/* Money Section */}
-        <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
-            MONEY
-          </Text>
-
-          <View
-            style={{
-              backgroundColor: colors.card,
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: 14,
-              overflow: "hidden",
-            }}
-          >
-            {moneyRows.map((row, i) => {
-              const Icon = row.icon
-              return (
-                <TouchableOpacity
-                  key={row.title}
-                  activeOpacity={0.7}
-                  onPress={() => router.push(row.route)}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    padding: 14,
-                    gap: 12,
-                    borderBottomWidth: i < moneyRows.length - 1 ? 1 : 0,
-                    borderBottomColor: colors.border,
-                  }}
-                >
-                  <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" }}>
-                    <Icon size={18} color={colors.text} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>{row.title}</Text>
-                    <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>{row.subtitle}</Text>
-                  </View>
-                  <ChevronRight size={16} color={colors.mutedText} />
-                </TouchableOpacity>
-              )
-            })}
-          </View>
-        </View>
-
         {/* Preferences & Payment Methods Section */}
         <View style={{ gap: 8 }}>
           <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>

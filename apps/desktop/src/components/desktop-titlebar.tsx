@@ -69,18 +69,18 @@ export function DesktopTitlebar({
   }
 
   const viewNameMap: Record<string, string> = {
-    dashboard: "Dashboard",
-    transactions: "Transactions",
+    dashboard: "Home",
+    transactions: "Money",
+    accounts: "Money",
     subscriptions: "Subscriptions",
-    budgets: "Budgets",
-    accounts: "Accounts",
-    calendar: "Calendar",
-    stats: "Analytics",
+    calendar: "Subscriptions",
+    stats: "Insights",
+    budgets: "Insights",
     settings: "Settings",
-    detail: "Subscription Detail",
+    detail: "Subscriptions",
   }
 
-  const sectionName = viewNameMap[currentView] || "Dashboard"
+  const sectionName = viewNameMap[currentView] || "Home"
   const countRatio = `${activeSubCount}/${totalSubCount}`
 
   if (isLanding) {

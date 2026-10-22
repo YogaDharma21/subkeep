@@ -10,7 +10,6 @@ import {
   Repeat,
   Target,
   ChevronRight,
-  PiggyBank,
 } from "lucide-react"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
@@ -101,13 +100,6 @@ export function FinanceDashboardView({ onNavigate }: FinanceDashboardViewProps) 
   const loading = accounts === undefined || transactions === undefined
   const monthShort = monthLabel(month).split(" ")[0]
 
-  const quickLinks = [
-    { label: "Transactions", icon: ArrowLeftRight, view: "transactions" },
-    { label: "Accounts", icon: Wallet, view: "accounts" },
-    { label: "Budgets", icon: PiggyBank, view: "budgets" },
-    { label: activeSubCount > 0 ? `Subs (${activeSubCount})` : "Subs", icon: Repeat, view: "subscriptions" },
-  ]
-
   return (
     <div className="space-y-6 pb-16 max-w-5xl mx-auto">
       {/* Net Worth + Cash Flow Hero */}
@@ -181,25 +173,6 @@ export function FinanceDashboardView({ onNavigate }: FinanceDashboardViewProps) 
             </div>
           </div>
         )}
-      </div>
-
-      {/* Quick Links */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-        {quickLinks.map((q) => {
-          const Icon = q.icon
-          return (
-            <button
-              key={q.label}
-              onClick={() => onNavigate(q.view)}
-              className="flex items-center gap-2 rounded-lg border border-border bg-background p-3 transition-colors hover:border-foreground/40 cursor-pointer text-left"
-            >
-              <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-foreground">
-                <Icon className="size-4" />
-              </span>
-              <span className="text-xs font-semibold">{q.label}</span>
-            </button>
-          )
-        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">

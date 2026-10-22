@@ -17,7 +17,6 @@ import {
   ArrowUpRight,
   ArrowLeftRight,
   Repeat,
-  PiggyBank,
   ChevronRight,
   Target,
   AlertTriangle,
@@ -120,13 +119,6 @@ export default function DashboardScreen() {
 
   const loading = accounts === undefined || transactions === undefined
   const monthShort = monthLabel(month).split(" ")[0]
-
-  const quickLinks = [
-    { label: "Transactions", icon: ArrowLeftRight, route: "/(tabs)/transactions" },
-    { label: "Accounts", icon: Wallet, route: "/(tabs)/accounts" },
-    { label: "Budgets", icon: PiggyBank, route: "/(tabs)/budgets" },
-    { label: activeSubCount > 0 ? `Subs (${activeSubCount})` : "Subs", icon: Repeat, route: "/(tabs)/subscriptions" },
-  ]
 
   return (
     <SafeAreaView edges={["bottom", "left", "right"]} style={{ flex: 1, backgroundColor: colors.background }}>
@@ -266,48 +258,6 @@ export default function DashboardScreen() {
               ) : null}
             </View>
           ) : null}
-        </View>
-
-        {/* Quick Links */}
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {quickLinks.map((q) => {
-            const Icon = q.icon
-            return (
-              <TouchableOpacity
-                key={q.label}
-                activeOpacity={0.7}
-                onPress={() => router.push(q.route as never)}
-                style={{
-                  width: "48.5%",
-                  flexGrow: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 8,
-                  backgroundColor: colors.card,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  borderRadius: 12,
-                  padding: 12,
-                }}
-              >
-                <View
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
-                    backgroundColor: colors.surface,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Icon size={16} color={colors.text} />
-                </View>
-                <Text numberOfLines={1} style={{ fontSize: 12, fontWeight: "700", color: colors.text, flex: 1 }}>
-                  {q.label}
-                </Text>
-              </TouchableOpacity>
-            )
-          })}
         </View>
 
         {/* Recent Transactions */}
