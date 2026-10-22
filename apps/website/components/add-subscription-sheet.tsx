@@ -248,11 +248,11 @@ export function AddSubscriptionSheet({
                 <div className="space-y-4 pb-4">
                   <button
                     onClick={() => setIconOpen(true)}
-                    className="flex items-center gap-3 rounded-lg bg-muted p-3.5 w-full cursor-pointer"
+                    className="flex w-full cursor-pointer items-center gap-3 rounded-2xl border border-border bg-foreground/[0.03] p-3.5"
                   >
                     <div
                       className={cn(
-                        "flex size-10 items-center justify-center rounded-lg border border-black/10 dark:border-white/10 shadow-xs",
+                        "flex size-10 items-center justify-center rounded-xl border border-black/10 dark:border-white/10 shadow-xs",
                         !selectedIcon && "border-dashed border-border"
                       )}
                       style={
@@ -324,12 +324,12 @@ export function AddSubscriptionSheet({
                   </div>
 
                   {/* Free Trial Toggle */}
-                  <div className="flex items-center justify-between rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
+                  <div className="flex items-center justify-between rounded-2xl border border-positive/25 bg-positive/[0.07] p-3">
                     <div className="flex items-center gap-2">
-                      <Sparkles className="size-4 text-emerald-500" />
+                      <Sparkles className="size-4 text-positive" />
                       <div>
-                        <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                          Free Trial Subscription
+                        <span className="text-sm font-medium text-positive">
+                          Free trial subscription
                         </span>
                         <p className="text-[11px] text-muted-foreground">
                           Track trial expiration to cancel before auto-renewing
@@ -340,14 +340,14 @@ export function AddSubscriptionSheet({
                       type="checkbox"
                       checked={isTrial}
                       onChange={(e) => setIsTrial(e.target.checked)}
-                      className="size-4 rounded accent-emerald-500 cursor-pointer"
+                      className="size-4 rounded accent-[var(--positive)] cursor-pointer"
                     />
                   </div>
 
                   {isTrial && (
-                    <div className="space-y-2 rounded-lg bg-muted/40 p-3 border border-border">
-                      <label className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                        Trial Expiration Date *
+                    <div className="surface-inset space-y-2 p-3">
+                      <label className="text-sm font-medium text-foreground">
+                        Trial expiration date *
                       </label>
                       <Input
                         type="date"
@@ -358,12 +358,12 @@ export function AddSubscriptionSheet({
                   )}
 
                   {/* Shared / Split Subscription Toggle (SplitKeep) */}
-                  <div className="flex items-center justify-between rounded-lg border border-blue-500/30 bg-blue-500/10 p-3">
+                  <div className="flex items-center justify-between rounded-2xl border border-border bg-foreground/[0.03] p-3">
                     <div className="flex items-center gap-2">
-                      <Users className="size-4 text-blue-500" />
+                      <Users className="size-4 text-foreground/75" />
                       <div>
-                        <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-                          Shared / Split Plan (SplitKeep)
+                        <span className="text-sm font-medium text-foreground">
+                          Shared / split plan (SplitKeep)
                         </span>
                         <p className="text-[11px] text-muted-foreground">
                           Split total plan across members and track individual shares
@@ -374,16 +374,16 @@ export function AddSubscriptionSheet({
                       type="checkbox"
                       checked={isShared}
                       onChange={(e) => setIsShared(e.target.checked)}
-                      className="size-4 rounded accent-blue-500 cursor-pointer"
+                      className="size-4 rounded accent-[var(--foreground)] cursor-pointer"
                     />
                   </div>
 
                   {isShared && (
-                    <div className="space-y-3 rounded-lg bg-blue-500/5 p-3 border border-blue-500/20">
+                    <div className="surface-inset space-y-3 p-3">
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <label className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                            Total Plan Price
+                          <label className="text-xs font-medium text-muted-foreground">
+                            Total plan price
                           </label>
                           <Input
                             type="number"
@@ -395,8 +395,8 @@ export function AddSubscriptionSheet({
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                            Total Members
+                          <label className="text-xs font-medium text-muted-foreground">
+                            Total members
                           </label>
                           <Input
                             type="number"
@@ -409,17 +409,17 @@ export function AddSubscriptionSheet({
                       </div>
 
                       {/* Split members detail names */}
-                      <div className="space-y-2 pt-1 border-t border-blue-500/20">
+                      <div className="space-y-2 border-t border-border pt-1">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                            Member Names & Split List
+                          <span className="text-xs font-medium text-muted-foreground">
+                            Member names & split list
                           </span>
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
                             onClick={addSplitMember}
-                            className="h-6 text-xs text-blue-500 gap-1 px-2"
+                            className="h-6 text-xs text-foreground/75 gap-1 px-2"
                           >
                             <UserPlus className="size-3" />
                             Add Member
@@ -476,7 +476,7 @@ export function AddSubscriptionSheet({
                       <select
                         value={currency}
                         onChange={(e) => setCurrency(e.target.value)}
-                        className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                        className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-3 text-sm"
                       >
                         {currencies.map((c) => (
                           <option key={c.value} value={c.value}>
@@ -496,7 +496,7 @@ export function AddSubscriptionSheet({
                     <select
                       value={selectedPaymentMethodId}
                       onChange={(e) => setSelectedPaymentMethodId(e.target.value)}
-                      className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                      className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-3 text-sm"
                     >
                       <option value="">No linked payment method (Default)</option>
                       {paymentMethods?.map((pm) => (
@@ -516,7 +516,7 @@ export function AddSubscriptionSheet({
                     <select
                       value={selectedAccountId}
                       onChange={(e) => setSelectedAccountId(e.target.value)}
-                      className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                      className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-3 text-sm"
                     >
                       <option value="">No linked account (Uses default on payment)</option>
                       {accounts
@@ -540,7 +540,7 @@ export function AddSubscriptionSheet({
                           key={bc.value}
                           type="button"
                           onClick={() => setCycle(bc.value)}
-                          className={`flex items-center justify-center rounded-lg border-2 px-3 py-2.5 text-xs font-medium transition-all cursor-pointer ${
+                          className={`flex items-center justify-center rounded-xl border px-3 py-2.5 text-xs font-medium transition-all cursor-pointer ${
                             cycle === bc.value
                               ? "border-foreground bg-foreground text-background"
                               : "border-border bg-background text-foreground hover:border-foreground/50"
@@ -557,7 +557,7 @@ export function AddSubscriptionSheet({
                     <select
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                      className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-3 text-sm"
                     >
                       {categories
                         .filter((c) => c.value !== "all")

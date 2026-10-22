@@ -291,10 +291,10 @@ export function StatsCharts({
       {/* Responsive 2-Column Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Spending Trend Chart */}
-        <div className="rounded-lg border border-border bg-background">
-          <div className="border-b border-border p-4">
-            <h3 className="text-sm font-semibold">Spending Trend</h3>
-            <p className="text-xs text-muted-foreground">
+        <div className="surface overflow-hidden">
+          <div className="border-b border-border p-5">
+            <h3 className="text-[15px] font-medium tracking-tight">Spending Trend</h3>
+            <p className="mt-1 text-[11px] text-muted-foreground">
               Estimated monthly costs based on active subscriptions
             </p>
           </div>
@@ -321,37 +321,37 @@ export function StatsCharts({
                       backgroundColor: "var(--card)",
                       borderColor: "var(--border)",
                       color: "var(--card-foreground)",
-                      borderRadius: "8px",
+                      borderRadius: "12px",
                       fontSize: "12px",
                     }}
                     itemStyle={{ color: "var(--card-foreground)" }}
                   />
-                  <Bar dataKey="amount" fill="var(--foreground)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="amount" fill="var(--foreground)" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4">
-              <div className="rounded-lg bg-muted p-3 sm:p-4 text-center min-w-0">
-                <div className="text-xs sm:text-sm font-bold text-foreground truncate">
+              <div className="surface-inset min-w-0 p-3 text-center sm:p-4">
+                <div className="numeral truncate text-[13px] text-foreground">
                   {formatCurrencyAmount(monthlyTotal * 1.15, primaryCurrency)}
                 </div>
-                <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground font-medium truncate">
+                <div className="mt-1.5 truncate text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
                   Highest
                 </div>
               </div>
-              <div className="rounded-lg bg-muted p-3 sm:p-4 text-center min-w-0">
-                <div className="text-xs sm:text-sm font-bold text-foreground truncate">
+              <div className="surface-inset min-w-0 p-3 text-center sm:p-4">
+                <div className="numeral truncate text-[13px] text-foreground">
                   {formatCurrencyAmount(monthlyTotal, primaryCurrency)}
                 </div>
-                <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground font-medium truncate">
+                <div className="mt-1.5 truncate text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
                   Avg / Month
                 </div>
               </div>
-              <div className="rounded-lg bg-muted p-3 sm:p-4 text-center min-w-0">
-                <div className="text-xs sm:text-sm font-bold text-foreground truncate">
+              <div className="surface-inset min-w-0 p-3 text-center sm:p-4">
+                <div className="numeral truncate text-[13px] text-foreground">
                   {formatCurrencyAmount(monthlyTotal * 6, primaryCurrency)}
                 </div>
-                <div className="mt-1 text-[10px] uppercase tracking-wide text-muted-foreground font-medium truncate">
+                <div className="mt-1.5 truncate text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
                   Total (YTD)
                 </div>
               </div>
@@ -360,18 +360,18 @@ export function StatsCharts({
         </div>
 
         {/* Category Breakdown Chart */}
-        <div className="rounded-lg border border-border bg-background">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-4">
-            <h3 className="text-sm font-semibold">Category Breakdown</h3>
+        <div className="surface overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-5">
+            <h3 className="text-[15px] font-medium tracking-tight">Category Breakdown</h3>
             <div className="flex items-center gap-2">
-              <div className="flex rounded-lg border border-border bg-muted p-0.5 text-xs font-medium">
+              <div className="surface-inset flex rounded-full p-0.5 text-[11px] font-medium">
                 <button
                   type="button"
                   onClick={() => setBreakdownMetric("cost")}
                   className={cn(
-                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    "rounded-full px-2.5 py-1 transition-colors cursor-pointer",
                     breakdownMetric === "cost"
-                      ? "bg-background text-foreground shadow-xs"
+                      ? "bg-foreground text-background"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -381,9 +381,9 @@ export function StatsCharts({
                   type="button"
                   onClick={() => setBreakdownMetric("count")}
                   className={cn(
-                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    "rounded-full px-2.5 py-1 transition-colors cursor-pointer",
                     breakdownMetric === "count"
-                      ? "bg-background text-foreground shadow-xs"
+                      ? "bg-foreground text-background"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -391,14 +391,14 @@ export function StatsCharts({
                 </button>
               </div>
 
-              <div className="flex rounded-lg border border-border bg-muted p-0.5 text-xs font-medium">
+              <div className="surface-inset flex rounded-full p-0.5 text-[11px] font-medium">
                 <button
                   type="button"
                   onClick={() => setBreakdownFilter("all")}
                   className={cn(
-                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    "rounded-full px-2.5 py-1 transition-colors cursor-pointer",
                     breakdownFilter === "all"
-                      ? "bg-background text-foreground shadow-xs"
+                      ? "bg-foreground text-background"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -408,9 +408,9 @@ export function StatsCharts({
                   type="button"
                   onClick={() => setBreakdownFilter("paid")}
                   className={cn(
-                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    "rounded-full px-2.5 py-1 transition-colors cursor-pointer",
                     breakdownFilter === "paid"
-                      ? "bg-background text-foreground shadow-xs"
+                      ? "bg-foreground text-background"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -469,7 +469,7 @@ export function StatsCharts({
                           <span className="font-medium">{cat.name}</span>
                           <span className="text-xs text-muted-foreground">{detailText}</span>
                         </div>
-                        <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                        <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-foreground/10">
                           <div
                             className="h-full rounded-full transition-all"
                             style={{
@@ -493,9 +493,9 @@ export function StatsCharts({
 
       {/* Payment History */}
       {paymentHistory.length > 0 && (
-        <div className="rounded-lg border border-border bg-background">
-          <div className="border-b border-border p-4">
-            <h3 className="text-sm font-semibold">Payment History</h3>
+        <div className="surface overflow-hidden">
+          <div className="border-b border-border p-5">
+            <h3 className="text-[15px] font-medium tracking-tight">Payment History</h3>
           </div>
           <div>
             {paymentHistory.map((p, i) => (
@@ -504,12 +504,15 @@ export function StatsCharts({
                 className="flex items-center gap-3 border-b border-border px-4 py-3 last:border-b-0"
               >
                 <div
-                  className="flex size-10 shrink-0 items-center justify-center rounded-lg"
-                  style={{ backgroundColor: p.color }}
+                  className="surface-inset relative flex size-9 shrink-0 items-center justify-center rounded-full"
                 >
-                  <span className="text-sm font-bold text-white">
+                  <span className="text-[12px] font-medium text-foreground">
                     {p.name.charAt(0)}
                   </span>
+                  <span
+                    className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full ring-2 ring-card"
+                    style={{ backgroundColor: p.color }}
+                  />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium">{p.name}</div>
@@ -523,7 +526,7 @@ export function StatsCharts({
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <div className="text-sm font-semibold text-red-500">
+                    <div className="numeral text-[13px] text-negative">
                       -{formatCurrencyAmount(p.convertedAmount, primaryCurrency)}
                     </div>
                     {p.currency !== primaryCurrency && (

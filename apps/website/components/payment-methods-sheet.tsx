@@ -228,7 +228,7 @@ export function PaymentMethodsSheet({
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value)}
-                    className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-xs"
+                    className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-3 text-xs"
                   >
                     {CARD_TYPES.map((ct) => (
                       <option key={ct.value} value={ct.value}>
@@ -374,14 +374,14 @@ export function PaymentMethodsSheet({
 
                     {/* Expiry alerts */}
                     {expiryStatus === "expired" && (
-                      <div className="mt-3 flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/30 p-2 text-xs text-red-400">
+                      <div className="mt-3 flex items-center gap-2 rounded-2xl border border-negative/25 bg-negative/[0.08] p-2 text-xs text-negative">
                         <AlertTriangle className="size-4 shrink-0" />
-                        <span>This card has expired! Update your subscriptions to prevent billing interruptions.</span>
+                        <span>This card has expired. Update your subscriptions to prevent billing interruptions.</span>
                       </div>
                     )}
 
                     {expiryStatus === "expiring_soon" && (
-                      <div className="mt-3 flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 p-2 text-xs text-amber-400">
+                      <div className="mt-3 flex items-center gap-2 rounded-2xl border border-warning/25 bg-warning/[0.08] p-2 text-xs text-warning">
                         <AlertTriangle className="size-4 shrink-0" />
                         <span>Card expires soon. Remember to update renewal details.</span>
                       </div>

@@ -7,10 +7,6 @@ import { api } from "@/convex/_generated/api"
 import {
   ArrowUpDown,
   ChevronDown,
-  Clock,
-  Globe,
-  Sparkles,
-  Target,
   AlertTriangle,
   X,
   Search,
@@ -282,19 +278,17 @@ export default function SubscriptionsPage() {
     <div className="flex flex-col gap-4 sm:gap-6">
       <SectionHeader title="Subscriptions" tabs={subscriptionTabs} />
 
-      {/* Dynamic Summary Banner with Currency Converter */}
-      <div className="rounded-lg border border-border bg-background p-4 sm:p-5 shadow-xs">
-        <div className="flex items-center justify-between border-b border-border/60 pb-3 mb-3 sm:mb-4">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-            <Globe className="size-3.5 text-primary" />
-            <span>Primary Currency Summary</span>
-          </div>
-
-          <div className="flex items-center gap-1.5">
+      {/* Summary */}
+      <section className="surface relative overflow-hidden p-5 sm:p-7">
+        <div className="folder-tab" aria-hidden />
+        <div className="relative flex items-start justify-between gap-3">
+          <p className="label">Recurring</p>
+          <div className="relative">
             <select
               value={primaryCurrency}
               onChange={(e) => handleCurrencyChange(e.target.value)}
-              className="h-7 rounded-lg border border-border bg-muted/50 px-2 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              aria-label="Primary currency"
+              className="h-7 cursor-pointer appearance-none rounded-full border border-border bg-transparent px-3 pr-7 text-[10px] font-medium tracking-[0.12em] text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             >
               {currencies.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -302,85 +296,86 @@ export default function SubscriptionsPage() {
                 </option>
               ))}
             </select>
+            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3 -translate-y-1/2 text-muted-foreground" />
           </div>
         </div>
 
         {subscriptions ? (
-          <div className="grid grid-cols-3 divide-x divide-border/60 text-center items-center">
-            <div className="flex flex-col items-center gap-0.5 px-2">
-              <span className="text-xl sm:text-2xl font-extrabold text-foreground">{count}</span>
-              <span className="text-[10px] sm:text-xs uppercase tracking-wide text-muted-foreground font-medium">
-                Active Subs
-              </span>
-            </div>
-            <div className="flex flex-col items-center gap-0.5 min-w-0 px-2">
-              <span className="text-base sm:text-lg font-extrabold text-foreground truncate max-w-full">
+          <div className="mt-5 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+            <div className="min-w-0">
+              <p className="display-number text-[clamp(2.1rem,4.6vw,3.2rem)] text-foreground">
                 {formatCurrencyAmount(monthlyTotalConverted, primaryCurrency)}
-              </span>
-              <span className="text-[10px] sm:text-xs uppercase tracking-wide text-muted-foreground font-medium truncate">
-                Per Month ({primaryCurrency})
-              </span>
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                per month · {count} active {count === 1 ? "service" : "services"}
+              </p>
             </div>
-            <div className="flex flex-col items-center gap-0.5 min-w-0 px-2">
-              <span className="text-base sm:text-lg font-extrabold text-foreground truncate max-w-full">
+            <div className="text-left sm:text-right">
+              <p className="numeral text-[15px] text-foreground">
                 {formatCurrencyAmount(yearlyTotalConverted, primaryCurrency)}
-              </span>
-              <span className="text-[10px] sm:text-xs uppercase tracking-wide text-muted-foreground font-medium truncate">
-                Per Year ({primaryCurrency})
-              </span>
+              </p>
+              <p className="label mt-1.5">per year</p>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
+          <div className="mt-5 space-y-3">
+            <Skeleton className="h-11 w-64 rounded-2xl" />
+            <Skeleton className="h-3 w-32 rounded-full" />
           </div>
         )}
 
-        {/* Monthly Budget Cap Meter */}
-        {budgetCap && budgetCap > 0 && (
-          <div className="mt-4 pt-3 border-t border-border/60 space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-1.5 font-medium text-foreground">
-                <Target className="size-3.5 text-primary" />
-                <span>Monthly Budget Cap</span>
-              </div>
-              <span className={cn("font-semibold", isBudgetExceeded ? "text-red-500" : "text-muted-foreground")}>
-                {formatCurrencyAmount(monthlyTotalConverted, primaryCurrency)} / {formatCurrencyAmount(budgetCap, primaryCurrency)} ({budgetUsedPct}%)
+        {budgetCap && budgetCap > 0 && subscriptions ? (
+          <div className="mt-6 border-t border-border pt-4">
+            <div className="flex items-center justify-between gap-3 text-[11px]">
+              <span className="text-muted-foreground">
+                Monthly cap · {formatCurrencyAmount(monthlyTotalConverted, primaryCurrency)} of{" "}
+                {formatCurrencyAmount(budgetCap, primaryCurrency)}
+              </span>
+              <span
+                className={cn(
+                  "numeral shrink-0",
+                  isBudgetExceeded ? "text-negative" : "text-muted-foreground"
+                )}
+              >
+                {budgetUsedPct}%
               </span>
             </div>
-
-            <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+            <div className="mt-2 h-1 overflow-hidden rounded-full bg-foreground/10">
               <div
                 className={cn(
                   "h-full rounded-full transition-all duration-300",
                   isBudgetExceeded
-                    ? "bg-red-500"
+                    ? "bg-negative"
                     : (budgetUsedPct || 0) >= 85
-                    ? "bg-amber-500"
-                    : "bg-primary"
+                      ? "bg-warning"
+                      : "bg-foreground/70"
                 )}
                 style={{ width: `${Math.min(100, budgetUsedPct || 0)}%` }}
               />
             </div>
-
-            {isBudgetExceeded && (
-              <div className="flex items-center gap-1.5 text-[11px] text-red-500 font-medium pt-0.5">
+            {isBudgetExceeded ? (
+              <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-negative">
                 <AlertTriangle className="size-3 shrink-0" />
-                <span>Budget exceeded by {formatCurrencyAmount(monthlyTotalConverted - budgetCap, primaryCurrency)}! Review recurring costs to stay on track.</span>
+                <span>
+                  Over by{" "}
+                  {formatCurrencyAmount(
+                    monthlyTotalConverted - budgetCap,
+                    primaryCurrency
+                  )}{" "}
+                  this month.
+                </span>
               </div>
-            )}
+            ) : null}
           </div>
-        )}
-      </div>
+        ) : null}
+      </section>
 
       {/* Responsive Dashboard Grid */}
       <div className={cn(hasReminders && "grid grid-cols-1 lg:grid-cols-12 gap-6 items-start")}>
         {/* Main Column: Reimagined Filters & Subscriptions List */}
         <div className={cn("space-y-4", hasReminders && "lg:col-span-7 xl:col-span-8")}>
-          {/* Reimagined Filter Card */}
-          <div className="rounded-lg border border-border bg-card p-3.5 sm:p-4 space-y-3 shadow-2xs">
+          {/* Filter panel */}
+          <div className="surface p-3.5 sm:p-4 space-y-3">
             {/* Top Toolbar: Search + Secondary Filter Controls */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
               {/* Search Bar */}
@@ -390,7 +385,7 @@ export default function SubscriptionsPage() {
                   placeholder="Search by name, category, or account..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-8 pl-8 pr-7 text-xs bg-background"
+                  className="h-8 pl-8 pr-7 text-xs bg-transparent"
                 />
                 {searchQuery && (
                   <button
@@ -411,7 +406,7 @@ export default function SubscriptionsPage() {
                     value={categoryFilter}
                     onChange={(e) => setCategoryFilter(e.target.value)}
                     aria-label="Filter by category"
-                    className="h-8 rounded-lg border border-border bg-background px-2.5 pr-6 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer"
+                    className="h-8 rounded-full border border-border bg-transparent px-2.5 pr-6 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring appearance-none cursor-pointer"
                   >
                     {categories.map((c) => (
                       <option key={c.value} value={c.value}>
@@ -428,7 +423,7 @@ export default function SubscriptionsPage() {
                     value={cycleFilter}
                     onChange={(e) => setCycleFilter(e.target.value)}
                     aria-label="Filter by billing cycle"
-                    className="h-8 rounded-lg border border-border bg-background px-2.5 pr-6 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer"
+                    className="h-8 rounded-full border border-border bg-transparent px-2.5 pr-6 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring appearance-none cursor-pointer"
                   >
                     <option value="all">All Cycles</option>
                     {billingCycles.map((bc) => (
@@ -447,7 +442,7 @@ export default function SubscriptionsPage() {
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as SortOption)}
                     aria-label="Sort subscriptions"
-                    className="h-8 rounded-lg border border-border bg-background pl-6 pr-6 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer"
+                    className="h-8 rounded-full border border-border bg-transparent pl-6 pr-6 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring appearance-none cursor-pointer"
                   >
                     <option value="billing-asc">Next Renewal</option>
                     <option value="billing-desc">Furthest Renewal</option>
@@ -461,125 +456,40 @@ export default function SubscriptionsPage() {
               </div>
             </div>
 
-            {/* Status Tabs with Live Count Badges */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-0.5 border-t border-border/50">
-              {/* Active Tab */}
-              <button
-                onClick={() => setStatusFilter("active")}
-                className={cn(
-                  "rounded-md px-2.5 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 cursor-pointer",
-                  statusFilter === "active"
-                    ? "bg-foreground text-background shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                )}
-              >
-                <span>Active</span>
-                <span
+            {/* Status */}
+            <div className="quiet-scroll flex items-center gap-1 overflow-x-auto border-t border-border pt-3 pb-0.5">
+              {(
+                [
+                  { key: "active", label: "Active" },
+                  { key: "due_soon", label: "Due soon" },
+                  { key: "trial", label: "Trials" },
+                  { key: "canceled", label: "Canceled" },
+                  { key: "all", label: "All" },
+                ] as Array<{ key: StatusFilter; label: string }>
+              ).map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setStatusFilter(tab.key)}
                   className={cn(
-                    "rounded-full px-1.5 py-0.2 text-[10px] font-bold",
-                    statusFilter === "active"
-                      ? "bg-background/20 text-background"
-                      : "bg-muted text-muted-foreground"
+                    "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] transition-colors",
+                    statusFilter === tab.key
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
                   )}
                 >
-                  {statusCounts.active}
-                </span>
-              </button>
-
-              {/* Due Soon Tab */}
-              <button
-                onClick={() => setStatusFilter("due_soon")}
-                className={cn(
-                  "rounded-md px-2.5 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 cursor-pointer",
-                  statusFilter === "due_soon"
-                    ? "bg-amber-600 text-white shadow-xs"
-                    : "text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
-                )}
-              >
-                <Clock className="size-3" />
-                <span>Due Soon</span>
-                <span
-                  className={cn(
-                    "rounded-full px-1.5 py-0.2 text-[10px] font-bold",
-                    statusFilter === "due_soon"
-                      ? "bg-white/20 text-white"
-                      : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
-                  )}
-                >
-                  {statusCounts.due_soon}
-                </span>
-              </button>
-
-              {/* Trials Tab */}
-              <button
-                onClick={() => setStatusFilter("trial")}
-                className={cn(
-                  "rounded-md px-2.5 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 cursor-pointer",
-                  statusFilter === "trial"
-                    ? "bg-emerald-600 text-white shadow-xs"
-                    : "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
-                )}
-              >
-                <Sparkles className="size-3" />
-                <span>Trials</span>
-                <span
-                  className={cn(
-                    "rounded-full px-1.5 py-0.2 text-[10px] font-bold",
-                    statusFilter === "trial"
-                      ? "bg-white/20 text-white"
-                      : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                  )}
-                >
-                  {statusCounts.trial}
-                </span>
-              </button>
-
-              {/* Canceled Tab */}
-              <button
-                onClick={() => setStatusFilter("canceled")}
-                className={cn(
-                  "rounded-md px-2.5 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 cursor-pointer",
-                  statusFilter === "canceled"
-                    ? "bg-red-600 text-white shadow-xs"
-                    : "text-red-600 dark:text-red-400 hover:bg-red-500/10"
-                )}
-              >
-                <X className="size-3" />
-                <span>Canceled</span>
-                <span
-                  className={cn(
-                    "rounded-full px-1.5 py-0.2 text-[10px] font-bold",
-                    statusFilter === "canceled"
-                      ? "bg-white/20 text-white"
-                      : "bg-red-500/15 text-red-600 dark:text-red-400"
-                  )}
-                >
-                  {statusCounts.canceled}
-                </span>
-              </button>
-
-              {/* All Tab */}
-              <button
-                onClick={() => setStatusFilter("all")}
-                className={cn(
-                  "rounded-md px-2.5 py-1.5 text-xs font-medium transition-all flex items-center gap-1.5 shrink-0 cursor-pointer",
-                  statusFilter === "all"
-                    ? "bg-foreground text-background shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                )}
-              >
-                <span>All</span>
-                <span
-                  className={cn(
-                    "rounded-full px-1.5 py-0.2 text-[10px] font-bold",
-                    statusFilter === "all"
-                      ? "bg-background/20 text-background"
-                      : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  {statusCounts.all}
-                </span>
-              </button>
+                  <span>{tab.label}</span>
+                  <span
+                    className={cn(
+                      "numeral text-[10px]",
+                      statusFilter === tab.key
+                        ? "text-background/55"
+                        : "text-muted-foreground/55"
+                    )}
+                  >
+                    {statusCounts[tab.key]}
+                  </span>
+                </button>
+              ))}
             </div>
 
             {/* Active Filters Context Bar */}
@@ -663,9 +573,9 @@ export default function SubscriptionsPage() {
                 <Skeleton className="h-20 w-full" />
               </div>
             ) : filteredSubs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 px-4 text-center">
-                <div className="size-10 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground mb-3">
-                  <SlidersHorizontal className="size-5" />
+              <div className="surface flex flex-col items-center justify-center py-12 px-4 text-center">
+                <div className="surface-inset mb-3 flex size-10 items-center justify-center rounded-full text-muted-foreground">
+                  <SlidersHorizontal className="size-4" />
                 </div>
                 <p className="text-sm font-semibold text-foreground">
                   {getEmptyMessage().title}
@@ -676,7 +586,7 @@ export default function SubscriptionsPage() {
                 {isFiltered && (
                   <button
                     onClick={handleClearFilters}
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-[11px] text-foreground transition-colors hover:bg-foreground/5 cursor-pointer"
                   >
                     <RotateCcw className="size-3" />
                     <span>Clear all filters</span>
@@ -698,13 +608,15 @@ export default function SubscriptionsPage() {
 
         {/* Sidebar Column: Upcoming Reminders (only reserves space when items exist) */}
         {hasReminders && (
-          <div className="lg:col-span-5 xl:col-span-4 space-y-4 mt-6 lg:mt-0">
-            <UpcomingReminders
-              subscriptions={subscriptions || []}
-              primaryCurrency={primaryCurrency}
-              rates={rates}
-              onMarkCanceled={handleMarkCanceled}
-            />
+          <div className="mt-6 lg:mt-0 lg:col-span-5 xl:col-span-4">
+            <div className="surface p-5 sm:p-6">
+              <UpcomingReminders
+                subscriptions={subscriptions || []}
+                primaryCurrency={primaryCurrency}
+                rates={rates}
+                onMarkCanceled={handleMarkCanceled}
+              />
+            </div>
           </div>
         )}
       </div>

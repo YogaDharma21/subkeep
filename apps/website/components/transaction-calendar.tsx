@@ -60,17 +60,18 @@ export function TransactionCalendar({ transactions }: TransactionCalendarProps) 
   const maxFlow = Math.max(1, ...dailyTotals.map((d) => d.income + d.expense))
 
   return (
-    <div className="rounded-lg border border-border bg-background">
+    <div className="surface">
       <div className="flex items-center justify-between border-b border-border p-4">
         <div>
-          <h3 className="text-sm font-semibold">Daily Cash Flow · Last 7 Days</h3>
+          <p className="label mb-1.5">Cash flow</p>
+          <h3 className="text-sm font-medium">Last 7 days</h3>
           <p className="text-xs text-muted-foreground">
             Logged income and expenses per day
           </p>
         </div>
         <Link
           href="/transactions"
-          className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+          className="flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           All <ChevronRight className="size-3.5" />
         </Link>
@@ -80,28 +81,28 @@ export function TransactionCalendar({ transactions }: TransactionCalendarProps) 
           <div key={d.date}>
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="font-medium">{d.label}</span>
-              <span className="text-muted-foreground">
+              <span className="numeral text-muted-foreground">
                 {d.items.length === 0 ? (
                   "—"
                 ) : (
                   <>
-                    <span className="text-emerald-500 font-semibold">
+                    <span className="text-positive font-medium">
                       +{formatCurrencyAmount(d.income, primaryCurrency)}
                     </span>{" "}
-                    <span className="text-red-500 font-semibold">
+                    <span className="text-negative font-medium">
                       -{formatCurrencyAmount(d.expense, primaryCurrency)}
                     </span>
                   </>
                 )}
               </span>
             </div>
-            <div className="flex h-2 gap-0.5 overflow-hidden rounded-full bg-muted">
+            <div className="flex h-1.5 gap-0.5 overflow-hidden rounded-full bg-foreground/[0.05]">
               <div
-                className="h-full bg-emerald-500 transition-all"
+                className="h-full rounded-full bg-positive/70 transition-all"
                 style={{ width: `${((d.income / maxFlow) * 100).toFixed(1)}%` }}
               />
               <div
-                className="h-full bg-red-500 transition-all"
+                className="h-full rounded-full bg-negative/60 transition-all"
                 style={{ width: `${((d.expense / maxFlow) * 100).toFixed(1)}%` }}
               />
             </div>
@@ -113,13 +114,13 @@ export function TransactionCalendar({ transactions }: TransactionCalendarProps) 
                     <span
                       key={t._id}
                       className={cn(
-                        "inline-flex items-center gap-1 rounded-md border border-border bg-muted/40 px-1.5 py-0.5 text-[10px] font-medium"
+                        "inline-flex items-center gap-1 rounded-full border border-border bg-foreground/[0.03] px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
                       )}
                       title={`${t.note || meta.label} · ${t.date}`}
                     >
                       <DynamicIcon
                         name={t.icon || meta.icon}
-                        className="size-3 text-foreground"
+                        className="size-3 text-foreground/80"
                       />
                       <span className="max-w-24 truncate">{t.note || meta.label}</span>
                     </span>

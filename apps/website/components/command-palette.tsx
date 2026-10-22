@@ -443,7 +443,7 @@ export function CommandPalette({
                         router.push(`/subscriptions/${sub._id}`)
                       }}
                       onMouseEnter={() => setSelectedIndex(idx)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors group cursor-pointer ${
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors group cursor-pointer ${
                         isSelected ? "bg-muted text-foreground" : "hover:bg-muted/60"
                       }`}
                     >
@@ -512,7 +512,7 @@ export function CommandPalette({
                         router.push("/transactions")
                       }}
                       onMouseEnter={() => setSelectedIndex(globalIdx)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors group cursor-pointer ${
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors group cursor-pointer ${
                         isSelected ? "bg-muted text-foreground" : "hover:bg-muted/60"
                       }`}
                     >
@@ -570,7 +570,7 @@ export function CommandPalette({
                       key={action.id}
                       onClick={action.run}
                       onMouseEnter={() => setSelectedIndex(globalIdx)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors group cursor-pointer ${
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors group cursor-pointer ${
                         isSelected ? "bg-muted text-foreground" : "hover:bg-muted/60"
                       }`}
                     >
@@ -615,7 +615,7 @@ export function CommandPalette({
                       key={action.id}
                       onClick={action.run}
                       onMouseEnter={() => setSelectedIndex(globalIdx)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors group cursor-pointer ${
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors group cursor-pointer ${
                         isSelected ? "bg-muted text-foreground" : "hover:bg-muted/60"
                       }`}
                     >
