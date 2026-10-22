@@ -2,7 +2,6 @@
 
 import { useState, useRef } from "react"
 import Image from "next/image"
-import Link from "next/link"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth, useUser, useClerk } from "@clerk/nextjs"
 import { useTheme } from "next-themes"
@@ -19,10 +18,6 @@ import {
   ExternalLink,
   CreditCard,
   LogOut,
-  ArrowLeftRight,
-  Wallet,
-  PiggyBank,
-  Repeat,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -296,78 +291,6 @@ export default function MorePage() {
           </div>
         </div>
       )}
-
-      {/* Category: MONEY */}
-      <div className="space-y-2">
-        <h3 className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Money
-        </h3>
-        <div className="overflow-hidden rounded-xl border border-border bg-background divide-y divide-border shadow-2xs">
-          <Link
-            href="/transactions"
-            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
-          >
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
-              <ArrowLeftRight className="size-4 text-foreground/80" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">Transactions</div>
-              <div className="text-xs text-muted-foreground">
-                {transactions ? `${transactions.length} logged` : "Expenses, income & transfers"}
-              </div>
-            </div>
-            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-          </Link>
-
-          <Link
-            href="/accounts"
-            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
-          >
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
-              <Wallet className="size-4 text-foreground/80" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">Accounts</div>
-              <div className="text-xs text-muted-foreground">
-                {accounts ? `${accounts.filter((a) => !a.isArchived).length} active wallets & banks` : "Wallets, banks & net worth"}
-              </div>
-            </div>
-            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-          </Link>
-
-          <Link
-            href="/budgets"
-            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
-          >
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
-              <PiggyBank className="size-4 text-foreground/80" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">Budgets</div>
-              <div className="text-xs text-muted-foreground">
-                {budgets ? `${budgets.length} category caps` : "Category spending limits"}
-              </div>
-            </div>
-            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-          </Link>
-
-          <Link
-            href="/subscriptions"
-            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
-          >
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
-              <Repeat className="size-4 text-foreground/80" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">Subscriptions</div>
-              <div className="text-xs text-muted-foreground">
-                {subscriptions ? `${subscriptions.filter((s) => s.isActive).length} active recurring bills` : "Recurring bills & trials"}
-              </div>
-            </div>
-            <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-          </Link>
-        </div>
-      </div>
 
       {/* Category: GENERAL & PREFERENCES */}
       <div className="space-y-2">

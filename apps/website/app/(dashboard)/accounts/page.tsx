@@ -6,6 +6,7 @@ import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
 import { Wallet, Pencil, Trash2, Archive } from "lucide-react"
+import { SectionHeader } from "@/components/section-nav"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { AddAccountSheet } from "@/components/add-account-sheet"
@@ -14,6 +15,7 @@ import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { accountTypeMeta, currentMonthKey } from "@/lib/finance"
+import { moneyTabs } from "@/lib/navigation"
 import { getContrastTextColor } from "@/lib/constants"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -235,6 +237,8 @@ export default function AccountsPage() {
 
   return (
     <div className="space-y-4">
+      <SectionHeader title="Money" tabs={moneyTabs} />
+
       <div className="rounded-lg border border-border bg-background p-4 sm:p-5">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
           <Wallet className="size-3.5 text-primary" />

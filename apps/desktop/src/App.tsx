@@ -17,6 +17,7 @@ import { SettingsView } from "@/components/settings-view"
 import { SubscriptionDetailView } from "@/components/subscription-detail-view"
 import { AddSubscriptionSheet } from "@/components/add-subscription-sheet"
 import { AddTransactionSheet } from "@/components/add-transaction-sheet"
+import { AddAccountSheet } from "@/components/add-account-sheet"
 import { AddBudgetSheet } from "@/components/add-budget-sheet"
 import { PaymentMethodsSheet } from "@/components/payment-methods-sheet"
 import { CommandPalette } from "@/components/command-palette"
@@ -47,6 +48,7 @@ export function App() {
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null)
   const [addSheetOpen, setAddSheetOpen] = useState(false)
   const [addTxnOpen, setAddTxnOpen] = useState(false)
+  const [addAccountOpen, setAddAccountOpen] = useState(false)
   const [addBudgetOpen, setAddBudgetOpen] = useState(false)
   const [paymentSheetOpen, setPaymentSheetOpen] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
@@ -141,6 +143,7 @@ export function App() {
           onNavigate={(v) => handleNavigate(v)}
           onAddSubscription={() => setAddSheetOpen(true)}
           onAddTransaction={() => setAddTxnOpen(true)}
+          onAddAccount={() => setAddAccountOpen(true)}
           onAddBudget={() => setAddBudgetOpen(true)}
           onSearchClick={() => setCommandPaletteOpen(true)}
           activeSubCount={activeSubsCount}
@@ -229,6 +232,12 @@ export function App() {
         onOpenChange={setAddTxnOpen}
       />
 
+      {/* Global Add Account Sheet */}
+      <AddAccountSheet
+        open={addAccountOpen}
+        onOpenChange={setAddAccountOpen}
+      />
+
       {/* Global Set Budget Sheet */}
       <AddBudgetSheet
         open={addBudgetOpen}
@@ -248,6 +257,7 @@ export function App() {
         onNavigate={handleNavigate}
         onAddSubscription={() => setAddSheetOpen(true)}
         onAddTransaction={() => setAddTxnOpen(true)}
+        onAddAccount={() => setAddAccountOpen(true)}
         onAddBudget={() => setAddBudgetOpen(true)}
         onOpenPaymentMethods={() => setPaymentSheetOpen(true)}
       />

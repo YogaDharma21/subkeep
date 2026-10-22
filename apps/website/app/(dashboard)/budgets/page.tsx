@@ -11,6 +11,7 @@ import {
   PiggyBank,
   Trash2,
 } from "lucide-react"
+import { SectionHeader } from "@/components/section-nav"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import {
@@ -25,6 +26,7 @@ import { DynamicIcon } from "@/components/dynamic-icon"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
+import { insightTabs } from "@/lib/navigation"
 import {
   financeCategoryMeta,
   currentMonthKey,
@@ -105,6 +107,8 @@ export default function BudgetsPage() {
 
   return (
     <div className="space-y-4">
+      <SectionHeader title="Insights" tabs={insightTabs} />
+
       {/* Month navigator + totals */}
       <div className="rounded-lg border border-border bg-background p-4">
         <div className="flex items-center justify-between">

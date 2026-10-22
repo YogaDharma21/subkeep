@@ -17,6 +17,7 @@ import { api } from "@/convex/_generated/api"
 import {
   Search,
   Plus,
+  Home,
   Calendar,
   BarChart3,
   Settings,
@@ -179,9 +180,20 @@ export function SearchModal({
         },
       },
       {
+        id: "nav-home",
+        label: "Home",
+        detail: "Your money overview",
+        icon: Home,
+        category: "Navigation",
+        run: () => {
+          onClose()
+          router.push("/(tabs)" as never)
+        },
+      },
+      {
         id: "nav-txns",
         label: "Transactions",
-        detail: "View expenses, income & transfers",
+        detail: "Money · Expenses, income & transfers",
         icon: ArrowLeftRight,
         category: "Navigation",
         run: () => {
@@ -190,31 +202,9 @@ export function SearchModal({
         },
       },
       {
-        id: "nav-subs",
-        label: "Subscriptions",
-        detail: "Manage recurring bills & trials",
-        icon: Repeat,
-        category: "Navigation",
-        run: () => {
-          onClose()
-          router.push("/(tabs)/subscriptions" as never)
-        },
-      },
-      {
-        id: "nav-budgets",
-        label: "Budgets",
-        detail: "Category spending limits & progress",
-        icon: PiggyBank,
-        category: "Navigation",
-        run: () => {
-          onClose()
-          router.push("/(tabs)/budgets" as never)
-        },
-      },
-      {
         id: "nav-accounts",
         label: "Accounts",
-        detail: "Wallets, banks & net worth",
+        detail: "Money · Wallets, banks & net worth",
         icon: Wallet,
         category: "Navigation",
         run: () => {
@@ -223,9 +213,20 @@ export function SearchModal({
         },
       },
       {
+        id: "nav-subs",
+        label: "Subscriptions",
+        detail: "Subscriptions · Recurring bills & trials",
+        icon: Repeat,
+        category: "Navigation",
+        run: () => {
+          onClose()
+          router.push("/(tabs)/subscriptions" as never)
+        },
+      },
+      {
         id: "nav-calendar",
         label: "Calendar",
-        detail: "View billing projections and renewal dates",
+        detail: "Subscriptions · Billing projections & renewal dates",
         icon: Calendar,
         category: "Navigation",
         run: () => {
@@ -235,8 +236,8 @@ export function SearchModal({
       },
       {
         id: "nav-stats",
-        label: "Statistics",
-        detail: "View charts, category breakdown & insights",
+        label: "Analytics",
+        detail: "Insights · Charts, category breakdown & trends",
         icon: BarChart3,
         category: "Navigation",
         run: () => {
@@ -245,8 +246,19 @@ export function SearchModal({
         },
       },
       {
+        id: "nav-budgets",
+        label: "Budgets",
+        detail: "Insights · Category spending limits & progress",
+        icon: PiggyBank,
+        category: "Navigation",
+        run: () => {
+          onClose()
+          router.push("/(tabs)/budgets" as never)
+        },
+      },
+      {
         id: "nav-settings",
-        label: "Settings",
+        label: "Settings & Backup",
         detail: "Export, restore, currency & preferences",
         icon: Settings,
         category: "Navigation",

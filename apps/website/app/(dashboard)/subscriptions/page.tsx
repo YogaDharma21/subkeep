@@ -17,6 +17,7 @@ import {
   SlidersHorizontal,
   RotateCcw,
 } from "lucide-react"
+import { SectionHeader } from "@/components/section-nav"
 import { SubscriptionCard } from "@/components/subscription-card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Input } from "@/components/ui/input"
@@ -32,6 +33,7 @@ import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
 import { differenceInDays } from "date-fns"
 import { cn } from "@/lib/utils"
+import { subscriptionTabs } from "@/lib/navigation"
 import { toast } from "sonner"
 
 export type StatusFilter = "active" | "due_soon" | "trial" | "canceled" | "all"
@@ -278,6 +280,8 @@ export default function SubscriptionsPage() {
 
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
+      <SectionHeader title="Subscriptions" tabs={subscriptionTabs} />
+
       {/* Dynamic Summary Banner with Currency Converter */}
       <div className="rounded-lg border border-border bg-background p-4 sm:p-5 shadow-xs">
         <div className="flex items-center justify-between border-b border-border/60 pb-3 mb-3 sm:mb-4">

@@ -4,9 +4,11 @@ import { useQuery } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
 import { CalendarGrid } from "@/components/calendar-grid"
+import { SectionHeader } from "@/components/section-nav"
 import { TransactionCalendar } from "@/components/transaction-calendar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useDocumentTitle } from "@/hooks/use-document-title"
+import { subscriptionTabs } from "@/lib/navigation"
 
 export default function CalendarPage() {
   useDocumentTitle("Calendar")
@@ -19,6 +21,8 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-4">
+      <SectionHeader title="Subscriptions" tabs={subscriptionTabs} />
+
       {subscriptions && transactions ? (
         <>
           <CalendarGrid subscriptions={subscriptions} />
