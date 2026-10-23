@@ -68,9 +68,9 @@ export function QuickAddSheet({ open, onOpenChange, onSelect }: QuickAddSheetPro
                 key={opt.kind}
                 type="button"
                 onClick={() => onSelect(opt.kind)}
-                className="flex flex-col items-start gap-2.5 rounded-xl border border-border bg-background p-3.5 text-left transition-all hover:border-foreground/40 hover:bg-muted/50 active:scale-[0.98] cursor-pointer"
+                className="flex cursor-pointer flex-col items-start gap-2.5 rounded-2xl border border-border bg-foreground/[0.02] p-3.5 text-left transition-all hover:border-foreground/30 hover:bg-foreground/[0.04] active:scale-[0.98]"
               >
-                <span className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground">
+                <span className="flex size-9 items-center justify-center rounded-xl border border-border bg-foreground/[0.03] text-foreground">
                   <Icon className="size-4" />
                 </span>
                 <span>

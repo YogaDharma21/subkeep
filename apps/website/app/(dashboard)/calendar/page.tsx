@@ -31,8 +31,8 @@ export default function CalendarPage() {
       ) : (
         <div className="space-y-4">
           <div className="space-y-3">
-            <Skeleton className="h-[350px] rounded-lg" />
-            <Skeleton className="h-[100px] rounded-lg" />
+            <Skeleton className="h-[350px] rounded-2xl" />
+            <Skeleton className="h-[100px] rounded-2xl" />
           </div>
         </div>
       )}

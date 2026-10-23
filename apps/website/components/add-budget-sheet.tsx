@@ -103,7 +103,7 @@ export function AddBudgetSheet({ open, onOpenChange }: AddBudgetSheetProps) {
                   type="button"
                   onClick={() => setCategory(c.value)}
                   className={cn(
-                    "flex items-center gap-2 rounded-lg border-2 p-2 text-left transition-all cursor-pointer",
+                    "flex items-center gap-2 rounded-xl border p-2 text-left transition-all cursor-pointer",
                     category === c.value
                       ? "border-foreground bg-muted"
                       : "border-border hover:border-foreground/40"

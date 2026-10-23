@@ -5,32 +5,133 @@ import Link from "next/link"
 import { useQuery } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
-import {
-  ArrowDownRight,
-  ArrowUpRight,
-  ArrowLeftRight,
-  Wallet,
-  Repeat,
-  Target,
-  ChevronRight,
-  Sparkles,
-  AlertTriangle,
-} from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
-import {
-  convertCurrency,
-  formatCurrencyAmount,
-} from "@/lib/currency"
+import { findUpcomingReminders } from "@/lib/notifications"
+import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import {
   currentMonthKey,
   monthLabel,
   financeCategoryMeta,
 } from "@/lib/finance"
 import { cn } from "@/lib/utils"
+
+function localDateKey(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
+function shortDate(value: string) {
+  return new Date(`${value}T12:00:00`).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  })
+}
+
+function Ring({ pct }: { pct: number }) {
+  const radius = 42
+  const circumference = 2 * Math.PI * radius
+  const clamped = Math.max(0, Math.min(100, pct))
+
+  return (
+    <div className="relative flex size-[118px] shrink-0 items-center justify-center sm:size-[130px]">
+      <svg viewBox="0 0 100 100" className="absolute inset-0 size-full -rotate-90">
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="none"
+          stroke="var(--border)"
+          strokeWidth="2.5"
+        />
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="none"
+          stroke="var(--foreground)"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={
+            circumference - (clamped / 100) * circumference
+          }
+        />
+      </svg>
+      <div className="text-center">
+        <div className="numeral text-2xl font-semibold text-foreground">
+          {Math.round(pct)}%
+        </div>
+        <div className="label mt-1">used</div>
+      </div>
+    </div>
+  )
+}
+
+function MetricCard({
+  href,
+  hint,
+  value,
+  label,
+}: {
+  href: string
+  hint: string
+  value: string
+  label: string
+}) {
+  return (
+    <Link
+      href={href}
+      className="surface surface-interactive group relative flex min-h-[138px] flex-col justify-end overflow-hidden p-4 pt-9"
+    >
+      <span className="folder-tab" aria-hidden />
+      <span className="absolute right-4 top-4 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/70">
+        {hint}
+      </span>
+      <span className="numeral text-[1.6rem] leading-none text-foreground">
+        {value}
+      </span>
+      <span className="mt-2 text-xs text-muted-foreground">{label}</span>
+    </Link>
+  )
+}
+
+function PanelHead({
+  title,
+  hint,
+  href,
+  linkLabel,
+}: {
+  title: string
+  hint?: string
+  href: string
+  linkLabel: string
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <div>
+        <h2 className="text-[15px] font-medium tracking-tight text-foreground">
+          {title}
+        </h2>
+        {hint ? (
+          <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>
+        ) : null}
+      </div>
+      <Link
+        href={href}
+        className="flex shrink-0 items-center gap-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {linkLabel}
+        <ChevronRight className="size-3" />
+      </Link>
+    </div>
+  )
+}
 
 export default function HomePage() {
   useDocumentTitle("Dashboard")
@@ -41,6 +142,10 @@ export default function HomePage() {
   const transactions = useQuery(
     api.transactions.list,
     isSignedIn ? { month } : "skip"
+  )
+  const allTransactions = useQuery(
+    api.transactions.list,
+    isSignedIn ? { limit: 300 } : "skip"
   )
   const budgets = useQuery(
     api.budgets.list,
@@ -54,16 +159,12 @@ export default function HomePage() {
   const stats = useMemo(() => {
     let income = 0
     let expense = 0
-    const byCategory: Record<string, number> = {}
     for (const t of transactions || []) {
       const converted = convertCurrency(t.amount, t.currency, primaryCurrency, rates)
       if (t.type === "income") income += converted
-      else if (t.type === "expense") {
-        expense += converted
-        byCategory[t.category] = (byCategory[t.category] || 0) + converted
-      }
+      else if (t.type === "expense") expense += converted
     }
-    return { income, expense, net: income - expense, byCategory }
+    return { income, expense, saved: income - expense }
   }, [transactions, primaryCurrency, rates])
 
   const netWorth = useMemo(() => {
@@ -93,320 +194,419 @@ export default function HomePage() {
 
   const activeSubCount = subscriptions?.filter((s) => s.isActive).length ?? 0
 
+  const nextRenewal = useMemo(() => {
+    const active = (subscriptions || []).filter((s) => s.isActive)
+    const dates = active
+      .map((s) => (s.isTrial && s.trialEndDate ? s.trialEndDate : s.nextBilling))
+      .filter((value): value is string => !!value)
+      .sort()
+    return dates[0] ?? null
+  }, [subscriptions])
+
   const budgetCap = userSettings?.monthlyBudgetCap
   const monthlySpend = stats.expense + subscriptionMonthly
-  const budgetUsedPct =
-    budgetCap && budgetCap > 0 ? Math.round((monthlySpend / budgetCap) * 100) : null
   const isBudgetExceeded = !!budgetCap && monthlySpend > budgetCap
-
-  const topCategories = useMemo(() => {
-    const entries = Object.entries(stats.byCategory)
-    const total = stats.expense || 1
-    return entries
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 4)
-      .map(([cat, amt]) => ({ ...financeCategoryMeta(cat), amount: amt, pct: Math.round((amt / total) * 100) }))
-  }, [stats])
+  const leftToSpend = budgetCap ? budgetCap - monthlySpend : stats.saved
+  const ringPct = budgetCap && budgetCap > 0 ? (monthlySpend / budgetCap) * 100 : 0
 
   const recentTransactions = useMemo(() => {
     return [...(transactions || [])]
       .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
-      .slice(0, 5)
+      .slice(0, 6)
   }, [transactions])
+
+  const activity = useMemo(() => {
+    const spendByDate: Record<string, number> = {}
+    for (const t of allTransactions || []) {
+      if (t.type !== "expense") continue
+      spendByDate[t.date] =
+        (spendByDate[t.date] || 0) +
+        convertCurrency(t.amount, t.currency, primaryCurrency, rates)
+    }
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const start = new Date(today)
+    start.setDate(start.getDate() - 90)
+    start.setDate(start.getDate() - ((start.getDay() + 6) % 7))
+
+    const weeks: Array<Array<{ key: string; amount: number; future: boolean }>> = []
+    const cursor = new Date(start)
+    let activeDays = 0
+    let peak = 0
+
+    while (cursor <= today) {
+      const week: Array<{ key: string; amount: number; future: boolean }> = []
+      for (let i = 0; i < 7; i++) {
+        const day = new Date(cursor)
+        const key = localDateKey(day)
+        const amount = spendByDate[key] || 0
+        if (amount > 0) activeDays++
+        peak = Math.max(peak, amount)
+        week.push({ key, amount, future: day > today })
+        cursor.setDate(cursor.getDate() + 1)
+      }
+      weeks.push(week)
+    }
+
+    return { weeks, activeDays, peak }
+  }, [allTransactions, primaryCurrency, rates])
 
   const loading = accounts === undefined || transactions === undefined
 
+  const hasUpcoming = useMemo(
+    () => findUpcomingReminders(subscriptions || [], 3).length > 0,
+    [subscriptions]
+  )
+
   return (
-    <div className="flex flex-col gap-4 sm:gap-6">
-      {/* Net Worth + Cash Flow Hero */}
-      <div className="rounded-lg border border-border bg-background p-4 sm:p-5 shadow-xs">
-        <div className="flex items-center justify-between border-b border-border/60 pb-3 mb-3 sm:mb-4">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-            <Wallet className="size-3.5 text-primary" />
-            <span>Money Overview · {monthLabel(month)}</span>
-          </div>
-          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-            {primaryCurrency}
-          </span>
+    <div className="space-y-4 sm:space-y-5">
+      <header className="flex flex-wrap items-end justify-between gap-4 pb-1">
+        <div className="space-y-2">
+          <p className="label">{monthLabel(month)}</p>
+          <h1 className="page-title text-foreground">Overview</h1>
         </div>
+        <p className="hidden max-w-[240px] text-right text-[11px] leading-relaxed text-muted-foreground sm:block">
+          Balances, bills, and what is left.
+        </p>
+      </header>
 
-        {loading ? (
-          <div className="grid grid-cols-3 gap-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 divide-x divide-border/60 text-center items-center">
-            <div className="flex flex-col items-center gap-0.5 px-2">
-              <span className="text-base sm:text-lg font-extrabold text-foreground truncate max-w-full">
-                {formatCurrencyAmount(netWorth, primaryCurrency)}
-              </span>
-              <span className="text-[10px] sm:text-xs uppercase tracking-wide text-muted-foreground font-medium">
-                Net Worth
-              </span>
-            </div>
-            <div className="flex flex-col items-center gap-0.5 min-w-0 px-2">
-              <span className="flex items-center gap-1 text-base sm:text-lg font-extrabold text-emerald-500">
-                <ArrowDownRight className="size-4 shrink-0" />
-                <span className="truncate">{formatCurrencyAmount(stats.income, primaryCurrency)}</span>
-              </span>
-              <span className="text-[10px] sm:text-xs uppercase tracking-wide text-muted-foreground font-medium truncate">
-                In · {monthLabel(month).split(" ")[0]}
-              </span>
-            </div>
-            <div className="flex flex-col items-center gap-0.5 min-w-0 px-2">
-              <span className="flex items-center gap-1 text-base sm:text-lg font-extrabold text-red-500">
-                <ArrowUpRight className="size-4 shrink-0" />
-                <span className="truncate">{formatCurrencyAmount(stats.expense, primaryCurrency)}</span>
-              </span>
-              <span className="text-[10px] sm:text-xs uppercase tracking-wide text-muted-foreground font-medium truncate">
-                Out · {monthLabel(month).split(" ")[0]}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {budgetCap && budgetCap > 0 && !loading && (
-          <div className="mt-4 pt-3 border-t border-border/60 space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-1.5 font-medium text-foreground">
-                <Target className="size-3.5 text-primary" />
-                <span>Total Monthly Spend vs Cap</span>
-              </div>
-              <span className={cn("font-semibold", isBudgetExceeded ? "text-red-500" : "text-muted-foreground")}>
-                {formatCurrencyAmount(monthlySpend, primaryCurrency)} / {formatCurrencyAmount(budgetCap, primaryCurrency)} ({budgetUsedPct}%)
-              </span>
-            </div>
-            <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-              <div
-                className={cn(
-                  "h-full rounded-full transition-all duration-300",
-                  isBudgetExceeded
-                    ? "bg-red-500"
-                    : (budgetUsedPct || 0) >= 85
-                      ? "bg-amber-500"
-                      : "bg-primary"
-                )}
-                style={{ width: `${Math.min(100, budgetUsedPct || 0)}%` }}
-              />
-            </div>
-            {isBudgetExceeded && (
-              <div className="flex items-center gap-1.5 text-[11px] text-red-500 font-medium pt-0.5">
-                <AlertTriangle className="size-3 shrink-0" />
-                <span>Over budget by {formatCurrencyAmount(monthlySpend - budgetCap, primaryCurrency)} this month.</span>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <div className="lg:col-span-7 xl:col-span-8 space-y-4">
-          {/* Recent Transactions */}
-          <div className="rounded-lg border border-border bg-background">
-            <div className="flex items-center justify-between border-b border-border p-4">
-              <div className="flex items-center gap-2">
-                <ArrowLeftRight className="size-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">Recent Transactions</h3>
-              </div>
-              <Link
-                href="/transactions"
-                className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
-              >
-                View all <ChevronRight className="size-3.5" />
-              </Link>
-            </div>
-            {transactions === undefined ? (
-              <div className="space-y-2 p-4">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </div>
-            ) : recentTransactions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
-                <p className="text-sm font-medium text-muted-foreground">No transactions this month</p>
-                <p className="mt-1 text-xs text-muted-foreground/60">
-                  Tap + to log your first expense or income
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-border/60">
-                {recentTransactions.map((t) => {
-                  const meta = financeCategoryMeta(t.category)
-                  return (
-                    <Link
-                      key={t._id}
-                      href="/transactions"
-                      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40"
-                    >
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
-                        <DynamicIcon name={t.icon || meta.icon} className="size-4" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium">
-                          {t.note || meta.label}
-                        </span>
-                        <span className="block text-[11px] text-muted-foreground">
-                          {meta.label} · {t.date}
-                        </span>
-                      </span>
-                      <span
-                        className={cn(
-                          "shrink-0 text-sm font-bold",
-                          t.type === "income" ? "text-emerald-500" : t.type === "transfer" ? "text-blue-500" : "text-red-500"
-                        )}
-                      >
-                        {t.type === "income" ? "+" : t.type === "transfer" ? "" : "-"}
-                        {formatCurrencyAmount(
-                          convertCurrency(t.amount, t.currency, primaryCurrency, rates),
-                          primaryCurrency
-                        )}
-                      </span>
-                    </Link>
-                  )
-                })}
-              </div>
-            )}
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
+        {/* Net worth */}
+        <section className="surface relative overflow-hidden p-5 sm:p-7 lg:col-span-7">
+          <div className="folder-tab" aria-hidden />
+          <div className="relative flex items-center justify-between gap-3">
+            <p className="label">Net worth</p>
+            <span className="rounded-full border border-border px-2.5 py-1 text-[10px] font-medium tracking-[0.12em] text-muted-foreground">
+              {primaryCurrency}
+            </span>
           </div>
 
-          {/* Top Spending Categories */}
-          {topCategories.length > 0 && (
-            <div className="rounded-lg border border-border bg-background">
-              <div className="flex items-center justify-between border-b border-border p-4">
-                <h3 className="text-sm font-semibold">Top Spending · {monthLabel(month).split(" ")[0]}</h3>
-                <Link
-                  href="/stats"
-                  className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
-                >
-                  Insights <ChevronRight className="size-3.5" />
-                </Link>
-              </div>
-              <div className="space-y-3 p-4">
-                {topCategories.map((cat) => (
-                  <div key={cat.value} className="flex items-center gap-3">
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
-                      <DynamicIcon name={cat.icon} className="size-4" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium truncate">{cat.label}</span>
-                        <span className="text-xs text-muted-foreground shrink-0">
-                          {formatCurrencyAmount(cat.amount, primaryCurrency)}
-                        </span>
-                      </div>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{ width: `${cat.pct}%`, backgroundColor: cat.color }}
-                        />
-                      </div>
-                    </div>
-                    <div className="w-10 text-right text-xs font-semibold text-muted-foreground">
-                      {cat.pct}%
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          {loading ? (
+            <Skeleton className="mt-6 h-14 w-3/4 rounded-2xl" />
+          ) : (
+            <p className="display-number mt-6 text-[clamp(2.4rem,5.4vw,3.8rem)] text-foreground">
+              {formatCurrencyAmount(netWorth, primaryCurrency)}
+            </p>
           )}
 
-          {/* Subscriptions preview */}
-          <div className="rounded-lg border border-border bg-background">
-            <div className="flex items-center justify-between border-b border-border p-4">
-              <div className="flex items-center gap-2">
-                <Repeat className="size-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">Subscriptions</h3>
-              </div>
-              <Link
-                href="/subscriptions"
-                className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
-              >
-                Manage <ChevronRight className="size-3.5" />
-              </Link>
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            {accounts?.length ?? 0} accounts · live balances
+          </p>
+
+          <div className="mt-7 grid grid-cols-3 gap-3 border-t border-border pt-4">
+            <div>
+              <p className="label">In</p>
+              <p className="numeral mt-1.5 text-[1.05rem] text-positive">
+                +{formatCurrencyAmount(stats.income, primaryCurrency)}
+              </p>
             </div>
-            <div className="p-4">
-              {subscriptions === undefined ? (
-                <Skeleton className="h-10 w-full" />
-              ) : (
-                <div className="flex items-center justify-between">
-                  <div className="text-xs text-muted-foreground">
-                    <span className="text-sm font-bold text-foreground">{activeSubCount}</span> active ·{" "}
-                    <span className="text-sm font-bold text-foreground">
-                      {formatCurrencyAmount(subscriptionMonthly, primaryCurrency)}
-                    </span>/mo
-                  </div>
-                  <Link
-                    href="/subscriptions"
-                    className="rounded-lg bg-muted px-3 py-1.5 text-xs font-semibold hover:bg-muted/70"
-                  >
-                    Open tracker
-                  </Link>
-                </div>
-              )}
+            <div>
+              <p className="label">Out</p>
+              <p className="numeral mt-1.5 text-[1.05rem] text-foreground">
+                -{formatCurrencyAmount(stats.expense, primaryCurrency)}
+              </p>
+            </div>
+            <div>
+              <p className="label">Kept</p>
+              <p className="numeral mt-1.5 text-[1.05rem] text-foreground">
+                {formatCurrencyAmount(stats.saved, primaryCurrency)}
+              </p>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Sidebar */}
-        <div className="lg:col-span-5 xl:col-span-4 space-y-4">
-          {/* Budget snapshot */}
-          <div className="rounded-lg border border-border bg-background p-4">
-            <div className="flex items-center justify-between pb-3 mb-3 border-b border-border/60">
-              <div className="flex items-center gap-2">
-                <Sparkles className="size-4 text-muted-foreground" />
-                <h3 className="text-xs font-semibold uppercase tracking-wider">
-                  Budgets · {monthLabel(month).split(" ")[0]}
-                </h3>
+        {/* Budget ring */}
+        <section className="surface relative overflow-hidden p-5 sm:p-6 lg:col-span-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="label">
+                {budgetCap ? "Monthly cap" : "Cash flow"}
+              </p>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                {monthLabel(month)}
+              </p>
+            </div>
+            <Link
+              href="/budgets"
+              className="flex shrink-0 items-center gap-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Budgets
+              <ChevronRight className="size-3" />
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="mt-6 flex items-center gap-6">
+              <Skeleton className="size-[130px] rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-7 w-32" />
+                <Skeleton className="h-3 w-24" />
               </div>
-              <Link href="/budgets" className="text-[11px] font-semibold text-muted-foreground hover:text-foreground">
-                View
+            </div>
+          ) : budgetCap ? (
+            <div className="mt-4 flex items-center gap-6">
+              <Ring pct={ringPct} />
+              <div className="min-w-0">
+                <p className="numeral text-[1.55rem] leading-none text-foreground">
+                  {formatCurrencyAmount(Math.abs(leftToSpend), primaryCurrency)}
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {isBudgetExceeded ? "over the cap" : "left to spend"}
+                </p>
+                <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground/80">
+                  {formatCurrencyAmount(monthlySpend, primaryCurrency)} of{" "}
+                  {formatCurrencyAmount(budgetCap, primaryCurrency)}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-6 flex items-end justify-between gap-4">
+              <div>
+                <p className="numeral text-[1.9rem] leading-none text-foreground">
+                  {formatCurrencyAmount(stats.saved, primaryCurrency)}
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  kept this month
+                </p>
+              </div>
+              <Link
+                href="/more"
+                className="rounded-full border border-border px-3 py-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Set a cap
               </Link>
             </div>
-            {budgets === undefined || transactions === undefined ? (
-              <Skeleton className="h-16 w-full" />
-            ) : budgets.length === 0 ? (
-              <p className="text-xs text-muted-foreground">
-                No budgets set for {monthLabel(month).split(" ")[0]}. Set per-category limits to stay on track.
+          )}
+        </section>
+      </div>
+
+      {/* Folder metrics */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <MetricCard
+          href="/transactions"
+          hint="In"
+          value={`+${formatCurrencyAmount(stats.income, primaryCurrency)}`}
+          label="This month"
+        />
+        <MetricCard
+          href="/transactions"
+          hint="Out"
+          value={`-${formatCurrencyAmount(stats.expense, primaryCurrency)}`}
+          label="This month"
+        />
+        <MetricCard
+          href="/subscriptions"
+          hint="Fixed"
+          value={formatCurrencyAmount(subscriptionMonthly, primaryCurrency)}
+          label={`${activeSubCount} recurring · per month`}
+        />
+        <MetricCard
+          href="/subscriptions"
+          hint="Next"
+          value={nextRenewal ? shortDate(nextRenewal) : "—"}
+          label="Next renewal"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
+        {/* Activity */}
+        <section
+          className={cn(
+            "surface relative overflow-hidden p-5 sm:p-6 lg:col-span-8",
+            !hasUpcoming && "lg:col-span-12"
+          )}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-[15px] font-medium tracking-tight">Activity</h2>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Daily spending, last 13 weeks
               </p>
-            ) : (
-              <div className="space-y-2.5">
-                {budgets.slice(0, 4).map((b) => {
-                  const spentNative = (transactions || [])
-                    .filter((t) => t.type === "expense" && t.category === b.category)
-                    .reduce((s, t) => s + t.amount, 0)
-                  const spent = convertCurrency(spentNative, b.currency, primaryCurrency, rates)
-                  const cap = convertCurrency(b.amount, b.currency, primaryCurrency, rates)
-                  const pct = cap > 0 ? Math.min(100, Math.round((spent / cap) * 100)) : 0
-                  const meta = financeCategoryMeta(b.category)
+            </div>
+            <span className="text-[11px] text-muted-foreground">
+              {activity.activeDays} active days
+            </span>
+          </div>
+
+          <div className="quiet-scroll mt-7 flex gap-1.5 overflow-x-auto pb-1">
+            {activity.weeks.map((week, index) => (
+              <div key={index} className="flex flex-col gap-1.5">
+                {week.map((day) => {
+                  const intensity =
+                    day.amount <= 0 || activity.peak <= 0
+                      ? 0
+                      : 0.18 + 0.82 * Math.sqrt(day.amount / activity.peak)
                   return (
-                    <div key={b._id}>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium">{meta.label}</span>
-                        <span className={cn("font-semibold", spent > cap ? "text-red-500" : "text-muted-foreground")}>
-                          {pct}%
-                        </span>
-                      </div>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className={cn("h-full rounded-full", spent > cap ? "bg-red-500" : pct >= 85 ? "bg-amber-500" : "bg-emerald-500")}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
+                    <span
+                      key={day.key}
+                      title={
+                        day.future
+                          ? undefined
+                          : `${shortDate(day.key)}${
+                              day.amount > 0
+                                ? ` · ${formatCurrencyAmount(day.amount, primaryCurrency)}`
+                                : ""
+                            }`
+                      }
+                      className={cn(
+                        "size-[5px] rounded-full bg-foreground",
+                        day.future && "opacity-0"
+                      )}
+                      style={{ opacity: day.future ? 0 : Math.max(0.07, intensity) }}
+                    />
                   )
                 })}
               </div>
-            )}
+            ))}
           </div>
 
-          <UpcomingReminders
-            subscriptions={subscriptions || []}
-            primaryCurrency={primaryCurrency}
-            rates={rates}
-            onMarkCanceled={async () => {}}
+          <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-[11px] text-muted-foreground">
+            <span>Peak day</span>
+            <span className="numeral text-foreground">
+              {activity.peak > 0
+                ? formatCurrencyAmount(activity.peak, primaryCurrency)
+                : "No spend yet"}
+            </span>
+          </div>
+        </section>
+
+        {/* Upcoming */}
+        {hasUpcoming ? (
+          <div className="surface relative overflow-hidden p-5 sm:p-6 lg:col-span-4">
+            <UpcomingReminders
+              subscriptions={subscriptions || []}
+              primaryCurrency={primaryCurrency}
+              rates={rates}
+              onMarkCanceled={async () => {}}
+            />
+          </div>
+        ) : null}
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
+        {/* Recent */}
+        <section className="surface p-5 sm:p-6 lg:col-span-7">
+          <PanelHead
+            title="Recent"
+            hint={`${monthLabel(month)} · latest first`}
+            href="/transactions"
+            linkLabel="All"
           />
-        </div>
+
+          {transactions === undefined ? (
+            <div className="mt-5 space-y-3">
+              <Skeleton className="h-11 w-full rounded-xl" />
+              <Skeleton className="h-11 w-full rounded-xl" />
+              <Skeleton className="h-11 w-full rounded-xl" />
+            </div>
+          ) : recentTransactions.length === 0 ? (
+            <p className="mt-8 pb-2 text-center text-sm text-muted-foreground">
+              No transactions yet this month.
+            </p>
+          ) : (
+            <div className="mt-3 divide-y divide-border/70">
+              {recentTransactions.map((t) => {
+                const meta = financeCategoryMeta(t.category)
+                const isIncome = t.type === "income"
+                const isTransfer = t.type === "transfer"
+                return (
+                  <Link
+                    key={t._id}
+                    href="/transactions"
+                    className="flex items-center gap-3 py-3 transition-opacity hover:opacity-75"
+                  >
+                    <span className="surface-inset flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground">
+                      <DynamicIcon name={t.icon || meta.icon} className="size-3.5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[13px] text-foreground">
+                        {t.note || meta.label}
+                      </span>
+                      <span className="block text-[11px] text-muted-foreground">
+                        {meta.label} · {shortDate(t.date)}
+                      </span>
+                    </span>
+                    <span
+                      className={cn(
+                        "numeral shrink-0 text-[13px]",
+                        isIncome
+                          ? "text-positive"
+                          : isTransfer
+                            ? "text-muted-foreground"
+                            : "text-foreground"
+                      )}
+                    >
+                      {isIncome ? "+" : isTransfer ? "" : "-"}
+                      {formatCurrencyAmount(
+                        convertCurrency(t.amount, t.currency, primaryCurrency, rates),
+                        primaryCurrency
+                      )}
+                    </span>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* Budgets */}
+        <section className="surface p-5 sm:p-6 lg:col-span-5">
+          <PanelHead
+            title="Budgets"
+            hint={monthLabel(month).split(" ")[0]}
+            href="/budgets"
+            linkLabel="Manage"
+          />
+
+          {budgets === undefined || transactions === undefined ? (
+            <div className="mt-5 space-y-4">
+              <Skeleton className="h-10 w-full rounded-xl" />
+              <Skeleton className="h-10 w-full rounded-xl" />
+              <Skeleton className="h-10 w-full rounded-xl" />
+            </div>
+          ) : budgets.length === 0 ? (
+            <p className="mt-8 pb-2 text-center text-sm text-muted-foreground">
+              No limits set for this month.
+            </p>
+          ) : (
+            <div className="mt-4 space-y-4">
+              {budgets.slice(0, 4).map((b) => {
+                const spentNative = (transactions || [])
+                  .filter((t) => t.type === "expense" && t.category === b.category)
+                  .reduce((s, t) => s + t.amount, 0)
+                const spent = convertCurrency(spentNative, b.currency, primaryCurrency, rates)
+                const cap = convertCurrency(b.amount, b.currency, primaryCurrency, rates)
+                const pct = cap > 0 ? Math.min(100, Math.round((spent / cap) * 100)) : 0
+                const meta = financeCategoryMeta(b.category)
+                const over = spent > cap
+                return (
+                  <div key={b._id}>
+                    <div className="flex items-baseline justify-between gap-3 text-xs">
+                      <span className="truncate text-foreground">{meta.label}</span>
+                      <span className="numeral shrink-0 text-muted-foreground">
+                        {pct}%
+                      </span>
+                    </div>
+                    <div className="mt-2 h-1 overflow-hidden rounded-full bg-foreground/10">
+                      <div
+                        className={cn(
+                          "h-full rounded-full",
+                          over
+                            ? "bg-negative"
+                            : pct >= 85
+                              ? "bg-warning"
+                              : "bg-foreground/70"
+                        )}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </section>
       </div>
     </div>
   )

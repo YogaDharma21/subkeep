@@ -51,9 +51,9 @@ const eventPriority: Record<CalendarEventType, number> = {
 function getEventDotClass(eventType: CalendarEventType, isTodayCell: boolean): string {
   const isEndEvent = eventType === "end" || eventType === "trial_end"
   if (isTodayCell) {
-    return isEndEvent ? "bg-orange-300" : "bg-blue-300"
+    return isEndEvent ? "bg-background/45" : "bg-background/80"
   }
-  return isEndEvent ? "bg-orange-500" : "bg-blue-500"
+  return isEndEvent ? "bg-warning/80" : "bg-foreground/70"
 }
 
 function parseLocalDate(dateStr: string): Date {
@@ -285,9 +285,12 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-      <div className="lg:col-span-7 rounded-lg border border-border bg-background p-4 sm:p-5">
+      <div className="lg:col-span-7 surface p-4 sm:p-5">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-base font-semibold">{monthName}</h3>
+          <div>
+            <p className="label mb-1.5">Calendar</p>
+            <h3 className="text-lg font-medium tracking-tight">{monthName}</h3>
+          </div>
           <div className="flex gap-2">
             <Button variant="outline" size="icon-sm" onClick={prevMonth}>
               <ChevronLeft className="size-4" />
@@ -302,7 +305,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
             <div
               key={d}
-              className="py-1 text-center text-xs font-medium text-muted-foreground"
+              className="py-1 text-center text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground"
             >
               {d}
             </div>
@@ -321,14 +324,14 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                 onClick={() => d.isCurrentMonth && setSelectedDay(d.day)}
                 disabled={!d.isCurrentMonth}
                 className={cn(
-                  "relative flex aspect-square items-center justify-center rounded-lg text-sm transition-all cursor-pointer",
+                  "relative flex aspect-square items-center justify-center rounded-xl text-sm transition-colors cursor-pointer",
                   !d.isCurrentMonth && "text-muted-foreground/40",
-                  d.isCurrentMonth && "hover:bg-muted",
+                  d.isCurrentMonth && "hover:bg-accent/60",
                   isCurrentDayToday &&
                     "bg-foreground font-semibold text-background",
                   isSelected &&
                     !isCurrentDayToday &&
-                    "border-2 border-foreground font-semibold",
+                    "border border-foreground/40 font-semibold",
                   hasSub && "font-medium"
                 )}
               >
@@ -360,22 +363,23 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
         </div>
 
         {/* Calendar Legend */}
-        <div className="mt-4 flex items-center justify-center gap-6 border-t border-border pt-3 text-xs text-muted-foreground">
+        <div className="mt-4 flex items-center justify-center gap-6 border-t border-border pt-3 text-[11px] text-muted-foreground">
           <div className="flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-blue-500" />
-            <span>Subscription Start</span>
+            <span className="size-1.5 rounded-full bg-foreground/70" />
+            <span>Subscription start</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-orange-500" />
-            <span>Subscription End</span>
+            <span className="size-1.5 rounded-full bg-warning/80" />
+            <span>Subscription end</span>
           </div>
         </div>
       </div>
 
       {selectedDay !== null && (
-        <div className="lg:col-span-5 rounded-lg border border-border bg-background lg:sticky lg:top-6">
+        <div className="lg:col-span-5 surface lg:sticky lg:top-6">
           <div className="border-b border-border p-4">
-            <h3 className="text-sm font-semibold">{getHeaderTitle()}</h3>
+            <p className="label mb-1.5">Selected day</p>
+            <h3 className="text-sm font-medium">{getHeaderTitle()}</h3>
             <p className="text-xs text-muted-foreground">
               {new Date(year, month, selectedDay).toLocaleDateString("en-US", {
                 weekday: "long",
@@ -387,8 +391,8 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
           </div>
           <div className="p-2">
             {selectedEvents.length === 0 ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">
-                No events or payments scheduled for this day
+              <div className="py-10 text-center text-sm text-muted-foreground">
+                Nothing scheduled for this day
               </div>
             ) : (
               selectedEvents.map(({ subscription: sub, eventType }) => {
@@ -400,15 +404,16 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                   <div
                     key={`${sub._id}-${eventType}`}
                     onClick={() => router.push(`/subscriptions/${sub._id}`)}
-                    className="flex cursor-pointer items-center gap-3 rounded-lg p-3 hover:bg-muted transition-colors"
+                    className="flex cursor-pointer items-center gap-3 rounded-2xl p-3 transition-colors hover:bg-accent/60"
                   >
-                    <div
-                      className="flex size-9 shrink-0 items-center justify-center rounded-lg"
-                      style={{ backgroundColor: sub.color }}
-                    >
+                    <div className="relative flex size-9 shrink-0 items-center justify-center rounded-xl border border-border bg-foreground/[0.03]">
                       <DynamicIcon
                         name={sub.icon}
-                        className="size-4 text-white"
+                        className="size-4 text-foreground/85"
+                      />
+                      <span
+                        className="absolute -bottom-px -right-px size-2 rounded-full ring-2 ring-card"
+                        style={{ backgroundColor: sub.color }}
                       />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -423,30 +428,30 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                         {eventType === "start" && (
                           <span
                             className={cn(
-                              "rounded-md px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider shrink-0 border",
+                              "shrink-0 rounded-full border px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.12em]",
                               isTrial
-                                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-                                : "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30"
+                                ? "border-positive/25 bg-positive/10 text-positive"
+                                : "border-border bg-foreground/[0.05] text-foreground/75"
                             )}
                           >
-                            {isTrial ? "Trial Starts" : "Starts"}
+                            {isTrial ? "Trial starts" : "Starts"}
                           </span>
                         )}
 
                         {eventType === "trial_end" && (
-                          <span className="rounded-md bg-orange-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-orange-600 dark:text-orange-400 border border-orange-500/30 uppercase tracking-wider shrink-0">
-                            Trial Ends
+                          <span className="shrink-0 rounded-full border border-warning/25 bg-warning/10 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.12em] text-warning">
+                            Trial ends
                           </span>
                         )}
 
                         {eventType === "renewal" && (
-                          <span className="rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-amber-600 dark:text-amber-400 border border-amber-500/30 uppercase tracking-wider shrink-0">
+                          <span className="shrink-0 rounded-full border border-border bg-foreground/[0.05] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.12em] text-foreground/75">
                             Due
                           </span>
                         )}
 
                         {eventType === "end" && (
-                          <span className="rounded-md bg-orange-500/15 px-1.5 py-0.5 text-[9px] font-extrabold text-orange-600 dark:text-orange-400 border border-orange-500/30 uppercase tracking-wider shrink-0">
+                          <span className="shrink-0 rounded-full border border-warning/25 bg-warning/10 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.12em] text-warning">
                             Ends
                           </span>
                         )}
@@ -458,7 +463,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                       </div>
                     </div>
                     <div className="shrink-0 text-right">
-                      <div className="text-sm font-semibold">
+                      <div className="numeral text-sm font-medium">
                         {showConverted
                           ? convertAndFormat(
                               sub.price,
