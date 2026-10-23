@@ -4,6 +4,7 @@ import {
   View,
   Text,
   TextInput,
+  type TextInputInstance,
   TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
@@ -68,15 +69,19 @@ export function SearchModal({
   )
 
   const [query, setQuery] = useState("")
-  const inputRef = useRef<TextInput>(null)
+  const [prevVisible, setPrevVisible] = useState(visible)
+  const inputRef = useRef<TextInputInstance>(null)
+
+  if (prevVisible !== visible) {
+    setPrevVisible(visible)
+    if (!visible) setQuery("")
+  }
 
   useEffect(() => {
     if (visible) {
       setTimeout(() => {
         inputRef.current?.focus()
       }, 100)
-    } else {
-      setQuery("")
     }
   }, [visible])
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useState } from "react"
 import { Animated, ViewStyle, StyleProp } from "react-native"
 import { useThemeColor } from "@/hooks/use-theme-color"
 
@@ -16,7 +16,7 @@ export function Skeleton({
   borderRadius = 8,
 }: SkeletonProps) {
   const { colors } = useThemeColor()
-  const opacity = useRef(new Animated.Value(0.35)).current
+  const [opacity] = useState(() => new Animated.Value(0.35))
 
   useEffect(() => {
     const pulse = Animated.loop(

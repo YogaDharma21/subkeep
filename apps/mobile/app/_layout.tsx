@@ -1,7 +1,7 @@
 import { ClerkProvider, useAuth } from "@clerk/expo"
 import { ConvexProviderWithClerk } from "convex/react-clerk"
 import { ConvexReactClient } from "convex/react"
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native"
+import { DarkTheme, DefaultTheme, ThemeProvider } from "expo-router/react-navigation"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { Stack, useRouter, useSegments } from "expo-router"
 import { StatusBar } from "expo-status-bar"
@@ -171,7 +171,7 @@ function ThemedApp() {
     <ThemeProvider value={navigationTheme}>
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         <InitialLayout />
-        <StatusBar style={isDark ? "light" : "dark"} backgroundColor={colors.background} />
+        <StatusBar style={isDark ? "light" : "dark"} />
       </View>
     </ThemeProvider>
   )

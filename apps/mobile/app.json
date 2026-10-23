@@ -8,7 +8,6 @@
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#09090b",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "backgroundColor": "#09090b"
@@ -21,7 +20,6 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -44,7 +42,8 @@
       ],
       "expo-secure-store",
       "expo-web-browser",
-      "@clerk/expo"
+      "@clerk/expo",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,
