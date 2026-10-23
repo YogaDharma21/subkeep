@@ -15,13 +15,13 @@ const dots = [
 
 export function LandingPage() {
   return (
-    <div className="dark relative flex h-screen max-h-screen flex-col overflow-hidden bg-[#08090b] text-[#f4f4f2] selection:bg-white/15">
+    <div className="dark relative flex min-h-screen flex-col bg-[#08090b] text-[#f4f4f2] selection:bg-white/15">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-[620px] bg-[radial-gradient(ellipse_55%_55%_at_50%_-12%,rgba(255,255,255,0.11),transparent_72%)]"
       />
 
-      <div className="relative mx-auto flex h-full w-full max-w-6xl flex-col px-4 sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 sm:px-6 lg:px-8">
         <header className="flex h-16 shrink-0 items-center justify-between sm:h-20">
           <div className="flex items-center gap-2.5">
             <Image
@@ -38,9 +38,9 @@ export function LandingPage() {
           </div>
         </header>
 
-        <main className="grid flex-1 grid-cols-1 items-center gap-8 pb-8 lg:grid-cols-12 lg:gap-10">
-          <div className="lg:col-span-7">
-            <h1 className="text-[clamp(2.7rem,6vw,4.9rem)] font-[550] leading-[0.94] tracking-[-0.055em]">
+        <main className="grid flex-1 grid-cols-1 items-center gap-10 py-6 pb-16 sm:py-8 md:grid-cols-12 md:gap-8 md:pb-8 lg:gap-12">
+          <div className="md:col-span-7">
+            <h1 className="text-[clamp(2.5rem,5.2vw,4.75rem)] font-[550] leading-[0.96] tracking-[-0.055em]">
               Every bill.
               <br />
               Every balance.
@@ -67,8 +67,8 @@ export function LandingPage() {
           </div>
 
           {/* Preview */}
-          <div className="lg:col-span-5">
-            <div className="mx-auto w-full max-w-sm space-y-3">
+          <div className="w-full md:col-span-5">
+            <div className="mx-auto w-full max-w-sm space-y-3 md:max-w-none lg:max-w-sm">
               <div className="surface p-5 sm:p-6">
                 <div className="flex items-center justify-between">
                   <p className="label">Net worth</p>
