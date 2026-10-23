@@ -38,13 +38,13 @@ export default function ProfileModal() {
   const [firstName, setFirstName] = useState(user?.firstName || "")
   const [lastName, setLastName] = useState(user?.lastName || "")
   const [savingName, setSavingName] = useState(false)
+  const [syncedUserId, setSyncedUserId] = useState<string | null>(null)
 
-  React.useEffect(() => {
-    if (user) {
-      setFirstName(user.firstName || "")
-      setLastName(user.lastName || "")
-    }
-  }, [user])
+  if (user && user.id !== syncedUserId) {
+    setSyncedUserId(user.id)
+    setFirstName(user.firstName || "")
+    setLastName(user.lastName || "")
+  }
 
   const handleSaveName = async () => {
     if (!user) return

@@ -35,7 +35,37 @@ export function Button({
   const { colors } = useThemeColor()
 
   const getContainerStyle = (): ViewStyle => {
-    const base: ViewStyle = {
+    const sizeStyle: ViewStyle =
+      size === "sm"
+        ? { paddingHorizontal: 12, paddingVertical: 6, minHeight: 34 }
+        : size === "lg"
+          ? { paddingHorizontal: 20, paddingVertical: 14, minHeight: 48 }
+          : { paddingHorizontal: 16, paddingVertical: 10, minHeight: 42 }
+
+    const variantStyle: ViewStyle =
+      variant === "primary"
+        ? { backgroundColor: colors.primary }
+        : variant === "secondary"
+          ? {
+              backgroundColor: colors.surfaceInset,
+              borderColor: colors.border,
+            }
+          : variant === "outline"
+            ? {
+                backgroundColor: "transparent",
+                borderColor: colors.border,
+              }
+            : variant === "destructive"
+              ? {
+                  backgroundColor: colors.destructiveBackground,
+                  borderColor: colors.border,
+                }
+              : {
+                  backgroundColor: "transparent",
+                  borderWidth: 0,
+                }
+
+    return {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
@@ -43,70 +73,22 @@ export function Button({
       gap: 8,
       borderWidth: 1,
       borderColor: "transparent",
+      ...sizeStyle,
+      ...variantStyle,
+      ...(disabled || loading ? { opacity: 0.5 } : {}),
     }
-
-    if (size === "sm") {
-      base.paddingHorizontal = 12
-      base.paddingVertical = 6
-      base.minHeight = 34
-    } else if (size === "lg") {
-      base.paddingHorizontal = 20
-      base.paddingVertical = 14
-      base.minHeight = 48
-    } else {
-      base.paddingHorizontal = 16
-      base.paddingVertical = 10
-      base.minHeight = 42
-    }
-
-    if (variant === "primary") {
-      base.backgroundColor = colors.primary
-    } else if (variant === "secondary") {
-      base.backgroundColor = colors.surfaceInset
-      base.borderColor = colors.border
-    } else if (variant === "outline") {
-      base.backgroundColor = "transparent"
-      base.borderColor = colors.border
-    } else if (variant === "destructive") {
-      base.backgroundColor = colors.destructiveBackground
-      base.borderColor = colors.border
-    } else if (variant === "ghost") {
-      base.backgroundColor = "transparent"
-      base.borderWidth = 0
-    }
-
-    if (disabled || loading) {
-      base.opacity = 0.5
-    }
-
-    return base
   }
 
   const getTextStyle = (): TextStyle => {
-    const base: TextStyle = {
-      fontWeight: "600",
-      letterSpacing: -0.1,
-    }
+    const fontSize = size === "sm" ? 12 : size === "lg" ? 15 : 13
+    const color =
+      variant === "primary"
+        ? colors.primaryForeground
+        : variant === "secondary" || variant === "outline" || variant === "ghost"
+          ? colors.text
+          : colors.destructive
 
-    if (size === "sm") {
-      base.fontSize = 12
-    } else if (size === "lg") {
-      base.fontSize = 15
-    } else {
-      base.fontSize = 13
-    }
-
-    if (variant === "primary") {
-      base.color = colors.primaryForeground
-    } else if (variant === "secondary") {
-      base.color = colors.text
-    } else if (variant === "outline" || variant === "ghost") {
-      base.color = colors.text
-    } else if (variant === "destructive") {
-      base.color = colors.destructive
-    }
-
-    return base
+    return { fontWeight: "600", letterSpacing: -0.1, fontSize, color }
   }
 
   return (

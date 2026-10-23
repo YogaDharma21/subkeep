@@ -45,16 +45,15 @@ export default function PreferencesModal() {
   const [localReminderDays, setLocalReminderDays] = useState<number | null>(null)
   const [currencyModalOpen, setCurrencyModalOpen] = useState(false)
   const [currencySearch, setCurrencySearch] = useState("")
-  const [budgetCapInput, setBudgetCapInput] = useState("")
+  const [budgetCapDraft, setBudgetCapDraft] = useState<string | null>(null)
   const [savingBudget, setSavingBudget] = useState(false)
 
   const reminderDays = localReminderDays ?? userSettings?.reminderDays ?? 3
-
-  React.useEffect(() => {
-    if (userSettings?.monthlyBudgetCap !== undefined && userSettings.monthlyBudgetCap !== null) {
-      setBudgetCapInput(String(userSettings.monthlyBudgetCap))
-    }
-  }, [userSettings?.monthlyBudgetCap])
+  const budgetCapInput =
+    budgetCapDraft ??
+    (userSettings?.monthlyBudgetCap !== undefined && userSettings.monthlyBudgetCap !== null
+      ? String(userSettings.monthlyBudgetCap)
+      : "")
 
   const handleThemeChange = async (mode: ThemeMode) => {
     await setThemeMode(mode)
@@ -428,7 +427,7 @@ export default function PreferencesModal() {
                 <Input
                   placeholder={`e.g. 200 (${getSymbol(primaryCurrency)})`}
                   value={budgetCapInput}
-                  onChangeText={setBudgetCapInput}
+                  onChangeText={setBudgetCapDraft}
                   keyboardType="numeric"
                 />
               </View>

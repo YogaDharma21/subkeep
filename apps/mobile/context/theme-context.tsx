@@ -28,7 +28,7 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
         const saved = await AsyncStorage.getItem(THEME_STORAGE_KEY)
         if (saved === "light" || saved === "dark" || saved === "system") {
           setThemeModeState(saved)
-          Appearance.setColorScheme(saved === "system" ? null : saved)
+          Appearance.setColorScheme(saved === "system" ? "auto" : saved)
         }
       } catch {
         // ignore
@@ -41,7 +41,7 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
     setThemeModeState(mode)
     try {
       await AsyncStorage.setItem(THEME_STORAGE_KEY, mode)
-      Appearance.setColorScheme(mode === "system" ? null : mode)
+      Appearance.setColorScheme(mode === "system" ? "auto" : mode)
     } catch {
       // ignore
     }
@@ -74,10 +74,10 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
 
 export function useThemeColor(): ThemeContextType {
   const context = useContext(ThemeContext)
+  const systemScheme = useColorScheme()
   if (context) return context
 
   // Fallback if rendered outside provider
-  const systemScheme = useColorScheme()
   const isDark = systemScheme !== "light"
   const colors = isDark ? Colors.dark : Colors.light
 
