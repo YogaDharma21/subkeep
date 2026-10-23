@@ -40,6 +40,9 @@ interface StatsChartsProps {
   rates?: Record<string, number>
 }
 
+const DONUT_RADIUS = 55
+const DONUT_CIRCUMFERENCE = 2 * Math.PI * DONUT_RADIUS
+
 function parseLocalDate(dateStr: string): Date {
   const parts = dateStr.split("-").map(Number)
   const y = parts[0]
@@ -278,9 +281,18 @@ export function StatsCharts({
   }, [payments, primaryCurrency, rates])
 
   // Donut SVG Math
-  const donutRadius = 55
-  const donutCircumference = 2 * Math.PI * donutRadius
-  let cumulativeOffset = 0
+  const donutSlices = useMemo(() => {
+    return categoryData.map((cat, index) => {
+      const strokeLength = (cat.numericPercentage / 100) * DONUT_CIRCUMFERENCE
+      const dashoffset = categoryData
+        .slice(0, index)
+        .reduce(
+          (sum, prev) => sum + (prev.numericPercentage / 100) * DONUT_CIRCUMFERENCE,
+          0
+        )
+      return { ...cat, strokeLength, dashoffset }
+    })
+  }, [categoryData])
 
   return (
     <View style={{ gap: 16 }}>
@@ -581,32 +593,26 @@ export function StatsCharts({
                     <Circle
                       cx="80"
                       cy="80"
-                      r={donutRadius}
+                      r={DONUT_RADIUS}
                       stroke={colors.surface}
                       strokeWidth={22}
                       fill="none"
                     />
 
                     {/* Colored Category Slices */}
-                    {categoryData.map((cat, idx) => {
-                      const strokeLength = (cat.numericPercentage / 100) * donutCircumference
-                      const dashoffset = cumulativeOffset
-                      cumulativeOffset += strokeLength
-
-                      return (
-                        <Circle
-                          key={idx}
-                          cx="80"
-                          cy="80"
-                          r={donutRadius}
-                          stroke={cat.color}
-                          strokeWidth={22}
-                          strokeDasharray={`${strokeLength} ${donutCircumference - strokeLength}`}
-                          strokeDashoffset={-dashoffset}
-                          fill="none"
-                        />
-                      )
-                    })}
+                    {donutSlices.map((cat, idx) => (
+                      <Circle
+                        key={idx}
+                        cx="80"
+                        cy="80"
+                        r={DONUT_RADIUS}
+                        stroke={cat.color}
+                        strokeWidth={22}
+                        strokeDasharray={`${cat.strokeLength} ${DONUT_CIRCUMFERENCE - cat.strokeLength}`}
+                        strokeDashoffset={-cat.dashoffset}
+                        fill="none"
+                      />
+                    ))}
                   </G>
                 </Svg>
               </View>

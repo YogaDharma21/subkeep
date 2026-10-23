@@ -72,6 +72,10 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
   const daysInMonth = new Date(year, month + 1, 0).getDate()
 
   const billingDays = useMemo(() => {
+    const viewDate = currentDate
+    const year = viewDate.getFullYear()
+    const month = viewDate.getMonth()
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
     const map: Record<number, CalendarDayEvent[]> = {}
 
     const addEvent = (d: number, event: CalendarDayEvent) => {
@@ -194,7 +198,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
     })
 
     return map
-  }, [subscriptions, year, month, daysInMonth])
+  }, [subscriptions, currentDate])
 
   // Total Projected Spent in current viewed month
   const monthTotal = useMemo(() => {

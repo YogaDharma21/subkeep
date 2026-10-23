@@ -35,7 +35,7 @@ and `pnpm-lock.yaml` — install and run commands inside each app directory:
 subkeep/
 ├── apps/
 │   ├── website/    # SubKeep Web App (Next.js 16 + Convex + Clerk + Tailwind CSS v4)
-│   ├── mobile/     # SubKeep Mobile App (Expo SDK 54 + Convex + Clerk)
+│   ├── mobile/     # SubKeep Mobile App (Expo SDK 58 + Convex + Clerk)
 │   ├── desktop/    # SubKeep Desktop App (Electron + Vite + Convex + Clerk)
 ├── docker/         # Docker orchestration configurations
 ├── docs/           # Architecture & technical documentation

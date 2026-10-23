@@ -53,10 +53,14 @@ const SHEET_HIDDEN_Y = 500
 
 export function QuickAddSheet({ visible, onClose, onSelect }: QuickAddSheetProps) {
   const { colors } = useThemeColor()
-  const [mounted, setMounted] = useState(false)
-  const backdropOpacity = useRef(new Animated.Value(0)).current
-  const sheetTranslate = useRef(new Animated.Value(SHEET_HIDDEN_Y)).current
+  const [mounted, setMounted] = useState(visible)
+  const [backdropOpacity] = useState(() => new Animated.Value(0))
+  const [sheetTranslate] = useState(() => new Animated.Value(SHEET_HIDDEN_Y))
   const exitAnim = useRef<Animated.CompositeAnimation | null>(null)
+
+  if (visible && !mounted) {
+    setMounted(true)
+  }
 
   // Mount on open, play the exit animation before unmounting on close so the
   // dim backdrop fades out instead of vanishing mid-slide.
@@ -64,27 +68,29 @@ export function QuickAddSheet({ visible, onClose, onSelect }: QuickAddSheetProps
     if (visible) {
       exitAnim.current?.stop()
       exitAnim.current = null
-      setMounted(true)
-    } else if (mounted) {
-      exitAnim.current = Animated.parallel([
-        Animated.timing(backdropOpacity, {
-          toValue: 0,
-          duration: 180,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(sheetTranslate, {
-          toValue: SHEET_HIDDEN_Y,
-          duration: 220,
-          easing: Easing.in(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ])
-      exitAnim.current.start(() => {
-        exitAnim.current = null
-        setMounted(false)
-      })
+      return
     }
+
+    if (!mounted) return
+
+    exitAnim.current = Animated.parallel([
+      Animated.timing(backdropOpacity, {
+        toValue: 0,
+        duration: 180,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(sheetTranslate, {
+        toValue: SHEET_HIDDEN_Y,
+        duration: 220,
+        easing: Easing.in(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ])
+    exitAnim.current.start(() => {
+      exitAnim.current = null
+      setMounted(false)
+    })
   }, [visible, mounted, backdropOpacity, sheetTranslate])
 
   // Enter animation once mounted.
