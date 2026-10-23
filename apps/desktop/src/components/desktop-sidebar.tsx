@@ -113,13 +113,13 @@ export function DesktopSidebar({
   ]
 
   return (
-    <aside className="w-60 border-r border-border bg-sidebar/50 backdrop-blur-xs flex flex-col justify-between p-3 shrink-0 select-none">
+    <aside className="w-60 border-r border-border bg-background/60 flex flex-col justify-between p-3 shrink-0 select-none">
       <div className="space-y-4">
         <div className="space-y-2">
           <div className="relative">
             <Button
               onClick={() => setAddMenuOpen((open) => !open)}
-              className="w-full justify-between gap-2 font-bold text-xs h-9 shadow-xs cursor-pointer"
+              className="h-10 w-full justify-between gap-2 rounded-full text-xs font-medium shadow-none cursor-pointer"
               aria-expanded={addMenuOpen}
             >
               <span className="flex items-center gap-2">
@@ -140,7 +140,7 @@ export function DesktopSidebar({
                   className="fixed inset-0 z-40"
                   onClick={() => setAddMenuOpen(false)}
                 />
-                <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-lg border border-border bg-popover p-1 shadow-lg">
+                <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-2xl border border-border bg-popover p-1 shadow-2xl">
                   {addOptions.map((option) => {
                     const Icon = option.icon
                     return (
@@ -150,7 +150,7 @@ export function DesktopSidebar({
                           setAddMenuOpen(false)
                           option.onClick()
                         }}
-                        className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-xs font-semibold text-foreground transition-colors hover:bg-muted cursor-pointer"
+                        className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-xs font-medium text-foreground transition-colors hover:bg-[color-mix(in_oklab,var(--foreground)_5%,transparent)] cursor-pointer"
                       >
                         <Icon className="size-4 text-muted-foreground" />
                         <span>{option.label}</span>
@@ -164,20 +164,20 @@ export function DesktopSidebar({
 
           <button
             onClick={onSearchClick}
-            className="flex w-full items-center justify-between rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground cursor-pointer"
+            className="flex w-full items-center justify-between rounded-full border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] px-3 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
           >
             <div className="flex items-center gap-2">
               <Search className="size-3.5" />
               <span>Search & Commands...</span>
             </div>
-            <kbd className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-mono">
+            <kbd className="rounded-full border border-border bg-background px-1.5 py-0.5 text-[10px] font-mono">
               {isMac ? "⌘K" : "Ctrl+K"}
             </kbd>
           </button>
         </div>
 
         <nav className="space-y-1">
-          <p className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p className="label px-2 pb-1.5">
             Navigation
           </p>
           {navGroups.map((group) => {
@@ -188,10 +188,10 @@ export function DesktopSidebar({
                 <button
                   onClick={() => onNavigate(group.target)}
                   className={cn(
-                    "w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                    "flex w-full items-center justify-between rounded-full px-3 py-2 text-xs font-medium transition-all cursor-pointer",
                     isActive
-                      ? "bg-muted/70 text-foreground"
-                      : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                      ? "bg-[color-mix(in_oklab,var(--foreground)_6%,transparent)] text-foreground"
+                      : "text-muted-foreground hover:bg-[color-mix(in_oklab,var(--foreground)_4%,transparent)] hover:text-foreground"
                   )}
                 >
                   <div className="flex items-center gap-2.5">
@@ -201,10 +201,10 @@ export function DesktopSidebar({
                   {group.badge !== undefined && (
                     <span
                       className={cn(
-                        "px-1.5 py-0.2 rounded-md text-[10px] font-bold border",
+                        "rounded-full border px-2 py-0.5 text-[10px] font-medium",
                         isActive
                           ? "bg-background text-foreground border-border"
-                          : "bg-muted text-muted-foreground border-border/80"
+                          : "bg-muted text-muted-foreground border-border"
                       )}
                     >
                       {group.badge}
@@ -221,10 +221,10 @@ export function DesktopSidebar({
                           key={child.id}
                           onClick={() => onNavigate(child.id)}
                           className={cn(
-                            "w-full rounded-md px-2.5 py-1.5 text-left text-[11px] font-semibold transition-colors cursor-pointer",
+                            "w-full rounded-full px-2.5 py-1.5 text-left text-[11px] font-medium transition-colors cursor-pointer",
                             isChildActive
                               ? "bg-foreground text-background"
-                              : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                              : "text-muted-foreground hover:bg-[color-mix(in_oklab,var(--foreground)_4%,transparent)] hover:text-foreground"
                           )}
                         >
                           {child.label}
@@ -241,17 +241,17 @@ export function DesktopSidebar({
 
       {/* Footer: User profile & Active Currency */}
       <div className="space-y-3 pt-3 border-t border-border/60">
-        <div className="flex items-center justify-between px-2 py-1 bg-muted/40 rounded-lg border border-border/60 text-xs">
+        <div className="flex items-center justify-between surface-inset px-3 py-2 text-xs">
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Globe className="size-3.5" />
             <span className="text-[11px] font-medium">Currency:</span>
           </div>
-          <span className="font-bold text-foreground text-[11px] uppercase">
+          <span className="numeral text-[11px] font-medium uppercase text-foreground">
             {primaryCurrency}
           </span>
         </div>
 
-        <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg bg-card border border-border shadow-2xs">
+        <div className="surface-inset flex items-center gap-2.5 p-2">
           <UserButton
             appearance={{
               elements: {
@@ -260,7 +260,7 @@ export function DesktopSidebar({
             }}
           />
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold text-foreground truncate">
+            <p className="text-xs font-medium text-foreground truncate">
               {user?.fullName || user?.primaryEmailAddress?.emailAddress?.split("@")[0] || "User"}
             </p>
             <p className="text-[10px] text-muted-foreground truncate">
@@ -270,7 +270,7 @@ export function DesktopSidebar({
           <button
             onClick={() => onNavigate("settings")}
             className={cn(
-              "size-7 flex items-center justify-center rounded-md transition-colors cursor-pointer shrink-0",
+              "flex size-7 shrink-0 items-center justify-center rounded-full transition-colors cursor-pointer",
               currentView === "settings"
                 ? "bg-muted text-foreground"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -281,7 +281,7 @@ export function DesktopSidebar({
           </button>
           <button
             onClick={() => signOut()}
-            className="size-7 flex items-center justify-center rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors cursor-pointer shrink-0"
+            className="flex size-7 shrink-0 items-center justify-center rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors cursor-pointer shrink-0"
             title="Log Out"
           >
             <LogOut className="size-3.5" />

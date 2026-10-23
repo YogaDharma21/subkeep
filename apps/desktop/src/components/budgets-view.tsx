@@ -87,63 +87,74 @@ export function BudgetsView() {
   }
 
   return (
-    <div className="space-y-4 max-w-5xl mx-auto pb-12">
-      <div>
-        <h1 className="text-xl font-extrabold text-foreground">Budgets</h1>
-        <p className="text-xs text-muted-foreground mt-1">Per-category monthly spending limits.</p>
+    <div className="mx-auto max-w-5xl space-y-3 pb-16">
+      <div className="px-1 pb-2">
+        <p className="label">Limits</p>
+        <h1 className="page-title mt-2">Budgets</h1>
       </div>
 
-      <div className="rounded-lg border border-border bg-background p-4">
+      <section className="surface relative overflow-hidden p-5 sm:p-6">
         <div className="flex items-center justify-between">
-          <Button variant="outline" size="icon-sm" onClick={() => setMonth(shiftMonth(month, -1))}>
+          <Button variant="outline" size="icon-sm" onClick={() => setMonth(shiftMonth(month, -1))} className="rounded-full" aria-label="Previous month">
             <ChevronLeft className="size-4" />
           </Button>
           <div className="text-center">
-            <h2 className="text-sm font-bold">{monthLabel(month)}</h2>
-            <p className="text-[11px] text-muted-foreground">
-              {formatCurrencyAmount(totals.spent, primaryCurrency)} of {formatCurrencyAmount(totals.cap, primaryCurrency)} budgeted ({totals.pct}%)
-            </p>
+            <p className="label">This month</p>
+            <p className="mt-2 text-lg font-medium tracking-tight">{monthLabel(month)}</p>
           </div>
-          <Button variant="outline" size="icon-sm" onClick={() => setMonth(shiftMonth(month, 1))}>
+          <Button variant="outline" size="icon-sm" onClick={() => setMonth(shiftMonth(month, 1))} className="rounded-full" aria-label="Next month">
             <ChevronRight className="size-4" />
           </Button>
         </div>
+        <div className="mt-6 flex items-end justify-between gap-4 border-t border-border pt-4">
+          <div>
+            <p className="numeral text-[1.45rem] leading-none text-foreground">
+              {formatCurrencyAmount(totals.spent, primaryCurrency)}
+            </p>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              of {formatCurrencyAmount(totals.cap, primaryCurrency)} budgeted
+            </p>
+          </div>
+          <span className={cn("numeral text-[13px]", totals.spent > totals.cap ? "text-negative" : "text-muted-foreground")}>
+            {totals.pct}%
+          </span>
+        </div>
         {totals.cap > 0 && (
-          <div className="mt-3 h-2.5 w-full rounded-full bg-muted overflow-hidden">
+          <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-foreground/10">
             <div
-              className={cn("h-full rounded-full transition-all", totals.spent > totals.cap ? "bg-red-500" : totals.pct >= 85 ? "bg-amber-500" : "bg-emerald-500")}
+              className={cn("h-full rounded-full transition-all", totals.spent > totals.cap ? "bg-negative" : totals.pct >= 85 ? "bg-warning" : "bg-foreground/70")}
               style={{ width: `${Math.min(100, totals.pct)}%` }}
             />
           </div>
         )}
-      </div>
+      </section>
 
       {/* Budget rows */}
       {budgets === undefined || transactions === undefined ? (
         <div className="space-y-3">
-          <div className="h-20 rounded-md bg-muted animate-pulse" />
-          <div className="h-20 rounded-md bg-muted animate-pulse" />
+          <div className="h-20 rounded-3xl bg-muted animate-pulse" />
+          <div className="h-20 rounded-3xl bg-muted animate-pulse" />
         </div>
       ) : rows.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 text-center">
-          <PiggyBank className="size-6 text-muted-foreground/50 mb-2" />
+        <div className="surface flex flex-col items-center justify-center py-12 text-center">
+          <PiggyBank className="mb-2 size-6 text-muted-foreground/50" />
           <p className="text-sm font-medium text-muted-foreground">No budgets for {monthLabel(month).split(" ")[0]}</p>
           <p className="mt-1 text-xs text-muted-foreground/60">Set per-category spending limits to track progress</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {rows.map(({ budget, meta, spent, cap, pct, remaining }) => {
             const subSpend = subscriptionSpendByCategory.get(budget.category) || 0
             return (
-              <div key={budget._id} className="rounded-lg border border-border bg-background p-4">
+              <div key={budget._id} className="surface p-4">
                 <div className="flex items-center gap-3">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
+                  <span className="surface-inset flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground">
                     <DynamicIcon name={meta.icon} className="size-4" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-semibold truncate">{meta.label}</span>
-                      <button onClick={() => setDeleteId(budget._id)} className="text-muted-foreground hover:text-destructive cursor-pointer shrink-0" title="Remove budget">
+                      <span className="truncate text-[13px] font-medium">{meta.label}</span>
+                      <button onClick={() => setDeleteId(budget._id)} className="shrink-0 cursor-pointer text-muted-foreground hover:text-destructive" title="Remove budget">
                         <Trash2 className="size-3.5" />
                       </button>
                     </div>
@@ -152,13 +163,13 @@ export function BudgetsView() {
                       {subSpend > 0 && <span> · incl. {formatCurrencyAmount(subSpend, primaryCurrency)} subs</span>}
                     </div>
                   </div>
-                  <div className={cn("shrink-0 text-sm font-extrabold", remaining < 0 ? "text-red-500" : pct >= 85 ? "text-amber-500" : "text-emerald-500")}>
+                  <div className={cn("numeral shrink-0 text-[13px]", remaining < 0 ? "text-negative" : pct >= 85 ? "text-warning" : "text-foreground")}>
                     {pct}%
                   </div>
                 </div>
-                <div className="mt-2.5 h-2 w-full rounded-full bg-muted overflow-hidden">
+                <div className="mt-2.5 h-1 w-full overflow-hidden rounded-full bg-foreground/10">
                   <div
-                    className={cn("h-full rounded-full transition-all", remaining < 0 ? "bg-red-500" : pct >= 85 ? "bg-amber-500" : "bg-emerald-500")}
+                    className={cn("h-full rounded-full transition-all", remaining < 0 ? "bg-negative" : pct >= 85 ? "bg-warning" : "bg-foreground/70")}
                     style={{ width: `${Math.min(100, pct)}%` }}
                   />
                 </div>
@@ -166,7 +177,7 @@ export function BudgetsView() {
                   {remaining >= 0 ? (
                     <span>{formatCurrencyAmount(remaining, primaryCurrency)} remaining</span>
                   ) : (
-                    <span className="text-red-500 font-medium">Over by {formatCurrencyAmount(Math.abs(remaining), primaryCurrency)}</span>
+                    <span className="font-medium text-negative">Over by {formatCurrencyAmount(Math.abs(remaining), primaryCurrency)}</span>
                   )}
                 </div>
               </div>
@@ -176,12 +187,12 @@ export function BudgetsView() {
       )}
 
       <Dialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
-        <DialogContent className="max-w-sm rounded-lg p-5">
+        <DialogContent className="max-w-sm rounded-3xl p-5">
           <DialogHeader className="space-y-1 text-left">
-            <DialogTitle className="text-base font-semibold">Remove Budget</DialogTitle>
+            <DialogTitle className="text-base font-medium">Remove budget</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">This removes the budget cap for this category and month.</DialogDescription>
           </DialogHeader>
-          <div className="flex gap-2 justify-end mt-3">
+          <div className="mt-3 flex justify-end gap-2">
             <Button variant="outline" size="sm" onClick={() => setDeleteId(null)} className="cursor-pointer">Cancel</Button>
             <Button variant="destructive" size="sm" onClick={handleDelete} className="cursor-pointer">Remove</Button>
           </div>

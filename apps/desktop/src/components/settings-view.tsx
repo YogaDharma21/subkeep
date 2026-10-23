@@ -420,7 +420,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-16">
+    <div className="mx-auto max-w-3xl space-y-6 pb-16">
       <input
         ref={jsonFileInputRef}
         type="file"
@@ -436,15 +436,20 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
         onChange={handleCsvFileInput}
       />
 
+      <div className="px-1 pb-1">
+        <p className="label">Preferences</p>
+        <h1 className="page-title mt-2">Settings</h1>
+      </div>
+
       {/* User Profile Card */}
       {user && (
-        <div className="flex items-center justify-between rounded-xl border border-border bg-background p-4 shadow-2xs">
+        <div className="surface flex items-center justify-between p-4">
           <div className="flex items-center gap-3.5 min-w-0">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-base shadow-xs">
+            <div className="surface-inset flex size-11 shrink-0 items-center justify-center rounded-full text-[15px] font-medium text-foreground">
               {(user.fullName || user.primaryEmailAddress?.emailAddress || "U").charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm font-bold text-foreground truncate">
+              <h2 className="text-sm font-medium text-foreground truncate">
                 {user.fullName || "SubKeep User"}
               </h2>
               <p className="text-xs text-muted-foreground truncate">
@@ -457,7 +462,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
             variant="outline"
             size="sm"
             onClick={() => signOut()}
-            className="text-xs font-semibold gap-1.5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 cursor-pointer shrink-0"
+            className="text-xs font-medium gap-1.5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 cursor-pointer shrink-0"
           >
             <LogOut className="size-3.5" />
             <span>Sign Out</span>
@@ -467,15 +472,15 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
       {/* Category: GENERAL & PREFERENCES */}
       <div className="space-y-2">
-        <h3 className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <h3 className="label px-1">
           General & Preferences
         </h3>
 
-        <div className="rounded-xl border border-border bg-background p-5 shadow-2xs space-y-5">
+        <div className="surface space-y-5 p-5">
           {/* Theme Preference */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <div className="flex items-center gap-2 text-sm font-semibold">
+              <div className="flex items-center gap-2 text-sm font-medium">
                 {resolvedTheme === "dark" ? <Moon className="size-4" /> : <Sun className="size-4" />}
                 <span>Theme Appearance</span>
               </div>
@@ -484,27 +489,27 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
               </p>
             </div>
 
-            <div className="flex rounded-lg border border-border bg-muted/50 p-0.5 text-xs font-medium">
+            <div className="flex rounded-full border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] p-0.5 text-[11px] font-medium">
               <button
                 onClick={() => setTheme("light")}
-                className={`rounded-md px-3 py-1 transition-all cursor-pointer ${
-                  theme === "light" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground"
+                className={`rounded-full px-3 py-1 transition-all cursor-pointer ${
+                  theme === "light" ? "bg-foreground text-background" : "text-muted-foreground"
                 }`}
               >
                 Light
               </button>
               <button
                 onClick={() => setTheme("dark")}
-                className={`rounded-md px-3 py-1 transition-all cursor-pointer ${
-                  theme === "dark" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground"
+                className={`rounded-full px-3 py-1 transition-all cursor-pointer ${
+                  theme === "dark" ? "bg-foreground text-background" : "text-muted-foreground"
                 }`}
               >
                 Dark
               </button>
               <button
                 onClick={() => setTheme("system")}
-                className={`rounded-md px-3 py-1 transition-all cursor-pointer ${
-                  theme === "system" ? "bg-background text-foreground shadow-xs font-bold" : "text-muted-foreground"
+                className={`rounded-full px-3 py-1 transition-all cursor-pointer ${
+                  theme === "system" ? "bg-foreground text-background" : "text-muted-foreground"
                 }`}
               >
                 System
@@ -517,7 +522,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
           {/* Primary Currency */}
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <div className="flex items-center gap-2 text-sm font-semibold">
+              <div className="flex items-center gap-2 text-sm font-medium">
                 <Globe className="size-4 text-primary" />
                 <span>Primary Currency</span>
               </div>
@@ -529,7 +534,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
             <select
               value={primaryCurrency}
               onChange={(e) => handleCurrencyChange(e.target.value)}
-              className="flex h-9 w-44 rounded-lg border border-border bg-background px-3 text-xs font-medium"
+              className="flex h-10 w-44 rounded-xl border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] px-3 text-xs font-medium"
             >
               {currencies.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -545,7 +550,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <div className="flex items-center gap-2 text-sm font-semibold">
+                <div className="flex items-center gap-2 text-sm font-medium">
                   <Target className="size-4 text-primary" />
                   <span>Monthly Budget Limit</span>
                 </div>
@@ -575,7 +580,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <div className="flex items-center gap-2 text-sm font-semibold">
+                <div className="flex items-center gap-2 text-sm font-medium">
                   <Bell className="size-4 text-primary" />
                   <span>Renewal & Trial Reminder Timing</span>
                 </div>
@@ -604,9 +609,9 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
                 <button
                   key={opt.value}
                   onClick={() => handleReminderDaysChange(opt.value)}
-                  className={`rounded-lg border px-2 py-2 text-center text-xs transition-all cursor-pointer ${
+                  className={`rounded-xl border px-2 py-2 text-center text-xs transition-all cursor-pointer ${
                     reminderDays === opt.value
-                      ? "border-foreground bg-foreground text-background font-bold"
+                      ? "border-foreground bg-foreground text-background font-medium"
                       : "border-border bg-muted/40 hover:bg-muted"
                   }`}
                 >
@@ -621,7 +626,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
           {/* Card Vault Quick Access */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <div className="flex items-center gap-2 text-sm font-semibold">
+              <div className="flex items-center gap-2 text-sm font-medium">
                 <CreditCard className="size-4 text-primary" />
                 <span>Payment Methods & Card Vault</span>
               </div>
@@ -644,19 +649,19 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
       {/* Category: DATA & BACKUP */}
       <div className="space-y-2">
-        <h3 className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <h3 className="label px-1">
           Data & Backup
         </h3>
 
-        <div className="rounded-xl border border-border bg-background p-5 shadow-2xs space-y-4">
+        <div className="surface space-y-4 p-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               onClick={handleExportTransactionsCSV}
-              className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
+              className="surface-inset flex items-start gap-3 p-3.5 text-left transition-colors hover:border-foreground/20 cursor-pointer"
             >
               <FileSpreadsheet className="size-5 text-foreground shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-foreground">Export Transactions CSV</p>
+                <p className="text-sm font-medium text-foreground">Export Transactions CSV</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Download expenses & income for Excel and Google Sheets
                 </p>
@@ -665,11 +670,11 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
             <button
               onClick={handleExportCSV}
-              className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
+              className="surface-inset flex items-start gap-3 p-3.5 text-left transition-colors hover:border-foreground/20 cursor-pointer"
             >
               <FileSpreadsheet className="size-5 text-foreground shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-foreground">Export Subscriptions CSV</p>
+                <p className="text-sm font-medium text-foreground">Export Subscriptions CSV</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Download spreadsheet formatted for Excel and Google Sheets
                 </p>
@@ -678,11 +683,11 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
             <button
               onClick={handleExportJSON}
-              className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
+              className="surface-inset flex items-start gap-3 p-3.5 text-left transition-colors hover:border-foreground/20 cursor-pointer"
             >
               <Download className="size-5 text-foreground shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-foreground">Export JSON</p>
+                <p className="text-sm font-medium text-foreground">Export JSON</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Download raw JSON records for subscriptions
                 </p>
@@ -691,11 +696,11 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
             <button
               onClick={handleOpenCsvFile}
-              className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
+              className="surface-inset flex items-start gap-3 p-3.5 text-left transition-colors hover:border-foreground/20 cursor-pointer"
             >
               <Upload className="size-5 text-foreground shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-foreground">Import from CSV</p>
+                <p className="text-sm font-medium text-foreground">Import from CSV</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Upload CSV spreadsheet to batch import subscriptions
                 </p>
@@ -704,11 +709,11 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
             <button
               onClick={handleBackup}
-              className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer"
+              className="surface-inset flex items-start gap-3 p-3.5 text-left transition-colors hover:border-foreground/20 cursor-pointer"
             >
               <FileJson className="size-5 text-foreground shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-foreground">Full JSON Backup</p>
+                <p className="text-sm font-medium text-foreground">Full JSON Backup</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Export everything: subs, transactions, accounts, budgets
                 </p>
@@ -717,11 +722,11 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
             <button
               onClick={handleOpenJsonFile}
-              className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-3.5 text-left transition-all hover:bg-muted/60 cursor-pointer sm:col-span-2"
+              className="surface-inset flex items-start gap-3 p-3.5 text-left transition-colors hover:border-foreground/20 cursor-pointer sm:col-span-2"
             >
               <Download className="size-5 text-foreground shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-foreground">Restore JSON Backup</p>
+                <p className="text-sm font-medium text-foreground">Restore JSON Backup</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Restore subscriptions and payments from a JSON backup file
                 </p>
@@ -732,17 +737,17 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
       </div>
 
       {/* Category: ABOUT */}
-      <div className="overflow-hidden rounded-xl border border-border bg-background shadow-2xs">
+      <div className="surface overflow-hidden">
         <button
           onClick={() => setAboutOpen(true)}
           className="flex w-full cursor-pointer items-center justify-between p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
         >
           <div className="flex items-center gap-3.5">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
+            <div className="surface-inset flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground">
               <Info className="size-4 text-foreground/80" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-foreground">About SubKeep</div>
+              <div className="text-sm font-medium text-foreground">About SubKeep</div>
               <div className="text-xs text-muted-foreground">Version 0.0.1 · Runtime & System info</div>
             </div>
           </div>
@@ -753,14 +758,14 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
       </div>
 
       {/* Category: SYSTEM & DANGER ZONE */}
-      <div className="overflow-hidden rounded-xl border border-border bg-background shadow-2xs">
+      <div className="surface overflow-hidden">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3.5">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-destructive/10 text-destructive shrink-0">
+            <div className="surface-inset flex size-9 shrink-0 items-center justify-center rounded-full text-negative">
               <Trash2 className="size-4 text-destructive" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-destructive">
+              <div className="text-sm font-medium text-negative">
                 Delete All Data
               </div>
               <div className="text-xs text-muted-foreground">
@@ -782,9 +787,9 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
       {/* Delete All Confirmation Dialog */}
       <Dialog open={deleteConfirm} onOpenChange={setDeleteConfirm}>
-        <DialogContent className="max-w-sm rounded-lg p-5" onClose={() => setDeleteConfirm(false)}>
+        <DialogContent className="max-w-sm rounded-3xl p-5" onClose={() => setDeleteConfirm(false)}>
           <DialogHeader>
-            <DialogTitle className="text-base font-bold text-destructive">
+            <DialogTitle className="text-base font-medium text-destructive">
               Wipe All Subscription Data?
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
@@ -812,9 +817,9 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
       {/* Restore Confirmation Dialog */}
       <Dialog open={restoreConfirm} onOpenChange={setRestoreConfirm}>
-        <DialogContent className="max-w-sm rounded-lg p-5" onClose={() => setRestoreConfirm(false)}>
+        <DialogContent className="max-w-sm rounded-3xl p-5" onClose={() => setRestoreConfirm(false)}>
           <DialogHeader>
-            <DialogTitle className="text-base font-bold">
+            <DialogTitle className="text-base font-medium">
               Restore Subscriptions?
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
@@ -833,7 +838,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
               Cancel
             </Button>
             <Button
-              className="flex-1 cursor-pointer text-xs font-bold"
+              className="flex-1 cursor-pointer text-xs font-medium"
               onClick={handleRestore}
             >
               Restore Records
@@ -844,25 +849,25 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
 
       {/* About Dialog */}
       <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
-        <DialogContent className="max-w-md rounded-lg p-5" onClose={() => setAboutOpen(false)}>
+        <DialogContent className="max-w-md rounded-3xl p-5" onClose={() => setAboutOpen(false)}>
           <DialogHeader>
             <div className="flex items-center gap-2.5">
               <img
                 src="/app-icon.png"
                 alt="SubKeep"
-                className="size-6 rounded-md object-contain shadow-xs"
+                className="size-6 rounded-lg object-contain shadow-none"
               />
-              <DialogTitle className="text-base font-bold">About SubKeep Desktop</DialogTitle>
+              <DialogTitle className="text-base font-medium">About SubKeep Desktop</DialogTitle>
             </div>
             <DialogDescription className="text-xs text-muted-foreground">
               Modern Subscription & Recurring Expense Tracker
             </DialogDescription>
           </DialogHeader>
 
-          <div className="my-3 space-y-3 rounded-lg border border-border bg-muted/30 p-4 text-xs">
+          <div className="surface-inset my-3 space-y-3 p-4 text-xs">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Version</span>
-              <span className="font-bold">0.0.1</span>
+              <span className="font-medium">0.0.1</span>
             </div>
             <Separator />
             <div className="flex justify-between">

@@ -121,12 +121,12 @@ export function DashboardView({
     <div className="space-y-6 pb-16">
       {/* Top Stat Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="rounded-lg border border-border bg-background p-4 sm:p-5 shadow-xs">
+        <div className="rounded-xl border border-border bg-background p-4 sm:p-5 shadow-none">
           <div className="flex items-center justify-between text-muted-foreground mb-1">
-            <span className="text-xs font-semibold uppercase tracking-wider">Monthly Spend</span>
+            <span className="text-xs font-medium uppercase tracking-[0.18em]">Monthly Spend</span>
             <DollarSign className="size-4 text-primary" />
           </div>
-          <div className="text-2xl font-black text-foreground">
+          <div className="text-2xl font-medium text-foreground">
             {formatCurrencyAmount(totalMonthly, primaryCurrency)}
           </div>
           <p className="text-[11px] text-muted-foreground mt-1">
@@ -134,12 +134,12 @@ export function DashboardView({
           </p>
         </div>
 
-        <div className="rounded-lg border border-border bg-background p-4 sm:p-5 shadow-xs">
+        <div className="rounded-xl border border-border bg-background p-4 sm:p-5 shadow-none">
           <div className="flex items-center justify-between text-muted-foreground mb-1">
-            <span className="text-xs font-semibold uppercase tracking-wider">Yearly Projection</span>
+            <span className="text-xs font-medium uppercase tracking-[0.18em]">Yearly Projection</span>
             <Calendar className="size-4 text-primary" />
           </div>
-          <div className="text-2xl font-black text-foreground">
+          <div className="text-2xl font-medium text-foreground">
             {formatCurrencyAmount(totalYearly, primaryCurrency)}
           </div>
           <p className="text-[11px] text-muted-foreground mt-1">
@@ -148,21 +148,21 @@ export function DashboardView({
         </div>
 
         {monthlyBudgetCap !== undefined && (
-          <div className="rounded-lg border border-border bg-background p-4 sm:p-5 shadow-xs sm:col-span-2 lg:col-span-1">
+          <div className="rounded-xl border border-border bg-background p-4 sm:p-5 shadow-none sm:col-span-2 lg:col-span-1">
             <div className="flex items-center justify-between text-muted-foreground mb-1">
-              <span className="text-xs font-semibold uppercase tracking-wider">Budget Status</span>
+              <span className="text-xs font-medium uppercase tracking-[0.18em]">Budget Status</span>
               {isBudgetExceeded ? (
                 <AlertCircle className="size-4 text-destructive" />
               ) : (
-                <span className="text-xs font-bold text-foreground">{budgetPercentage}%</span>
+                <span className="text-xs font-medium text-foreground">{budgetPercentage}%</span>
               )}
             </div>
-            <div className="text-lg font-bold text-foreground">
+            <div className="text-lg font-medium text-foreground">
               {formatCurrencyAmount(totalMonthly, primaryCurrency)} / {formatCurrencyAmount(monthlyBudgetCap, primaryCurrency)}
             </div>
-            <div className="w-full bg-muted rounded-lg h-2 mt-2 overflow-hidden">
+            <div className="w-full bg-muted rounded-xl h-2 mt-2 overflow-hidden">
               <div
-                className={`h-full rounded-lg transition-all ${
+                className={`h-full rounded-xl transition-all ${
                   isBudgetExceeded ? "bg-destructive" : "bg-primary"
                 }`}
                 style={{ width: `${budgetPercentage}%` }}
@@ -195,13 +195,13 @@ export function DashboardView({
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/40 border border-border px-2 py-1 rounded-lg">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground bg-muted/40 border border-border px-2 py-1 rounded-xl">
               <SlidersHorizontal className="size-3.5" />
               <span className="hidden sm:inline">Sort:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="bg-transparent text-foreground text-xs font-semibold focus:outline-none cursor-pointer [&>option]:bg-background [&>option]:text-foreground"
+                className="bg-transparent text-foreground text-xs font-medium focus:outline-none cursor-pointer [&>option]:bg-background [&>option]:text-foreground"
               >
                 <option value="nextBilling" className="bg-background text-foreground">Next Renewal</option>
                 <option value="priceDesc" className="bg-background text-foreground">Highest Price</option>
@@ -213,7 +213,7 @@ export function DashboardView({
             <Button
               size="sm"
               onClick={onAddSubscription}
-              className="text-xs font-bold gap-1.5 cursor-pointer shrink-0"
+              className="text-xs font-medium gap-1.5 cursor-pointer shrink-0"
             >
               <Plus className="size-3.5" />
               <span>Add</span>
@@ -227,7 +227,7 @@ export function DashboardView({
             <Badge
               key={cat.value}
               variant={selectedCategory === cat.value ? "default" : "outline"}
-              className="cursor-pointer shrink-0 rounded-md px-3 py-1 text-xs transition-colors"
+              className="cursor-pointer shrink-0 rounded-lg px-3 py-1 text-xs transition-colors"
               onClick={() => setSelectedCategory(cat.value)}
             >
               {cat.label}
@@ -250,9 +250,9 @@ export function DashboardView({
           ))}
         </div>
       ) : (
-        <div className="py-16 text-center rounded-lg border border-dashed border-border p-8">
+        <div className="py-16 text-center rounded-xl border border-dashed border-border p-8">
           <Receipt className="size-10 mx-auto mb-3 text-muted-foreground/60" />
-          <h3 className="text-sm font-bold text-foreground">No subscriptions found</h3>
+          <h3 className="text-sm font-medium text-foreground">No subscriptions found</h3>
           <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
             {searchQuery
               ? `No active subscriptions match "${searchQuery}". Try clearing your search.`
@@ -262,7 +262,7 @@ export function DashboardView({
             <Button
               size="sm"
               onClick={onAddSubscription}
-              className="gap-1.5 text-xs font-semibold cursor-pointer"
+              className="gap-1.5 text-xs font-medium cursor-pointer"
             >
               <Plus className="size-3.5" />
               Add First Subscription

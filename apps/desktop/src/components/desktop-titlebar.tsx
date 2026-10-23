@@ -86,7 +86,7 @@ export function DesktopTitlebar({
   if (isLanding) {
     return (
       <header
-        className={`sticky top-0 z-50 flex h-10 w-full select-none items-center justify-between border-b border-zinc-900 bg-black ${
+        className={`sticky top-0 z-50 flex h-11 w-full select-none items-center justify-between border-b border-border bg-background ${
           isMac ? "pl-20 pr-3" : "px-3"
         }`}
       >
@@ -95,9 +95,9 @@ export function DesktopTitlebar({
           <img
             src="/app-icon.png"
             alt="SubKeep"
-            className="size-5 rounded-md object-contain shadow-xs"
+            className="size-5 rounded-lg object-contain shadow-none"
           />
-          <span className="text-xs font-black tracking-tight text-white">SubKeep</span>
+          <span className="text-[12px] font-medium tracking-[-0.01em] text-foreground">SubKeep</span>
         </div>
 
         {/* Center: Draggable Spacer Only */}
@@ -115,7 +115,7 @@ export function DesktopTitlebar({
                 type="button"
                 onClick={handleMinimize}
                 style={noDragStyle}
-                className="flex h-7 w-8 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+                className="flex h-7 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
                 title="Minimize"
               >
                 <Minus className="h-3.5 w-3.5 pointer-events-none" />
@@ -124,7 +124,7 @@ export function DesktopTitlebar({
                 type="button"
                 onClick={handleMaximize}
                 style={noDragStyle}
-                className="flex h-7 w-8 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+                className="flex h-7 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
                 title={isMaximized ? "Restore" : "Maximize"}
               >
                 {isMaximized ? (
@@ -137,7 +137,7 @@ export function DesktopTitlebar({
                 type="button"
                 onClick={handleClose}
                 style={noDragStyle}
-                className="flex h-7 w-8 items-center justify-center rounded-md text-zinc-400 hover:bg-red-600 hover:text-white transition-colors cursor-pointer"
+                className="flex h-7 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive hover:text-destructive-foreground transition-colors cursor-pointer"
                 title="Close"
               >
                 <X className="h-3.5 w-3.5 pointer-events-none" />
@@ -151,7 +151,7 @@ export function DesktopTitlebar({
 
   return (
     <header
-      className={`sticky top-0 z-50 flex h-10 w-full select-none items-center justify-between border-b border-border bg-card/85 backdrop-blur-md ${
+      className={`sticky top-0 z-50 flex h-11 w-full select-none items-center justify-between border-b border-border bg-background/90 backdrop-blur-md ${
         isMac ? "pl-20 pr-3" : "px-3"
       }`}
     >
@@ -160,15 +160,15 @@ export function DesktopTitlebar({
         <img
           src="/app-icon.png"
           alt="SubKeep"
-          className="size-5 rounded-md object-contain shadow-xs"
+          className="size-5 rounded-lg object-contain shadow-none"
         />
-        <span className="text-xs font-black tracking-tight text-foreground">SubKeep</span>
+        <span className="text-[12px] font-medium tracking-[-0.01em] text-foreground">SubKeep</span>
         {sectionName && (
-          <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground">
+          <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
             <span className="text-border">/</span>
             <span className="text-foreground/90">{sectionName}</span>
             {totalSubCount > 0 && (
-              <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-extrabold text-foreground border border-border/50">
+              <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-foreground border border-border">
                 {countRatio}
               </span>
             )}
@@ -190,7 +190,7 @@ export function DesktopTitlebar({
             type="button"
             onClick={onOpenCommandPalette}
             style={noDragStyle}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
             title="Command Palette (Ctrl+K)"
           >
             <Command className="h-3.5 w-3.5 pointer-events-none" />
@@ -201,7 +201,7 @@ export function DesktopTitlebar({
           type="button"
           onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
           style={noDragStyle}
-          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+          className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
           title="Toggle Theme (D)"
         >
           {resolvedTheme === "dark" ? (
@@ -217,7 +217,7 @@ export function DesktopTitlebar({
               type="button"
               onClick={handleMinimize}
               style={noDragStyle}
-              className="flex h-7 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+              className="flex h-7 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
               title="Minimize"
             >
               <Minus className="h-3.5 w-3.5 pointer-events-none" />
@@ -226,7 +226,7 @@ export function DesktopTitlebar({
               type="button"
               onClick={handleMaximize}
               style={noDragStyle}
-              className="flex h-7 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+              className="flex h-7 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
               title={isMaximized ? "Restore" : "Maximize"}
             >
               {isMaximized ? (
@@ -239,7 +239,7 @@ export function DesktopTitlebar({
               type="button"
               onClick={handleClose}
               style={noDragStyle}
-              className="flex h-7 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive hover:text-white transition-colors cursor-pointer"
+              className="flex h-7 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive hover:text-destructive-foreground transition-colors cursor-pointer"
               title="Close"
             >
               <X className="h-3.5 w-3.5 pointer-events-none" />

@@ -25,26 +25,26 @@ ReactDOM.createRoot(rootElement).render(
       appearance={{
         baseTheme: dark,
         variables: {
-          colorPrimary: "#ffffff",
-          colorBackground: "#09090b",
-          colorInputBackground: "#18181b",
-          colorInputText: "#ffffff",
-          colorText: "#ffffff",
-          colorTextSecondary: "#a1a1aa",
+          colorPrimary: "#f2f1ec",
+          colorBackground: "#0d0e10",
+          colorInputBackground: "#17181c",
+          colorInputText: "#f4f4f2",
+          colorText: "#f4f4f2",
+          colorTextSecondary: "#8a8c92",
         },
         elements: {
-          card: "bg-zinc-950 border border-zinc-800 text-white shadow-2xl",
-          modalContent: "bg-zinc-950 text-white border border-zinc-800",
-          headerTitle: "text-white font-bold",
-          headerSubtitle: "text-zinc-400",
-          socialButtonsBlockButton: "bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-white",
-          formButtonPrimary: "bg-white text-black hover:bg-zinc-200",
-          footerActionLink: "text-white hover:text-zinc-300",
+          card: "bg-[#0d0e10] border border-white/10 text-[#f4f4f2] shadow-2xl",
+          modalContent: "bg-[#0d0e10] text-[#f4f4f2] border border-white/10",
+          headerTitle: "text-[#f4f4f2] font-medium",
+          headerSubtitle: "text-[#8a8c92]",
+          socialButtonsBlockButton: "bg-[#17181c] border border-white/10 hover:bg-[#1e2025] text-[#f4f4f2]",
+          formButtonPrimary: "bg-[#f2f1ec] text-[#0a0a0b] hover:bg-[#f2f1ec]/90",
+          footerActionLink: "text-[#f4f4f2] hover:text-[#b9b9b4]",
         },
       }}
     >
       <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-        <ThemeProvider defaultTheme="system" storageKey="subkeep-theme">
+        <ThemeProvider defaultTheme="dark" storageKey="subkeep-theme">
           <App />
         </ThemeProvider>
       </ConvexProviderWithClerk>
