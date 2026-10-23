@@ -205,7 +205,7 @@ export function TransactionsView() {
       <div className="surface flex flex-col gap-2.5 p-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search notes, categories, dates..." value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 border-border bg-transparent pl-8 text-xs" />
+          <Input placeholder="Search notes, categories, dates..." value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 border-0 bg-transparent pl-8 text-xs shadow-none focus-visible:ring-0" />
         </div>
 
         <div className="quiet-scroll flex items-center gap-1 overflow-x-auto">

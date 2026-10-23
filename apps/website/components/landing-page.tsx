@@ -15,14 +15,14 @@ const dots = [
 
 export function LandingPage() {
   return (
-    <div className="dark relative min-h-screen overflow-hidden bg-[#08090b] text-[#f4f4f2] selection:bg-white/15">
+    <div className="dark relative flex h-screen max-h-screen flex-col overflow-hidden bg-[#08090b] text-[#f4f4f2] selection:bg-white/15">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-[620px] bg-[radial-gradient(ellipse_55%_55%_at_50%_-12%,rgba(255,255,255,0.11),transparent_72%)]"
       />
 
-      <div className="relative mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-        <header className="flex h-20 items-center justify-between border-b border-white/[0.07]">
+      <div className="relative mx-auto flex h-full w-full max-w-6xl flex-col px-4 sm:px-6 lg:px-8">
+        <header className="flex h-16 shrink-0 items-center justify-between sm:h-20">
           <div className="flex items-center gap-2.5">
             <Image
               src="/app-icon.png"
@@ -38,7 +38,7 @@ export function LandingPage() {
           </div>
         </header>
 
-        <main className="grid grid-cols-1 items-center gap-14 py-16 lg:grid-cols-12 lg:gap-10 lg:py-24">
+        <main className="grid flex-1 grid-cols-1 items-center gap-8 pb-8 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-7">
             <h1 className="text-[clamp(2.7rem,6vw,4.9rem)] font-[550] leading-[0.94] tracking-[-0.055em]">
               Every bill.

@@ -268,8 +268,6 @@ export default function TransactionsScreen() {
             flexDirection: "row",
             alignItems: "center",
             backgroundColor: colors.surfaceInset,
-            borderWidth: 1,
-            borderColor: colors.border,
             borderRadius: 999,
             paddingHorizontal: 14,
             gap: 8,

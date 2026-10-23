@@ -234,7 +234,7 @@ export default function TransactionsPage() {
             placeholder="Search notes, categories, dates..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-8 border-border bg-transparent pl-8 text-xs"
+            className="h-8 border-0 bg-transparent pl-8 text-xs shadow-none focus-visible:ring-0"
           />
         </div>
 

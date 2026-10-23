@@ -376,9 +376,6 @@ export default function DashboardScreen() {
         <View style={{ gap: 5, paddingBottom: 4 }}>
           <Label>{monthLabel(month)}</Label>
           <PageTitle>Overview</PageTitle>
-          <Text style={{ fontSize: 11, color: colors.mutedText }}>
-            Balances, bills, and what is left.
-          </Text>
         </View>
 
         <Surface style={{ padding: 20, gap: 14 }}>

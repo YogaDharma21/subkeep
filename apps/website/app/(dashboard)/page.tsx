@@ -284,9 +284,6 @@ export default function HomePage() {
           <p className="label">{monthLabel(month)}</p>
           <h1 className="page-title text-foreground">Overview</h1>
         </div>
-        <p className="hidden max-w-[240px] text-right text-[11px] leading-relaxed text-muted-foreground sm:block">
-          Balances, bills, and what is left.
-        </p>
       </header>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
