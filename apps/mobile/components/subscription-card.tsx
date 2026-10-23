@@ -3,9 +3,9 @@ import { View, Text, TouchableOpacity } from "react-native"
 import { useRouter } from "expo-router"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { Badge } from "@/components/ui/badge"
+import { Numeral } from "@/components/ui/surface"
 import { convertAndFormat, formatCurrencyAmount, formatCycleLabel } from "@/lib/currency"
 import { getSymbol } from "@/constants/currencies"
-import { getContrastTextColor } from "@/constants/categories"
 import { format, differenceInDays } from "date-fns"
 import { useThemeColor } from "@/hooks/use-theme-color"
 
@@ -70,18 +70,17 @@ export function SubscriptionCard({
         backgroundColor: colors.card,
         borderWidth: 1,
         borderColor: colors.border,
-        borderRadius: 12,
+        borderRadius: 20,
         padding: 12,
         gap: 12,
       }}
     >
-      {/* Icon Box */}
       <View
         style={{
-          width: 42,
-          height: 42,
-          borderRadius: 10,
-          backgroundColor: sub.color || "#6366F1",
+          width: 40,
+          height: 40,
+          borderRadius: 12,
+          backgroundColor: colors.surfaceInset,
           borderWidth: 1,
           borderColor: colors.border,
           alignItems: "center",
@@ -89,18 +88,17 @@ export function SubscriptionCard({
           overflow: "hidden",
         }}
       >
-        <DynamicIcon name={sub.icon} size={20} color={getContrastTextColor(sub.color)} />
+        <DynamicIcon name={sub.icon} size={18} color={colors.text} />
       </View>
 
-      {/* Info Column */}
-      <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-        {/* Line 1: Name and Badges */}
+      <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           <Text
             numberOfLines={1}
             style={{
-              fontSize: 14,
-              fontWeight: "700",
+              fontSize: 13,
+              fontWeight: "500",
+              letterSpacing: -0.1,
               color: colors.text,
               flexShrink: 1,
             }}
@@ -108,42 +106,29 @@ export function SubscriptionCard({
             {sub.name}
           </Text>
 
-          {isTrial ? (
-            <Badge variant="emerald" style={{ paddingHorizontal: 5, paddingVertical: 2 }}>
-              TRIAL
-            </Badge>
-          ) : null}
+          {isTrial ? <Badge variant="secondary">TRIAL</Badge> : null}
 
           {isShared ? (
-            <Badge variant="blue" style={{ paddingHorizontal: 5, paddingVertical: 2 }}>
+            <Badge variant="secondary">
               SPLIT {sub.totalMembers ? `(1/${sub.totalMembers})` : ""}
             </Badge>
           ) : null}
 
           {sub.pendingCancel && sub.isActive !== false ? (
-            <Badge variant="amber" style={{ paddingHorizontal: 5, paddingVertical: 2 }}>
-              CANCELING
-            </Badge>
+            <Badge variant="secondary">CANCELING</Badge>
           ) : null}
 
           {sub.isActive === false ? (
-            <Badge variant="destructive" style={{ paddingHorizontal: 5, paddingVertical: 2 }}>
-              CANCELED
-            </Badge>
+            <Badge variant="outline">CANCELED</Badge>
           ) : null}
         </View>
 
-        {/* Line 2: Account or email identifier if present */}
         {sub.account ? (
-          <Text
-            numberOfLines={1}
-            style={{ fontSize: 11, color: colors.mutedText }}
-          >
+          <Text numberOfLines={1} style={{ fontSize: 11, color: colors.mutedText }}>
             {sub.account}
           </Text>
         ) : null}
 
-        {/* Line 3: Category & Billing status */}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           <Text
             style={{
@@ -154,11 +139,15 @@ export function SubscriptionCard({
           >
             {sub.category}
           </Text>
-          <Text style={{ fontSize: 11, color: colors.mutedText }}>•</Text>
+          <Text style={{ fontSize: 11, color: colors.subtleText }}>·</Text>
           {isTrial && sub.trialEndDate ? (
-            <Text style={{ fontSize: 11, color: colors.emerald, fontWeight: "600" }}>
+            <Text style={{ fontSize: 11, color: colors.emerald, fontWeight: "500" }}>
               Ends {format(new Date(sub.trialEndDate), "MMM d")}
-              {trialDaysLeft !== null && trialDaysLeft > 0 ? ` (${trialDaysLeft}d)` : trialDaysLeft === 0 ? " (Expired)" : ""}
+              {trialDaysLeft !== null && trialDaysLeft > 0
+                ? ` (${trialDaysLeft}d)`
+                : trialDaysLeft === 0
+                ? " (Expired)"
+                : ""}
             </Text>
           ) : (
             <Text style={{ fontSize: 11, color: colors.mutedText }}>
@@ -174,13 +163,12 @@ export function SubscriptionCard({
         </View>
       </View>
 
-      {/* Price Column */}
       <View style={{ alignItems: "flex-end" }}>
-        <Text style={{ fontSize: 14, fontWeight: "800", color: colors.text }}>
+        <Numeral style={{ fontSize: 13, fontWeight: "500" }}>
           {showConverted
             ? convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)
             : formatCurrencyAmount(sub.price, sub.currency)}
-        </Text>
+        </Numeral>
         <Text style={{ fontSize: 10, color: colors.mutedText }}>
           {showConverted ? `(${getSymbol(sub.currency)}${sub.price}) ` : ""}
           {formatCycleLabel(sub.cycle)}

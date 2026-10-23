@@ -51,9 +51,9 @@ export function GoogleOAuthButton({
       onPress={handleGoogleSignIn}
       disabled={loading}
       style={{
-        height: 52,
+        height: 50,
         backgroundColor: "#ffffff",
-        borderRadius: 16,
+        borderRadius: 999,
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
@@ -113,10 +113,10 @@ export function GoogleOAuthButton({
 
           <Text
             style={{
-              fontSize: 14,
-              fontWeight: "800",
+              fontSize: 13,
+              fontWeight: "600",
               color: "#09090b",
-              letterSpacing: 0.6,
+              letterSpacing: 1,
             }}
           >
             {title}

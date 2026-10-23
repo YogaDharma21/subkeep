@@ -178,10 +178,10 @@ export default function CardsModal() {
           paddingHorizontal: 16,
           paddingVertical: 14,
           borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          borderBottomColor: colors.borderLight,
         }}
       >
-        <Text style={{ fontSize: 17, fontWeight: "700", color: colors.text }}>
+        <Text style={{ fontSize: 17, fontWeight: "500", color: colors.text }}>
           Card Vault & Payment Methods
         </Text>
         <TouchableOpacity
@@ -190,7 +190,7 @@ export default function CardsModal() {
             width: 32,
             height: 32,
             borderRadius: 16,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.surfaceInset,
             alignItems: "center",
             justifyContent: "center",
           }}
@@ -202,7 +202,7 @@ export default function CardsModal() {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
         {/* Top Action Bar */}
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <Text style={{ fontSize: 13, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+          <Text style={{ fontSize: 13, fontWeight: "500", color: colors.mutedText, textTransform: "uppercase" }}>
             Saved Cards & Accounts ({paymentMethods?.length || 0})
           </Text>
           <Button
@@ -227,7 +227,7 @@ export default function CardsModal() {
               gap: 14,
             }}
           >
-            <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>
+            <Text style={{ fontSize: 15, fontWeight: "500", color: colors.text }}>
               New Payment Method
             </Text>
 
@@ -251,8 +251,8 @@ export default function CardsModal() {
                     style={{
                       paddingHorizontal: 12,
                       paddingVertical: 6,
-                      borderRadius: 8,
-                      backgroundColor: type === t.value ? colors.primary : colors.surface,
+                      borderRadius: 14,
+                      backgroundColor: type === t.value ? colors.primary : colors.surfaceInset,
                       borderWidth: 1,
                       borderColor: type === t.value ? colors.primary : colors.border,
                     }}
@@ -352,7 +352,7 @@ export default function CardsModal() {
             }}
           >
             <CreditCard size={32} color={colors.mutedText} />
-            <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
+            <Text style={{ fontSize: 14, fontWeight: "500", color: colors.text }}>
               No payment methods saved
             </Text>
             <Text style={{ fontSize: 12, color: colors.mutedText, textAlign: "center" }}>
@@ -379,7 +379,7 @@ export default function CardsModal() {
                 >
                   <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <View style={{ gap: 2 }}>
-                      <Text style={{ fontSize: 16, fontWeight: "800", color: "#ffffff" }}>
+                      <Text style={{ fontSize: 18, fontWeight: "600", letterSpacing: -0.4, color: "#ffffff" }}>
                         {card.name}
                       </Text>
                       <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", textTransform: "uppercase" }}>
@@ -414,7 +414,7 @@ export default function CardsModal() {
                       }}
                     >
                       <AlertTriangle size={12} color="#ffffff" />
-                      <Text style={{ fontSize: 10, fontWeight: "700", color: "#ffffff" }}>
+                      <Text style={{ fontSize: 10, fontWeight: "500", color: "#ffffff" }}>
                         {expiryStatus === "expired" ? "CARD EXPIRED" : "EXPIRING SOON"} (
                         {card.expiryMonth}/{card.expiryYear})
                       </Text>
@@ -435,7 +435,7 @@ export default function CardsModal() {
                     <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.8)" }}>
                       {stats.subCount} active subscription{stats.subCount === 1 ? "" : "s"}
                     </Text>
-                    <Text style={{ fontSize: 13, fontWeight: "800", color: "#ffffff" }}>
+                    <Text style={{ fontSize: 13, fontWeight: "600", color: "#ffffff" }}>
                       {convertAndFormat(stats.totalMonthly, "USD", primaryCurrency, rates)} per month
                     </Text>
                   </View>

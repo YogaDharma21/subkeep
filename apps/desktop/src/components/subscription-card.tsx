@@ -1,7 +1,8 @@
-import { getSymbol, getContrastTextColor } from "@/lib/constants"
+import { getSymbol } from "@/lib/constants"
 import { format, differenceInDays } from "date-fns"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat, formatCurrencyAmount } from "@/lib/currency"
+import { cn } from "@/lib/utils"
 
 export interface Subscription {
   _id: string
@@ -69,101 +70,95 @@ export function SubscriptionCard({
 
   const tooltipText = sub.account ? `${sub.name} (${sub.account})` : sub.name
 
+  const badge = isTrial
+    ? { label: "Trial", tone: "text-warning border-warning/30" }
+    : sub.isActive === false
+      ? { label: "Canceled", tone: "text-muted-foreground border-border" }
+      : sub.pendingCancel
+        ? { label: "Canceling", tone: "text-warning border-warning/30" }
+        : isShared
+          ? {
+              label: `Split${sub.totalMembers ? ` 1/${sub.totalMembers}` : ""}`,
+              tone: "text-muted-foreground border-border",
+            }
+          : null
+
   return (
     <div
       role="button"
       tabIndex={0}
       onClick={() => onClick?.(sub._id)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault()
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault()
           onClick?.(sub._id)
         }
       }}
       title={tooltipText}
-      className="flex items-center gap-3.5 rounded-lg border border-border bg-background p-3.5 transition-all hover:border-border/90 hover:bg-muted/30 active:scale-[0.99] cursor-pointer relative overflow-hidden group shadow-xs"
+      className={cn(
+        "surface surface-interactive group relative flex cursor-pointer items-center gap-3.5 overflow-hidden p-3.5 pl-4",
+        sub.isActive === false && "opacity-65"
+      )}
     >
-      <div
-        className="flex size-12 shrink-0 items-center justify-center rounded-lg border border-black/10 dark:border-white/10 transition-transform group-hover:scale-105 overflow-hidden shadow-xs"
-        style={{ backgroundColor: sub.color || "#6366F1" }}
-      >
-        <DynamicIcon name={sub.icon} className="size-6" style={{ color: getContrastTextColor(sub.color) }} />
-      </div>
+      <span className="surface-inset relative flex size-10 shrink-0 items-center justify-center rounded-full">
+        <DynamicIcon name={sub.icon} className="size-4 text-foreground/80" />
+        <span
+          className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full ring-2 ring-card"
+          style={{ backgroundColor: sub.color || "#6366F1" }}
+          aria-hidden
+        />
+      </span>
 
       <div className="min-w-0 flex-1">
-        {/* Line 1: Service Name & Badges */}
-        <div className="flex items-center gap-1.5 min-w-0">
-          <span className="truncate text-sm font-bold text-foreground" title={sub.name}>
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="truncate text-[13px] font-medium text-foreground" title={sub.name}>
             {sub.name}
           </span>
-
-          {isTrial && (
-            <span className="rounded-md bg-emerald-500/15 px-2 py-0.5 text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-wider shrink-0">
-              TRIAL
+          {badge ? (
+            <span
+              className={cn(
+                "shrink-0 rounded-full border px-1.5 py-px text-[9px] uppercase tracking-[0.1em]",
+                badge.tone
+              )}
+            >
+              {badge.label}
             </span>
-          )}
-
-          {isShared && (
-            <span className="rounded-md bg-blue-500/15 px-2 py-0.5 text-[9px] font-extrabold text-blue-600 dark:text-blue-400 border border-blue-500/30 uppercase tracking-wider shrink-0">
-              SPLIT {sub.totalMembers ? `(1/${sub.totalMembers})` : ""}
-            </span>
-          )}
-
-          {sub.pendingCancel && sub.isActive !== false && (
-            <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-[9px] font-extrabold text-amber-600 dark:text-amber-400 border border-amber-500/30 uppercase tracking-wider shrink-0">
-              CANCELING
-            </span>
-          )}
-          {sub.isActive === false && (
-            <span className="rounded-md bg-red-500/15 px-2 py-0.5 text-[9px] font-extrabold text-red-600 dark:text-red-400 border border-red-500/30 uppercase tracking-wider shrink-0">
-              CANCELED
-            </span>
-          )}
+          ) : null}
         </div>
 
-        {/* Line 2: Account/Email Line */}
-        {sub.account && (
-          <div className="text-[11px] font-normal text-muted-foreground truncate max-w-full leading-snug" title={sub.account}>
-            {sub.account}
-          </div>
-        )}
-
-        {/* Line 3: Category & Billing Info */}
-        <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5 flex-wrap">
+        <div className="mt-1 flex min-w-0 items-center gap-1.5 truncate text-[11px] text-muted-foreground">
           <span className="capitalize">{sub.category}</span>
-          <span>&middot;</span>
+          <span className="text-muted-foreground/40">/</span>
           {isTrial && sub.trialEndDate ? (
-            <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-              Expires {format(new Date(sub.trialEndDate), "MMM d")}
-              {trialDaysLeft !== null && trialDaysLeft > 0 ? ` (${trialDaysLeft}d)` : trialDaysLeft === 0 ? " (Expired)" : ""}
+            <span className="text-warning">
+              Ends {format(new Date(sub.trialEndDate), "MMM d")}
+              {trialDaysLeft !== null && trialDaysLeft > 0
+                ? ` · ${trialDaysLeft}d`
+                : trialDaysLeft === 0
+                  ? " · expired"
+                  : ""}
             </span>
           ) : (
-            <span>Next: {format(new Date(sub.nextBilling), "MMM d, yyyy")}</span>
+            <span>Next {format(new Date(sub.nextBilling), "MMM d")}</span>
           )}
-
-          {sub.endDate && !isTrial && (
-            <span className="text-[11px] text-muted-foreground/80">
-              (Ends {format(new Date(sub.endDate), "MMM d")})
-            </span>
-          )}
+          {sub.account ? (
+            <>
+              <span className="text-muted-foreground/40">/</span>
+              <span className="truncate">{sub.account}</span>
+            </>
+          ) : null}
         </div>
       </div>
 
-      {/* Price Column */}
       <div className="shrink-0 text-right">
-        <div className="text-sm font-extrabold text-foreground">
+        <div className="numeral text-[13px] font-medium text-foreground">
           {showConverted
             ? convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)
             : formatCurrencyAmount(sub.price, sub.currency)}
         </div>
-
-        <div className="text-[11px] text-muted-foreground flex items-center justify-end gap-1">
-          {showConverted && (
-            <span className="text-[10px] text-muted-foreground/80">
-              ({getSymbol(sub.currency)}{sub.price})
-            </span>
-          )}
-          <span>/{sub.cycle}</span>
+        <div className="mt-1 text-[10px] text-muted-foreground">
+          {showConverted ? `${getSymbol(sub.currency)}${sub.price} · ` : ""}
+          {sub.cycle}
         </div>
       </div>
     </div>

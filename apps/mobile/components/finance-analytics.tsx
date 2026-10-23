@@ -9,15 +9,16 @@ import {
 } from "@/constants/finance"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { DynamicIcon } from "@/components/dynamic-icon"
+import { Label, Numeral, Surface } from "@/components/ui/surface"
 
 interface FinanceAnalyticsProps {
-  transactions: Array<{
+  transactions: {
     type: string
     amount: number
     currency: string
     category: string
     date: string
-  }>
+  }[]
   months: string[]
   currentMonth: string
   primaryCurrency?: string
@@ -77,25 +78,16 @@ export function FinanceAnalytics({
   const barW = Math.min(14, slotW / 3)
 
   return (
-    <View style={{ gap: 14 }}>
-      {/* Income vs Expenses */}
+    <View style={{ gap: 12 }}>
       {hasFlow ? (
-        <View
-          style={{
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14,
-            gap: 10,
-          }}
-        >
-          <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
-            Income vs Expenses
-          </Text>
-          <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: -8 }}>
-            Last {months.length} months
-          </Text>
+        <Surface style={{ padding: 18, gap: 12 }}>
+          <View style={{ gap: 3 }}>
+            <Text style={{ fontSize: 15, fontWeight: "500", letterSpacing: -0.2, color: colors.text }}>
+              Cash flow
+            </Text>
+            <Label>Last {months.length} months</Label>
+          </View>
+
           <Svg width="100%" height={BAR_H} viewBox={`0 0 ${BAR_W} ${BAR_H}`}>
             {cashFlow.map((d, i) => {
               const cx = PAD + slotW * i + slotW / 2
@@ -109,7 +101,7 @@ export function FinanceAnalytics({
                     width={barW}
                     height={Math.max(1, incomeH)}
                     rx={3}
-                    fill={colors.emerald}
+                    fill={colors.positive}
                   />
                   <Rect
                     x={cx + 1}
@@ -117,43 +109,44 @@ export function FinanceAnalytics({
                     width={barW}
                     height={Math.max(1, expenseH)}
                     rx={3}
-                    fill={colors.destructive}
+                    fill={colors.negative}
                   />
                 </React.Fragment>
               )
             })}
           </Svg>
-          <View style={{ flexDirection: "row", justifyContent: "center", gap: 16 }}>
+
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "center",
+              gap: 16,
+              borderTopWidth: 1,
+              borderTopColor: colors.border,
+              paddingTop: 10,
+            }}
+          >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-              <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: colors.emerald }} />
+              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.positive }} />
               <Text style={{ fontSize: 11, color: colors.mutedText }}>Income</Text>
             </View>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-              <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: colors.destructive }} />
+              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.negative }} />
               <Text style={{ fontSize: 11, color: colors.mutedText }}>Expenses</Text>
             </View>
           </View>
-        </View>
+        </Surface>
       ) : null}
 
-      {/* Category breakdown */}
       {categoryData.length > 0 ? (
-        <View
-          style={{
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14,
-            gap: 10,
-          }}
-        >
-          <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
-            Where Money Went
-          </Text>
-          <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: -8 }}>
-            Expense breakdown this month
-          </Text>
+        <Surface style={{ padding: 18, gap: 14 }}>
+          <View style={{ gap: 3 }}>
+            <Text style={{ fontSize: 15, fontWeight: "500", letterSpacing: -0.2, color: colors.text }}>
+              Where money went
+            </Text>
+            <Label>This month by category</Label>
+          </View>
+
           {categoryData.slice(0, 8).map((cat) => {
             const pct = total > 0 ? (cat.value / total) * 100 : 0
             return (
@@ -162,28 +155,33 @@ export function FinanceAnalytics({
                   style={{
                     width: 30,
                     height: 30,
-                    borderRadius: 8,
-                    backgroundColor: cat.color,
+                    borderRadius: 999,
+                    backgroundColor: colors.surfaceInset,
+                    borderWidth: 1,
+                    borderColor: colors.border,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <DynamicIcon name={cat.icon} size={15} color="#ffffff" />
+                  <DynamicIcon name={cat.icon} size={14} color={colors.mutedText} />
                 </View>
-                <View style={{ flex: 1, gap: 4 }}>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                    <Text numberOfLines={1} style={{ fontSize: 12, fontWeight: "600", color: colors.text, flex: 1 }}>
+                <View style={{ flex: 1, gap: 6 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 8 }}>
+                    <Text
+                      numberOfLines={1}
+                      style={{ fontSize: 12, color: colors.text, flex: 1 }}
+                    >
                       {cat.name}
                     </Text>
-                    <Text style={{ fontSize: 11, color: colors.mutedText }}>
+                    <Numeral style={{ fontSize: 11, color: colors.mutedText }}>
                       {formatCurrencyAmount(cat.value, primaryCurrency)}
-                    </Text>
+                    </Numeral>
                   </View>
                   <View
                     style={{
-                      height: 5,
-                      borderRadius: 3,
-                      backgroundColor: colors.surface,
+                      height: 3,
+                      borderRadius: 999,
+                      backgroundColor: colors.surfaceInset,
                       overflow: "hidden",
                     }}
                   >
@@ -192,13 +190,20 @@ export function FinanceAnalytics({
                     />
                   </View>
                 </View>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, width: 36, textAlign: "right" }}>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    color: colors.mutedText,
+                    width: 34,
+                    textAlign: "right",
+                  }}
+                >
                   {pct.toFixed(0)}%
                 </Text>
               </View>
             )
           })}
-        </View>
+        </Surface>
       ) : null}
     </View>
   )

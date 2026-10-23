@@ -17,6 +17,7 @@ import {
   Archive,
 } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
+import { Label, Numeral, Surface } from "@/components/ui/surface"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
@@ -25,7 +26,6 @@ import {
   accountTypeMeta,
   currentMonthKey,
 } from "@/constants/finance"
-import { getContrastTextColor } from "@/constants/categories"
 
 type AccountDoc = {
   _id: string
@@ -144,9 +144,9 @@ export default function AccountsScreen() {
           backgroundColor: colors.card,
           borderWidth: 1,
           borderColor: colors.border,
-          borderRadius: 14,
-          padding: 14,
-          gap: 10,
+          borderRadius: 20,
+          padding: 16,
+          gap: 12,
           opacity: a.isArchived ? 0.6 : 1,
         }}
       >
@@ -155,25 +155,27 @@ export default function AccountsScreen() {
             style={{
               width: 42,
               height: 42,
-              borderRadius: 10,
-              backgroundColor: a.color,
+              borderRadius: 999,
+              backgroundColor: colors.surfaceInset,
+              borderWidth: 1,
+              borderColor: colors.border,
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <DynamicIcon name={a.icon || meta.icon} size={20} color={getContrastTextColor(a.color)} />
+            <DynamicIcon name={a.icon || meta.icon} size={18} color={colors.text} />
           </View>
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Text numberOfLines={1} style={{ fontSize: 14, fontWeight: "800", color: colors.text, flexShrink: 1 }}>
+              <Text numberOfLines={1} style={{ fontSize: 14, fontWeight: "500", color: colors.text, flexShrink: 1 }}>
                 {a.name}
               </Text>
               {a.last4 ? (
                 <Text style={{ fontSize: 11, color: colors.mutedText }}>···· {a.last4}</Text>
               ) : null}
               {a.isArchived ? (
-                <View style={{ backgroundColor: colors.surface, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
-                  <Text style={{ fontSize: 9, fontWeight: "800", color: colors.mutedText }}>ARCHIVED</Text>
+                <View style={{ backgroundColor: colors.surfaceInset, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999 }}>
+                  <Text style={{ fontSize: 8, fontWeight: "500", letterSpacing: 0.8, color: colors.mutedText }}>ARCHIVED</Text>
                 </View>
               ) : null}
             </View>
@@ -182,12 +184,12 @@ export default function AccountsScreen() {
             </Text>
           </View>
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={{ fontSize: 14, fontWeight: "800", color: colors.text }}>
+            <Numeral style={{ fontSize: 14 }}>
               {formatCurrencyAmount(
                 convertCurrency(a.balance, a.currency, primaryCurrency, rates),
                 primaryCurrency
               )}
-            </Text>
+            </Numeral>
             {a.currency !== primaryCurrency ? (
               <Text style={{ fontSize: 10, color: colors.mutedText }}>
                 {a.balance.toLocaleString()} {a.currency}
@@ -202,14 +204,14 @@ export default function AccountsScreen() {
               flexDirection: "row",
               gap: 10,
               borderTopWidth: 1,
-              borderTopColor: colors.border,
+              borderTopColor: colors.borderLight,
               paddingTop: 8,
             }}
           >
-            <Text style={{ fontSize: 11, fontWeight: "700", color: colors.emerald }}>
+            <Text style={{ fontSize: 11, fontWeight: "500", color: colors.positive }}>
               +{formatCurrencyAmount(flow.income, primaryCurrency)}
             </Text>
-            <Text style={{ fontSize: 11, fontWeight: "700", color: colors.destructive }}>
+            <Text style={{ fontSize: 11, fontWeight: "500", color: colors.negative }}>
               -{formatCurrencyAmount(flow.expense, primaryCurrency)}
             </Text>
             <Text style={{ fontSize: 11, color: colors.mutedText }}>this month</Text>
@@ -222,30 +224,32 @@ export default function AccountsScreen() {
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
-              backgroundColor: colors.surface,
+              backgroundColor: colors.surfaceInset,
+              borderWidth: 1,
+              borderColor: colors.border,
               paddingHorizontal: 10,
               paddingVertical: 6,
-              borderRadius: 8,
+              borderRadius: 999,
             }}
           >
             <Text style={{ fontSize: 11, color: colors.mutedText }}>
               {subInfo.count} active subscription{subInfo.count > 1 ? "s" : ""}
             </Text>
-            <Text style={{ fontSize: 11, fontWeight: "700", color: colors.text }}>
+            <Numeral style={{ fontSize: 11 }}>
               ~{formatCurrencyAmount(subInfo.monthlyCommitment, primaryCurrency)}/mo
-            </Text>
+            </Numeral>
           </View>
         ) : null}
 
-        <View style={{ flexDirection: "row", gap: 6 }}>
+        <View style={{ flexDirection: "row", gap: 4 }}>
           <TouchableOpacity onPress={() => showAddAccount(a)} style={{ padding: 6 }}>
-            <Pencil size={15} color={colors.mutedText} />
+            <Pencil size={14} color={colors.mutedText} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => handleArchive(a)} style={{ padding: 6 }}>
-            <Archive size={15} color={colors.mutedText} />
+            <Archive size={14} color={colors.mutedText} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => handleDelete(a)} style={{ padding: 6 }}>
-            <Trash2 size={15} color={colors.mutedText} />
+            <Trash2 size={14} color={colors.mutedText} />
           </TouchableOpacity>
         </View>
       </View>
@@ -262,33 +266,21 @@ export default function AccountsScreen() {
           paddingBottom: 110,
         }}
       >
-        <View
-          style={{
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14,
-            gap: 6,
-          }}
-        >
+        <Surface style={{ padding: 18, gap: 6 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Wallet size={14} color={colors.primary} />
-            <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-              Total Net Worth ({primaryCurrency})
-            </Text>
+            <Label>Net worth · {primaryCurrency}</Label>
           </View>
           {accounts === undefined ? (
-            <ActivityIndicator size="small" color={colors.primary} />
+            <ActivityIndicator size="small" color={colors.mutedText} style={{ alignSelf: "flex-start" }} />
           ) : (
-            <Text style={{ fontSize: 24, fontWeight: "900", color: colors.text }}>
+            <Numeral style={{ fontSize: 30 }}>
               {formatCurrencyAmount(totalNetWorth, primaryCurrency)}
-            </Text>
+            </Numeral>
           )}
           <Text style={{ fontSize: 11, color: colors.mutedText }}>
-            Sum of all active account balances. Archived accounts are excluded.
+            Active account balances. Archived accounts are excluded.
           </Text>
-        </View>
+        </Surface>
 
         {accounts === undefined ? (
           <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
@@ -299,14 +291,14 @@ export default function AccountsScreen() {
               borderWidth: 1,
               borderColor: colors.border,
               borderStyle: "dashed",
-              borderRadius: 14,
+              borderRadius: 24,
               padding: 28,
               alignItems: "center",
               gap: 6,
             }}
           >
             <Wallet size={24} color={colors.subtleText} />
-            <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+            <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
               No accounts yet
             </Text>
             <Text style={{ fontSize: 11, color: colors.mutedText, textAlign: "center" }}>
@@ -318,7 +310,7 @@ export default function AccountsScreen() {
             <View style={{ gap: 10 }}>{active.map(renderCard)}</View>
             {archived.length > 0 ? (
               <View style={{ gap: 8 }}>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", paddingHorizontal: 4 }}>
+                <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, color: colors.mutedText, textTransform: "uppercase", paddingHorizontal: 4 }}>
                   Archived ({archived.length})
                 </Text>
                 <View style={{ gap: 10 }}>{archived.map(renderCard)}</View>

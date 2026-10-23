@@ -46,23 +46,33 @@ export function Button({
       variant === "primary"
         ? { backgroundColor: colors.primary }
         : variant === "secondary"
-          ? { backgroundColor: colors.secondary }
+          ? {
+              backgroundColor: colors.surfaceInset,
+              borderColor: colors.border,
+            }
           : variant === "outline"
             ? {
                 backgroundColor: "transparent",
-                borderWidth: 1,
                 borderColor: colors.border,
               }
             : variant === "destructive"
-              ? { backgroundColor: colors.destructiveBackground }
-              : { backgroundColor: "transparent" }
+              ? {
+                  backgroundColor: colors.destructiveBackground,
+                  borderColor: colors.border,
+                }
+              : {
+                  backgroundColor: "transparent",
+                  borderWidth: 0,
+                }
 
     return {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      borderRadius: 12,
+      borderRadius: 999,
       gap: 8,
+      borderWidth: 1,
+      borderColor: "transparent",
       ...sizeStyle,
       ...variantStyle,
       ...(disabled || loading ? { opacity: 0.5 } : {}),
@@ -74,13 +84,11 @@ export function Button({
     const color =
       variant === "primary"
         ? colors.primaryForeground
-        : variant === "secondary"
-          ? colors.secondaryForeground
-          : variant === "outline" || variant === "ghost"
-            ? colors.text
-            : colors.destructive
+        : variant === "secondary" || variant === "outline" || variant === "ghost"
+          ? colors.text
+          : colors.destructive
 
-    return { fontWeight: "600", fontSize, color }
+    return { fontWeight: "600", letterSpacing: -0.1, fontSize, color }
   }
 
   return (

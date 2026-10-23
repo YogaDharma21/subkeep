@@ -62,7 +62,7 @@ export function ClerkUserMenu({ visible, onClose, topOffset }: ClerkUserMenuProp
     paddingHorizontal: 16,
     paddingVertical: 13,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.borderLight,
   }
 
   return (
@@ -86,7 +86,7 @@ export function ClerkUserMenu({ visible, onClose, topOffset }: ClerkUserMenuProp
             backgroundColor: colors.card,
             borderWidth: 1,
             borderColor: colors.border,
-            borderRadius: 16,
+            borderRadius: 20,
             overflow: "hidden",
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 8 },
@@ -121,13 +121,13 @@ export function ClerkUserMenu({ visible, onClose, topOffset }: ClerkUserMenuProp
                   justifyContent: "center",
                 }}
               >
-                <Text style={{ fontSize: 18, fontWeight: "800", color: colors.primaryForeground }}>
+                <Text style={{ fontSize: 18, fontWeight: "600", color: colors.primaryForeground }}>
                   {initial}
                 </Text>
               </View>
             )}
             <View style={{ flex: 1 }}>
-              <Text numberOfLines={1} style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>
+              <Text numberOfLines={1} style={{ fontSize: 15, fontWeight: "500", color: colors.text }}>
                 {displayName}
               </Text>
               <Text numberOfLines={1} style={{ fontSize: 12, color: colors.mutedText, marginTop: 1 }}>
@@ -142,7 +142,7 @@ export function ClerkUserMenu({ visible, onClose, topOffset }: ClerkUserMenuProp
             style={rowStyle}
           >
             <User size={18} color={colors.mutedText} />
-            <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
+            <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
               Manage account
             </Text>
           </TouchableOpacity>
@@ -153,7 +153,7 @@ export function ClerkUserMenu({ visible, onClose, topOffset }: ClerkUserMenuProp
             style={rowStyle}
           >
             <Settings size={18} color={colors.mutedText} />
-            <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
+            <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
               Settings & Backup
             </Text>
           </TouchableOpacity>
@@ -163,8 +163,8 @@ export function ClerkUserMenu({ visible, onClose, topOffset }: ClerkUserMenuProp
             onPress={handleSignOut}
             style={rowStyle}
           >
-            <LogOut size={18} color={colors.destructive} />
-            <Text style={{ fontSize: 14, fontWeight: "600", color: colors.destructive }}>
+            <LogOut size={18} color={colors.negative} />
+            <Text style={{ fontSize: 13, fontWeight: "500", color: colors.negative }}>
               Sign out
             </Text>
           </TouchableOpacity>
@@ -176,7 +176,7 @@ export function ClerkUserMenu({ visible, onClose, topOffset }: ClerkUserMenuProp
               paddingVertical: 12,
               gap: 4,
               borderTopWidth: 1,
-              borderTopColor: colors.border,
+              borderTopColor: colors.borderLight,
             }}
           >
             <Text style={{ fontSize: 12, fontWeight: "600", color: colors.mutedText }}>

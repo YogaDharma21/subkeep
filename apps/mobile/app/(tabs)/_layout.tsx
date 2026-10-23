@@ -134,7 +134,7 @@ export default function TabLayout() {
           borderRadius: 999,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: isActive ? colors.surface : "transparent",
+          backgroundColor: isActive ? colors.surfaceInset : "transparent",
         }}
       >
         <Icon
@@ -153,20 +153,20 @@ export default function TabLayout() {
           flexDirection: "row",
           alignItems: "center",
           paddingHorizontal: 16,
-          paddingTop: insets.top + 8,
+          paddingTop: insets.top + 6,
           paddingBottom: 10,
           backgroundColor: colors.background,
-          borderBottomWidth: 1,
+          borderBottomWidth: 0.5,
           borderBottomColor: colors.border,
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <Image
             source={require("@/assets/images/icon.png")}
-            style={{ width: 30, height: 30, borderRadius: 8 }}
+            style={{ width: 28, height: 28, borderRadius: 8 }}
             resizeMode="contain"
           />
-          <Text style={{ fontSize: 18, fontWeight: "900", color: colors.text, letterSpacing: -0.4 }}>
+          <Text style={{ fontSize: 17, fontWeight: "600", color: colors.text, letterSpacing: -0.6 }}>
             SubKeep
           </Text>
         </View>
@@ -177,7 +177,7 @@ export default function TabLayout() {
           accessibilityLabel="Search"
           style={{ padding: 6 }}
         >
-          <Search size={20} color={colors.text} />
+          <Search size={18} color={colors.mutedText} />
         </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={0.7}
@@ -208,7 +208,7 @@ export default function TabLayout() {
                 justifyContent: "center",
               }}
             >
-              <Text style={{ fontSize: 14, fontWeight: "800", color: colors.primaryForeground }}>
+              <Text style={{ fontSize: 13, fontWeight: "600", color: colors.primaryForeground }}>
                 {avatarInitial}
               </Text>
             </View>
@@ -271,8 +271,8 @@ export default function TabLayout() {
             maxWidth: "100%",
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.22,
-            shadowRadius: 14,
+            shadowOpacity: 0.32,
+            shadowRadius: 18,
             elevation: 10,
           }}
         >
@@ -289,11 +289,9 @@ export default function TabLayout() {
               backgroundColor: colors.primary,
               alignItems: "center",
               justifyContent: "center",
-              borderWidth: 1,
-              borderColor: colors.border,
             }}
           >
-            <Plus size={24} color={colors.primaryForeground} strokeWidth={2.5} />
+            <Plus size={22} color={colors.primaryForeground} strokeWidth={2.4} />
           </TouchableOpacity>
 
           {rightTabs.map(renderTab)}

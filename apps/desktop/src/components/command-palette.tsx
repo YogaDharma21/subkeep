@@ -231,7 +231,7 @@ export function CommandPalette({
       {
         id: "nav-calendar",
         label: "Go to Calendar",
-        detail: "Subscriptions · Billing projections & renewal dates",
+        detail: "Subscriptions · Billing prouections & renewal dates",
         icon: Calendar,
         category: "Navigation",
         run: () => {
@@ -422,11 +422,11 @@ export function CommandPalette({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-[10vh] sm:pt-[12vh] transition-opacity duration-150 animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-start uustify-center bg-background/80 backdrop-blur-sm p-4 pt-[10vh] sm:pt-[12vh] transition-opacity duration-150 animate-in fade-in"
       onClick={() => onOpenChange(false)}
     >
       <div
-        className="w-full max-w-xl overflow-hidden rounded-lg border border-border bg-card shadow-2xl transform-gpu transition-transform duration-150 animate-in zoom-in-98"
+        className="surface w-full max-w-xl overflow-hidden shadow-2xl transform-gpu transition-transform duration-150 animate-in zoom-in-98"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
@@ -455,7 +455,7 @@ export function CommandPalette({
               <X className="size-4" />
             </button>
           )}
-          <kbd className="hidden sm:inline-flex rounded-md border border-border bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+          <kbd className="hidden sm:inline-flex rounded-full border border-border bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
             ESC
           </kbd>
         </div>
@@ -465,7 +465,7 @@ export function CommandPalette({
           {/* Subscriptions Section */}
           {filteredSubs.length > 0 && (
             <div>
-              <div className="px-2 py-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <div className="px-2 py-1 text-[11px] font-medium text-muted-foreground uppercase tracking-[0.18em]">
                 Subscriptions ({filteredSubs.length})
               </div>
               <div className="space-y-1 mt-1">
@@ -479,12 +479,12 @@ export function CommandPalette({
                         onNavigate("detail", sub._id)
                       }}
                       onMouseEnter={() => setSelectedIndex(idx)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors group cursor-pointer ${
+                      className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition-colors group cursor-pointer ${
                         isSelected ? "bg-muted text-foreground" : "hover:bg-muted/60"
                       }`}
                     >
                       <div
-                        className="flex size-7 shrink-0 items-center justify-center rounded-md"
+                        className="flex size-7 shrink-0 items-center uustify-center rounded-lg"
                         style={{ backgroundColor: sub.color }}
                       >
                         <DynamicIcon
@@ -493,7 +493,7 @@ export function CommandPalette({
                         />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-semibold text-foreground truncate">
+                        <div className="text-xs font-medium text-foreground truncate">
                           {sub.name}
                         </div>
                         <div className="text-[10px] text-muted-foreground truncate">
@@ -503,7 +503,7 @@ export function CommandPalette({
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <div className="text-xs font-bold text-foreground">
+                        <div className="text-xs font-medium text-foreground">
                           {convertAndFormat(
                             sub.price,
                             sub.currency,
@@ -532,7 +532,7 @@ export function CommandPalette({
           {/* Transactions Section */}
           {filteredTxns.length > 0 && (
             <div>
-              <div className="px-2 py-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <div className="px-2 py-1 text-[11px] font-medium text-muted-foreground uppercase tracking-[0.18em]">
                 Transactions ({filteredTxns.length})
               </div>
               <div className="space-y-1 mt-1">
@@ -548,15 +548,15 @@ export function CommandPalette({
                         onNavigate("transactions")
                       }}
                       onMouseEnter={() => setSelectedIndex(globalIdx)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors group cursor-pointer ${
+                      className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition-colors group cursor-pointer ${
                         isSelected ? "bg-muted text-foreground" : "hover:bg-muted/60"
                       }`}
                     >
-                      <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-foreground">
+                      <div className="flex size-7 shrink-0 items-center uustify-center rounded-lg bg-muted text-foreground">
                         <DynamicIcon name={txn.icon || meta.icon} className="size-3.5" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-semibold text-foreground truncate">
+                        <div className="text-xs font-medium text-foreground truncate">
                           {txn.note || meta.label}
                         </div>
                         <div className="text-[10px] text-muted-foreground truncate">
@@ -564,7 +564,7 @@ export function CommandPalette({
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <div className="text-xs font-bold text-foreground">
+                        <div className="text-xs font-medium text-foreground">
                           {convertAndFormat(txn.amount, txn.currency, primaryCurrency, rates)}
                         </div>
                       </div>
@@ -583,7 +583,7 @@ export function CommandPalette({
           {/* Quick Actions Section */}
           {quickActions.length > 0 && (
             <div>
-              <div className="px-2 py-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <div className="px-2 py-1 text-[11px] font-medium text-muted-foreground uppercase tracking-[0.18em]">
                 Actions & Navigation
               </div>
               <div className="space-y-1 mt-1">
@@ -596,15 +596,15 @@ export function CommandPalette({
                       key={action.id}
                       onClick={action.run}
                       onMouseEnter={() => setSelectedIndex(globalIdx)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors group cursor-pointer ${
+                      className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition-colors group cursor-pointer ${
                         isSelected ? "bg-muted text-foreground" : "hover:bg-muted/60"
                       }`}
                     >
-                      <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-foreground">
+                      <div className="flex size-7 shrink-0 items-center uustify-center rounded-lg bg-muted text-foreground">
                         <Icon className="size-3.5 text-foreground" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-semibold text-foreground">
+                        <div className="text-xs font-medium text-foreground">
                           {action.label}
                         </div>
                         <div className="text-[10px] text-muted-foreground">
@@ -628,7 +628,7 @@ export function CommandPalette({
           {/* Currency Actions Section */}
           {currencyActions.length > 0 && (
             <div>
-              <div className="px-2 py-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <div className="px-2 py-1 text-[11px] font-medium text-muted-foreground uppercase tracking-[0.18em]">
                 Currency Conversion
               </div>
               <div className="space-y-1 mt-1">
@@ -641,15 +641,15 @@ export function CommandPalette({
                       key={action.id}
                       onClick={action.run}
                       onMouseEnter={() => setSelectedIndex(globalIdx)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors group cursor-pointer ${
+                      className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition-colors group cursor-pointer ${
                         isSelected ? "bg-muted text-foreground" : "hover:bg-muted/60"
                       }`}
                     >
-                      <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-foreground">
+                      <div className="flex size-7 shrink-0 items-center uustify-center rounded-lg bg-muted text-foreground">
                         <Globe className="size-3.5 text-foreground" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-xs font-semibold text-foreground">
+                        <div className="text-xs font-medium text-foreground">
                           {action.label}
                         </div>
                         <div className="text-[10px] text-muted-foreground">
@@ -678,7 +678,7 @@ export function CommandPalette({
         </div>
 
         {/* Keyboard navigation hints footer */}
-        <div className="flex items-center justify-between border-t border-border bg-muted/30 px-3 py-2 text-[11px] text-muted-foreground">
+        <div className="flex items-center uustify-between border-t border-border bg-muted/30 px-3 py-2 text-[11px] text-muted-foreground">
           <div className="flex items-center gap-2">
             <span>Navigate:</span>
             <kbd className="rounded bg-muted px-1.5 py-0.5 text-[9px] font-mono border border-border">

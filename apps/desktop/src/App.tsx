@@ -106,7 +106,7 @@ export function App() {
     return (
       <div className="h-screen w-screen flex flex-col bg-background text-foreground items-center justify-center">
         <div className="size-8 rounded-full border-2 border-primary border-t-transparent animate-spin mb-3" />
-        <p className="text-xs text-muted-foreground font-semibold">Loading SubKeep Desktop...</p>
+        <p className="text-xs text-muted-foreground font-medium">Loading SubKeep Desktop...</p>
       </div>
     )
   }
@@ -149,7 +149,7 @@ export function App() {
           activeSubCount={activeSubsCount}
         />
 
-        <main className="flex-1 min-w-0 overflow-y-auto p-4 sm:p-6 bg-background">
+        <main className="flex-1 min-w-0 overflow-y-auto bg-background p-5 sm:p-8">
           {currentView === "dashboard" && (
             <FinanceDashboardView onNavigate={(v) => handleNavigate(v)} />
           )}
@@ -167,12 +167,10 @@ export function App() {
           {currentView === "budgets" && <BudgetsView />}
 
           {currentView === "calendar" && (
-            <div className="space-y-4 max-w-5xl mx-auto pb-12">
-              <div>
-                <h1 className="text-xl font-extrabold text-foreground">Calendar</h1>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Scheduled renewals, trial deadlines, and daily cash flow.
-                </p>
+            <div className="mx-auto max-w-6xl space-y-3 pb-16">
+              <div className="px-1 pb-2">
+                <p className="label">Schedule</p>
+                <h1 className="page-title mt-2">Calendar</h1>
               </div>
               <CalendarGrid
                 subscriptions={subscriptions || []}
@@ -183,12 +181,10 @@ export function App() {
           )}
 
           {currentView === "stats" && (
-            <div className="space-y-4 max-w-5xl mx-auto pb-12">
-              <div>
-                <h1 className="text-xl font-extrabold text-foreground">Spending Analytics</h1>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Income vs expenses, category breakdown, and subscription trends.
-                </p>
+            <div className="mx-auto max-w-6xl space-y-3 pb-16">
+              <div className="px-1 pb-2">
+                <p className="label">Analytics</p>
+                <h1 className="page-title mt-2">Spending</h1>
               </div>
               <FinanceAnalytics
                 transactions={transactions || []}

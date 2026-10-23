@@ -17,12 +17,12 @@ interface QuickAddSheetProps {
   onSelect: (kind: QuickAddKind) => void
 }
 
-const options: Array<{
+const options: {
   kind: QuickAddKind
   label: string
   detail: string
   icon: typeof Wallet
-}> = [
+}[] = [
   {
     kind: "transaction",
     label: "Transaction",
@@ -141,8 +141,8 @@ export function QuickAddSheet({ visible, onClose, onSelect }: QuickAddSheetProps
         <Animated.View
           style={{
             backgroundColor: colors.card,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+            borderTopLeftRadius: 28,
+            borderTopRightRadius: 28,
             borderWidth: 1,
             borderBottomWidth: 0,
             borderColor: colors.border,
@@ -159,7 +159,7 @@ export function QuickAddSheet({ visible, onClose, onSelect }: QuickAddSheetProps
               justifyContent: "space-between",
             }}
           >
-            <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
+            <Text style={{ fontSize: 18, fontWeight: "600", letterSpacing: -0.4, color: colors.text }}>
               Quick Add
             </Text>
             <TouchableOpacity
@@ -168,8 +168,8 @@ export function QuickAddSheet({ visible, onClose, onSelect }: QuickAddSheetProps
               style={{
                 width: 28,
                 height: 28,
-                borderRadius: 14,
-                backgroundColor: colors.surface,
+                borderRadius: 999,
+                backgroundColor: colors.surfaceInset,
                 alignItems: "center",
                 justifyContent: "center",
               }}
@@ -189,11 +189,11 @@ export function QuickAddSheet({ visible, onClose, onSelect }: QuickAddSheetProps
                   accessibilityLabel={`Add ${opt.label}`}
                   style={{
                     width: "48.5%",
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.surfaceInset,
                     borderWidth: 1,
                     borderColor: colors.border,
-                    borderRadius: 14,
-                    padding: 12,
+                    borderRadius: 18,
+                    padding: 14,
                     gap: 10,
                   }}
                 >
@@ -201,7 +201,7 @@ export function QuickAddSheet({ visible, onClose, onSelect }: QuickAddSheetProps
                     style={{
                       width: 36,
                       height: 36,
-                      borderRadius: 10,
+                      borderRadius: 999,
                       backgroundColor: colors.surfaceHover,
                       alignItems: "center",
                       justifyContent: "center",
@@ -210,7 +210,7 @@ export function QuickAddSheet({ visible, onClose, onSelect }: QuickAddSheetProps
                     <Icon size={17} color={colors.text} />
                   </View>
                   <View>
-                    <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                    <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                       {opt.label}
                     </Text>
                     <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 2 }}>

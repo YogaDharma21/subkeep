@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { accountTypeMeta, currentMonthKey } from "@/lib/finance"
-import { getContrastTextColor } from "@/lib/constants"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
@@ -107,23 +106,28 @@ export function AccountsView() {
     const meta = accountTypeMeta(a.type)
     const flow = monthFlowByAccount.get(a._id)
     return (
-      <div key={a._id} className={cn("rounded-lg border border-border bg-background p-4", a.isArchived && "opacity-60")}>
+      <div key={a._id} className={cn("surface relative overflow-hidden p-4", a.isArchived && "opacity-60")}>
         <div className="flex items-center gap-3">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-lg shadow-xs" style={{ backgroundColor: a.color }}>
-            <DynamicIcon name={a.icon || meta.icon} className="size-5" style={{ color: getContrastTextColor(a.color) }} />
+          <div className="surface-inset relative flex size-10 shrink-0 items-center justify-center rounded-full">
+            <DynamicIcon name={a.icon || meta.icon} className="size-4 text-foreground/80" />
+            <span
+              className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full ring-2 ring-card"
+              style={{ backgroundColor: a.color }}
+              aria-hidden
+            />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <span className="truncate text-sm font-bold">{a.name}</span>
-              {a.last4 && <span className="text-[11px] text-muted-foreground shrink-0">···· {a.last4}</span>}
+              <span className="truncate text-[13px] font-medium">{a.name}</span>
+              {a.last4 && <span className="shrink-0 text-[11px] text-muted-foreground">···· {a.last4}</span>}
               {a.isArchived && (
-                <span className="rounded-md bg-muted px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground shrink-0">Archived</span>
+                <span className="shrink-0 rounded-full border border-border px-1.5 py-0.5 text-[9px] uppercase tracking-[0.1em] text-muted-foreground">Archived</span>
               )}
             </div>
-            <div className="text-[11px] text-muted-foreground capitalize">{meta.label}</div>
+            <div className="text-[11px] capitalize text-muted-foreground">{meta.label}</div>
           </div>
           <div className="shrink-0 text-right">
-            <div className="text-sm font-extrabold">
+            <div className="numeral text-[13px] font-medium">
               {formatCurrencyAmount(convertCurrency(a.balance, a.currency, primaryCurrency, rates), primaryCurrency)}
             </div>
             {a.currency !== primaryCurrency && (
@@ -133,9 +137,9 @@ export function AccountsView() {
         </div>
 
         {flow && (flow.income > 0 || flow.expense > 0) && (
-          <div className="mt-3 flex items-center gap-3 border-t border-border/60 pt-2.5 text-[11px]">
-            <span className="font-medium text-emerald-500">+{formatCurrencyAmount(flow.income, primaryCurrency)}</span>
-            <span className="font-medium text-red-500">-{formatCurrencyAmount(flow.expense, primaryCurrency)}</span>
+          <div className="mt-3 flex items-center gap-3 border-t border-border pt-2.5 text-[11px]">
+            <span className="numeral text-positive">+{formatCurrencyAmount(flow.income, primaryCurrency)}</span>
+            <span className="numeral text-negative">-{formatCurrencyAmount(flow.expense, primaryCurrency)}</span>
             <span className="text-muted-foreground">this month</span>
           </div>
         )}
@@ -144,11 +148,11 @@ export function AccountsView() {
           const subInfo = subscriptionsByAccount.get(a._id)
           if (!subInfo || subInfo.count === 0) return null
           return (
-            <div className="mt-2.5 flex items-center justify-between rounded-md bg-muted/40 px-2.5 py-1.5 text-[11px] text-muted-foreground border border-border/50">
+            <div className="surface-inset mt-2.5 flex items-center justify-between px-2.5 py-1.5 text-[11px] text-muted-foreground">
               <span>
                 {subInfo.count} linked {subInfo.count === 1 ? "subscription" : "subscriptions"}
               </span>
-              <span className="font-semibold text-foreground">
+              <span className="numeral font-medium text-foreground">
                 ~{formatCurrencyAmount(subInfo.monthlyCommitment, primaryCurrency)}/mo
               </span>
             </div>
@@ -156,13 +160,13 @@ export function AccountsView() {
         })()}
 
         <div className="mt-3 flex items-center gap-1.5">
-          <Button variant="ghost" size="icon-sm" onClick={() => setEditing(a)} title="Edit account" className="cursor-pointer">
+          <Button variant="ghost" size="icon-sm" onClick={() => setEditing(a)} title="Edit account" className="cursor-pointer rounded-full">
             <Pencil className="size-3.5" />
           </Button>
-          <Button variant="ghost" size="icon-sm" onClick={() => handleArchive(a)} title={a.isArchived ? "Restore account" : "Archive account"} className="cursor-pointer">
+          <Button variant="ghost" size="icon-sm" onClick={() => handleArchive(a)} title={a.isArchived ? "Restore account" : "Archive account"} className="cursor-pointer rounded-full">
             <Archive className="size-3.5" />
           </Button>
-          <Button variant="ghost" size="icon-sm" onClick={() => setDeleteTarget(a)} title="Delete account" className="hover:text-destructive cursor-pointer">
+          <Button variant="ghost" size="icon-sm" onClick={() => setDeleteTarget(a)} title="Delete account" className="cursor-pointer rounded-full hover:text-destructive">
             <Trash2 className="size-3.5" />
           </Button>
         </div>
@@ -171,42 +175,42 @@ export function AccountsView() {
   }
 
   return (
-    <div className="space-y-4 max-w-5xl mx-auto pb-12">
-      <div>
-        <h1 className="text-xl font-extrabold text-foreground">Accounts</h1>
-        <p className="text-xs text-muted-foreground mt-1">Wallets, banks, and net worth.</p>
+    <div className="mx-auto max-w-5xl space-y-3 pb-16">
+      <div className="px-1 pb-2">
+        <p className="label">Balances</p>
+        <h1 className="page-title mt-2">Accounts</h1>
       </div>
 
-      <div className="rounded-lg border border-border bg-background p-4 sm:p-5">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-          <Wallet className="size-3.5 text-primary" />
-          <span>Total Net Worth ({primaryCurrency})</span>
+      <section className="surface relative overflow-hidden p-5 sm:p-6">
+        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <Wallet className="size-3.5" />
+          <span>Total net worth ({primaryCurrency})</span>
         </div>
         {accounts === undefined ? (
-          <div className="mt-3 h-9 w-40 rounded-md bg-muted animate-pulse" />
+          <div className="mt-4 h-10 w-40 animate-pulse rounded-xl bg-muted" />
         ) : (
-          <div className="mt-2 text-2xl font-extrabold">{formatCurrencyAmount(totalNetWorth, primaryCurrency)}</div>
+          <div className="display-number mt-3 text-[2.2rem] text-foreground">{formatCurrencyAmount(totalNetWorth, primaryCurrency)}</div>
         )}
-        <p className="mt-1 text-[11px] text-muted-foreground">Sum of all active account balances. Archived accounts are excluded.</p>
-      </div>
+        <p className="mt-2 text-[11px] text-muted-foreground">Sum of all active account balances. Archived accounts are excluded.</p>
+      </section>
 
       {accounts === undefined ? (
         <div className="space-y-3">
-          <div className="h-28 rounded-md bg-muted animate-pulse" />
-          <div className="h-28 rounded-md bg-muted animate-pulse" />
+          <div className="h-28 rounded-3xl bg-muted animate-pulse" />
+          <div className="h-28 rounded-3xl bg-muted animate-pulse" />
         </div>
       ) : active.length === 0 && archived.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 text-center">
+        <div className="surface flex flex-col items-center justify-center py-12 text-center">
           <p className="text-sm font-medium text-muted-foreground">No accounts yet</p>
           <p className="mt-1 text-xs text-muted-foreground/60">Add checking, savings, cash, or e-wallets to track balances</p>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{active.map(renderCard)}</div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{active.map(renderCard)}</div>
           {archived.length > 0 && (
             <div className="space-y-2">
-              <h3 className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Archived ({archived.length})</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{archived.map(renderCard)}</div>
+              <h3 className="label px-1">Archived ({archived.length})</h3>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{archived.map(renderCard)}</div>
             </div>
           )}
         </>
@@ -215,9 +219,9 @@ export function AccountsView() {
       <AddAccountSheet key={editing?._id ?? "new"} open={!!editing} onOpenChange={(o) => !o && setEditing(null)} editing={editing} />
 
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-sm rounded-lg bg-background p-6 border border-border shadow-xl">
-            <h3 className="mb-2 text-center text-lg font-semibold">Delete Account?</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl border border-border bg-card p-6 shadow-2xl">
+            <h3 className="mb-2 text-center text-lg font-medium">Delete account?</h3>
             <p className="mb-6 text-center text-sm text-muted-foreground">
               {deleteTarget.name} will be removed. Linked transactions are kept but detached.
             </p>

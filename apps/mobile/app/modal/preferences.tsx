@@ -133,7 +133,7 @@ export default function PreferencesModal() {
           paddingHorizontal: 16,
           paddingVertical: 14,
           borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          borderBottomColor: colors.borderLight,
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
@@ -141,8 +141,8 @@ export default function PreferencesModal() {
             style={{
               width: 36,
               height: 36,
-              borderRadius: 10,
-              backgroundColor: colors.surface,
+              borderRadius: 999,
+              backgroundColor: colors.surfaceInset,
               alignItems: "center",
               justifyContent: "center",
             }}
@@ -150,7 +150,7 @@ export default function PreferencesModal() {
             <SlidersHorizontal size={18} color={colors.text} />
           </View>
           <View>
-            <Text style={{ fontSize: 17, fontWeight: "800", color: colors.text }}>
+            <Text style={{ fontSize: 17, fontWeight: "600", color: colors.text }}>
               Preferences
             </Text>
             <Text style={{ fontSize: 11, color: colors.mutedText }}>
@@ -165,7 +165,7 @@ export default function PreferencesModal() {
             width: 32,
             height: 32,
             borderRadius: 16,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.surfaceInset,
             alignItems: "center",
             justifyContent: "center",
           }}
@@ -177,7 +177,7 @@ export default function PreferencesModal() {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 20, paddingBottom: 50 }}>
         {/* 1. Theme & Appearance */}
         <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
+          <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText, paddingHorizontal: 4 }}>
             APPEARANCE & THEME
           </Text>
 
@@ -221,8 +221,8 @@ export default function PreferencesModal() {
                       justifyContent: "center",
                       gap: 6,
                       paddingVertical: 10,
-                      borderRadius: 10,
-                      backgroundColor: isSelected ? colors.primary : colors.surface,
+                      borderRadius: 999,
+                      backgroundColor: isSelected ? colors.primary : colors.surfaceInset,
                       borderWidth: 1,
                       borderColor: isSelected ? colors.primary : colors.border,
                     }}
@@ -234,7 +234,7 @@ export default function PreferencesModal() {
                     <Text
                       style={{
                         fontSize: 12,
-                        fontWeight: "700",
+                        fontWeight: "500",
                         color: isSelected ? colors.primaryForeground : colors.mutedText,
                       }}
                     >
@@ -249,7 +249,7 @@ export default function PreferencesModal() {
 
         {/* 2. Primary Currency */}
         <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
+          <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText, paddingHorizontal: 4 }}>
             PRIMARY CONVERSION CURRENCY
           </Text>
 
@@ -276,8 +276,8 @@ export default function PreferencesModal() {
                 style={{
                   width: 36,
                   height: 36,
-                  borderRadius: 10,
-                  backgroundColor: colors.surface,
+                  borderRadius: 999,
+                  backgroundColor: colors.surfaceInset,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
@@ -298,13 +298,13 @@ export default function PreferencesModal() {
                 style={{
                   paddingHorizontal: 10,
                   paddingVertical: 6,
-                  borderRadius: 8,
-                  backgroundColor: colors.surface,
+                  borderRadius: 14,
+                  backgroundColor: colors.surfaceInset,
                   borderWidth: 1,
                   borderColor: colors.border,
                 }}
               >
-                <Text style={{ fontSize: 13, fontWeight: "800", color: colors.text }}>
+                <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
                   {primaryCurrency} ({getSymbol(primaryCurrency)})
                 </Text>
               </View>
@@ -314,7 +314,7 @@ export default function PreferencesModal() {
 
         {/* 3. Alerts & Reminders */}
         <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
+          <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText, paddingHorizontal: 4 }}>
             ALERTS & REMINDER TIMING
           </Text>
 
@@ -350,8 +350,8 @@ export default function PreferencesModal() {
                     style={{
                       flex: 1,
                       paddingVertical: 8,
-                      borderRadius: 8,
-                      backgroundColor: isSelected ? colors.primary : colors.surface,
+                      borderRadius: 14,
+                      backgroundColor: isSelected ? colors.primary : colors.surfaceInset,
                       borderWidth: 1,
                       borderColor: isSelected ? colors.primary : colors.border,
                       alignItems: "center",
@@ -360,7 +360,7 @@ export default function PreferencesModal() {
                     <Text
                       style={{
                         fontSize: 11,
-                        fontWeight: "700",
+                        fontWeight: "500",
                         color: isSelected ? colors.primaryForeground : colors.mutedText,
                       }}
                     >
@@ -379,15 +379,15 @@ export default function PreferencesModal() {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 8,
-                backgroundColor: colors.surface,
+                backgroundColor: colors.surfaceInset,
                 borderWidth: 1,
                 borderColor: colors.border,
                 paddingVertical: 10,
-                borderRadius: 10,
+                borderRadius: 999,
               }}
             >
               <BellRing size={14} color={colors.text} />
-              <Text style={{ fontSize: 12, fontWeight: "700", color: colors.text }}>
+              <Text style={{ fontSize: 12, fontWeight: "500", color: colors.text }}>
                 Send Test Alert Notification
               </Text>
             </TouchableOpacity>
@@ -396,7 +396,7 @@ export default function PreferencesModal() {
 
         {/* 4. Monthly Spending Budget Cap */}
         <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
+          <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText, paddingHorizontal: 4 }}>
             MONTHLY SPENDING BUDGET CAP
           </Text>
 
@@ -475,7 +475,7 @@ export default function PreferencesModal() {
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
+                <Text style={{ fontSize: 18, fontWeight: "600", letterSpacing: -0.4, color: colors.text }}>
                   Select Primary Currency
                 </Text>
                 <TouchableOpacity onPress={() => setCurrencyModalOpen(false)}>
@@ -487,10 +487,10 @@ export default function PreferencesModal() {
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: colors.surface,
+                  backgroundColor: colors.surfaceInset,
                   borderWidth: 1,
                   borderColor: colors.border,
-                  borderRadius: 8,
+                  borderRadius: 14,
                   paddingHorizontal: 10,
                   gap: 8,
                 }}
@@ -524,12 +524,12 @@ export default function PreferencesModal() {
                           justifyContent: "space-between",
                           paddingVertical: 10,
                           paddingHorizontal: 12,
-                          borderRadius: 8,
-                          backgroundColor: isSelected ? colors.surface : "transparent",
+                          borderRadius: 14,
+                          backgroundColor: isSelected ? colors.surfaceInset : "transparent",
                         }}
                       >
                         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                          <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                          <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                             {c.value}
                           </Text>
                           <Text style={{ fontSize: 12, color: colors.mutedText }}>

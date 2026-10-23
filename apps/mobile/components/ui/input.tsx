@@ -8,6 +8,7 @@ import {
   ViewStyle,
 } from "react-native"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { Type } from "@/constants/theme"
 
 export interface InputProps extends TextInputProps {
   label?: string
@@ -30,17 +31,9 @@ export function Input({
   const { colors } = useThemeColor()
 
   return (
-    <View style={[{ gap: 6 }, containerStyle]}>
+    <View style={[{ gap: 8 }, containerStyle]}>
       {label ? (
-        <Text
-          style={{
-            fontSize: 12,
-            fontWeight: "600",
-            color: colors.mutedText,
-            textTransform: "uppercase",
-            letterSpacing: 0.5,
-          }}
-        >
+        <Text style={[Type.label, { color: colors.mutedText }]}>
           {label}
         </Text>
       ) : null}
@@ -48,12 +41,12 @@ export function Input({
         style={{
           flexDirection: "row",
           alignItems: "center",
-          backgroundColor: colors.surface,
+          backgroundColor: colors.surfaceInset,
           borderWidth: 1,
           borderColor: error ? colors.destructive : colors.border,
-          borderRadius: 10,
+          borderRadius: 14,
           paddingHorizontal: 12,
-          minHeight: 44,
+          minHeight: 46,
           gap: 8,
         }}
       >
@@ -65,6 +58,7 @@ export function Input({
               flex: 1,
               color: colors.text,
               fontSize: 14,
+              letterSpacing: -0.1,
               paddingVertical: 10,
             },
             style,

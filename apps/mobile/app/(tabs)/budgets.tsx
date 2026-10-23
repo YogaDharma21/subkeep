@@ -17,6 +17,7 @@ import {
   Trash2,
 } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
+import { Label, Numeral, Surface } from "@/components/ui/surface"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
@@ -100,63 +101,63 @@ export default function BudgetsScreen() {
         }}
       >
         {/* Month + totals */}
-        <View
-          style={{
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14,
-            gap: 10,
-          }}
-        >
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <TouchableOpacity
-              onPress={() => setMonth(shiftMonth(month, -1))}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 8,
-                backgroundColor: colors.surface,
-                borderWidth: 1,
-                borderColor: colors.border,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <ChevronLeft size={16} color={colors.text} />
-            </TouchableOpacity>
-            <View style={{ alignItems: "center" }}>
-              <Text style={{ fontSize: 14, fontWeight: "800", color: colors.text }}>
+        <Surface style={{ padding: 18, gap: 14 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+            <View style={{ gap: 3 }}>
+              <Label>Budgets</Label>
+              <Text style={{ fontSize: 15, fontWeight: "500", letterSpacing: -0.2, color: colors.text }}>
                 {monthLabel(month)}
               </Text>
-              <Text style={{ fontSize: 11, color: colors.mutedText }}>
-                {formatCurrencyAmount(totals.spent, primaryCurrency)} of{" "}
-                {formatCurrencyAmount(totals.cap, primaryCurrency)} ({totals.pct}%)
-              </Text>
             </View>
-            <TouchableOpacity
-              onPress={() => setMonth(shiftMonth(month, 1))}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 8,
-                backgroundColor: colors.surface,
-                borderWidth: 1,
-                borderColor: colors.border,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <ChevronRight size={16} color={colors.text} />
-            </TouchableOpacity>
+            <View style={{ flexDirection: "row", gap: 6 }}>
+              <TouchableOpacity
+                onPress={() => setMonth(shiftMonth(month, -1))}
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 999,
+                  backgroundColor: colors.surfaceInset,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <ChevronLeft size={15} color={colors.text} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setMonth(shiftMonth(month, 1))}
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 999,
+                  backgroundColor: colors.surfaceInset,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <ChevronRight size={15} color={colors.text} />
+              </TouchableOpacity>
+            </View>
           </View>
+
+          <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 8 }}>
+            <Numeral style={{ fontSize: 28 }}>
+              {formatCurrencyAmount(totals.spent, primaryCurrency)}
+            </Numeral>
+            <Text style={{ fontSize: 11, color: colors.mutedText, paddingBottom: 5 }}>
+              of {formatCurrencyAmount(totals.cap, primaryCurrency)} · {totals.pct}%
+            </Text>
+          </View>
+
           {totals.cap > 0 ? (
             <View
               style={{
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: colors.surface,
+                height: 3,
+                borderRadius: 999,
+                backgroundColor: colors.surfaceInset,
                 overflow: "hidden",
               }}
             >
@@ -166,15 +167,15 @@ export default function BudgetsScreen() {
                   width: `${Math.min(100, totals.pct)}%`,
                   backgroundColor:
                     totals.spent > totals.cap
-                      ? colors.destructive
+                      ? colors.negative
                       : totals.pct >= 85
-                      ? colors.amber
-                      : colors.emerald,
+                      ? colors.warning
+                      : colors.text,
                 }}
               />
             </View>
           ) : null}
-        </View>
+        </Surface>
 
         {/* Budget rows */}
         {budgets === undefined || transactions === undefined ? (
@@ -186,14 +187,14 @@ export default function BudgetsScreen() {
               borderWidth: 1,
               borderColor: colors.border,
               borderStyle: "dashed",
-              borderRadius: 14,
+              borderRadius: 24,
               padding: 28,
               alignItems: "center",
               gap: 6,
             }}
           >
             <PiggyBank size={24} color={colors.subtleText} />
-            <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+            <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
               No budgets for {monthLabel(month).split(" ")[0]}
             </Text>
             <Text style={{ fontSize: 11, color: colors.mutedText, textAlign: "center" }}>
@@ -210,9 +211,9 @@ export default function BudgetsScreen() {
                   backgroundColor: colors.card,
                   borderWidth: 1,
                   borderColor: colors.border,
-                  borderRadius: 14,
-                  padding: 14,
-                  gap: 8,
+                  borderRadius: 20,
+                  padding: 16,
+                  gap: 10,
                 }}
               >
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
@@ -220,16 +221,18 @@ export default function BudgetsScreen() {
                     style={{
                       width: 38,
                       height: 38,
-                      borderRadius: 10,
-                      backgroundColor: colors.surface,
+                      borderRadius: 999,
+                      backgroundColor: colors.surfaceInset,
+                      borderWidth: 1,
+                      borderColor: colors.border,
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <DynamicIcon name={meta.icon} size={16} color={colors.text} />
+                    <DynamicIcon name={meta.icon} size={15} color={colors.mutedText} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                    <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                       {meta.label}
                     </Text>
                     <Text style={{ fontSize: 11, color: colors.mutedText }}>
@@ -238,24 +241,23 @@ export default function BudgetsScreen() {
                       {subSpend > 0 ? ` · incl. ${formatCurrencyAmount(subSpend, primaryCurrency)} subs` : ""}
                     </Text>
                   </View>
-                  <Text
+                  <Numeral
                     style={{
-                      fontSize: 14,
-                      fontWeight: "800",
-                      color: remaining < 0 ? colors.destructive : pct >= 85 ? colors.amber : colors.emerald,
+                      fontSize: 13,
+                      color: remaining < 0 ? colors.negative : pct >= 85 ? colors.warning : colors.text,
                     }}
                   >
                     {pct}%
-                  </Text>
+                  </Numeral>
                   <TouchableOpacity onPress={() => handleDelete(budget._id)} style={{ padding: 4 }}>
                     <Trash2 size={14} color={colors.mutedText} />
                   </TouchableOpacity>
                 </View>
                 <View
                   style={{
-                    height: 7,
-                    borderRadius: 4,
-                    backgroundColor: colors.surface,
+                    height: 3,
+                    borderRadius: 999,
+                    backgroundColor: colors.surfaceInset,
                     overflow: "hidden",
                   }}
                 >
@@ -263,11 +265,11 @@ export default function BudgetsScreen() {
                     style={{
                       height: "100%",
                       width: `${Math.min(100, pct)}%`,
-                      backgroundColor: remaining < 0 ? colors.destructive : pct >= 85 ? colors.amber : colors.emerald,
+                      backgroundColor: remaining < 0 ? colors.negative : pct >= 85 ? colors.warning : colors.text,
                     }}
                   />
                 </View>
-                <Text style={{ fontSize: 11, color: remaining < 0 ? colors.destructive : colors.mutedText, fontWeight: remaining < 0 ? "700" : "400" }}>
+                <Text style={{ fontSize: 11, color: remaining < 0 ? colors.negative : colors.mutedText, fontWeight: remaining < 0 ? "500" : "400" }}>
                   {remaining >= 0
                     ? `${formatCurrencyAmount(remaining, primaryCurrency)} remaining`
                     : `Over by ${formatCurrencyAmount(Math.abs(remaining), primaryCurrency)}`}

@@ -83,10 +83,10 @@ export function FinanceAnalytics({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
       {/* Income vs Expense */}
-      <div className="rounded-lg border border-border bg-background">
-        <div className="border-b border-border p-4">
-          <h3 className="text-sm font-semibold">Income vs Expenses</h3>
-          <p className="text-xs text-muted-foreground">
+      <div className="surface overflow-hidden">
+        <div className="border-b border-border p-5">
+          <h3 className="text-[15px] font-medium tracking-tight">Income vs Expenses</h3>
+          <p className="mt-1 text-[11px] text-muted-foreground">
             Logged transactions across the last {months.length} months
           </p>
         </div>
@@ -113,32 +113,32 @@ export function FinanceAnalytics({
                     backgroundColor: "var(--card)",
                     borderColor: "var(--border)",
                     color: "var(--card-foreground)",
-                    borderRadius: "8px",
+                    borderRadius: "12px",
                     fontSize: "12px",
                   }}
                   itemStyle={{ color: "var(--card-foreground)" }}
                 />
-                <Bar dataKey="income" fill="#10b981" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="expense" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="income" fill="var(--positive)" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="expense" fill="var(--negative)" radius={[2, 2, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
           <div className="mt-3 flex items-center justify-center gap-5 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-emerald-500" /> Income
+              <span className="size-2 rounded-full bg-positive" /> Income
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-red-500" /> Expenses
+              <span className="size-2 rounded-full bg-negative" /> Expenses
             </span>
           </div>
         </div>
       </div>
 
       {/* Expense categories this month */}
-      <div className="rounded-lg border border-border bg-background">
-        <div className="border-b border-border p-4">
-          <h3 className="text-sm font-semibold">Where Money Went</h3>
-          <p className="text-xs text-muted-foreground">
+      <div className="surface overflow-hidden">
+        <div className="border-b border-border p-5">
+          <h3 className="text-[15px] font-medium tracking-tight">Where money went</h3>
+          <p className="mt-1 text-[11px] text-muted-foreground">
             Expense breakdown by category this month
           </p>
         </div>
@@ -187,7 +187,7 @@ export function FinanceAnalytics({
                           {formatCurrencyAmount(cat.value, primaryCurrency)}
                         </span>
                       </div>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-foreground/10">
                         <div
                           className="h-full rounded-full transition-all"
                           style={{ width: `${pct}%`, backgroundColor: cat.color }}

@@ -110,7 +110,7 @@ export function AddAccountSheet({ open, onOpenChange, editing }: AddAccountSheet
         onOpenChange(o)
       }}
     >
-      <SheetContent className="rounded-t-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <SheetContent className="max-h-[90vh] overflow-hidden flex flex-col">
         <SheetHeader className="flex-row items-center justify-between border-b border-border p-4">
           <SheetTitle>{editing ? "Edit Account" : "Add Account"}</SheetTitle>
           <Button
@@ -126,9 +126,9 @@ export function AddAccountSheet({ open, onOpenChange, editing }: AddAccountSheet
         </SheetHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-4">
-          <div className="flex items-center gap-3 rounded-lg bg-muted p-3.5">
+          <div className="flex items-center gap-3 rounded-xl bg-muted p-3.5">
             <div
-              className="flex size-10 items-center justify-center rounded-lg shadow-xs"
+              className="flex size-10 items-center justify-center rounded-xl shadow-none"
               style={{ backgroundColor: selectedColor }}
             >
               <DynamicIcon
@@ -167,10 +167,10 @@ export function AddAccountSheet({ open, onOpenChange, editing }: AddAccountSheet
                     setSelectedIcon(t.icon)
                   }}
                   className={cn(
-                    "flex flex-col items-center gap-1 rounded-xl border-2 p-2 transition-all cursor-pointer",
+                    "flex flex-col items-center gap-1 rounded-2xl border-2 p-2 transition-all cursor-pointer",
                     type === t.value
-                      ? "border-foreground bg-muted shadow-xs"
-                      : "border-border bg-background hover:border-foreground/40"
+                      ? "border-foreground bg-muted shadow-none"
+                      : "border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] hover:border-foreground/30"
                   )}
                 >
                   <DynamicIcon name={t.icon} className="size-4 text-foreground" />
@@ -207,7 +207,7 @@ export function AddAccountSheet({ open, onOpenChange, editing }: AddAccountSheet
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                className="flex h-10 w-full rounded-xl border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] px-3 text-sm"
               >
                 {currencies.map((c) => (
                   <option key={c.value} value={c.value}>

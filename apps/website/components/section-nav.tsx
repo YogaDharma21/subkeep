@@ -13,14 +13,16 @@ interface SectionTabsProps {
 interface SectionHeaderProps {
   title: string
   tabs: SectionTab[]
+  eyebrow?: string
 }
 
-export function SectionHeader({ title, tabs }: SectionHeaderProps) {
+export function SectionHeader({ title, tabs, eyebrow }: SectionHeaderProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <h1 className="text-lg font-bold tracking-tight text-foreground">
-        {title}
-      </h1>
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="space-y-2">
+        {eyebrow ? <p className="label">{eyebrow}</p> : null}
+        <h1 className="page-title text-foreground">{title}</h1>
+      </div>
       <SectionTabs tabs={tabs} />
     </div>
   )
@@ -33,7 +35,7 @@ export function SectionTabs({ tabs, className }: SectionTabsProps) {
     <nav
       aria-label="Section"
       className={cn(
-        "flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-lg border border-border bg-background p-1 shadow-xs",
+        "quiet-scroll flex w-fit max-w-full items-center gap-0.5 overflow-x-auto rounded-full border border-border bg-card/70 p-1 backdrop-blur-md",
         className
       )}
     >
@@ -47,10 +49,10 @@ export function SectionTabs({ tabs, className }: SectionTabsProps) {
             href={tab.href}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
+              "flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-medium tracking-wide transition-colors",
               isActive
-                ? "bg-foreground text-background"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "bg-foreground text-background shadow-sm"
+                : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
             )}
           >
             <Icon className="size-3.5" />

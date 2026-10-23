@@ -23,41 +23,41 @@ export function Badge({
         return {
           container: {
             backgroundColor: colors.emeraldBackground,
-            borderColor: "rgba(16, 185, 129, 0.3)",
+            borderColor: colors.border,
             borderWidth: 1,
           },
-          text: { color: colors.emerald, fontWeight: "700" },
+          text: { color: colors.emerald, fontWeight: "500" },
         }
       case "amber":
         return {
           container: {
             backgroundColor: colors.amberBackground,
-            borderColor: "rgba(245, 158, 11, 0.3)",
+            borderColor: colors.border,
             borderWidth: 1,
           },
-          text: { color: colors.amber, fontWeight: "700" },
+          text: { color: colors.amber, fontWeight: "500" },
         }
       case "blue":
         return {
           container: {
             backgroundColor: colors.blueBackground,
-            borderColor: "rgba(59, 130, 246, 0.3)",
+            borderColor: colors.border,
             borderWidth: 1,
           },
-          text: { color: colors.blue, fontWeight: "700" },
+          text: { color: colors.blue, fontWeight: "500" },
         }
       case "destructive":
         return {
           container: {
             backgroundColor: colors.destructiveBackground,
-            borderColor: "rgba(239, 68, 68, 0.3)",
+            borderColor: colors.border,
             borderWidth: 1,
           },
-          text: { color: colors.destructive, fontWeight: "700" },
+          text: { color: colors.destructive, fontWeight: "500" },
         }
       case "secondary":
         return {
-          container: { backgroundColor: colors.surface },
+          container: { backgroundColor: colors.surfaceInset },
           text: { color: colors.mutedText, fontWeight: "500" },
         }
       case "outline":
@@ -72,7 +72,7 @@ export function Badge({
       default:
         return {
           container: { backgroundColor: colors.primary },
-          text: { color: colors.primaryForeground, fontWeight: "600" },
+          text: { color: colors.primaryForeground, fontWeight: "500" },
         }
     }
   }
@@ -85,7 +85,7 @@ export function Badge({
         {
           paddingHorizontal: 8,
           paddingVertical: 3,
-          borderRadius: 6,
+          borderRadius: 999,
           alignSelf: "flex-start",
           alignItems: "center",
           justifyContent: "center",
@@ -98,9 +98,10 @@ export function Badge({
         <Text
           style={[
             {
-              fontSize: 10,
+              fontSize: 9,
+              fontWeight: "500",
               textTransform: "uppercase",
-              letterSpacing: 0.4,
+              letterSpacing: 0.8,
             },
             s.text,
             textStyle,

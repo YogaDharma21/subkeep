@@ -58,10 +58,10 @@ export function TransactionCalendar({ transactions, onViewAll }: TransactionCale
   const maxFlow = Math.max(1, ...dailyTotals.map((d) => d.income + d.expense))
 
   return (
-    <div className="rounded-lg border border-border bg-background">
+    <div className="surface">
       <div className="flex items-center justify-between border-b border-border p-4">
         <div>
-          <h3 className="text-sm font-semibold">Daily Cash Flow · Last 7 Days</h3>
+          <h3 className="text-sm font-medium">Daily Cash Flow · Last 7 Days</h3>
           <p className="text-xs text-muted-foreground">
             Logged income and expenses per day
           </p>
@@ -83,10 +83,10 @@ export function TransactionCalendar({ transactions, onViewAll }: TransactionCale
                   "—"
                 ) : (
                   <>
-                    <span className="text-emerald-500 font-semibold">
+                    <span className="text-positive font-medium">
                       +{formatCurrencyAmount(d.income, primaryCurrency)}
                     </span>{" "}
-                    <span className="text-red-500 font-semibold">
+                    <span className="text-negative font-medium">
                       -{formatCurrencyAmount(d.expense, primaryCurrency)}
                     </span>
                   </>
@@ -95,11 +95,11 @@ export function TransactionCalendar({ transactions, onViewAll }: TransactionCale
             </div>
             <div className="flex h-2 gap-0.5 overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full bg-emerald-500 transition-all"
+                className="h-full bg-positive transition-all"
                 style={{ width: `${((d.income / maxFlow) * 100).toFixed(1)}%` }}
               />
               <div
-                className="h-full bg-red-500 transition-all"
+                className="h-full bg-negative transition-all"
                 style={{ width: `${((d.expense / maxFlow) * 100).toFixed(1)}%` }}
               />
             </div>
@@ -111,7 +111,7 @@ export function TransactionCalendar({ transactions, onViewAll }: TransactionCale
                     <span
                       key={t._id}
                       className={cn(
-                        "inline-flex items-center gap-1 rounded-md border border-border bg-muted/40 px-1.5 py-0.5 text-[10px] font-medium"
+                        "inline-flex items-center gap-1 rounded-full border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] px-2 py-0.5 text-[10px] font-medium"
                       )}
                       title={`${t.note || meta.label} · ${t.date}`}
                     >

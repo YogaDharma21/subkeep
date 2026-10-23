@@ -13,16 +13,16 @@ export const categories = [
 ]
 
 export const categoryColors: Record<string, string> = {
-  entertainment: "#6366f1",
-  music: "#10b981",
-  productivity: "#3b82f6",
-  cloud: "#06b6d4",
-  gaming: "#8b5cf6",
-  education: "#f59e0b",
-  fitness: "#ec4899",
-  news: "#64748b",
-  finance: "#14b8a6",
-  other: "#71717a",
+  entertainment: "#a39fb0",
+  music: "#a9bfa9",
+  productivity: "#9aa7b5",
+  cloud: "#9aafb3",
+  gaming: "#a89db1",
+  education: "#b8ac8d",
+  fitness: "#b5a0a6",
+  news: "#8b8d92",
+  finance: "#9bafa9",
+  other: "#7f8186",
 }
 
 export const billingCycles = [

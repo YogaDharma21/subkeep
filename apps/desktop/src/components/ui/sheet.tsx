@@ -19,7 +19,7 @@ function Sheet({ open, onOpenChange, children, className }: SheetProps) {
         onClick={() => onOpenChange(false)}
       />
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className={cn("w-screen max-w-2xl bg-background border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200 h-full", className)}>
+        <div className={cn("w-screen max-w-2xl bg-card border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-200 h-full", className)}>
           {children}
         </div>
       </div>
@@ -38,7 +38,7 @@ function SheetContent({
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-md p-1.5 text-muted-foreground hover:text-foreground cursor-pointer z-10"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer z-10"
         >
           <X className="size-5" />
         </button>
@@ -66,7 +66,7 @@ function SheetTitle({
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h2
-      className={cn("text-lg font-bold text-foreground", className)}
+      className={cn("text-xl font-medium tracking-[-0.02em] text-foreground", className)}
       {...props}
     />
   )

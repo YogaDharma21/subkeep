@@ -160,7 +160,7 @@ export function AddTransactionSheet({
         onOpenChange(o)
       }}
     >
-      <SheetContent className="rounded-t-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <SheetContent className="max-h-[90vh] overflow-hidden flex flex-col">
         <SheetHeader className="flex-row items-center justify-between border-b border-border p-4">
           <SheetTitle>Add Transaction</SheetTitle>
           <Button
@@ -176,7 +176,7 @@ export function AddTransactionSheet({
         </SheetHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-4">
-          <div className="grid grid-cols-3 gap-2 rounded-xl border border-border bg-muted/40 p-1">
+          <div className="grid grid-cols-3 gap-1 rounded-full border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] p-1">
             {(
               [
                 { value: "expense", label: "Expense" },
@@ -189,13 +189,13 @@ export function AddTransactionSheet({
                 type="button"
                 onClick={() => handleTypeChange(t.value)}
                 className={cn(
-                  "rounded-lg py-2 text-xs font-semibold transition-all cursor-pointer",
+                  "rounded-full py-2 text-xs font-medium transition-all cursor-pointer",
                   type === t.value
                     ? t.value === "income"
-                      ? "bg-emerald-500 text-white shadow-xs"
+                      ? "bg-positive text-background shadow-none"
                       : t.value === "transfer"
-                        ? "bg-blue-500 text-white shadow-xs"
-                        : "bg-foreground text-background shadow-xs"
+                        ? "bg-foreground text-background shadow-none"
+                        : "bg-foreground text-background shadow-none"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -205,7 +205,7 @@ export function AddTransactionSheet({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Amount</label>
+            <label className="label">Amount</label>
             <div className="flex items-center gap-2">
               <Input
                 type="number"
@@ -214,10 +214,10 @@ export function AddTransactionSheet({
                 min="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="text-lg font-bold h-12"
+                className="numeral text-lg font-medium h-12"
                 inputMode="decimal"
               />
-              <span className="text-xs font-semibold text-muted-foreground shrink-0 w-10 text-right">
+              <span className="text-xs font-medium text-muted-foreground shrink-0 w-10 text-right">
                 {accounts?.find((a) => a._id === accountId)?.currency || currencies[0]?.value}
               </span>
             </div>
@@ -225,7 +225,7 @@ export function AddTransactionSheet({
 
           {type !== "transfer" && (
             <div className="space-y-2">
-              <label className="text-sm font-medium">Category</label>
+              <label className="label">Category</label>
               <div className="grid grid-cols-4 gap-2">
                 {categoryOptions.map((c) => (
                   <button
@@ -233,13 +233,13 @@ export function AddTransactionSheet({
                     type="button"
                     onClick={() => setCategory(c.value)}
                     className={cn(
-                      "flex flex-col items-center gap-1.5 rounded-xl border-2 p-2.5 transition-all cursor-pointer",
+                      "flex flex-col items-center gap-1.5 rounded-2xl border p-2.5 transition-all cursor-pointer",
                       category === c.value
-                        ? "border-foreground bg-muted shadow-xs"
-                        : "border-border bg-background hover:border-foreground/40"
+                        ? "border-foreground bg-[color-mix(in_oklab,var(--foreground)_6%,transparent)] shadow-none"
+                        : "border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] hover:border-foreground/30"
                     )}
                   >
-                    <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-foreground">
+                    <span className="flex size-8 items-center justify-center rounded-full bg-muted text-foreground">
                       <DynamicIcon name={c.icon} className="size-4" />
                     </span>
                     <span className="text-[10px] font-medium leading-tight text-center">
@@ -253,13 +253,13 @@ export function AddTransactionSheet({
 
           <div className={cn("grid gap-3", type === "transfer" ? "grid-cols-2" : "grid-cols-1")}>
             <div className="space-y-2">
-              <label className="text-sm font-medium">
+              <label className="label">
                 {type === "transfer" ? "From Account" : "Account"}
               </label>
               <select
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
-                className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                className="flex h-10 w-full rounded-xl border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] px-3 text-sm"
               >
                 <option value="">Select account</option>
                 {accounts?.map((a) => (
@@ -271,11 +271,11 @@ export function AddTransactionSheet({
             </div>
             {type === "transfer" && (
               <div className="space-y-2">
-                <label className="text-sm font-medium">To Account</label>
+                <label className="label">To Account</label>
                 <select
                   value={toAccountId}
                   onChange={(e) => setToAccountId(e.target.value)}
-                  className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                  className="flex h-10 w-full rounded-xl border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] px-3 text-sm"
                 >
                   <option value="">Select destination</option>
                   {accounts
@@ -292,11 +292,11 @@ export function AddTransactionSheet({
 
           {type === "expense" && subscriptions && subscriptions.length > 0 && (
             <div className="space-y-2">
-              <label className="text-sm font-medium">Link Subscription (Optional)</label>
+              <label className="label">Link Subscription (Optional)</label>
               <select
                 value={subscriptionId}
                 onChange={(e) => handleSelectSubscription(e.target.value)}
-                className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                className="flex h-10 w-full rounded-xl border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] px-3 text-sm"
               >
                 <option value="">None (Standalone Expense)</option>
                 {subscriptions.map((s) => (
@@ -316,7 +316,7 @@ export function AddTransactionSheet({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Date</label>
+              <label className="label">Date</label>
               <Input
                 type="date"
                 value={date}
@@ -324,7 +324,7 @@ export function AddTransactionSheet({
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Note (Optional)</label>
+              <label className="label">Note (Optional)</label>
               <Input
                 placeholder={type === "income" ? "e.g. March salary" : "e.g. Lunch with team"}
                 value={note}
@@ -336,7 +336,7 @@ export function AddTransactionSheet({
 
         <div className="shrink-0 border-t border-border p-4">
           <Button
-            className="w-full cursor-pointer"
+            className="h-10 w-full cursor-pointer font-medium"
             onClick={handleSubmit}
             disabled={isSaving || !amount || !date || !accountId || (type === "transfer" && !toAccountId)}
           >

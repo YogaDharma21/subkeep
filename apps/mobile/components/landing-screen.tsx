@@ -39,9 +39,9 @@ export function LandingScreen() {
         <View style={{ flexDirection: "row", alignItems: "center", marginTop: 28 }}>
           <Text
             style={{
-              fontSize: 26,
-              fontWeight: "900",
-              letterSpacing: 2,
+              fontSize: 22,
+              fontWeight: "600",
+              letterSpacing: 4,
               color: colors.text,
             }}
           >
@@ -49,9 +49,9 @@ export function LandingScreen() {
           </Text>
           <Text
             style={{
-              fontSize: 26,
-              fontWeight: "900",
-              letterSpacing: 2,
+              fontSize: 22,
+              fontWeight: "600",
+              letterSpacing: 4,
               color: colors.mutedText,
             }}
           >
@@ -62,8 +62,8 @@ export function LandingScreen() {
         {/* Clean, Simple Tagline */}
         <Text
           style={{
-            fontSize: 13,
-            fontWeight: "500",
+            fontSize: 13.5,
+            fontWeight: "400",
             color: colors.mutedText,
             textAlign: "center",
             lineHeight: 20,

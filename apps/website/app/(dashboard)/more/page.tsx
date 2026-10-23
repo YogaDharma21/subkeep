@@ -259,7 +259,7 @@ export default function MorePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-8 pb-8">
       <input
         ref={jsonFileInputRef}
         type="file"
@@ -277,37 +277,40 @@ export default function MorePage() {
 
       {/* User Profile Card */}
       {user && (
-        <div className="flex items-center gap-3.5 rounded-xl border border-border bg-background p-4 shadow-2xs">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground font-bold text-base shadow-xs">
-            {(user.fullName || user.primaryEmailAddress?.emailAddress || "U").charAt(0).toUpperCase()}
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-sm font-bold text-foreground truncate">
-              {user.fullName || "SubKeep User"}
-            </h2>
-            <p className="text-xs text-muted-foreground truncate">
-              {user.primaryEmailAddress?.emailAddress}
-            </p>
+        <div className="surface p-5">
+          <div className="flex items-center gap-3.5">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-foreground/[0.05] text-base font-medium text-foreground">
+              {(user.fullName || user.primaryEmailAddress?.emailAddress || "U").charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="truncate text-sm font-medium text-foreground">
+                {user.fullName || "SubKeep User"}
+              </h2>
+              <p className="truncate text-xs text-muted-foreground">
+                {user.primaryEmailAddress?.emailAddress}
+              </p>
+            </div>
+            <span className="label hidden sm:block">Signed in</span>
           </div>
         </div>
       )}
 
       {/* Category: GENERAL & PREFERENCES */}
       <div className="space-y-2">
-        <h3 className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          General & Preferences
+        <h3 className="label px-1">
+          General & preferences
         </h3>
-        <div className="overflow-hidden rounded-xl border border-border bg-background divide-y divide-border shadow-2xs">
+        <div className="surface overflow-hidden divide-y divide-border">
           {/* Preferences */}
           <button
             onClick={() => setSettingsOpen(true)}
-            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+            className="flex w-full cursor-pointer items-center gap-3.5 px-5 py-4 text-left transition-colors hover:bg-foreground/[0.03] active:bg-foreground/[0.05]"
           >
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
-              <SlidersHorizontal className="size-4 text-foreground/80" />
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-border bg-foreground/[0.03] text-foreground/75">
+              <SlidersHorizontal className="size-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">Preferences</div>
+              <div className="text-sm font-medium text-foreground">Preferences</div>
               <div className="text-xs text-muted-foreground">
                 {isDark ? "Dark" : "Light"} mode · {primaryCurrency} ({getSymbol(primaryCurrency)}) · Budget cap & alerts
               </div>
@@ -318,13 +321,13 @@ export default function MorePage() {
           {/* Payment Methods & Card Vault */}
           <button
             onClick={() => setPaymentMethodsOpen(true)}
-            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+            className="flex w-full cursor-pointer items-center gap-3.5 px-5 py-4 text-left transition-colors hover:bg-foreground/[0.03] active:bg-foreground/[0.05]"
           >
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
-              <CreditCard className="size-4 text-foreground/80" />
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-border bg-foreground/[0.03] text-foreground/75">
+              <CreditCard className="size-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">Payment Methods & Card Vault</div>
+              <div className="text-sm font-medium text-foreground">Payment Methods & Card Vault</div>
               <div className="text-xs text-muted-foreground">
                 Track credit cards, card expiry alerts & spend breakdown
               </div>
@@ -336,19 +339,19 @@ export default function MorePage() {
 
       {/* Category: DATA & BACKUP */}
       <div className="space-y-2">
-        <h3 className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Data & Backup
+        <h3 className="label px-1">
+          Data & backup
         </h3>
-        <div className="overflow-hidden rounded-xl border border-border bg-background divide-y divide-border shadow-2xs">
+        <div className="surface overflow-hidden divide-y divide-border">
           <button
             onClick={handleExportTransactionsCSV}
-            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+            className="flex w-full cursor-pointer items-center gap-3.5 px-5 py-4 text-left transition-colors hover:bg-foreground/[0.03] active:bg-foreground/[0.05]"
           >
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
-              <FileSpreadsheet className="size-4 text-foreground/80" />
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-border bg-foreground/[0.03] text-foreground/75">
+              <FileSpreadsheet className="size-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">Export Transactions CSV</div>
+              <div className="text-sm font-medium text-foreground">Export Transactions CSV</div>
               <div className="text-xs text-muted-foreground">Download expenses & income for Excel / Sheets</div>
             </div>
             <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
@@ -356,13 +359,13 @@ export default function MorePage() {
 
           <button
             onClick={handleExportCSV}
-            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+            className="flex w-full cursor-pointer items-center gap-3.5 px-5 py-4 text-left transition-colors hover:bg-foreground/[0.03] active:bg-foreground/[0.05]"
           >
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
-              <FileSpreadsheet className="size-4 text-foreground/80" />
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-border bg-foreground/[0.03] text-foreground/75">
+              <FileSpreadsheet className="size-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">Export Subscriptions CSV</div>
+              <div className="text-sm font-medium text-foreground">Export Subscriptions CSV</div>
               <div className="text-xs text-muted-foreground">Download spreadsheet formatted for Excel / Sheets</div>
             </div>
             <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
@@ -370,13 +373,13 @@ export default function MorePage() {
 
           <button
             onClick={() => csvFileInputRef.current?.click()}
-            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+            className="flex w-full cursor-pointer items-center gap-3.5 px-5 py-4 text-left transition-colors hover:bg-foreground/[0.03] active:bg-foreground/[0.05]"
           >
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
-              <Upload className="size-4 text-foreground/80" />
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-border bg-foreground/[0.03] text-foreground/75">
+              <Upload className="size-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">Import from CSV</div>
+              <div className="text-sm font-medium text-foreground">Import from CSV</div>
               <div className="text-xs text-muted-foreground">Upload spreadsheet to restore or migrate subscriptions</div>
             </div>
             <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
@@ -384,13 +387,13 @@ export default function MorePage() {
 
           <button
             onClick={handleExportJSON}
-            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+            className="flex w-full cursor-pointer items-center gap-3.5 px-5 py-4 text-left transition-colors hover:bg-foreground/[0.03] active:bg-foreground/[0.05]"
           >
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
-              <Download className="size-4 text-foreground/80" />
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-border bg-foreground/[0.03] text-foreground/75">
+              <Download className="size-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">Export JSON</div>
+              <div className="text-sm font-medium text-foreground">Export JSON</div>
               <div className="text-xs text-muted-foreground">Download raw JSON subscription records</div>
             </div>
             <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
@@ -398,13 +401,13 @@ export default function MorePage() {
 
           <button
             onClick={handleBackup}
-            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+            className="flex w-full cursor-pointer items-center gap-3.5 px-5 py-4 text-left transition-colors hover:bg-foreground/[0.03] active:bg-foreground/[0.05]"
           >
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
-              <FileJson className="size-4 text-foreground/80" />
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-border bg-foreground/[0.03] text-foreground/75">
+              <FileJson className="size-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">Full Backup</div>
+              <div className="text-sm font-medium text-foreground">Full Backup</div>
               <div className="text-xs text-muted-foreground">Export everything: subs, transactions, accounts, budgets</div>
             </div>
             <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
@@ -412,13 +415,13 @@ export default function MorePage() {
 
           <button
             onClick={() => jsonFileInputRef.current?.click()}
-            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+            className="flex w-full cursor-pointer items-center gap-3.5 px-5 py-4 text-left transition-colors hover:bg-foreground/[0.03] active:bg-foreground/[0.05]"
           >
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
-              <Upload className="size-4 text-foreground/80" />
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-border bg-foreground/[0.03] text-foreground/75">
+              <Upload className="size-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">Restore JSON Backup</div>
+              <div className="text-sm font-medium text-foreground">Restore JSON Backup</div>
               <div className="text-xs text-muted-foreground">Import from a previous SubKeep JSON backup</div>
             </div>
             <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
@@ -427,16 +430,16 @@ export default function MorePage() {
       </div>
 
       {/* Category: ABOUT */}
-      <div className="overflow-hidden rounded-xl border border-border bg-background shadow-2xs">
+      <div className="surface overflow-hidden">
         <button
           onClick={() => setAboutOpen(true)}
           className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
         >
-          <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
-            <Info className="size-4 text-foreground/80" />
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-border bg-foreground/[0.03] text-foreground/75">
+            <Info className="size-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-semibold text-foreground">About SubKeep</div>
+            <div className="text-sm font-medium text-foreground">About SubKeep</div>
             <div className="text-xs text-muted-foreground">Version 0.0.1</div>
           </div>
           <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
@@ -444,17 +447,17 @@ export default function MorePage() {
       </div>
 
       {/* Category: ACCOUNT & DANGER ZONE */}
-      <div className="overflow-hidden rounded-xl border border-border bg-background divide-y divide-border shadow-2xs">
+      <div className="surface overflow-hidden divide-y divide-border">
         {isSignedIn && (
           <button
             onClick={() => signOut()}
-            className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-accent/50 dark:hover:bg-accent/40 active:bg-accent/70"
+            className="flex w-full cursor-pointer items-center gap-3.5 px-5 py-4 text-left transition-colors hover:bg-foreground/[0.03] active:bg-foreground/[0.05]"
           >
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted text-foreground/80 shrink-0">
-              <LogOut className="size-4 text-foreground/80" />
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-border bg-foreground/[0.03] text-foreground/75">
+              <LogOut className="size-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">Sign Out</div>
+              <div className="text-sm font-medium text-foreground">Sign Out</div>
               <div className="text-xs text-muted-foreground">Log out of this device and session</div>
             </div>
             <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
@@ -465,11 +468,11 @@ export default function MorePage() {
           onClick={() => setDeleteConfirm(true)}
           className="flex w-full cursor-pointer items-center gap-3.5 p-4 text-left transition-colors hover:bg-destructive/10 active:bg-destructive/20 group"
         >
-          <div className="flex size-9 items-center justify-center rounded-lg bg-destructive/10 text-destructive shrink-0">
-            <Trash2 className="size-4 text-destructive" />
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-border bg-destructive/10 text-destructive">
+            <Trash2 className="size-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-semibold text-destructive">
+            <div className="text-sm font-medium text-destructive">
               Delete All Data
             </div>
             <div className="text-xs text-muted-foreground">
@@ -481,19 +484,18 @@ export default function MorePage() {
       </div>
 
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-sm rounded-lg bg-background p-6 border border-border shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl border border-border bg-popover p-6 shadow-[0_40px_90px_-40px_rgba(0,0,0,0.95)]">
             <div className="mb-4 flex justify-center">
-              <div className="flex size-12 items-center justify-center rounded-lg bg-destructive/10">
+              <div className="flex size-12 items-center justify-center rounded-2xl bg-destructive/10">
                 <Trash2 className="size-6 text-destructive" />
               </div>
             </div>
-            <h3 className="mb-2 text-center text-lg font-semibold">
-              Delete All Data?
+            <h3 className="mb-2 text-center text-lg font-medium tracking-tight">
+              Delete everything?
             </h3>
             <p className="mb-6 text-center text-sm text-muted-foreground">
-              This will permanently remove all your subscriptions and payment records. This action
-              cannot be undone.
+              This removes all subscriptions and payment records. You cannot undo this.
             </p>
             <div className="flex gap-3">
               <Button
@@ -516,20 +518,20 @@ export default function MorePage() {
       )}
 
       {restoreConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-sm rounded-lg bg-background p-6 border border-border shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl border border-border bg-popover p-6 shadow-[0_40px_90px_-40px_rgba(0,0,0,0.95)]">
             <div className="mb-4 flex justify-center">
-              <div className="flex size-12 items-center justify-center rounded-lg bg-muted">
+              <div className="flex size-12 items-center justify-center rounded-2xl border border-border bg-foreground/[0.04]">
                 <Upload className="size-6 text-foreground" />
               </div>
             </div>
-            <h3 className="mb-2 text-center text-lg font-semibold">
-              Restore Subscriptions?
+            <h3 className="mb-2 text-center text-lg font-medium tracking-tight">
+              Restore subscriptions?
             </h3>
             <p className="mb-6 text-center text-sm text-muted-foreground">
-              This will replace your current subscription records with the imported file.
+              This replaces your current subscription records with the imported file.
             </p>
-            <div className="mb-4 rounded-lg bg-muted p-3 text-xs text-muted-foreground">
+            <div className="mb-4 rounded-2xl border border-border bg-foreground/[0.03] p-3 text-xs text-muted-foreground">
               <div>{restoreData?.subscriptions?.length || 0} subscriptions ready to import</div>
               {restoreData?.payments && (
                 <div>{restoreData.payments.length} payments included</div>

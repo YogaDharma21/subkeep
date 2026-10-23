@@ -176,7 +176,7 @@ export function AddTransactionSheet({
         </SheetHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-4">
-          <div className="grid grid-cols-3 gap-2 rounded-xl border border-border bg-muted/40 p-1">
+          <div className="grid grid-cols-3 gap-2 rounded-2xl border border-border bg-foreground/[0.03] p-1">
             {(
               [
                 { value: "expense", label: "Expense" },
@@ -189,13 +189,9 @@ export function AddTransactionSheet({
                 type="button"
                 onClick={() => handleTypeChange(t.value)}
                 className={cn(
-                  "rounded-lg py-2 text-xs font-semibold transition-all cursor-pointer",
+                  "rounded-xl py-2 text-xs font-medium transition-all cursor-pointer",
                   type === t.value
-                    ? t.value === "income"
-                      ? "bg-emerald-500 text-white shadow-xs"
-                      : t.value === "transfer"
-                        ? "bg-blue-500 text-white shadow-xs"
-                        : "bg-foreground text-background shadow-xs"
+                    ? "bg-foreground text-background shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -239,7 +235,7 @@ export function AddTransactionSheet({
                         : "border-border bg-background hover:border-foreground/40"
                     )}
                   >
-                    <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-foreground">
+                    <span className="flex size-8 items-center justify-center rounded-lg border border-border bg-foreground/[0.05] text-foreground">
                       <DynamicIcon name={c.icon} className="size-4" />
                     </span>
                     <span className="text-[10px] font-medium leading-tight text-center">
@@ -259,7 +255,7 @@ export function AddTransactionSheet({
               <select
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
-                className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-3 text-sm"
               >
                 <option value="">Select account</option>
                 {accounts?.map((a) => (
@@ -275,7 +271,7 @@ export function AddTransactionSheet({
                 <select
                   value={toAccountId}
                   onChange={(e) => setToAccountId(e.target.value)}
-                  className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                  className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-3 text-sm"
                 >
                   <option value="">Select destination</option>
                   {accounts
@@ -296,7 +292,7 @@ export function AddTransactionSheet({
               <select
                 value={subscriptionId}
                 onChange={(e) => handleSelectSubscription(e.target.value)}
-                className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-3 text-sm"
               >
                 <option value="">None (Standalone Expense)</option>
                 {subscriptions.map((s) => (

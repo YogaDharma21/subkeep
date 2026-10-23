@@ -16,7 +16,6 @@ import { useDocumentTitle } from "@/hooks/use-document-title"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { accountTypeMeta, currentMonthKey } from "@/lib/finance"
 import { moneyTabs } from "@/lib/navigation"
-import { getContrastTextColor } from "@/lib/constants"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
@@ -127,48 +126,47 @@ export default function AccountsPage() {
       <div
         key={a._id}
         className={cn(
-          "rounded-lg border border-border bg-background p-4",
+          "surface surface-interactive relative p-4",
           a.isArchived && "opacity-60"
         )}
       >
         <div className="flex items-center gap-3">
           <div
-            className="flex size-11 shrink-0 items-center justify-center rounded-lg shadow-xs"
-            style={{ backgroundColor: a.color }}
+            className="surface-inset flex size-10 shrink-0 items-center justify-center rounded-full"
           >
             <DynamicIcon
               name={a.icon || meta.icon}
-              className="size-5"
-              style={{ color: getContrastTextColor(a.color) }}
+              className="size-4"
+              style={{ color: a.color }}
             />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <span className="truncate text-sm font-bold">{a.name}</span>
+              <span className="truncate text-[13px] font-medium">{a.name}</span>
               {a.last4 && (
                 <span className="text-[11px] text-muted-foreground shrink-0">
                   ···· {a.last4}
                 </span>
               )}
               {a.isArchived && (
-                <span className="rounded-md bg-muted px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground shrink-0">
+                <span className="shrink-0 rounded-full border border-border px-1.5 py-px text-[9px] uppercase tracking-[0.1em] text-muted-foreground">
                   Archived
                 </span>
               )}
             </div>
-            <div className="text-[11px] text-muted-foreground capitalize">
+            <div className="mt-1 text-[11px] text-muted-foreground capitalize">
               {meta.label}
             </div>
           </div>
           <div className="shrink-0 text-right">
-            <div className="text-sm font-extrabold">
+            <div className="numeral text-[13px] font-medium">
               {formatCurrencyAmount(
                 convertCurrency(a.balance, a.currency, primaryCurrency, rates),
                 primaryCurrency
               )}
             </div>
             {a.currency !== primaryCurrency && (
-              <div className="text-[10px] text-muted-foreground">
+              <div className="mt-1 text-[10px] text-muted-foreground">
                 {a.balance.toLocaleString()} {a.currency}
               </div>
             )}
@@ -176,11 +174,11 @@ export default function AccountsPage() {
         </div>
 
         {flow && (flow.income > 0 || flow.expense > 0) && (
-          <div className="mt-3 flex items-center gap-3 border-t border-border/60 pt-2.5 text-[11px]">
-            <span className="font-medium text-emerald-500">
+          <div className="mt-3 flex items-center gap-3 border-t border-border pt-2.5 text-[11px]">
+            <span className="numeral font-medium text-positive">
               +{formatCurrencyAmount(flow.income, primaryCurrency)}
             </span>
-            <span className="font-medium text-red-500">
+            <span className="numeral font-medium text-foreground">
               -{formatCurrencyAmount(flow.expense, primaryCurrency)}
             </span>
             <span className="text-muted-foreground">this month</span>
@@ -191,24 +189,24 @@ export default function AccountsPage() {
           const subInfo = subscriptionsByAccount.get(a._id)
           if (!subInfo || subInfo.count === 0) return null
           return (
-            <div className="mt-2.5 flex items-center justify-between rounded-md bg-muted/40 px-2.5 py-1.5 text-[11px] text-muted-foreground border border-border/50">
+            <div className="surface-inset mt-2.5 flex items-center justify-between rounded-full px-3 py-1.5 text-[11px] text-muted-foreground">
               <span>
                 {subInfo.count} linked {subInfo.count === 1 ? "subscription" : "subscriptions"}
               </span>
-              <span className="font-semibold text-foreground">
+              <span className="numeral text-foreground">
                 ~{formatCurrencyAmount(subInfo.monthlyCommitment, primaryCurrency)}/mo
               </span>
             </div>
           )
         })()}
 
-        <div className="mt-3 flex items-center gap-1.5">
+        <div className="mt-3 flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon-sm"
             onClick={() => setEditing(a)}
             title="Edit account"
-            className="cursor-pointer"
+            className="size-7 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
           >
             <Pencil className="size-3.5" />
           </Button>
@@ -217,7 +215,7 @@ export default function AccountsPage() {
             size="icon-sm"
             onClick={() => handleArchive(a)}
             title={a.isArchived ? "Restore account" : "Archive account"}
-            className="cursor-pointer"
+            className="size-7 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
           >
             <Archive className="size-3.5" />
           </Button>
@@ -226,7 +224,7 @@ export default function AccountsPage() {
             size="icon-sm"
             onClick={() => setDeleteTarget(a)}
             title="Delete account"
-            className="text-muted-foreground hover:text-destructive cursor-pointer"
+            className="size-7 rounded-full text-muted-foreground hover:text-destructive cursor-pointer"
           >
             <Trash2 className="size-3.5" />
           </Button>
@@ -236,25 +234,25 @@ export default function AccountsPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <SectionHeader title="Money" tabs={moneyTabs} />
+    <div className="space-y-4 sm:space-y-5">
+      <SectionHeader title="Money" eyebrow={primaryCurrency} tabs={moneyTabs} />
 
-      <div className="rounded-lg border border-border bg-background p-4 sm:p-5">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-          <Wallet className="size-3.5 text-primary" />
-          <span>Total Net Worth ({primaryCurrency})</span>
+      <section className="surface p-5 sm:p-7">
+        <div className="flex items-start justify-between gap-3">
+          <p className="label">Net worth</p>
+          <p className="label">{primaryCurrency}</p>
         </div>
         {accounts === undefined ? (
-          <Skeleton className="mt-3 h-9 w-40" />
+          <Skeleton className="mt-6 h-12 w-56 rounded-2xl" />
         ) : (
-          <div className="mt-2 text-2xl font-extrabold">
+          <p className="display-number mt-6 text-[clamp(2.1rem,4.6vw,3.2rem)]">
             {formatCurrencyAmount(totalNetWorth, primaryCurrency)}
-          </div>
+          </p>
         )}
-        <p className="mt-1 text-[11px] text-muted-foreground">
-          Sum of all active account balances converted to {primaryCurrency}. Archived accounts are excluded.
+        <p className="mt-3 text-[11px] text-muted-foreground">
+          {active.length} active {active.length === 1 ? "account" : "accounts"} · archived excluded
         </p>
-      </div>
+      </section>
 
       {accounts === undefined ? (
         <div className="space-y-3">
@@ -262,8 +260,8 @@ export default function AccountsPage() {
           <Skeleton className="h-28 w-full" />
         </div>
       ) : active.length === 0 && archived.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 text-center">
-          <Wallet className="size-6 text-muted-foreground/50 mb-2" />
+        <div className="surface flex flex-col items-center justify-center py-12 text-center">
+          <Wallet className="mb-2 size-5 text-muted-foreground/50" />
           <p className="text-sm font-medium text-muted-foreground">No accounts yet</p>
           <p className="mt-1 text-xs text-muted-foreground/60">
             Add checking, savings, cash, or e-wallets to track balances
@@ -276,7 +274,7 @@ export default function AccountsPage() {
           </div>
           {archived.length > 0 && (
             <div className="space-y-2">
-              <h3 className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <h3 className="px-1 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                 Archived ({archived.length})
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -296,7 +294,7 @@ export default function AccountsPage() {
 
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-sm rounded-lg bg-background p-6 border border-border shadow-xl">
+          <div className="surface w-full max-w-sm p-6">
             <h3 className="mb-2 text-center text-lg font-semibold">Delete Account?</h3>
             <p className="mb-6 text-center text-sm text-muted-foreground">
               {deleteTarget.name} will be removed. Linked transactions are kept but detached from this account.
