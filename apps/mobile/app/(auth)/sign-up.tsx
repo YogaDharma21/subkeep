@@ -111,11 +111,11 @@ export default function SignUpScreen() {
               style={{
                 width: 48,
                 height: 48,
-                borderRadius: 12,
+                borderRadius: 16,
               }}
               resizeMode="contain"
             />
-            <Text style={{ fontSize: 22, fontWeight: "800", color: colors.text }}>
+            <Text style={{ fontSize: 24, fontWeight: "500", letterSpacing: -0.6, color: colors.text }}>
               {pendingVerification ? "Verify your email" : "Create your account"}
             </Text>
             <Text style={{ fontSize: 13, color: colors.mutedText, textAlign: "center" }}>
@@ -136,7 +136,7 @@ export default function SignUpScreen() {
               {/* Divider */}
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginVertical: 4 }}>
                 <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
-                <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
+                <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, color: colors.mutedText, textTransform: "uppercase" }}>
                   or with email
                 </Text>
                 <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
@@ -171,7 +171,7 @@ export default function SignUpScreen() {
                   style={{
                     backgroundColor: colors.destructiveBackground,
                     padding: 10,
-                    borderRadius: 8,
+                    borderRadius: 16,
                   }}
                 >
                   <Text style={{ fontSize: 12, color: colors.destructive }}>
@@ -206,7 +206,7 @@ export default function SignUpScreen() {
                   style={{
                     backgroundColor: colors.destructiveBackground,
                     padding: 10,
-                    borderRadius: 8,
+                    borderRadius: 16,
                   }}
                 >
                   <Text style={{ fontSize: 12, color: colors.destructive }}>
@@ -241,7 +241,7 @@ export default function SignUpScreen() {
               Already have an account?
             </Text>
             <TouchableOpacity onPress={() => router.push("/(auth)/sign-in" as never)}>
-              <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+              <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                 Log In
               </Text>
             </TouchableOpacity>

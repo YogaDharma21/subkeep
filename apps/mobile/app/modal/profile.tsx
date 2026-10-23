@@ -112,7 +112,7 @@ export default function ProfileModal() {
           paddingHorizontal: 16,
           paddingVertical: 14,
           borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          borderBottomColor: colors.borderLight,
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
@@ -120,8 +120,8 @@ export default function ProfileModal() {
             style={{
               width: 36,
               height: 36,
-              borderRadius: 10,
-              backgroundColor: colors.surface,
+              borderRadius: 999,
+              backgroundColor: colors.surfaceInset,
               alignItems: "center",
               justifyContent: "center",
             }}
@@ -129,7 +129,7 @@ export default function ProfileModal() {
             <Shield size={18} color={colors.primary} />
           </View>
           <View>
-            <Text style={{ fontSize: 17, fontWeight: "800", color: colors.text }}>
+            <Text style={{ fontSize: 17, fontWeight: "600", color: colors.text }}>
               Clerk Account
             </Text>
             <Text style={{ fontSize: 11, color: colors.mutedText }}>
@@ -144,7 +144,7 @@ export default function ProfileModal() {
             width: 32,
             height: 32,
             borderRadius: 16,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.surfaceInset,
             alignItems: "center",
             justifyContent: "center",
           }}
@@ -190,14 +190,14 @@ export default function ProfileModal() {
                 borderColor: colors.card,
               }}
             >
-              <Text style={{ fontSize: 28, fontWeight: "800", color: colors.primaryForeground }}>
+              <Text style={{ fontSize: 28, fontWeight: "600", color: colors.primaryForeground }}>
                 {initials}
               </Text>
             </View>
           )}
 
           <View style={{ alignItems: "center", gap: 4 }}>
-            <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>
+            <Text style={{ fontSize: 18, fontWeight: "600", color: colors.text }}>
               {user.fullName || `${user.firstName || ""} ${user.lastName || ""}`.trim() || "SubKeep User"}
             </Text>
             <Text style={{ fontSize: 13, color: colors.mutedText }}>
@@ -209,7 +209,7 @@ export default function ProfileModal() {
         {/* Personal Details Section */}
         <View style={{ gap: 8 }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 }}>
-            <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8 }}>
+            <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>
               PROFILE DETAILS
             </Text>
             {!isEditingName && (
@@ -218,7 +218,7 @@ export default function ProfileModal() {
                 style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
               >
                 <Edit3 size={12} color={colors.primary} />
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.primary }}>
+                <Text style={{ fontSize: 11, fontWeight: "500", color: colors.primary }}>
                   Edit Name
                 </Text>
               </TouchableOpacity>
@@ -249,8 +249,8 @@ export default function ProfileModal() {
                     style={{
                       borderWidth: 1,
                       borderColor: colors.border,
-                      borderRadius: 8,
-                      backgroundColor: colors.surface,
+                      borderRadius: 14,
+                      backgroundColor: colors.surfaceInset,
                       paddingHorizontal: 12,
                       paddingVertical: 8,
                       fontSize: 14,
@@ -271,8 +271,8 @@ export default function ProfileModal() {
                     style={{
                       borderWidth: 1,
                       borderColor: colors.border,
-                      borderRadius: 8,
-                      backgroundColor: colors.surface,
+                      borderRadius: 14,
+                      backgroundColor: colors.surfaceInset,
                       paddingHorizontal: 12,
                       paddingVertical: 8,
                       fontSize: 14,
@@ -310,7 +310,7 @@ export default function ProfileModal() {
                     <User size={16} color={colors.mutedText} />
                     <Text style={{ fontSize: 13, color: colors.mutedText }}>Full Name</Text>
                   </View>
-                  <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
+                  <Text style={{ fontSize: 14, fontWeight: "500", color: colors.text }}>
                     {user.fullName || `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Not set"}
                   </Text>
                 </View>
@@ -323,13 +323,13 @@ export default function ProfileModal() {
                     <Text style={{ fontSize: 13, color: colors.mutedText }}>Primary Email</Text>
                   </View>
                   <View style={{ alignItems: "flex-end", gap: 2 }}>
-                    <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                    <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                       {user.primaryEmailAddress?.emailAddress}
                     </Text>
                     {user.primaryEmailAddress?.verification?.status === "verified" && (
                       <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
-                        <Check size={11} color={colors.emerald} />
-                        <Text style={{ fontSize: 10, fontWeight: "700", color: colors.emerald }}>
+                        <Check size={11} color={colors.positive} />
+                        <Text style={{ fontSize: 10, fontWeight: "500", color: colors.positive }}>
                           Verified
                         </Text>
                       </View>
@@ -343,7 +343,7 @@ export default function ProfileModal() {
 
         {/* Security & Metadata Section */}
         <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
+          <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText, paddingHorizontal: 4 }}>
             SECURITY & ACCOUNT INFO
           </Text>
 
@@ -398,8 +398,8 @@ export default function ProfileModal() {
             marginTop: 4,
           }}
         >
-          <LogOut size={16} color={colors.destructive} />
-          <Text style={{ fontSize: 14, fontWeight: "700", color: colors.destructive }}>
+          <LogOut size={16} color={colors.negative} />
+          <Text style={{ fontSize: 14, fontWeight: "500", color: colors.negative }}>
             Sign Out of Clerk
           </Text>
         </TouchableOpacity>

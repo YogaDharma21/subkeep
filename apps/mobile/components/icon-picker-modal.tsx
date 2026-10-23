@@ -148,10 +148,10 @@ export function IconPickerModal({
             paddingHorizontal: 16,
             paddingVertical: 14,
             borderBottomWidth: 1,
-            borderBottomColor: colors.border,
+            borderBottomColor: colors.borderLight,
           }}
         >
-          <Text style={{ fontSize: 17, fontWeight: "700", color: colors.text }}>
+          <Text style={{ fontSize: 17, fontWeight: "500", color: colors.text }}>
             Choose Icon or Logo
           </Text>
           <TouchableOpacity
@@ -161,7 +161,7 @@ export function IconPickerModal({
               width: 32,
               height: 32,
               borderRadius: 16,
-              backgroundColor: colors.surface,
+              backgroundColor: colors.surfaceInset,
               alignItems: "center",
               justifyContent: "center",
             }}
@@ -178,7 +178,7 @@ export function IconPickerModal({
             paddingVertical: 10,
             gap: 8,
             borderBottomWidth: 1,
-            borderBottomColor: colors.border,
+            borderBottomColor: colors.borderLight,
           }}
         >
           <TouchableOpacity
@@ -186,8 +186,8 @@ export function IconPickerModal({
             style={{
               flex: 1,
               paddingVertical: 8,
-              borderRadius: 8,
-              backgroundColor: tab === "icons" ? colors.primary : colors.surface,
+              borderRadius: 14,
+              backgroundColor: tab === "icons" ? colors.primary : colors.surfaceInset,
               alignItems: "center",
             }}
           >
@@ -206,8 +206,8 @@ export function IconPickerModal({
             style={{
               flex: 1,
               paddingVertical: 8,
-              borderRadius: 8,
-              backgroundColor: tab === "domain" ? colors.primary : colors.surface,
+              borderRadius: 14,
+              backgroundColor: tab === "domain" ? colors.primary : colors.surfaceInset,
               alignItems: "center",
             }}
           >
@@ -231,8 +231,8 @@ export function IconPickerModal({
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: colors.surface,
-                  borderRadius: 10,
+                  backgroundColor: colors.surfaceInset,
+                  borderRadius: 999,
                   paddingHorizontal: 12,
                   height: 40,
                   gap: 8,
@@ -276,7 +276,7 @@ export function IconPickerModal({
                         alignItems: "center",
                         justifyContent: "center",
                         backgroundColor:
-                          activeCategory === cat ? colors.primary : colors.surface,
+                          activeCategory === cat ? colors.primary : colors.surfaceInset,
                         borderWidth: 1,
                         borderColor:
                           activeCategory === cat ? colors.primary : colors.border,
@@ -318,10 +318,10 @@ export function IconPickerModal({
                       flex: 1 / 5,
                       aspectRatio: 1,
                       margin: 4,
-                      borderRadius: 10,
+                      borderRadius: 999,
                       backgroundColor: isSelected
                         ? colors.emeraldBackground
-                        : colors.surface,
+                        : colors.surfaceInset,
                       borderWidth: 1,
                       borderColor: isSelected ? colors.emerald : colors.border,
                       alignItems: "center",
@@ -349,8 +349,8 @@ export function IconPickerModal({
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: colors.surface,
-                  borderRadius: 10,
+                  backgroundColor: colors.surfaceInset,
+                  borderRadius: 999,
                   paddingHorizontal: 12,
                   height: 44,
                   gap: 8,
@@ -379,8 +379,8 @@ export function IconPickerModal({
                     }}
                     style={{
                       flex: 1,
-                      backgroundColor: colors.surface,
-                      borderRadius: 10,
+                      backgroundColor: colors.surfaceInset,
+                      borderRadius: 999,
                       padding: 12,
                       alignItems: "center",
                       borderWidth: 1,
@@ -405,8 +405,8 @@ export function IconPickerModal({
                     }}
                     style={{
                       flex: 1,
-                      backgroundColor: colors.surface,
-                      borderRadius: 10,
+                      backgroundColor: colors.surfaceInset,
+                      borderRadius: 999,
                       padding: 12,
                       alignItems: "center",
                       borderWidth: 1,
@@ -439,8 +439,8 @@ export function IconPickerModal({
                 onChangeText={setCustomUrl}
                 autoCapitalize="none"
                 style={{
-                  backgroundColor: colors.surface,
-                  borderRadius: 10,
+                  backgroundColor: colors.surfaceInset,
+                  borderRadius: 999,
                   paddingHorizontal: 12,
                   height: 44,
                   borderWidth: 1,
@@ -457,7 +457,7 @@ export function IconPickerModal({
                   }}
                   style={{
                     backgroundColor: colors.primary,
-                    borderRadius: 10,
+                    borderRadius: 999,
                     paddingVertical: 10,
                     alignItems: "center",
                   }}

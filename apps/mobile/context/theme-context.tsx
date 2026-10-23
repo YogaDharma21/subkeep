@@ -20,7 +20,7 @@ const THEME_STORAGE_KEY = "subkeep_theme_mode"
 
 export function AppThemeProvider({ children }: { children: React.ReactNode }) {
   const systemScheme = useColorScheme()
-  const [themeMode, setThemeModeState] = useState<ThemeMode>("system")
+  const [themeMode, setThemeModeState] = useState<ThemeMode>("dark")
 
   useEffect(() => {
     async function loadTheme() {
@@ -48,7 +48,7 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
   }
 
   const effectiveScheme: "light" | "dark" =
-    themeMode === "system" ? (systemScheme === "dark" ? "dark" : "light") : themeMode
+    themeMode === "system" ? (systemScheme === "light" ? "light" : "dark") : themeMode
 
   const isDark = effectiveScheme === "dark"
   const colors = isDark ? Colors.dark : Colors.light
@@ -78,7 +78,7 @@ export function useThemeColor(): ThemeContextType {
 
   // Fallback if rendered outside provider
   const systemScheme = useColorScheme()
-  const isDark = systemScheme === "dark"
+  const isDark = systemScheme !== "light"
   const colors = isDark ? Colors.dark : Colors.light
 
   return {

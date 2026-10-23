@@ -388,7 +388,7 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 120 }}>
         {/* Preferences & Payment Methods Section */}
         <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
+          <Text style={{ fontSize: 10, fontWeight: "500", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 1.2, paddingHorizontal: 4 }}>
             GENERAL & PREFERENCES
           </Text>
 
@@ -397,7 +397,7 @@ export default function SettingsScreen() {
               backgroundColor: colors.card,
               borderWidth: 1,
               borderColor: colors.border,
-              borderRadius: 14,
+              borderRadius: 20,
               overflow: "hidden",
             }}
           >
@@ -408,35 +408,37 @@ export default function SettingsScreen() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                padding: 14,
+                padding: 16,
                 gap: 12,
                 borderBottomWidth: 1,
-                borderBottomColor: colors.border,
+                borderBottomColor: colors.borderLight,
               }}
             >
               <View
                 style={{
                   width: 36,
                   height: 36,
-                  borderRadius: 10,
-                  backgroundColor: colors.surface,
+                  borderRadius: 999,
+                  backgroundColor: colors.surfaceInset,
+                  borderWidth: 1,
+                  borderColor: colors.border,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <SlidersHorizontal size={18} color={colors.text} />
+                <SlidersHorizontal size={16} color={colors.mutedText} />
               </View>
 
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
+                <Text style={{ fontSize: 13.5, fontWeight: "500", color: colors.text }}>
                   Preferences
                 </Text>
-                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
+                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 2 }}>
                   {isDark ? "Dark" : "Light"} mode · {primaryCurrency} ({getSymbol(primaryCurrency)}) · Alerts
                 </Text>
               </View>
 
-              <ChevronRight size={16} color={colors.mutedText} />
+              <ChevronRight size={14} color={colors.subtleText} />
             </TouchableOpacity>
 
             {/* Payment Methods & Card Vault Row */}
@@ -446,7 +448,7 @@ export default function SettingsScreen() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                padding: 14,
+                padding: 16,
                 gap: 12,
               }}
             >
@@ -454,32 +456,34 @@ export default function SettingsScreen() {
                 style={{
                   width: 36,
                   height: 36,
-                  borderRadius: 10,
-                  backgroundColor: colors.surface,
+                  borderRadius: 999,
+                  backgroundColor: colors.surfaceInset,
+                  borderWidth: 1,
+                  borderColor: colors.border,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <CreditCard size={18} color={colors.text} />
+                <CreditCard size={16} color={colors.mutedText} />
               </View>
 
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
+                <Text style={{ fontSize: 13.5, fontWeight: "500", color: colors.text }}>
                   Payment Methods & Card Vault
                 </Text>
-                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
+                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 2 }}>
                   Track cards, expiration alerts & spend breakdown
                 </Text>
               </View>
 
-              <ChevronRight size={16} color={colors.mutedText} />
+              <ChevronRight size={14} color={colors.subtleText} />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Data & Backup Management */}
         <View style={{ gap: 8 }}>
-          <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 4 }}>
+          <Text style={{ fontSize: 10, fontWeight: "500", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 1.2, paddingHorizontal: 4 }}>
             DATA & BACKUP
           </Text>
 
@@ -488,7 +492,7 @@ export default function SettingsScreen() {
               backgroundColor: colors.card,
               borderWidth: 1,
               borderColor: colors.border,
-              borderRadius: 14,
+              borderRadius: 20,
               overflow: "hidden",
             }}
           >
@@ -498,20 +502,20 @@ export default function SettingsScreen() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                padding: 14,
+                padding: 16,
                 gap: 12,
                 borderBottomWidth: 1,
-                borderBottomColor: colors.border,
+                borderBottomColor: colors.borderLight,
               }}
             >
-              <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" }}>
-                <FileSpreadsheet size={18} color={colors.text} />
+              <View style={{ width: 36, height: 36, borderRadius: 999, backgroundColor: colors.surfaceInset, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
+                <FileSpreadsheet size={16} color={colors.mutedText} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>Export Transactions CSV</Text>
-                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>Download expenses & income for Excel / Sheets</Text>
+                <Text style={{ fontSize: 13.5, fontWeight: "500", color: colors.text }}>Export Transactions CSV</Text>
+                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 2 }}>Download expenses & income for Excel / Sheets</Text>
               </View>
-              <ChevronRight size={16} color={colors.mutedText} />
+              <ChevronRight size={14} color={colors.subtleText} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -520,20 +524,20 @@ export default function SettingsScreen() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                padding: 14,
+                padding: 16,
                 gap: 12,
                 borderBottomWidth: 1,
-                borderBottomColor: colors.border,
+                borderBottomColor: colors.borderLight,
               }}
             >
-              <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" }}>
-                <FileSpreadsheet size={18} color={colors.text} />
+              <View style={{ width: 36, height: 36, borderRadius: 999, backgroundColor: colors.surfaceInset, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
+                <FileSpreadsheet size={16} color={colors.mutedText} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>Export Subscriptions CSV</Text>
-                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>Download spreadsheet for Excel / Sheets</Text>
+                <Text style={{ fontSize: 13.5, fontWeight: "500", color: colors.text }}>Export Subscriptions CSV</Text>
+                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 2 }}>Download spreadsheet for Excel / Sheets</Text>
               </View>
-              <ChevronRight size={16} color={colors.mutedText} />
+              <ChevronRight size={14} color={colors.subtleText} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -542,20 +546,20 @@ export default function SettingsScreen() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                padding: 14,
+                padding: 16,
                 gap: 12,
                 borderBottomWidth: 1,
-                borderBottomColor: colors.border,
+                borderBottomColor: colors.borderLight,
               }}
             >
-              <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" }}>
-                <Upload size={18} color={colors.text} />
+              <View style={{ width: 36, height: 36, borderRadius: 999, backgroundColor: colors.surfaceInset, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
+                <Upload size={16} color={colors.mutedText} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>Import from CSV</Text>
-                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>Upload spreadsheet to restore subscriptions</Text>
+                <Text style={{ fontSize: 13.5, fontWeight: "500", color: colors.text }}>Import from CSV</Text>
+                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 2 }}>Upload spreadsheet to restore subscriptions</Text>
               </View>
-              <ChevronRight size={16} color={colors.mutedText} />
+              <ChevronRight size={14} color={colors.subtleText} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -564,20 +568,20 @@ export default function SettingsScreen() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                padding: 14,
+                padding: 16,
                 gap: 12,
                 borderBottomWidth: 1,
-                borderBottomColor: colors.border,
+                borderBottomColor: colors.borderLight,
               }}
             >
-              <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" }}>
-                <Download size={18} color={colors.text} />
+              <View style={{ width: 36, height: 36, borderRadius: 999, backgroundColor: colors.surfaceInset, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
+                <Download size={16} color={colors.mutedText} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>Export JSON</Text>
-                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>Download raw JSON subscription records</Text>
+                <Text style={{ fontSize: 13.5, fontWeight: "500", color: colors.text }}>Export JSON</Text>
+                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 2 }}>Download raw JSON subscription records</Text>
               </View>
-              <ChevronRight size={16} color={colors.mutedText} />
+              <ChevronRight size={14} color={colors.subtleText} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -586,20 +590,20 @@ export default function SettingsScreen() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                padding: 14,
+                padding: 16,
                 gap: 12,
                 borderBottomWidth: 1,
-                borderBottomColor: colors.border,
+                borderBottomColor: colors.borderLight,
               }}
             >
-              <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" }}>
-                <FileJson size={18} color={colors.text} />
+              <View style={{ width: 36, height: 36, borderRadius: 999, backgroundColor: colors.surfaceInset, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
+                <FileJson size={16} color={colors.mutedText} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>Full Backup</Text>
-                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>Export everything: subs, transactions, accounts, budgets</Text>
+                <Text style={{ fontSize: 13.5, fontWeight: "500", color: colors.text }}>Full Backup</Text>
+                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 2 }}>Export everything: subs, transactions, accounts, budgets</Text>
               </View>
-              <ChevronRight size={16} color={colors.mutedText} />
+              <ChevronRight size={14} color={colors.subtleText} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -608,18 +612,18 @@ export default function SettingsScreen() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                padding: 14,
+                padding: 16,
                 gap: 12,
               }}
             >
-              <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" }}>
-                <Upload size={18} color={colors.text} />
+              <View style={{ width: 36, height: 36, borderRadius: 999, backgroundColor: colors.surfaceInset, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
+                <Upload size={16} color={colors.mutedText} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>Restore JSON Backup</Text>
-                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>Import from previous SubKeep JSON backup</Text>
+                <Text style={{ fontSize: 13.5, fontWeight: "500", color: colors.text }}>Restore JSON Backup</Text>
+                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 2 }}>Import from previous SubKeep JSON backup</Text>
               </View>
-              <ChevronRight size={16} color={colors.mutedText} />
+              <ChevronRight size={14} color={colors.subtleText} />
             </TouchableOpacity>
           </View>
         </View>
@@ -644,16 +648,16 @@ export default function SettingsScreen() {
               gap: 12,
             }}
           >
-            <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" }}>
-              <Info size={18} color={colors.text} />
+            <View style={{ width: 36, height: 36, borderRadius: 999, backgroundColor: colors.surfaceInset, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" }}>
+              <Info size={16} color={colors.mutedText} />
             </View>
 
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>About SubKeep</Text>
-              <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>Version 0.0.1</Text>
+              <Text style={{ fontSize: 13.5, fontWeight: "500", color: colors.text }}>About SubKeep</Text>
+              <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 2 }}>Version 0.0.1</Text>
             </View>
 
-            <ChevronRight size={16} color={colors.mutedText} />
+            <ChevronRight size={14} color={colors.subtleText} />
           </TouchableOpacity>
         </View>
 
@@ -674,35 +678,37 @@ export default function SettingsScreen() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                padding: 14,
+                padding: 16,
                 gap: 12,
                 borderBottomWidth: 1,
-                borderBottomColor: colors.border,
+                borderBottomColor: colors.borderLight,
               }}
             >
               <View
                 style={{
                   width: 36,
                   height: 36,
-                  borderRadius: 10,
-                  backgroundColor: colors.surface,
+                  borderRadius: 999,
+                  backgroundColor: colors.surfaceInset,
+                  borderWidth: 1,
+                  borderColor: colors.border,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <LogOut size={18} color={colors.text} />
+                <LogOut size={16} color={colors.mutedText} />
               </View>
 
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
+                <Text style={{ fontSize: 13.5, fontWeight: "500", color: colors.text }}>
                   Sign Out
                 </Text>
-                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
+                <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 2 }}>
                   Log out of this device
                 </Text>
               </View>
 
-              <ChevronRight size={16} color={colors.mutedText} />
+              <ChevronRight size={14} color={colors.subtleText} />
             </TouchableOpacity>
           )}
 
@@ -733,12 +739,12 @@ export default function SettingsScreen() {
               <Text style={{ fontSize: 14, fontWeight: "600", color: colors.destructive }}>
                 Delete All Data
               </Text>
-              <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
+              <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 2 }}>
                 Permanently erase subscriptions, transactions & budgets
               </Text>
             </View>
 
-            <ChevronRight size={16} color={colors.mutedText} />
+            <ChevronRight size={14} color={colors.subtleText} />
           </TouchableOpacity>
         </View>
       </ScrollView>

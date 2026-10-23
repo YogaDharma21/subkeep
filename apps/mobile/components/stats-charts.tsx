@@ -290,13 +290,13 @@ export function StatsCharts({
           backgroundColor: colors.card,
           borderWidth: 1,
           borderColor: colors.border,
-          borderRadius: 14,
-          padding: 16,
+          borderRadius: 24,
+          padding: 18,
           gap: 16,
         }}
       >
         <View style={{ gap: 2 }}>
-          <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>
+          <Text style={{ fontSize: 15, fontWeight: "500", color: colors.text }}>
             Spending Trend
           </Text>
           <Text style={{ fontSize: 11, color: colors.mutedText }}>
@@ -377,8 +377,8 @@ export function StatsCharts({
           <View
             style={{
               flex: 1,
-              backgroundColor: colors.surface,
-              borderRadius: 10,
+              backgroundColor: colors.surfaceInset,
+              borderRadius: 14,
               paddingVertical: 12,
               paddingHorizontal: 8,
               alignItems: "center",
@@ -387,11 +387,11 @@ export function StatsCharts({
           >
             <Text
               numberOfLines={1}
-              style={{ fontSize: 13, fontWeight: "800", color: colors.text, textAlign: "center" }}
+              style={{ fontSize: 13, fontWeight: "600", color: colors.text, textAlign: "center" }}
             >
               {formatCurrencyAmount(monthlyTotal * 1.15, primaryCurrency)}
             </Text>
-            <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
+            <Text style={{ fontSize: 9, fontWeight: "500", letterSpacing: 1.2, color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
               HIGHEST
             </Text>
           </View>
@@ -399,8 +399,8 @@ export function StatsCharts({
           <View
             style={{
               flex: 1,
-              backgroundColor: colors.surface,
-              borderRadius: 10,
+              backgroundColor: colors.surfaceInset,
+              borderRadius: 14,
               paddingVertical: 12,
               paddingHorizontal: 8,
               alignItems: "center",
@@ -409,11 +409,11 @@ export function StatsCharts({
           >
             <Text
               numberOfLines={1}
-              style={{ fontSize: 13, fontWeight: "800", color: colors.text, textAlign: "center" }}
+              style={{ fontSize: 13, fontWeight: "600", color: colors.text, textAlign: "center" }}
             >
               {formatCurrencyAmount(monthlyTotal, primaryCurrency)}
             </Text>
-            <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
+            <Text style={{ fontSize: 9, fontWeight: "500", letterSpacing: 1.2, color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
               AVG PER MONTH
             </Text>
           </View>
@@ -421,8 +421,8 @@ export function StatsCharts({
           <View
             style={{
               flex: 1,
-              backgroundColor: colors.surface,
-              borderRadius: 10,
+              backgroundColor: colors.surfaceInset,
+              borderRadius: 14,
               paddingVertical: 12,
               paddingHorizontal: 8,
               alignItems: "center",
@@ -431,11 +431,11 @@ export function StatsCharts({
           >
             <Text
               numberOfLines={1}
-              style={{ fontSize: 13, fontWeight: "800", color: colors.text, textAlign: "center" }}
+              style={{ fontSize: 13, fontWeight: "600", color: colors.text, textAlign: "center" }}
             >
               {formatCurrencyAmount(monthlyTotal * 6, primaryCurrency)}
             </Text>
-            <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
+            <Text style={{ fontSize: 9, fontWeight: "500", letterSpacing: 1.2, color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
               TOTAL (YTD)
             </Text>
           </View>
@@ -448,15 +448,15 @@ export function StatsCharts({
           backgroundColor: colors.card,
           borderWidth: 1,
           borderColor: colors.border,
-          borderRadius: 14,
-          padding: 16,
+          borderRadius: 24,
+          padding: 18,
           gap: 16,
         }}
       >
         {/* Controls Toolbar */}
         <View style={{ gap: 10 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-            <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>
+            <Text style={{ fontSize: 15, fontWeight: "500", color: colors.text }}>
               Category Breakdown
             </Text>
 
@@ -465,8 +465,8 @@ export function StatsCharts({
               <View
                 style={{
                   flexDirection: "row",
-                  backgroundColor: colors.surface,
-                  borderRadius: 8,
+                  backgroundColor: colors.surfaceInset,
+                  borderRadius: 999,
                   padding: 2,
                   borderWidth: 1,
                   borderColor: colors.border,
@@ -477,15 +477,15 @@ export function StatsCharts({
                   style={{
                     paddingHorizontal: 8,
                     paddingVertical: 4,
-                    borderRadius: 6,
-                    backgroundColor: breakdownMetric === "cost" ? colors.card : "transparent",
+                    borderRadius: 999,
+                    backgroundColor: breakdownMetric === "cost" ? colors.primary : "transparent",
                   }}
                 >
                   <Text
                     style={{
                       fontSize: 10,
                       fontWeight: "700",
-                      color: breakdownMetric === "cost" ? colors.text : colors.mutedText,
+                      color: breakdownMetric === "cost" ? colors.primaryForeground : colors.mutedText,
                     }}
                   >
                     By Cost
@@ -496,15 +496,15 @@ export function StatsCharts({
                   style={{
                     paddingHorizontal: 8,
                     paddingVertical: 4,
-                    borderRadius: 6,
-                    backgroundColor: breakdownMetric === "count" ? colors.card : "transparent",
+                    borderRadius: 999,
+                    backgroundColor: breakdownMetric === "count" ? colors.primary : "transparent",
                   }}
                 >
                   <Text
                     style={{
                       fontSize: 10,
                       fontWeight: "700",
-                      color: breakdownMetric === "count" ? colors.text : colors.mutedText,
+                      color: breakdownMetric === "count" ? colors.primaryForeground : colors.mutedText,
                     }}
                   >
                     By Count
@@ -516,8 +516,8 @@ export function StatsCharts({
               <View
                 style={{
                   flexDirection: "row",
-                  backgroundColor: colors.surface,
-                  borderRadius: 8,
+                  backgroundColor: colors.surfaceInset,
+                  borderRadius: 999,
                   padding: 2,
                   borderWidth: 1,
                   borderColor: colors.border,
@@ -528,15 +528,15 @@ export function StatsCharts({
                   style={{
                     paddingHorizontal: 8,
                     paddingVertical: 4,
-                    borderRadius: 6,
-                    backgroundColor: breakdownFilter === "all" ? colors.card : "transparent",
+                    borderRadius: 999,
+                    backgroundColor: breakdownFilter === "all" ? colors.primary : "transparent",
                   }}
                 >
                   <Text
                     style={{
                       fontSize: 10,
                       fontWeight: "700",
-                      color: breakdownFilter === "all" ? colors.text : colors.mutedText,
+                      color: breakdownFilter === "all" ? colors.primaryForeground : colors.mutedText,
                     }}
                   >
                     All
@@ -547,15 +547,15 @@ export function StatsCharts({
                   style={{
                     paddingHorizontal: 8,
                     paddingVertical: 4,
-                    borderRadius: 6,
-                    backgroundColor: breakdownFilter === "paid" ? colors.card : "transparent",
+                    borderRadius: 999,
+                    backgroundColor: breakdownFilter === "paid" ? colors.primary : "transparent",
                   }}
                 >
                   <Text
                     style={{
                       fontSize: 10,
                       fontWeight: "700",
-                      color: breakdownFilter === "paid" ? colors.text : colors.mutedText,
+                      color: breakdownFilter === "paid" ? colors.primaryForeground : colors.mutedText,
                     }}
                   >
                     Paid Only
@@ -582,7 +582,7 @@ export function StatsCharts({
                       cx="80"
                       cy="80"
                       r={donutRadius}
-                      stroke={colors.surface}
+                      stroke={colors.surfaceInset}
                       strokeWidth={22}
                       fill="none"
                     />
@@ -632,7 +632,7 @@ export function StatsCharts({
                             backgroundColor: cat.color,
                           }}
                         />
-                        <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
+                        <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                           {cat.name}
                         </Text>
                       </View>
@@ -641,7 +641,7 @@ export function StatsCharts({
                         <Text style={{ fontSize: 11, color: colors.mutedText }}>
                           {detailText}
                         </Text>
-                        <Text style={{ fontSize: 12, fontWeight: "700", color: colors.text, width: 44, textAlign: "right" }}>
+                        <Text style={{ fontSize: 11, fontWeight: "500", color: colors.text, width: 44, textAlign: "right", fontVariant: ["tabular-nums"] }}>
                           {cat.percentage}%
                         </Text>
                       </View>
@@ -650,10 +650,10 @@ export function StatsCharts({
                     {/* Progress line */}
                     <View
                       style={{
-                        height: 5,
+                        height: 3,
                         width: "100%",
-                        backgroundColor: colors.surface,
-                        borderRadius: 3,
+                        backgroundColor: colors.surfaceInset,
+                        borderRadius: 999,
                         overflow: "hidden",
                       }}
                     >
@@ -662,7 +662,7 @@ export function StatsCharts({
                           height: "100%",
                           width: `${Math.max(2, cat.numericPercentage)}%`,
                           backgroundColor: cat.color,
-                          borderRadius: 3,
+                          borderRadius: 999,
                         }}
                       />
                     </View>
@@ -681,12 +681,12 @@ export function StatsCharts({
             backgroundColor: colors.card,
             borderWidth: 1,
             borderColor: colors.border,
-            borderRadius: 14,
-            padding: 16,
-            gap: 12,
+            borderRadius: 24,
+            padding: 18,
+            gap: 14,
           }}
         >
-          <Text style={{ fontSize: 15, fontWeight: "700", color: colors.text }}>
+          <Text style={{ fontSize: 15, fontWeight: "500", color: colors.text }}>
             Payment History
           </Text>
 
@@ -708,20 +708,22 @@ export function StatsCharts({
                   style={{
                     width: 38,
                     height: 38,
-                    borderRadius: 10,
-                    backgroundColor: p.color || colors.surface,
+                    borderRadius: 12,
+                    backgroundColor: colors.surfaceInset,
+                    borderWidth: 1,
+                    borderColor: colors.border,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Text style={{ fontSize: 15, fontWeight: "800", color: "#ffffff" }}>
+                  <Text style={{ fontSize: 14, fontWeight: "500", color: colors.text }}>
                     {p.name.charAt(0).toUpperCase()}
                   </Text>
                 </View>
 
                 {/* Name & Date */}
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                  <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                     {p.name}
                   </Text>
                   <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
@@ -735,7 +737,7 @@ export function StatsCharts({
 
                 {/* Amount in Red & Action Buttons */}
                 <View style={{ alignItems: "flex-end", gap: 3 }}>
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: colors.destructive }}>
+                  <Text style={{ fontSize: 13, fontWeight: "500", color: colors.negative, fontVariant: ["tabular-nums"] }}>
                     -{formatCurrencyAmount(p.convertedAmount, primaryCurrency)}
                   </Text>
                   {p.currency !== primaryCurrency && (
@@ -748,8 +750,8 @@ export function StatsCharts({
                       onPress={() => handleOpenEdit(p)}
                       style={{
                         padding: 4,
-                        borderRadius: 6,
-                        backgroundColor: colors.surface,
+                        borderRadius: 999,
+                        backgroundColor: colors.surfaceInset,
                       }}
                     >
                       <Pencil size={13} color={colors.text} />
@@ -758,11 +760,11 @@ export function StatsCharts({
                       onPress={() => handleDeletePayment(p)}
                       style={{
                         padding: 4,
-                        borderRadius: 6,
-                        backgroundColor: colors.surface,
+                        borderRadius: 999,
+                        backgroundColor: colors.surfaceInset,
                       }}
                     >
-                      <Trash2 size={13} color={colors.destructive} />
+                      <Trash2 size={13} color={colors.negative} />
                     </TouchableOpacity>
                   </View>
                 </View>
