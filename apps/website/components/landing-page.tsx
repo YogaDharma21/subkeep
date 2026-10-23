@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { SignInButton, SignUpButton } from "@clerk/nextjs"
-import { ArrowRight, Check, ShieldCheck } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const dots = [
@@ -36,18 +36,11 @@ export function LandingPage() {
               SubKeep
             </span>
           </div>
-          <SignInButton mode="modal">
-            <button className="text-[11px] uppercase tracking-[0.14em] text-white/45 transition-colors hover:text-white">
-              Sign in
-            </button>
-          </SignInButton>
         </header>
 
         <main className="grid grid-cols-1 items-center gap-14 py-16 lg:grid-cols-12 lg:gap-10 lg:py-24">
           <div className="lg:col-span-7">
-            <p className="label">Personal finance · one quiet place</p>
-
-            <h1 className="mt-6 text-[clamp(2.7rem,6vw,4.9rem)] font-[550] leading-[0.94] tracking-[-0.055em]">
+            <h1 className="text-[clamp(2.7rem,6vw,4.9rem)] font-[550] leading-[0.94] tracking-[-0.055em]">
               Every bill.
               <br />
               Every balance.
@@ -55,12 +48,7 @@ export function LandingPage() {
               <span className="text-white/30">Nothing shouting.</span>
             </h1>
 
-            <p className="mt-7 max-w-md text-[13px] leading-relaxed text-white/50">
-              Expenses, accounts, budgets, and every renewal in one dashboard.
-              Built to show what matters and leave the rest folded away.
-            </p>
-
-            <div className="mt-9 flex flex-wrap items-center gap-3">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <SignInButton mode="modal">
                 <Button className="h-11 cursor-pointer gap-2 rounded-full bg-[#f2f1ec] px-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#0a0a0b] transition-colors hover:bg-white">
                   Open SubKeep
@@ -75,21 +63,6 @@ export function LandingPage() {
                   Create account
                 </Button>
               </SignUpButton>
-            </div>
-
-            <div className="mt-12 flex flex-wrap gap-x-7 gap-y-3 text-[11px] text-white/35">
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck className="size-3.5" />
-                Private by default
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="size-3.5" />
-                Multi-currency
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="size-3.5" />
-                Trial reminders
-              </span>
             </div>
           </div>
 
@@ -164,35 +137,6 @@ export function LandingPage() {
             </div>
           </div>
         </main>
-
-        <section className="grid grid-cols-1 gap-3 border-t border-white/[0.07] py-10 sm:grid-cols-3">
-          {[
-            {
-              title: "Money",
-              body: "Balances, income, and spending with a running net worth.",
-            },
-            {
-              title: "Recurring",
-              body: "Renewals, trials, and split plans with reminders before money moves.",
-            },
-            {
-              title: "Insights",
-              body: "Six months of cash flow and category budgets, without the noise.",
-            },
-          ].map((item) => (
-            <div key={item.title} className="px-1 py-2">
-              <p className="label">{item.title}</p>
-              <p className="mt-3 max-w-[26ch] text-[12px] leading-relaxed text-white/45">
-                {item.body}
-              </p>
-            </div>
-          ))}
-        </section>
-
-        <footer className="flex items-center justify-between border-t border-white/[0.07] py-7 text-[10px] uppercase tracking-[0.14em] text-white/25">
-          <span>SubKeep</span>
-          <span>Made for quiet money</span>
-        </footer>
       </div>
     </div>
   )
