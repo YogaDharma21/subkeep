@@ -266,7 +266,7 @@ export default function AccountsScreen() {
           paddingBottom: 110,
         }}
       >
-        <Surface folderTab style={{ padding: 18, paddingTop: 36, gap: 6 }}>
+        <Surface style={{ padding: 18, gap: 6 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
             <Label>Net worth · {primaryCurrency}</Label>
           </View>

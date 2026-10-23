@@ -96,9 +96,8 @@ export function LandingPage() {
           {/* Preview */}
           <div className="lg:col-span-5">
             <div className="mx-auto w-full max-w-sm space-y-3">
-              <div className="surface relative overflow-hidden p-5">
-                <div className="folder-tab" aria-hidden />
-                <div className="relative flex items-center justify-between">
+              <div className="surface p-5 sm:p-6">
+                <div className="flex items-center justify-between">
                   <p className="label">Net worth</p>
                   <span className="rounded-full border border-border px-2 py-0.5 text-[9px] tracking-[0.14em] text-muted-foreground">
                     IDR
@@ -127,15 +126,13 @@ export function LandingPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="surface relative flex min-h-[112px] flex-col justify-end overflow-hidden p-4 pt-9">
-                  <span className="folder-tab" aria-hidden />
+                <div className="surface flex min-h-[104px] flex-col justify-end p-4">
                   <span className="numeral text-xl">Rp2.4jt</span>
                   <span className="mt-1.5 text-[10px] text-muted-foreground">
                     Recurring / month
                   </span>
                 </div>
-                <div className="surface relative flex min-h-[112px] flex-col justify-end overflow-hidden p-4 pt-9">
-                  <span className="folder-tab" aria-hidden />
+                <div className="surface flex min-h-[104px] flex-col justify-end p-4">
                   <span className="numeral text-xl">Oct 28</span>
                   <span className="mt-1.5 text-[10px] text-muted-foreground">
                     Next renewal

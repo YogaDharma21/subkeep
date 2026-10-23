@@ -277,8 +277,7 @@ export default function MorePage() {
 
       {/* User Profile Card */}
       {user && (
-        <div className="surface relative overflow-hidden p-5 pt-11">
-          <span className="folder-tab" aria-hidden />
+        <div className="surface p-5">
           <div className="flex items-center gap-3.5">
             <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-foreground/[0.05] text-base font-medium text-foreground">
               {(user.fullName || user.primaryEmailAddress?.emailAddress || "U").charAt(0).toUpperCase()}

@@ -63,9 +63,7 @@ export function UpcomingReminders({
   }
 
   return (
-    <div className={cn("surface relative overflow-hidden", compact ? "p-4 pt-9" : "p-5 pt-10")}>
-      <span className="folder-tab" aria-hidden />
-
+    <div className={cn("surface", compact ? "p-4" : "p-5")}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-1.5">

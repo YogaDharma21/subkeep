@@ -412,7 +412,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
       </View>
 
       {/* Month Summary Banner */}
-      <Surface folderTab style={{ padding: 18, paddingTop: 36, gap: 4 }}>
+      <Surface style={{ padding: 18, gap: 4 }}>
         <Label>Total projected spend</Label>
         <Numeral style={{ fontSize: 26 }}>
           {formatCurrencyAmount(monthTotal, primaryCurrency)}
@@ -421,7 +421,7 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
 
       {/* Selected Day Events List */}
       {selectedDay && (
-        <Surface folderTab style={{ padding: 18, paddingTop: 36, gap: 12 }}>
+        <Surface style={{ padding: 18, gap: 12 }}>
           <Text style={{ fontSize: 15, fontWeight: "500", letterSpacing: -0.2, color: colors.text }}>
             {currentDate.toLocaleDateString("en-US", { month: "short" })} {selectedDay}, {year}
           </Text>

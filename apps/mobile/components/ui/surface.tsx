@@ -10,14 +10,12 @@ import { useThemeColor } from "@/hooks/use-theme-color"
 import { Type } from "@/constants/theme"
 
 interface SurfaceProps extends ViewProps {
-  folderTab?: boolean
   inset?: boolean
 }
 
 export function Surface({
   children,
   style,
-  folderTab = false,
   inset = false,
   ...props
 }: SurfaceProps) {
@@ -37,32 +35,8 @@ export function Surface({
       ]}
       {...props}
     >
-      {folderTab ? <FolderTab /> : null}
       {children}
     </View>
-  )
-}
-
-export function FolderTab() {
-  const { colors } = useThemeColor()
-
-  return (
-    <View
-      pointerEvents="none"
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "44%",
-        height: 28,
-        backgroundColor: colors.surfaceInset,
-        borderRightWidth: 1,
-        borderBottomWidth: 1,
-        borderColor: colors.border,
-        borderBottomRightRadius: 14,
-        borderTopLeftRadius: 23,
-      }}
-    />
   )
 }
 

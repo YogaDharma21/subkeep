@@ -84,9 +84,8 @@ function MetricCard({
     <button
       type="button"
       onClick={onClick}
-      className="surface surface-interactive group relative flex min-h-[138px] cursor-pointer flex-col justify-end overflow-hidden p-4 pt-9 text-left"
+      className="surface surface-interactive group relative flex min-h-[130px] cursor-pointer flex-col justify-end p-4 text-left"
     >
-      <span className="folder-tab" aria-hidden />
       <span className="absolute right-4 top-4 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/70">
         {hint}
       </span>

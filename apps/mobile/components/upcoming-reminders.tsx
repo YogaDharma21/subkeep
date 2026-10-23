@@ -69,7 +69,7 @@ export function UpcomingReminders({
   }
 
   return (
-    <Surface folderTab style={{ padding: 18, paddingTop: 36, gap: 10 }}>
+    <Surface style={{ padding: 18, gap: 10 }}>
       <View
         style={{
           flexDirection: "row",

@@ -279,9 +279,8 @@ export default function SubscriptionsPage() {
       <SectionHeader title="Subscriptions" tabs={subscriptionTabs} />
 
       {/* Summary */}
-      <section className="surface relative overflow-hidden p-5 sm:p-7">
-        <div className="folder-tab" aria-hidden />
-        <div className="relative flex items-start justify-between gap-3">
+      <section className="surface p-5 sm:p-7">
+        <div className="flex items-start justify-between gap-3">
           <p className="label">Recurring</p>
           <div className="relative">
             <select

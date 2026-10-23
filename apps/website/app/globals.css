@@ -201,21 +201,6 @@
     letter-spacing: -0.045em;
   }
 
-  /* The lighter "folder" tab that sits inside the top-left of a card. */
-  .folder-tab {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 44%;
-    height: 34px;
-    border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    border-bottom-right-radius: 16px;
-    border-top-left-radius: 23px;
-    background: color-mix(in oklab, var(--foreground) 3.5%, transparent);
-    pointer-events: none;
-  }
-
   .hairline {
     border-color: var(--border);
   }

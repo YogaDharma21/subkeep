@@ -237,9 +237,8 @@ export default function AccountsPage() {
     <div className="space-y-4 sm:space-y-5">
       <SectionHeader title="Money" eyebrow={primaryCurrency} tabs={moneyTabs} />
 
-      <section className="surface relative overflow-hidden p-5 sm:p-7">
-        <div className="folder-tab" aria-hidden />
-        <div className="relative flex items-start justify-between gap-3">
+      <section className="surface p-5 sm:p-7">
+        <div className="flex items-start justify-between gap-3">
           <p className="label">Net worth</p>
           <p className="label">{primaryCurrency}</p>
         </div>

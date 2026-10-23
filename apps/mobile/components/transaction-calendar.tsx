@@ -62,7 +62,7 @@ export function TransactionCalendar({ transactions }: TransactionCalendarProps) 
   const maxFlow = Math.max(1, ...dailyTotals.map((d) => d.income + d.expense))
 
   return (
-    <Surface folderTab style={{ padding: 18, paddingTop: 36, gap: 12 }}>
+    <Surface style={{ padding: 18, gap: 12 }}>
       <View
         style={{
           flexDirection: "row",

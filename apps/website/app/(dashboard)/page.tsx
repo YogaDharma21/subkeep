@@ -87,9 +87,8 @@ function MetricCard({
   return (
     <Link
       href={href}
-      className="surface surface-interactive group relative flex min-h-[138px] flex-col justify-end overflow-hidden p-4 pt-9"
+      className="surface surface-interactive group relative flex min-h-[130px] flex-col justify-end p-4"
     >
-      <span className="folder-tab" aria-hidden />
       <span className="absolute right-4 top-4 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/70">
         {hint}
       </span>
@@ -273,9 +272,8 @@ export default function HomePage() {
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
         {/* Net worth */}
-        <section className="surface relative overflow-hidden p-5 sm:p-7 lg:col-span-7">
-          <div className="folder-tab" aria-hidden />
-          <div className="relative flex items-center justify-between gap-3">
+        <section className="surface p-5 sm:p-7 lg:col-span-7">
+          <div className="flex items-center justify-between gap-3">
             <p className="label">Net worth</p>
             <span className="rounded-full border border-border px-2.5 py-1 text-[10px] font-medium tracking-[0.12em] text-muted-foreground">
               {primaryCurrency}

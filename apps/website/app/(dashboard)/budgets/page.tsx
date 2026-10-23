@@ -110,9 +110,8 @@ export default function BudgetsPage() {
       <SectionHeader title="Budgets" eyebrow={monthLabel(month)} tabs={insightTabs} />
 
       {/* Month + totals */}
-      <section className="surface relative overflow-hidden p-5 sm:p-7">
-        <div className="folder-tab" aria-hidden />
-        <div className="relative flex items-start justify-between gap-3">
+      <section className="surface p-5 sm:p-7">
+        <div className="flex items-start justify-between gap-3">
           <p className="label">Spent this month</p>
           <div className="flex items-center gap-1">
             <Button

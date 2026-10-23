@@ -301,10 +301,8 @@ export default function SubscriptionsScreen() {
       >
         {/* Dynamic Summary Banner */}
         <Surface
-          folderTab
           style={{
             padding: 18,
-            paddingTop: 36,
             gap: 14,
           }}
         >

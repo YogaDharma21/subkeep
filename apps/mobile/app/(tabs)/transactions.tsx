@@ -189,7 +189,7 @@ export default function TransactionsScreen() {
         }}
       >
         {/* Month + totals */}
-        <Surface folderTab style={{ padding: 18, paddingTop: 36, gap: 14 }}>
+        <Surface style={{ padding: 18, gap: 14 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
             <View style={{ gap: 3 }}>
               <Label>Transactions</Label>

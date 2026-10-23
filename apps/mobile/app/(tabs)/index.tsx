@@ -171,11 +171,9 @@ function MetricCard({
       style={{ width: "48%", flexGrow: 1 }}
     >
       <Surface
-        folderTab
         style={{
-          minHeight: 126,
+          minHeight: 110,
           padding: 14,
-          paddingTop: 34,
           justifyContent: "flex-end",
           gap: 6,
         }}
@@ -362,7 +360,7 @@ export default function DashboardScreen() {
           </Text>
         </View>
 
-        <Surface folderTab style={{ padding: 20, paddingTop: 36, gap: 14 }}>
+        <Surface style={{ padding: 20, gap: 14 }}>
           <View
             style={{
               flexDirection: "row",

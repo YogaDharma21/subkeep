@@ -80,7 +80,7 @@ export function FinanceAnalytics({
   return (
     <View style={{ gap: 12 }}>
       {hasFlow ? (
-        <Surface folderTab style={{ padding: 18, paddingTop: 36, gap: 12 }}>
+        <Surface style={{ padding: 18, gap: 12 }}>
           <View style={{ gap: 3 }}>
             <Text style={{ fontSize: 15, fontWeight: "500", letterSpacing: -0.2, color: colors.text }}>
               Cash flow
@@ -139,7 +139,7 @@ export function FinanceAnalytics({
       ) : null}
 
       {categoryData.length > 0 ? (
-        <Surface folderTab style={{ padding: 18, paddingTop: 36, gap: 14 }}>
+        <Surface style={{ padding: 18, gap: 14 }}>
           <View style={{ gap: 3 }}>
             <Text style={{ fontSize: 15, fontWeight: "500", letterSpacing: -0.2, color: colors.text }}>
               Where money went

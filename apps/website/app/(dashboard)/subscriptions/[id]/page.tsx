@@ -487,8 +487,7 @@ export default function SubscriptionDetailPage({
       )}
 
       {/* Main Card Header */}
-      <div className="surface relative mb-4 overflow-hidden p-5 pt-10">
-        <span className="folder-tab" aria-hidden />
+      <div className="surface mb-4 p-5">
         <div className="flex items-center gap-4">
           <button
             onClick={() => editing && setIconOpen(true)}
