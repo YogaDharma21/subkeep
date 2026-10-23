@@ -144,7 +144,7 @@ export default function HomePage() {
   )
   const allTransactions = useQuery(
     api.transactions.list,
-    isSignedIn ? { limit: 300 } : "skip"
+    isSignedIn ? { limit: 600 } : "skip"
   )
   const budgets = useQuery(
     api.budgets.list,
@@ -226,29 +226,48 @@ export default function HomePage() {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const start = new Date(today)
-    start.setDate(start.getDate() - 90)
+    start.setDate(start.getDate() - 364)
     start.setDate(start.getDate() - ((start.getDay() + 6) % 7))
 
-    const weeks: Array<Array<{ key: string; amount: number; future: boolean }>> = []
+    const weeks: Array<{
+      monthLabel?: string
+      days: Array<{ key: string; amount: number; future: boolean }>
+    }> = []
     const cursor = new Date(start)
     let activeDays = 0
     let peak = 0
+    let totalSpend = 0
+    let lastMonth = -1
 
     while (cursor <= today) {
-      const week: Array<{ key: string; amount: number; future: boolean }> = []
+      const days: Array<{ key: string; amount: number; future: boolean }> = []
+      let monthLabel: string | undefined = undefined
+
       for (let i = 0; i < 7; i++) {
         const day = new Date(cursor)
         const key = localDateKey(day)
         const amount = spendByDate[key] || 0
-        if (amount > 0) activeDays++
-        peak = Math.max(peak, amount)
-        week.push({ key, amount, future: day > today })
+        const future = day > today
+
+        if (!future && amount > 0) {
+          activeDays++
+          totalSpend += amount
+          if (amount > peak) peak = amount
+        }
+
+        days.push({ key, amount, future })
+
+        if (day.getMonth() !== lastMonth && (days.length === 1 || day.getDate() <= 7)) {
+          monthLabel = day.toLocaleDateString("en-US", { month: "short" })
+          lastMonth = day.getMonth()
+        }
+
         cursor.setDate(cursor.getDate() + 1)
       }
-      weeks.push(week)
+      weeks.push({ monthLabel, days })
     }
 
-    return { weeks, activeDays, peak }
+    return { weeks, activeDays, peak, totalSpend }
   }, [allTransactions, primaryCurrency, rates])
 
   const loading = accounts === undefined || transactions === undefined
@@ -419,53 +438,111 @@ export default function HomePage() {
             <div>
               <h2 className="text-[15px] font-medium tracking-tight">Activity</h2>
               <p className="mt-1 text-[11px] text-muted-foreground">
-                Daily spending, last 13 weeks
+                Daily spending, past 52 weeks
               </p>
             </div>
             <span className="text-[11px] text-muted-foreground">
-              {activity.activeDays} active days
+              {activity.activeDays} active {activity.activeDays === 1 ? "day" : "days"}
             </span>
           </div>
 
-          <div className="quiet-scroll mt-7 flex gap-1.5 overflow-x-auto pb-1">
-            {activity.weeks.map((week, index) => (
-              <div key={index} className="flex flex-col gap-1.5">
-                {week.map((day) => {
-                  const intensity =
-                    day.amount <= 0 || activity.peak <= 0
-                      ? 0
-                      : 0.18 + 0.82 * Math.sqrt(day.amount / activity.peak)
-                  return (
-                    <span
-                      key={day.key}
-                      title={
-                        day.future
-                          ? undefined
-                          : `${shortDate(day.key)}${
-                              day.amount > 0
-                                ? ` · ${formatCurrencyAmount(day.amount, primaryCurrency)}`
-                                : ""
-                            }`
-                      }
-                      className={cn(
-                        "size-[5px] rounded-full bg-foreground",
-                        day.future && "opacity-0"
-                      )}
-                      style={{ opacity: day.future ? 0 : Math.max(0.07, intensity) }}
-                    />
-                  )
-                })}
+          <div className="quiet-scroll mt-6 overflow-x-auto pb-1">
+            <div className="flex min-w-max items-start gap-2">
+              {/* Weekday labels */}
+              <div className="flex flex-col gap-[3px] select-none text-[9px] font-medium text-muted-foreground">
+                <div className="h-4" />
+                <span className="flex h-[10px] items-center">Mon</span>
+                <span className="h-[10px]" />
+                <span className="flex h-[10px] items-center">Wed</span>
+                <span className="h-[10px]" />
+                <span className="flex h-[10px] items-center">Fri</span>
+                <span className="h-[10px]" />
+                <span className="h-[10px]" />
               </div>
-            ))}
+
+              {/* 52-53 weeks */}
+              <div className="flex gap-[3px]">
+                {activity.weeks.map((week, index) => (
+                  <div key={index} className="flex flex-col gap-[3px]">
+                    <div className="relative h-4 w-[10px]">
+                      {week.monthLabel ? (
+                        <span className="absolute left-0 top-0 select-none whitespace-nowrap text-[10px] font-medium text-muted-foreground">
+                          {week.monthLabel}
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {week.days.map((day) => {
+                      const intensity =
+                        day.amount <= 0 || activity.peak <= 0
+                          ? 0
+                          : 0.22 + 0.78 * Math.sqrt(day.amount / activity.peak)
+                      return (
+                        <span
+                          key={day.key}
+                          title={
+                            day.future
+                              ? undefined
+                              : `${shortDate(day.key)}${
+                                  day.amount > 0
+                                    ? ` · ${formatCurrencyAmount(day.amount, primaryCurrency)}`
+                                    : " · No spend"
+                                }`
+                          }
+                          className={cn(
+                            "size-[10px] rounded-[2px] transition-colors",
+                            day.future
+                              ? "opacity-0 pointer-events-none"
+                              : day.amount > 0
+                                ? "bg-foreground"
+                                : "bg-muted/40 hover:bg-muted/70"
+                          )}
+                          style={
+                            day.future || day.amount <= 0
+                              ? undefined
+                              : { opacity: Math.max(0.18, intensity) }
+                          }
+                        />
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-[11px] text-muted-foreground">
-            <span>Peak day</span>
-            <span className="numeral text-foreground">
-              {activity.peak > 0
-                ? formatCurrencyAmount(activity.peak, primaryCurrency)
-                : "No spend yet"}
-            </span>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-4">
+              <span>
+                Peak day:{" "}
+                <span className="numeral font-medium text-foreground">
+                  {activity.peak > 0
+                    ? formatCurrencyAmount(activity.peak, primaryCurrency)
+                    : "—"}
+                </span>
+              </span>
+              {activity.activeDays > 0 ? (
+                <span>
+                  Avg active:{" "}
+                  <span className="numeral font-medium text-foreground">
+                    {formatCurrencyAmount(
+                      Math.round(activity.totalSpend / activity.activeDays),
+                      primaryCurrency
+                    )}
+                  </span>
+                </span>
+              ) : null}
+            </div>
+
+            <div className="flex items-center gap-1.5 text-[10px]">
+              <span>Less</span>
+              <span className="size-[10px] rounded-[2px] bg-muted/40" />
+              <span className="size-[10px] rounded-[2px] bg-foreground opacity-25" />
+              <span className="size-[10px] rounded-[2px] bg-foreground opacity-50" />
+              <span className="size-[10px] rounded-[2px] bg-foreground opacity-75" />
+              <span className="size-[10px] rounded-[2px] bg-foreground opacity-100" />
+              <span>More</span>
+            </div>
           </div>
         </section>
 

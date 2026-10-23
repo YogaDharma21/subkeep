@@ -1,4 +1,4 @@
-import React, { useMemo } from "react"
+import React, { useMemo, useRef } from "react"
 import {
   View,
   Text,
@@ -214,7 +214,7 @@ export default function DashboardScreen() {
   )
   const allTransactions = useQuery(
     api.transactions.list,
-    isSignedIn ? { limit: 300 } : "skip"
+    isSignedIn ? { limit: 600 } : "skip"
   )
   const budgets = useQuery(api.budgets.list, isSignedIn ? { month } : "skip")
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
@@ -299,6 +299,8 @@ export default function DashboardScreen() {
       .slice(0, 6)
   }, [transactions])
 
+  const activityScrollViewRef = useRef<React.ElementRef<typeof ScrollView>>(null)
+
   const activity = useMemo(() => {
     const spendByDate: Record<string, number> = {}
     for (const t of allTransactions || []) {
@@ -311,29 +313,48 @@ export default function DashboardScreen() {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const start = new Date(today)
-    start.setDate(start.getDate() - 90)
+    start.setDate(start.getDate() - 364)
     start.setDate(start.getDate() - ((start.getDay() + 6) % 7))
 
-    const weeks: { key: string; amount: number; future: boolean }[][] = []
+    const weeks: {
+      monthLabel?: string
+      days: { key: string; amount: number; future: boolean }[]
+    }[] = []
     const cursor = new Date(start)
     let activeDays = 0
     let peak = 0
+    let totalSpend = 0
+    let lastMonth = -1
 
     while (cursor <= today) {
-      const week: { key: string; amount: number; future: boolean }[] = []
+      const days: { key: string; amount: number; future: boolean }[] = []
+      let monthLabel: string | undefined = undefined
+
       for (let i = 0; i < 7; i++) {
         const day = new Date(cursor)
         const key = localDateKey(day)
         const amount = spendByDate[key] || 0
-        if (amount > 0) activeDays++
-        peak = Math.max(peak, amount)
-        week.push({ key, amount, future: day > today })
+        const future = day > today
+
+        if (!future && amount > 0) {
+          activeDays++
+          totalSpend += amount
+          if (amount > peak) peak = amount
+        }
+
+        days.push({ key, amount, future })
+
+        if (day.getMonth() !== lastMonth && (days.length === 1 || day.getDate() <= 7)) {
+          monthLabel = day.toLocaleDateString("en-US", { month: "short" })
+          lastMonth = day.getMonth()
+        }
+
         cursor.setDate(cursor.getDate() + 1)
       }
-      weeks.push(week)
+      weeks.push({ monthLabel, days })
     }
 
-    return { weeks, activeDays, peak }
+    return { weeks, activeDays, peak, totalSpend }
   }, [allTransactions, primaryCurrency, rates])
 
   const loading = accounts === undefined || transactions === undefined
@@ -551,42 +572,91 @@ export default function DashboardScreen() {
                 Activity
               </Text>
               <Text style={{ fontSize: 11, color: colors.mutedText }}>
-                Daily spending, last 13 weeks
+                Daily spending, past 52 weeks
               </Text>
             </View>
             <Text style={{ fontSize: 11, color: colors.mutedText }}>
-              {activity.activeDays} active days
+              {activity.activeDays} active {activity.activeDays === 1 ? "day" : "days"}
             </Text>
           </View>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 2 }}
-          >
-            {activity.weeks.map((week, index) => (
-              <View key={index} style={{ gap: 2 }}>
-                {week.map((day) => {
-                  const intensity =
-                    day.amount <= 0 || activity.peak <= 0
-                      ? 0
-                      : 0.18 + 0.82 * Math.sqrt(day.amount / activity.peak)
-                  return (
-                    <View
-                      key={day.key}
-                      style={{
-                        width: 5,
-                        height: 5,
-                        borderRadius: 3,
-                        backgroundColor: colors.text,
-                        opacity: day.future ? 0 : Math.max(0.07, intensity),
-                      }}
-                    />
-                  )
-                })}
+          <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 6 }}>
+            {/* Weekday labels */}
+            <View style={{ gap: 2.5, paddingRight: 2 }}>
+              <View style={{ height: 14 }} />
+              <View style={{ height: 10, justifyContent: "center" }}>
+                <Text style={{ fontSize: 9, fontWeight: "500", color: colors.mutedText }}>M</Text>
               </View>
-            ))}
-          </ScrollView>
+              <View style={{ height: 10 }} />
+              <View style={{ height: 10, justifyContent: "center" }}>
+                <Text style={{ fontSize: 9, fontWeight: "500", color: colors.mutedText }}>W</Text>
+              </View>
+              <View style={{ height: 10 }} />
+              <View style={{ height: 10, justifyContent: "center" }}>
+                <Text style={{ fontSize: 9, fontWeight: "500", color: colors.mutedText }}>F</Text>
+              </View>
+              <View style={{ height: 10 }} />
+            </View>
+
+            {/* 52-53 weeks */}
+            <ScrollView
+              ref={activityScrollViewRef}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              onContentSizeChange={() => activityScrollViewRef.current?.scrollToEnd({ animated: false })}
+              contentContainerStyle={{ gap: 2.5, paddingRight: 4 }}
+            >
+              {activity.weeks.map((week, index) => (
+                <View key={index} style={{ gap: 2.5 }}>
+                  <View style={{ height: 14, width: 10, position: "relative" }}>
+                    {week.monthLabel ? (
+                      <Text
+                        style={{
+                          position: "absolute",
+                          left: 0,
+                          top: 0,
+                          fontSize: 9,
+                          fontWeight: "500",
+                          color: colors.mutedText,
+                          width: 32,
+                        }}
+                      >
+                        {week.monthLabel}
+                      </Text>
+                    ) : null}
+                  </View>
+
+                  {week.days.map((day) => {
+                    const intensity =
+                      day.amount <= 0 || activity.peak <= 0
+                        ? 0
+                        : 0.22 + 0.78 * Math.sqrt(day.amount / activity.peak)
+                    return (
+                      <View
+                        key={day.key}
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: 2,
+                          backgroundColor:
+                            day.future
+                              ? "transparent"
+                              : day.amount > 0
+                                ? colors.text
+                                : colors.border,
+                          opacity: day.future
+                            ? 0
+                            : day.amount > 0
+                              ? Math.max(0.2, intensity)
+                              : 0.45,
+                        }}
+                      />
+                    )
+                  })}
+                </View>
+              ))}
+            </ScrollView>
+          </View>
 
           <View
             style={{
@@ -598,12 +668,64 @@ export default function DashboardScreen() {
               paddingTop: 12,
             }}
           >
-            <Text style={{ fontSize: 11, color: colors.mutedText }}>Peak day</Text>
-            <Numeral style={{ fontSize: 12 }}>
-              {activity.peak > 0
-                ? formatCurrencyAmount(activity.peak, primaryCurrency)
-                : "No spend yet"}
-            </Numeral>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <Text style={{ fontSize: 11, color: colors.mutedText }}>Peak day</Text>
+              <Numeral style={{ fontSize: 11 }}>
+                {activity.peak > 0
+                  ? formatCurrencyAmount(activity.peak, primaryCurrency)
+                  : "—"}
+              </Numeral>
+            </View>
+
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
+              <Text style={{ fontSize: 9, color: colors.mutedText }}>Less</Text>
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 2,
+                  backgroundColor: colors.border,
+                  opacity: 0.45,
+                }}
+              />
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 2,
+                  backgroundColor: colors.text,
+                  opacity: 0.25,
+                }}
+              />
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 2,
+                  backgroundColor: colors.text,
+                  opacity: 0.55,
+                }}
+              />
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 2,
+                  backgroundColor: colors.text,
+                  opacity: 0.85,
+                }}
+              />
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 2,
+                  backgroundColor: colors.text,
+                  opacity: 1,
+                }}
+              />
+              <Text style={{ fontSize: 9, color: colors.mutedText }}>More</Text>
+            </View>
           </View>
         </Surface>
 
