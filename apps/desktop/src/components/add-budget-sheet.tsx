@@ -76,7 +76,7 @@ export function AddBudgetSheet({ open, onOpenChange }: AddBudgetSheetProps) {
         onOpenChange(o)
       }}
     >
-      <SheetContent className="rounded-t-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <SheetContent className="max-h-[90vh] overflow-hidden flex flex-col">
         <SheetHeader className="flex-row items-center justify-between border-b border-border p-4">
           <SheetTitle>Set Budget</SheetTitle>
           <Button
@@ -101,13 +101,13 @@ export function AddBudgetSheet({ open, onOpenChange }: AddBudgetSheetProps) {
                   type="button"
                   onClick={() => setCategory(c.value)}
                   className={cn(
-                    "flex items-center gap-2 rounded-lg border-2 p-2 text-left transition-all cursor-pointer",
+                    "flex items-center gap-2 rounded-xl border-2 p-2 text-left transition-all cursor-pointer",
                     category === c.value
                       ? "border-foreground bg-muted"
                       : "border-border hover:border-foreground/40"
                   )}
                 >
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-foreground">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-foreground">
                     <DynamicIcon name={c.icon} className="size-3.5" />
                   </span>
                   <span className="text-[11px] font-medium leading-tight">{c.label}</span>

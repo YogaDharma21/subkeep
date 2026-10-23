@@ -315,7 +315,7 @@ export const DynamicIcon = memo(function DynamicIcon({
         alt="service logo"
         onError={() => setImageError(true)}
         style={style}
-        className={`size-full object-contain p-0.5 rounded-md ${className || ""}`}
+        className={`size-full object-contain p-0.5 rounded-lg ${className || ""}`}
       />
     )
   }

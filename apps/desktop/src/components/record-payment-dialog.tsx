@@ -141,7 +141,7 @@ function RecordPaymentForm({
               setLinkAccount(true)
             }
           }}
-          className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-xs outline-none focus:ring-1 focus:ring-primary"
+          className="flex h-10 w-full rounded-xl border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] px-3 text-xs outline-none focus:ring-1 focus:ring-primary"
         >
           {activeAccounts.length === 0 ? (
             <option value="">No accounts available</option>
@@ -158,7 +158,7 @@ function RecordPaymentForm({
         </select>
         {selectedAccount && selectedAccount.currency !== subscription.currency && (
           <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-            <AlertCircle className="size-3 text-amber-500 shrink-0" />
+            <AlertCircle className="size-3 text-warning shrink-0" />
             Will deduct ~{formatCurrencyAmount(convertedAccountDeduction, selectedAccount.currency)} from {selectedAccount.name}
           </p>
         )}
@@ -197,7 +197,7 @@ function RecordPaymentForm({
 
       {/* Link account toggle */}
       {accountId && (
-        <label className="flex items-start gap-2.5 rounded-lg border border-border bg-muted/30 p-2.5 cursor-pointer">
+        <label className="flex items-start gap-2.5 rounded-xl border border-border bg-muted/30 p-2.5 cursor-pointer">
           <input
             type="checkbox"
             checked={linkAccount}
@@ -251,17 +251,17 @@ export function RecordPaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-lg p-5">
+      <DialogContent className="max-w-md rounded-xl p-5">
         <DialogHeader className="space-y-1 text-left">
           <div className="flex items-center gap-2.5">
             <span
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg shadow-xs"
+              className="flex size-9 shrink-0 items-center justify-center rounded-xl shadow-none"
               style={{ backgroundColor: subscription.color || "#3b82f6" }}
             >
               <DynamicIcon name={subscription.icon || "receipt"} className="size-5 text-white" />
             </span>
             <div>
-              <DialogTitle className="text-base font-semibold">Record Payment</DialogTitle>
+              <DialogTitle className="text-base font-medium">Record Payment</DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
                 {subscription.name} · {formatCurrencyAmount(subscription.price, subscription.currency)}
               </DialogDescription>

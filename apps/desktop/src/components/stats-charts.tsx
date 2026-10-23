@@ -291,9 +291,9 @@ export function StatsCharts({
       {/* 2-Column Responsive Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Spending Trend Chart */}
-        <div className="rounded-lg border border-border bg-background shadow-xs overflow-hidden">
+        <div className="surface overflow-hidden">
           <div className="border-b border-border p-4">
-            <h3 className="text-sm font-bold">Spending Trend</h3>
+            <h3 className="text-sm font-medium">Spending Trend</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               Historical & projected monthly costs based on active subscriptions
             </p>
@@ -332,27 +332,27 @@ export function StatsCharts({
               </ResponsiveContainer>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border/60 pt-4">
-              <div className="rounded-lg bg-muted/40 p-3 text-center min-w-0">
-                <div className="text-xs sm:text-sm font-extrabold text-foreground truncate">
+              <div className="rounded-xl bg-muted/40 p-3 text-center min-w-0">
+                <div className="text-xs sm:text-sm font-medium text-foreground truncate">
                   {formatCurrencyAmount(monthlyTotal * 1.15, primaryCurrency)}
                 </div>
-                <div className="mt-0.5 text-[10px] uppercase tracking-wide text-muted-foreground font-medium truncate">
+                <div className="mt-0.5 text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium truncate">
                   Highest
                 </div>
               </div>
-              <div className="rounded-lg bg-muted/40 p-3 text-center min-w-0">
-                <div className="text-xs sm:text-sm font-extrabold text-foreground truncate">
+              <div className="rounded-xl bg-muted/40 p-3 text-center min-w-0">
+                <div className="text-xs sm:text-sm font-medium text-foreground truncate">
                   {formatCurrencyAmount(monthlyTotal, primaryCurrency)}
                 </div>
-                <div className="mt-0.5 text-[10px] uppercase tracking-wide text-muted-foreground font-medium truncate">
+                <div className="mt-0.5 text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium truncate">
                   Avg / Month
                 </div>
               </div>
-              <div className="rounded-lg bg-muted/40 p-3 text-center min-w-0">
-                <div className="text-xs sm:text-sm font-extrabold text-foreground truncate">
+              <div className="rounded-xl bg-muted/40 p-3 text-center min-w-0">
+                <div className="text-xs sm:text-sm font-medium text-foreground truncate">
                   {formatCurrencyAmount(monthlyTotal * 12, primaryCurrency)}
                 </div>
-                <div className="mt-0.5 text-[10px] uppercase tracking-wide text-muted-foreground font-medium truncate">
+                <div className="mt-0.5 text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium truncate">
                   Yearly Total
                 </div>
               </div>
@@ -361,18 +361,18 @@ export function StatsCharts({
         </div>
 
         {/* Category Breakdown Chart */}
-        <div className="rounded-lg border border-border bg-background shadow-xs overflow-hidden">
+        <div className="surface overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-4">
-            <h3 className="text-sm font-bold">Category Breakdown</h3>
+            <h3 className="text-sm font-medium">Category Breakdown</h3>
             <div className="flex items-center gap-2">
-              <div className="flex rounded-lg border border-border bg-muted/60 p-0.5 text-xs font-medium">
+              <div className="flex rounded-full border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] p-0.5 text-[11px] font-medium">
                 <button
                   type="button"
                   onClick={() => setBreakdownMetric("cost")}
                   className={cn(
-                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    "rounded-full px-2.5 py-1 transition-all cursor-pointer",
                     breakdownMetric === "cost"
-                      ? "bg-background text-foreground shadow-xs"
+                      ? "bg-foreground text-background"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -382,9 +382,9 @@ export function StatsCharts({
                   type="button"
                   onClick={() => setBreakdownMetric("count")}
                   className={cn(
-                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    "rounded-full px-2.5 py-1 transition-all cursor-pointer",
                     breakdownMetric === "count"
-                      ? "bg-background text-foreground shadow-xs"
+                      ? "bg-foreground text-background"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -392,14 +392,14 @@ export function StatsCharts({
                 </button>
               </div>
 
-              <div className="flex rounded-lg border border-border bg-muted/60 p-0.5 text-xs font-medium">
+              <div className="flex rounded-full border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] p-0.5 text-[11px] font-medium">
                 <button
                   type="button"
                   onClick={() => setBreakdownFilter("all")}
                   className={cn(
-                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    "rounded-full px-2.5 py-1 transition-all cursor-pointer",
                     breakdownFilter === "all"
-                      ? "bg-background text-foreground shadow-xs"
+                      ? "bg-foreground text-background"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -409,9 +409,9 @@ export function StatsCharts({
                   type="button"
                   onClick={() => setBreakdownFilter("paid")}
                   className={cn(
-                    "rounded-md px-2.5 py-1 transition-all cursor-pointer",
+                    "rounded-full px-2.5 py-1 transition-all cursor-pointer",
                     breakdownFilter === "paid"
-                      ? "bg-background text-foreground shadow-xs"
+                      ? "bg-foreground text-background"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -470,9 +470,9 @@ export function StatsCharts({
                           <span className="font-medium">{cat.name}</span>
                           <span className="text-xs text-muted-foreground">{detailText}</span>
                         </div>
-                        <div className="mt-1 h-1.5 overflow-hidden rounded-lg bg-muted">
+                        <div className="mt-1 h-1.5 overflow-hidden rounded-xl bg-muted">
                           <div
-                            className="h-full rounded-lg transition-all"
+                            className="h-full rounded-xl transition-all"
                             style={{
                               width: `${pct}%`,
                               backgroundColor: cat.color,
@@ -480,7 +480,7 @@ export function StatsCharts({
                           />
                         </div>
                       </div>
-                      <div className="w-12 text-right text-xs font-semibold text-muted-foreground">
+                      <div className="w-12 text-right text-xs font-medium text-muted-foreground">
                         {pct}%
                       </div>
                     </div>
@@ -494,9 +494,9 @@ export function StatsCharts({
 
       {/* Payment History */}
       {paymentHistory.length > 0 && (
-        <div className="rounded-lg border border-border bg-background shadow-xs overflow-hidden">
+        <div className="surface overflow-hidden">
           <div className="border-b border-border p-4">
-            <h3 className="text-sm font-bold">Recent Payment History</h3>
+            <h3 className="text-sm font-medium">Recent Payment History</h3>
           </div>
           <div>
             {paymentHistory.map((p, i) => (
@@ -505,10 +505,10 @@ export function StatsCharts({
                 className="flex items-center gap-3 border-b border-border/60 px-4 py-3 last:border-b-0"
               >
                 <div
-                  className="flex size-10 shrink-0 items-center justify-center rounded-lg shadow-xs"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-xl shadow-none"
                   style={{ backgroundColor: p.color }}
                 >
-                  <span className="text-sm font-bold text-white">
+                  <span className="text-sm font-medium text-white">
                     {p.name.charAt(0)}
                   </span>
                 </div>
@@ -524,7 +524,7 @@ export function StatsCharts({
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                    <div className="text-sm font-medium text-positive">
                       {formatCurrencyAmount(p.convertedAmount, primaryCurrency)}
                     </div>
                     {p.currency !== primaryCurrency && (
@@ -573,9 +573,9 @@ export function StatsCharts({
 
       {/* Edit Payment Dialog */}
       <Dialog open={!!editingPayment} onOpenChange={(open) => !open && setEditingPayment(null)}>
-        <DialogContent className="max-w-sm rounded-lg p-5" onClose={() => setEditingPayment(null)}>
+        <DialogContent className="max-w-sm rounded-xl p-5" onClose={() => setEditingPayment(null)}>
           <DialogHeader className="space-y-1 text-left mb-0">
-            <DialogTitle className="text-base font-semibold">Edit Payment Record</DialogTitle>
+            <DialogTitle className="text-base font-medium">Edit Payment Record</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
               Update the payment details for {editingPayment?.name}.
             </DialogDescription>
@@ -597,7 +597,7 @@ export function StatsCharts({
                 <select
                   value={editCurrency}
                   onChange={(e) => setEditCurrency(e.target.value)}
-                  className="flex h-9 w-full rounded-lg border border-border bg-background px-2.5 text-xs"
+                  className="flex h-9 w-full surface px-2.5 text-xs"
                 >
                   {currencies.map((c) => (
                     <option key={c.value} value={c.value}>
@@ -640,9 +640,9 @@ export function StatsCharts({
 
       {/* Delete Payment Dialog */}
       <Dialog open={!!deletingPayment} onOpenChange={(open) => !open && setDeletingPayment(null)}>
-        <DialogContent className="max-w-sm rounded-lg p-5" onClose={() => setDeletingPayment(null)}>
+        <DialogContent className="max-w-sm rounded-xl p-5" onClose={() => setDeletingPayment(null)}>
           <DialogHeader className="space-y-1 text-left mb-0">
-            <DialogTitle className="text-base font-semibold">Delete Payment Record</DialogTitle>
+            <DialogTitle className="text-base font-medium">Delete Payment Record</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
               Are you sure you want to delete this payment record of {deletingPayment?.amount} {deletingPayment?.currency} for {deletingPayment?.name}? This action cannot be undone.
             </DialogDescription>

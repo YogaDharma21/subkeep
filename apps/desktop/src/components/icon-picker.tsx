@@ -160,17 +160,17 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <div
-        className="w-full max-w-lg max-h-[85vh] flex flex-col rounded-lg bg-background border border-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95"
+        className="surface w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border p-4">
-          <h3 className="text-base font-semibold">Choose Service Icon or Logo</h3>
+          <h3 className="text-base font-medium">Choose Service Icon or Logo</h3>
           <button
             onClick={onClose}
-            className="flex size-8 items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+            className="flex size-8 items-center justify-center rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
           >
             <X className="size-5" />
           </button>
@@ -181,9 +181,9 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
           <button
             onClick={() => setTab("lucide")}
             className={cn(
-              "flex-1 py-2 font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+              "flex-1 py-2 font-medium rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer",
               tab === "lucide"
-                ? "bg-background text-foreground shadow-xs"
+                ? "bg-[color-mix(in_oklab,var(--foreground)_8%,transparent)] text-foreground shadow-none"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -193,9 +193,9 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
           <button
             onClick={() => setTab("domain")}
             className={cn(
-              "flex-1 py-2 font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+              "flex-1 py-2 font-medium rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer",
               tab === "domain"
-                ? "bg-background text-foreground shadow-xs"
+                ? "bg-[color-mix(in_oklab,var(--foreground)_8%,transparent)] text-foreground shadow-none"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -205,9 +205,9 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
           <button
             onClick={() => setTab("upload")}
             className={cn(
-              "flex-1 py-2 font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+              "flex-1 py-2 font-medium rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer",
               tab === "upload"
-                ? "bg-background text-foreground shadow-xs"
+                ? "bg-[color-mix(in_oklab,var(--foreground)_8%,transparent)] text-foreground shadow-none"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -244,7 +244,7 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
                     key={cat}
                     onClick={() => { setActiveCategory(cat); setVisibleCount(72) }}
                     className={cn(
-                      "px-3 py-1.5 rounded-md font-medium whitespace-nowrap transition-colors cursor-pointer",
+                      "px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-colors cursor-pointer",
                       activeCategory === cat
                         ? "bg-foreground text-background"
                         : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -275,7 +275,7 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
                             onClose()
                           }}
                           className={cn(
-                            "relative flex aspect-square flex-col items-center justify-center rounded-lg border p-2 transition-all hover:bg-muted active:scale-95 cursor-pointer",
+                            "relative flex aspect-square flex-col items-center justify-center rounded-xl border p-2 transition-all hover:bg-muted active:scale-95 cursor-pointer",
                             isSelected
                               ? "border-foreground bg-foreground text-background ring-2 ring-foreground/20"
                               : "border-border text-foreground hover:border-foreground/40"
@@ -283,7 +283,7 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
                         >
                           <DynamicIcon name={icon} className="size-5" />
                           {isSelected && (
-                            <span className="absolute top-1 right-1 flex size-3.5 items-center justify-center rounded-md bg-background text-foreground">
+                            <span className="absolute top-1 right-1 flex size-3.5 items-center justify-center rounded-full bg-card text-foreground">
                               <Check className="size-2.5" />
                             </span>
                           )}
@@ -296,7 +296,7 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
                       <button
                         type="button"
                         onClick={() => setVisibleCount((prev) => prev + 72)}
-                        className="rounded-lg border border-border bg-muted px-4 py-2 text-xs font-medium text-foreground transition-all hover:bg-muted/80 active:scale-95 cursor-pointer"
+                        className="rounded-xl border border-border bg-muted px-4 py-2 text-xs font-medium text-foreground transition-all hover:bg-muted/80 active:scale-95 cursor-pointer"
                       >
                         Load more icons ({filteredIcons.length - visibleCount} remaining)
                       </button>
@@ -331,7 +331,7 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
 
             {cleanDomain ? (
               <div className="space-y-3 pt-2">
-                <label className="text-xs font-semibold text-foreground">
+                <label className="text-xs font-medium text-foreground">
                   Available Logos for &quot;{cleanDomain}&quot;
                 </label>
 
@@ -342,9 +342,9 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
                       onSelect(googleFaviconUrl)
                       onClose()
                     }}
-                    className="flex flex-col items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 p-4 cursor-pointer hover:border-foreground/50 transition-all active:scale-98"
+                    className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-muted/30 p-4 cursor-pointer hover:border-foreground/50 transition-all active:scale-98"
                   >
-                    <div className="flex size-14 items-center justify-center rounded-lg bg-background border p-1">
+                    <div className="surface-inset flex size-14 items-center justify-center p-1">
                       <img
                         src={googleFaviconUrl}
                         alt="Google Favicon"
@@ -355,7 +355,7 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
                       />
                     </div>
                     <div className="text-center">
-                      <p className="text-xs font-semibold">Google Favicon</p>
+                      <p className="text-xs font-medium">Google Favicon</p>
                       <p className="text-[10px] text-muted-foreground">High resolution</p>
                     </div>
                   </div>
@@ -366,9 +366,9 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
                       onSelect(clearbitLogoUrl)
                       onClose()
                     }}
-                    className="flex flex-col items-center justify-center gap-2 rounded-lg border border-border bg-muted/30 p-4 cursor-pointer hover:border-foreground/50 transition-all active:scale-98"
+                    className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-muted/30 p-4 cursor-pointer hover:border-foreground/50 transition-all active:scale-98"
                   >
-                    <div className="flex size-14 items-center justify-center rounded-lg bg-background border p-1">
+                    <div className="surface-inset flex size-14 items-center justify-center p-1">
                       <img
                         src={clearbitLogoUrl}
                         alt="Clearbit Logo"
@@ -379,7 +379,7 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
                       />
                     </div>
                     <div className="text-center">
-                      <p className="text-xs font-semibold">Clearbit Logo</p>
+                      <p className="text-xs font-medium">Clearbit Logo</p>
                       <p className="text-[10px] text-muted-foreground">Official brand logo</p>
                     </div>
                   </div>
@@ -419,7 +419,7 @@ export function IconPicker({ selected, onSelect, open, onClose, defaultDomain }:
             </div>
 
             <div className="relative flex items-center justify-center text-xs uppercase text-muted-foreground my-2">
-              <span className="bg-background px-2">or paste image URL</span>
+              <span className="bg-card px-2">or paste image URL</span>
               <div className="absolute inset-x-0 top-1/2 border-t border-border -z-10" />
             </div>
 
