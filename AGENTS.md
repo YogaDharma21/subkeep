@@ -1,44 +1,132 @@
-## Instruction
+# AI Development & PR Rules
 
-- Call skill tool with ID unslop before each reply.
-- Keep user.name YogaDharma21 and user.email yogacode2006@gmail.com. Use the same GitHub account for gh and commits. Never switch identity.
-- Keep replies short. Cite code as file_path:line_number. Give a link only when you fetched it or it exists in the repo. Never guess URLs.
-- Talk like the user. Short and direct. No fluff and no praise.
-- Think in concrete refs. State what you checked, what changed, what is next.
-- Use tool calls for file work. Prefer edit over create. Never create files unless needed. Run independent calls in parallel. Use subagent for codebase search.
+Work on the requested task in the specified repository.
 
-## Skill loop
+## 1. Inspect
 
-- Use Matt Pocock global skills in this order. Grill with grill-with-docs or grill-me to decide what to build. Use to-spec to write the spec. Use to-tickets to slice tickets. Use implement with tdd and code-review to build it.
-- Use prototype to check logic or UI. Use research for docs or API facts. Use diagnosing-bugs for failures.
-- Start to-spec, to-tickets, prototype, or implement only after the user picks it.
+- Inspect the relevant code, repository structure, conventions, and existing work before making changes.
+- Determine the required changes and implement them as one cohesive task.
+- When practical, run relevant checks before making changes to establish a baseline and identify pre-existing failures.
+- Distinguish pre-existing failures from regressions introduced by the task.
+- Do not fix unrelated pre-existing issues unless the user explicitly requests it.
 
-## Git and branches
+## 2. Branch & Worktree
 
-- Check git branch --show-current before work. If on main, create a new branch.
-- Use type/short-slug. Type is feat, fix, chore, docs, refactor, or prototype. Example is feat/agent-template.
-- Commit work to the current branch.
+- Every task must belong to one working branch.
+- If the user explicitly specifies a branch, use that branch.
+- If the user explicitly specifies a PR, resolve its head branch and continue work on that branch.
+- If the current task already has an appropriate worktree or branch, use it rather than creating additional isolation.
+- If no task-specific branch or worktree exists, create one for the task.
+- Do not switch to or reuse another branch merely because it contains similar or related work.
+- Do not infer a branch from previous conversations or unrelated tasks.
+- Do not create subtask branches unless the user explicitly requests them.
+- Do not intentionally work directly on a default or protected branch unless the user explicitly requests it.
+- Once work begins on a branch, continue the task on that branch until it is complete.
+
+## 3. Protect Existing Work
+
+- Do not overwrite, revert, reset, stash, or discard existing changes unless the user explicitly asks you to.
+- Do not modify or commit unrelated changes as part of the task.
+- Only commit changes belonging to the current task unless the user explicitly asks otherwise.
+- Never use destructive Git operations such as `git reset --hard`, force-pushes, or branch deletion unless the user explicitly authorizes them.
+- Preserve unrelated local changes even when they are in the same repository or worktree.
+
+## 4. Implement & Verify
+
+- Make all necessary changes for the requested task.
+- Follow the repository's existing architecture, coding conventions, dependency choices, and development workflow.
+- Prefer existing patterns and abstractions over introducing new ones.
+- Do not introduce unnecessary dependencies, abstractions, boilerplate, or architectural changes unrelated to the task.
+- Do not leave placeholders, stubs, TODO implementations, dead code, or unfinished work unless explicitly required by the task.
+- Keep implementations complete, focused, and consistent with the surrounding code.
+- Do not add excessive comments that merely explain obvious logic.
+- Fix regressions introduced by the changes.
+- Run the most relevant tests, builds, linting, type checks, or other verification required by the task or repository.
+- If no automated tests exist, perform appropriate alternative verification such as type-checking, compilation, linting, building, syntax validation, or a relevant runtime smoke test.
+- Verify that new imports resolve, referenced exports exist, and no syntax or obvious integration errors remain.
+- Prefer focused verification when appropriate, but run broader checks when the scope of the changes requires them.
+- Do not claim a check passed unless it was actually run and passed.
+- Before finishing, review the final diff and confirm that only intended changes are included.
+
+## 5. Commits
+
+- Follow the repository's existing commit-message and commit-history conventions.
+- When no convention is defined, use concise and descriptive commit messages.
+- Keep commits logically organized and limited to changes belonging to the current task.
+- Do not rewrite existing commit history unless the repository workflow requires it or the user explicitly requests it.
+
+## 6. Branch & Base Synchronization
+
+- Before creating or updating a PR, check whether the current branch has diverged from its base branch when relevant.
+- Sync with the base branch when necessary and follow the repository's established merge or rebase convention.
+- Resolve conflicts carefully and preserve the intent of both the task and the base branch.
+- Never force-push rewritten history unless the user explicitly authorizes it.
+
+## 7. PR Lifecycle
+
+- A task should result in at most one PR.
+- Before creating a PR, check whether one already exists for the current branch.
+- If a PR already exists, continue using that PR instead of creating another one.
+- Push subsequent task changes to the same branch so the existing PR is updated automatically.
+- If the existing PR's title, scope, or verification details are materially outdated, update its metadata to reflect the current state.
+- If no PR exists, create it only after all requested changes are implemented and relevant verification is complete.
+- Never create draft, intermediate, or partial PRs unless the user explicitly requests one.
+- Never create a second PR for the same task or branch.
+
+## 8. PR Description
+
+Write the PR description like a pragmatic senior engineer.
+
+### Structure
+
+```md
+## Overview
+
+1–2 sentences describing the problem or motivation and what the PR accomplishes.
+
+## Key Changes
+
+- Group related changes by concept or feature.
+- Explain what changed and why.
+- Focus on meaningful behavior, architecture, or user-facing changes rather than individual files.
 
 ## Verification
 
-- Verify by run where possible. Run code to confirm output. Run tests for the touched area.
-- Inspect files before you claim facts. Trust file content over memory.
-- When a repo has no test suite, verification is read plus git diff.
+- List the relevant tests, builds, checks, or manual verification performed.
+```
 
-## Grill closing
+Add `## Context` only when useful for explaining technical background, benchmarks, trade-offs, or intentional follow-ups.
 
-- After grill-with-docs or grill-me, end with summary of shared understanding. Then ask which skill runs next.
+### Style
 
-## Agent skills
+- Be direct, concise, technical, and matter-of-fact.
+- Focus on context, rationale, impact, and verification.
+- Do not write a robotic file-by-file changelog.
+- Do not include generic checklist boilerplate.
+- Do not include empty or placeholder sections.
+- Do not include irrelevant information.
+- Keep the description accurate to the final state of the branch.
 
-### Issue tracker
+## 9. Formatting
 
-Issues live as GitHub issues in `YogaDharma21/subkeep`, driven by the `gh` CLI. See `docs/agents/issue-tracker.md`.
+- Do not introduce emojis into new code, comments, identifiers, log statements, commit messages, PR titles, PR descriptions, or responses unless explicitly required by the task or necessary to preserve existing or external content.
+- Wrap file names, directory paths, CLI commands, variables, and code elements in inline backticks.
+- Use forward slashes (`/`) for paths in prose.
+- Never use raw Windows backslashes (`\`) in prose.
 
-### Triage labels
+## 10. PR Creation & Update
 
-The five triage roles use the same strings as their names: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+- Write the final PR description to `.pr_description.md` using UTF-8 encoding.
+- Verify whether a PR already exists for the current branch before running `gh pr create`.
+- If no PR exists, create it with:
 
-### Domain docs
+`gh pr create --title "<title>" --body-file .pr_description.md`
 
-Single-context: `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+- If a PR already exists, do not run `gh pr create`.
+- When the existing PR description needs to be updated, use:
+
+`gh pr edit --body-file .pr_description.md`
+
+- Update the PR title when the current title no longer accurately represents the task.
+- Push all subsequent changes to the same branch.
+- Delete `.pr_description.md` after the PR has been created or updated.
