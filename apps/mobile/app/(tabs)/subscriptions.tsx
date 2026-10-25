@@ -13,21 +13,20 @@ import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/expo"
 import { api } from "@/convex/_generated/api"
 import {
-  Globe,
-  Clock,
-  Sparkles,
-  ArrowUpDown,
-  AlertTriangle,
-  Target,
-  ChevronDown,
-  Check,
-  X,
   Search,
   SlidersHorizontal,
   RotateCcw,
   Receipt,
+  Clock,
+  Sparkles,
+  ArrowUpDown,
+  AlertTriangle,
+  ChevronDown,
+  Check,
+  X,
 } from "lucide-react-native"
 import { SubscriptionCard } from "@/components/subscription-card"
+import { Label, Numeral, Surface } from "@/components/ui/surface"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
 import { currencies } from "@/constants/currencies"
 import { categories, billingCycles } from "@/constants/categories"
@@ -301,14 +300,10 @@ export default function SubscriptionsScreen() {
         }}
       >
         {/* Dynamic Summary Banner */}
-        <View
+        <Surface
           style={{
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 16,
-            padding: 16,
-            gap: 12,
+            padding: 18,
+            gap: 14,
           }}
         >
           {/* Header Row with Currency Selector */}
@@ -317,17 +312,10 @@ export default function SubscriptionsScreen() {
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
-              borderBottomWidth: 1,
-              borderBottomColor: colors.border,
-              paddingBottom: 10,
+              gap: 12,
             }}
           >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Globe size={14} color={colors.primary} />
-              <Text style={{ fontSize: 11, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                Primary Currency Summary
-              </Text>
-            </View>
+            <Label>Primary currency</Label>
 
             <TouchableOpacity
               onPress={() => setCurrencyModalOpen(true)}
@@ -335,15 +323,15 @@ export default function SubscriptionsScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 4,
-                backgroundColor: colors.surface,
-                paddingHorizontal: 8,
+                backgroundColor: colors.surfaceInset,
+                paddingHorizontal: 10,
                 paddingVertical: 4,
-                borderRadius: 6,
+                borderRadius: 999,
                 borderWidth: 1,
                 borderColor: colors.border,
               }}
             >
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.text }}>
+              <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1, color: colors.mutedText }}>
                 {primaryCurrency}
               </Text>
               <ChevronDown size={12} color={colors.mutedText} />
@@ -352,46 +340,32 @@ export default function SubscriptionsScreen() {
 
           {/* 3 Metric Columns */}
           {subscriptions ? (
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <View style={{ flex: 1, alignItems: "center", gap: 2 }}>
-                <Text style={{ fontSize: 20, fontWeight: "900", color: colors.text }}>
-                  {count}
-                </Text>
-                <Text style={{ fontSize: 10, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                  Active Subs
-                </Text>
+            <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+              <View style={{ flex: 1, gap: 5 }}>
+                <Numeral style={{ fontSize: 24 }}>{count}</Numeral>
+                <Label>Active subs</Label>
               </View>
 
-              <View style={{ width: 1, height: 32, backgroundColor: colors.border }} />
+              <View style={{ width: 1, height: 34, backgroundColor: colors.border }} />
 
-              <View style={{ flex: 1.3, alignItems: "center", gap: 2, paddingHorizontal: 4 }}>
-                <Text
-                  numberOfLines={1}
-                  style={{ fontSize: 16, fontWeight: "900", color: colors.text }}
-                >
+              <View style={{ flex: 1.4, gap: 5, paddingLeft: 14 }}>
+                <Numeral numberOfLines={1} style={{ fontSize: 18 }}>
                   {formatCurrencyAmount(monthlyTotalConverted, primaryCurrency)}
-                </Text>
-                <Text style={{ fontSize: 10, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                  Per Month
-                </Text>
+                </Numeral>
+                <Label>Per month</Label>
               </View>
 
-              <View style={{ width: 1, height: 32, backgroundColor: colors.border }} />
+              <View style={{ width: 1, height: 34, backgroundColor: colors.border }} />
 
-              <View style={{ flex: 1.3, alignItems: "center", gap: 2, paddingHorizontal: 4 }}>
-                <Text
-                  numberOfLines={1}
-                  style={{ fontSize: 16, fontWeight: "900", color: colors.text }}
-                >
+              <View style={{ flex: 1.4, gap: 5, paddingLeft: 14 }}>
+                <Numeral numberOfLines={1} style={{ fontSize: 18 }}>
                   {formatCurrencyAmount(yearlyTotalConverted, primaryCurrency)}
-                </Text>
-                <Text style={{ fontSize: 10, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                  Per Year
-                </Text>
+                </Numeral>
+                <Label>Per year</Label>
               </View>
             </View>
           ) : (
-            <ActivityIndicator size="small" color={colors.primary} />
+            <ActivityIndicator size="small" color={colors.mutedText} />
           )}
 
           {/* Monthly Budget Cap Progress Bar */}
@@ -400,34 +374,30 @@ export default function SubscriptionsScreen() {
               style={{
                 borderTopWidth: 1,
                 borderTopColor: colors.border,
-                paddingTop: 10,
-                gap: 6,
+                paddingTop: 12,
+                gap: 8,
               }}
             >
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                  <Target size={14} color={colors.primary} />
-                  <Text style={{ fontSize: 12, fontWeight: "600", color: colors.text }}>
-                    Budget Cap
-                  </Text>
-                </View>
-                <Text
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+                <Text style={{ fontSize: 12, color: colors.text }}>
+                  Budget cap
+                </Text>
+                <Numeral
                   style={{
                     fontSize: 11,
-                    fontWeight: "700",
-                    color: isBudgetExceeded ? colors.destructive : colors.mutedText,
+                    color: isBudgetExceeded ? colors.negative : colors.mutedText,
                   }}
                 >
                   {formatCurrencyAmount(monthlyTotalConverted, primaryCurrency)} / {formatCurrencyAmount(budgetCap, primaryCurrency)} ({budgetUsedPct}%)
-                </Text>
+                </Numeral>
               </View>
 
               <View
                 style={{
-                  height: 6,
+                  height: 3,
                   width: "100%",
-                  backgroundColor: colors.surface,
-                  borderRadius: 3,
+                  backgroundColor: colors.surfaceInset,
+                  borderRadius: 999,
                   overflow: "hidden",
                 }}
               >
@@ -436,25 +406,25 @@ export default function SubscriptionsScreen() {
                     height: "100%",
                     width: `${Math.min(100, budgetUsedPct || 0)}%`,
                     backgroundColor: isBudgetExceeded
-                      ? colors.destructive
+                      ? colors.negative
                       : (budgetUsedPct || 0) >= 85
-                      ? colors.amber
-                      : colors.emerald,
+                      ? colors.warning
+                      : colors.text,
                   }}
                 />
               </View>
 
               {isBudgetExceeded ? (
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
-                  <AlertTriangle size={12} color={colors.destructive} />
-                  <Text style={{ fontSize: 10, fontWeight: "600", color: colors.destructive }}>
-                    Budget exceeded by {formatCurrencyAmount(monthlyTotalConverted - budgetCap, primaryCurrency)}!
+                  <AlertTriangle size={12} color={colors.negative} />
+                  <Text style={{ fontSize: 10, color: colors.negative }}>
+                    Over by {formatCurrencyAmount(monthlyTotalConverted - budgetCap, primaryCurrency)}
                   </Text>
                 </View>
               ) : null}
             </View>
           ) : null}
-        </View>
+        </Surface>
 
         {/* Upcoming Reminders Banner */}
         <UpcomingReminders
@@ -465,14 +435,10 @@ export default function SubscriptionsScreen() {
         />
 
         {/* Reimagined Filter Card */}
-        <View
+        <Surface
           style={{
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 12,
-            gap: 10,
+            padding: 14,
+            gap: 12,
           }}
         >
           {/* Search Input */}
@@ -480,13 +446,11 @@ export default function SubscriptionsScreen() {
             style={{
               flexDirection: "row",
               alignItems: "center",
-              backgroundColor: colors.surface,
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: 8,
-              paddingHorizontal: 10,
+              backgroundColor: colors.surfaceInset,
+              borderRadius: 999,
+              paddingHorizontal: 14,
               gap: 8,
-              height: 38,
+              height: 40,
             }}
           >
             <Search size={14} color={colors.mutedText} />
@@ -525,8 +489,8 @@ export default function SubscriptionsScreen() {
                 gap: 5,
                 paddingHorizontal: 10,
                 paddingVertical: 6,
-                borderRadius: 8,
-                backgroundColor: statusFilter === "active" ? colors.primary : colors.surface,
+                borderRadius: 999,
+                backgroundColor: statusFilter === "active" ? colors.primary : colors.surfaceInset,
               }}
             >
               <Text
@@ -540,7 +504,7 @@ export default function SubscriptionsScreen() {
               </Text>
               <View
                 style={{
-                  backgroundColor: statusFilter === "active" ? "rgba(255,255,255,0.25)" : colors.border,
+                  backgroundColor: statusFilter === "active" ? "rgba(10,10,11,0.16)" : colors.border,
                   paddingHorizontal: 5,
                   paddingVertical: 1,
                   borderRadius: 10,
@@ -567,23 +531,23 @@ export default function SubscriptionsScreen() {
                 gap: 5,
                 paddingHorizontal: 10,
                 paddingVertical: 6,
-                borderRadius: 8,
-                backgroundColor: statusFilter === "due_soon" ? colors.amber : colors.surface,
+                borderRadius: 999,
+                backgroundColor: statusFilter === "due_soon" ? colors.primary : colors.surfaceInset,
               }}
             >
-              <Clock size={11} color={statusFilter === "due_soon" ? "#ffffff" : colors.amber} />
+              <Clock size={11} color={statusFilter === "due_soon" ? colors.primaryForeground : colors.amber} />
               <Text
                 style={{
                   fontSize: 11,
                   fontWeight: "600",
-                  color: statusFilter === "due_soon" ? "#ffffff" : colors.mutedText,
+                  color: statusFilter === "due_soon" ? colors.primaryForeground : colors.mutedText,
                 }}
               >
                 Due Soon
               </Text>
               <View
                 style={{
-                  backgroundColor: statusFilter === "due_soon" ? "rgba(255,255,255,0.3)" : colors.border,
+                  backgroundColor: "rgba(10,10,11,0.16)",
                   paddingHorizontal: 5,
                   paddingVertical: 1,
                   borderRadius: 10,
@@ -593,7 +557,7 @@ export default function SubscriptionsScreen() {
                   style={{
                     fontSize: 9,
                     fontWeight: "700",
-                    color: statusFilter === "due_soon" ? "#ffffff" : colors.amber,
+                    color: statusFilter === "due_soon" ? colors.primaryForeground : colors.amber,
                   }}
                 >
                   {statusCounts.due_soon}
@@ -610,23 +574,23 @@ export default function SubscriptionsScreen() {
                 gap: 5,
                 paddingHorizontal: 10,
                 paddingVertical: 6,
-                borderRadius: 8,
-                backgroundColor: statusFilter === "trial" ? colors.emerald : colors.surface,
+                borderRadius: 999,
+                backgroundColor: statusFilter === "trial" ? colors.primary : colors.surfaceInset,
               }}
             >
-              <Sparkles size={11} color={statusFilter === "trial" ? "#ffffff" : colors.emerald} />
+              <Sparkles size={11} color={statusFilter === "trial" ? colors.primaryForeground : colors.emerald} />
               <Text
                 style={{
                   fontSize: 11,
                   fontWeight: "600",
-                  color: statusFilter === "trial" ? "#ffffff" : colors.mutedText,
+                  color: statusFilter === "trial" ? colors.primaryForeground : colors.mutedText,
                 }}
               >
                 Trials
               </Text>
               <View
                 style={{
-                  backgroundColor: statusFilter === "trial" ? "rgba(255,255,255,0.3)" : colors.border,
+                  backgroundColor: statusFilter === "trial" ? "rgba(10,10,11,0.16)" : colors.border,
                   paddingHorizontal: 5,
                   paddingVertical: 1,
                   borderRadius: 10,
@@ -636,7 +600,7 @@ export default function SubscriptionsScreen() {
                   style={{
                     fontSize: 9,
                     fontWeight: "700",
-                    color: statusFilter === "trial" ? "#ffffff" : colors.emerald,
+                    color: statusFilter === "trial" ? colors.primaryForeground : colors.emerald,
                   }}
                 >
                   {statusCounts.trial}
@@ -653,23 +617,23 @@ export default function SubscriptionsScreen() {
                 gap: 5,
                 paddingHorizontal: 10,
                 paddingVertical: 6,
-                borderRadius: 8,
-                backgroundColor: statusFilter === "canceled" ? colors.destructive : colors.surface,
+                borderRadius: 999,
+                backgroundColor: statusFilter === "canceled" ? colors.primary : colors.surfaceInset,
               }}
             >
-              <X size={11} color={statusFilter === "canceled" ? "#ffffff" : colors.destructive} />
+              <X size={11} color={statusFilter === "canceled" ? colors.primaryForeground : colors.destructive} />
               <Text
                 style={{
                   fontSize: 11,
                   fontWeight: "600",
-                  color: statusFilter === "canceled" ? "#ffffff" : colors.mutedText,
+                  color: statusFilter === "canceled" ? colors.primaryForeground : colors.mutedText,
                 }}
               >
                 Canceled
               </Text>
               <View
                 style={{
-                  backgroundColor: statusFilter === "canceled" ? "rgba(255,255,255,0.3)" : colors.border,
+                  backgroundColor: statusFilter === "canceled" ? "rgba(10,10,11,0.16)" : colors.border,
                   paddingHorizontal: 5,
                   paddingVertical: 1,
                   borderRadius: 10,
@@ -679,7 +643,7 @@ export default function SubscriptionsScreen() {
                   style={{
                     fontSize: 9,
                     fontWeight: "700",
-                    color: statusFilter === "canceled" ? "#ffffff" : colors.destructive,
+                    color: statusFilter === "canceled" ? colors.primaryForeground : colors.destructive,
                   }}
                 >
                   {statusCounts.canceled}
@@ -696,8 +660,8 @@ export default function SubscriptionsScreen() {
                 gap: 5,
                 paddingHorizontal: 10,
                 paddingVertical: 6,
-                borderRadius: 8,
-                backgroundColor: statusFilter === "all" ? colors.primary : colors.surface,
+                borderRadius: 999,
+                backgroundColor: statusFilter === "all" ? colors.primary : colors.surfaceInset,
               }}
             >
               <Text
@@ -711,7 +675,7 @@ export default function SubscriptionsScreen() {
               </Text>
               <View
                 style={{
-                  backgroundColor: statusFilter === "all" ? "rgba(255,255,255,0.25)" : colors.border,
+                  backgroundColor: statusFilter === "all" ? "rgba(10,10,11,0.16)" : colors.border,
                   paddingHorizontal: 5,
                   paddingVertical: 1,
                   borderRadius: 10,
@@ -739,12 +703,12 @@ export default function SubscriptionsScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 4,
-                backgroundColor: selectedCategory !== "all" ? colors.surfaceHover : colors.surface,
-                paddingHorizontal: 8,
-                paddingVertical: 5,
-                borderRadius: 8,
+                backgroundColor: selectedCategory !== "all" ? colors.surfaceHover : colors.surfaceInset,
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 999,
                 borderWidth: 1,
-                borderColor: selectedCategory !== "all" ? colors.primary : colors.border,
+                borderColor: selectedCategory !== "all" ? colors.mutedText : colors.border,
               }}
             >
               <SlidersHorizontal size={11} color={selectedCategory !== "all" ? colors.primary : colors.mutedText} />
@@ -767,12 +731,12 @@ export default function SubscriptionsScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 4,
-                backgroundColor: selectedCycle !== "all" ? colors.surfaceHover : colors.surface,
-                paddingHorizontal: 8,
-                paddingVertical: 5,
-                borderRadius: 8,
+                backgroundColor: selectedCycle !== "all" ? colors.surfaceHover : colors.surfaceInset,
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 999,
                 borderWidth: 1,
-                borderColor: selectedCycle !== "all" ? colors.primary : colors.border,
+                borderColor: selectedCycle !== "all" ? colors.mutedText : colors.border,
               }}
             >
               <Clock size={11} color={selectedCycle !== "all" ? colors.primary : colors.mutedText} />
@@ -795,10 +759,10 @@ export default function SubscriptionsScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 4,
-                backgroundColor: colors.surface,
-                paddingHorizontal: 8,
-                paddingVertical: 5,
-                borderRadius: 8,
+                backgroundColor: colors.surfaceInset,
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 999,
                 borderWidth: 1,
                 borderColor: colors.border,
                 marginLeft: "auto",
@@ -838,7 +802,7 @@ export default function SubscriptionsScreen() {
               </TouchableOpacity>
             </View>
           )}
-        </View>
+        </Surface>
 
         {/* Subscriptions List */}
         {subscriptions === undefined ? (
@@ -850,7 +814,7 @@ export default function SubscriptionsScreen() {
               borderWidth: 1,
               borderColor: colors.border,
               borderStyle: "dashed",
-              borderRadius: 14,
+              borderRadius: 24,
               padding: 24,
               alignItems: "center",
               gap: 8,
@@ -860,8 +824,8 @@ export default function SubscriptionsScreen() {
               style={{
                 width: 36,
                 height: 36,
-                borderRadius: 18,
-                backgroundColor: colors.surface,
+                borderRadius: 999,
+                backgroundColor: colors.surfaceInset,
                 alignItems: "center",
                 justifyContent: "center",
                 marginBottom: 4,
@@ -869,7 +833,7 @@ export default function SubscriptionsScreen() {
             >
               <Receipt size={18} color={colors.mutedText} />
             </View>
-            <Text style={{ fontSize: 14, fontWeight: "700", color: colors.text }}>
+            <Text style={{ fontSize: 14, fontWeight: "500", color: colors.text }}>
               {getEmptyMessage().title}
             </Text>
             <Text style={{ fontSize: 12, color: colors.mutedText, textAlign: "center", maxWidth: 280 }}>
@@ -883,12 +847,12 @@ export default function SubscriptionsScreen() {
                   alignItems: "center",
                   gap: 6,
                   marginTop: 6,
-                  backgroundColor: colors.surface,
+                  backgroundColor: colors.surfaceInset,
                   borderWidth: 1,
                   borderColor: colors.border,
                   paddingHorizontal: 12,
                   paddingVertical: 7,
-                  borderRadius: 8,
+                  borderRadius: 999,
                 }}
               >
                 <RotateCcw size={12} color={colors.text} />
@@ -899,7 +863,7 @@ export default function SubscriptionsScreen() {
             )}
           </View>
         ) : (
-          <View style={{ gap: 10 }}>
+          <View style={{ gap: 8 }}>
             {filteredSubs.map((sub) => (
               <SubscriptionCard
                 key={sub._id}

@@ -126,9 +126,9 @@ export function AddAccountSheet({ open, onOpenChange, editing }: AddAccountSheet
         </SheetHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-4">
-          <div className="flex items-center gap-3 rounded-lg bg-muted p-3.5">
+          <div className="flex items-center gap-3 rounded-2xl border border-border bg-foreground/[0.03] p-3.5">
             <div
-              className="flex size-10 items-center justify-center rounded-lg shadow-xs"
+              className="flex size-10 items-center justify-center rounded-xl shadow-xs"
               style={{ backgroundColor: selectedColor }}
             >
               <DynamicIcon
@@ -207,7 +207,7 @@ export function AddAccountSheet({ open, onOpenChange, editing }: AddAccountSheet
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-3 text-sm"
               >
                 {currencies.map((c) => (
                   <option key={c.value} value={c.value}>

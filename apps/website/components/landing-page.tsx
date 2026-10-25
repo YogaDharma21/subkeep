@@ -2,224 +2,141 @@
 
 import Image from "next/image"
 import { SignInButton, SignUpButton } from "@clerk/nextjs"
-import {
-  ArrowRight,
-  Sparkles,
-  CreditCard,
-  Check,
-  Clock,
-  ShieldCheck,
-  Wallet,
-} from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+
+const dots = [
+  0.08, 0.12, 0.52, 0.1, 0.18, 0.08, 0.3, 0.08, 0.08, 0.62,
+  0.14, 0.46, 0.08, 0.1, 0.08, 0.24, 0.08, 0.72, 0.16, 0.08,
+  0.08, 0.2, 0.08, 0.34, 0.08, 0.1, 0.56, 0.08, 0.22, 0.08,
+  0.42, 0.08, 0.12, 0.08, 0.28, 0.08, 0.66, 0.14, 0.08, 0.2,
+  0.08, 0.3, 0.08, 0.1, 0.48, 0.08, 0.18, 0.08, 0.38, 0.08,
+]
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen w-full bg-zinc-950 text-zinc-100 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8 selection:bg-zinc-800 selection:text-white">
-      <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-        {/* Left Column: Brand, Pitch, Mini Features, CTAs */}
-        <div className="lg:col-span-7 flex flex-col justify-center space-y-6 sm:space-y-8">
-          {/* Brand Header */}
-          <div className="flex items-center gap-3">
+    <div className="dark relative flex min-h-screen flex-col bg-[#08090b] text-[#f4f4f2] selection:bg-white/15">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[620px] bg-[radial-gradient(ellipse_55%_55%_at_50%_-12%,rgba(255,255,255,0.11),transparent_72%)]"
+      />
+
+      <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 sm:px-6 lg:px-8">
+        <header className="flex h-16 shrink-0 items-center justify-between sm:h-20">
+          <div className="flex items-center gap-2.5">
             <Image
               src="/app-icon.png"
               alt="SubKeep"
-              width={56}
-              height={56}
+              width={30}
+              height={30}
               priority
-              className="size-12 sm:size-14 rounded-2xl object-contain shadow-md"
+              className="size-[30px] rounded-lg object-contain"
             />
-            <span className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-wider text-white uppercase">
-              SUBKEEP
+            <span className="text-[13px] font-semibold uppercase tracking-[0.18em]">
+              SubKeep
             </span>
           </div>
+        </header>
 
-          {/* Main Headline */}
-          <div className="space-y-3">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white leading-tight">
-              All your money in one place — budgets, bills, and subscriptions.
+        <main className="grid flex-1 grid-cols-1 items-center gap-10 py-6 pb-16 sm:py-8 md:grid-cols-12 md:gap-8 md:pb-8 lg:gap-12">
+          <div className="md:col-span-7">
+            <h1 className="text-[clamp(2.5rem,5.2vw,4.75rem)] font-[550] leading-[0.96] tracking-[-0.055em]">
+              Every bill.
+              <br />
+              Every balance.
+              <br />
+              <span className="text-white/30">Nothing shouting.</span>
             </h1>
-            <p className="text-sm sm:text-base text-zinc-400 leading-relaxed max-w-xl">
-              Track expenses and income, set category budgets, manage accounts and net worth, and keep every subscription and free trial under control in one privacy-friendly hub.
-            </p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <SignInButton mode="modal">
+                <Button className="h-11 cursor-pointer gap-2 rounded-full bg-[#f2f1ec] px-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#0a0a0b] transition-colors hover:bg-white">
+                  Open SubKeep
+                  <ArrowRight className="size-3.5" />
+                </Button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <Button
+                  variant="outline"
+                  className="h-11 cursor-pointer rounded-full border-white/12 bg-transparent px-6 text-[11px] font-medium uppercase tracking-[0.14em] text-white/70 transition-colors hover:border-white/25 hover:bg-white/5 hover:text-white"
+                >
+                  Create account
+                </Button>
+              </SignUpButton>
+            </div>
           </div>
 
-          {/* 3 Feature Highlights (similar to screenshot cards) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-            <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3.5 backdrop-blur-xs flex flex-col justify-between space-y-2">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-zinc-800 text-zinc-300">
-                <Wallet className="size-4 text-zinc-200" />
-              </div>
-              <div>
-                <h2 className="text-xs sm:text-sm font-semibold text-zinc-200">
-                  Money Tracking
-                </h2>
-                <p className="text-[11px] text-zinc-400 mt-0.5 leading-snug">
-                  Expenses, income, accounts & budgets
+          {/* Preview */}
+          <div className="w-full md:col-span-5">
+            <div className="mx-auto w-full max-w-sm space-y-3 md:max-w-none lg:max-w-sm">
+              <div className="surface p-5 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <p className="label">Net worth</p>
+                  <span className="rounded-full border border-border px-2 py-0.5 text-[9px] tracking-[0.14em] text-muted-foreground">
+                    IDR
+                  </span>
+                </div>
+                <p className="display-number mt-5 text-[2.35rem]">Rp128.400.000</p>
+                <p className="mt-2 text-[11px] text-muted-foreground">
+                  4 accounts · live balances
                 </p>
-              </div>
-            </div>
 
-            <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3.5 backdrop-blur-xs flex flex-col justify-between space-y-2">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-zinc-800 text-zinc-300">
-                <Sparkles className="size-4 text-zinc-200" />
+                <div className="mt-6 flex gap-1.5">
+                  {Array.from({ length: 10 }).map((_, col) => (
+                    <div key={col} className="flex flex-col gap-1.5">
+                      {dots
+                        .slice(col * 5, col * 5 + 5)
+                        .map((value, row) => (
+                          <span
+                            key={row}
+                            className="size-[5px] rounded-full bg-foreground"
+                            style={{ opacity: Math.max(0.07, value) }}
+                          />
+                        ))}
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div>
-                <h2 className="text-xs sm:text-sm font-semibold text-zinc-200">
-                  Smart Analytics
-                </h2>
-                <p className="text-[11px] text-zinc-400 mt-0.5 leading-snug">
-                  Cash flow, trends & budget alerts
-                </p>
-              </div>
-            </div>
 
-            <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3.5 backdrop-blur-xs flex flex-col justify-between space-y-2">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-zinc-800 text-zinc-300">
-                <CreditCard className="size-4 text-zinc-200" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="surface flex min-h-[104px] flex-col justify-end p-4">
+                  <span className="numeral text-xl">Rp2.4jt</span>
+                  <span className="mt-1.5 text-[10px] text-muted-foreground">
+                    Recurring / month
+                  </span>
+                </div>
+                <div className="surface flex min-h-[104px] flex-col justify-end p-4">
+                  <span className="numeral text-xl">Oct 28</span>
+                  <span className="mt-1.5 text-[10px] text-muted-foreground">
+                    Next renewal
+                  </span>
+                </div>
               </div>
-              <div>
-                <h2 className="text-xs sm:text-sm font-semibold text-zinc-200">
-                  Subscriptions
-                </h2>
-                <p className="text-[11px] text-zinc-400 mt-0.5 leading-snug">
-                  Trials, renewals & split plans
-                </p>
+
+              <div className="surface p-3">
+                {[
+                  { name: "Spotify", meta: "Music · Oct 18", price: "-Rp54.900" },
+                  { name: "Salary", meta: "Income · Oct 15", price: "+Rp12.500.000" },
+                ].map((row) => (
+                  <div
+                    key={row.name}
+                    className="flex items-center justify-between gap-3 border-b border-border/70 px-1 py-3 last:border-0 last:pb-1"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-[12px]">{row.name}</p>
+                      <p className="mt-0.5 text-[10px] text-muted-foreground">
+                        {row.meta}
+                      </p>
+                    </div>
+                    <span className="numeral shrink-0 text-[12px]">
+                      {row.price}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-
-          {/* Action CTA Buttons */}
-          <div className="flex flex-wrap items-center gap-4 pt-2">
-            <SignInButton mode="modal">
-              <Button className="h-12 px-7 cursor-pointer rounded-xl bg-zinc-100 text-zinc-950 font-bold text-xs sm:text-sm tracking-wider uppercase shadow-md transition-all hover:bg-white active:scale-95 flex items-center gap-2">
-                <span>LOG IN</span>
-                <ArrowRight className="size-4" />
-              </Button>
-            </SignInButton>
-
-            <SignUpButton mode="modal">
-              <Button
-                variant="outline"
-                className="h-12 px-7 cursor-pointer rounded-xl border border-zinc-800 bg-zinc-900/90 text-zinc-200 font-bold text-xs sm:text-sm tracking-wider uppercase transition-all hover:bg-zinc-800 hover:text-white active:scale-95"
-              >
-                CREATE ACCOUNT
-              </Button>
-            </SignUpButton>
-          </div>
-        </div>
-
-        {/* Right Column: App Window Preview Mockup */}
-        <div className="lg:col-span-5 flex justify-center w-full">
-          <div className="w-full max-w-md rounded-2xl border border-zinc-800/90 bg-zinc-900/80 p-5 sm:p-6 backdrop-blur-md shadow-2xl space-y-5">
-            {/* Window Title Bar */}
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
-              <div className="flex items-center gap-2">
-                <div className="size-2.5 rounded-full bg-rose-500/80" />
-                <div className="size-2.5 rounded-full bg-amber-500/80" />
-                <div className="size-2.5 rounded-full bg-emerald-500/80" />
-                <span className="ml-2 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
-                  MONTHLY BILLING PREVIEW
-                </span>
-              </div>
-              <span className="rounded-md bg-zinc-800/90 px-2 py-0.5 text-[10px] font-semibold text-zinc-300 border border-zinc-700/50">
-                4 Active
-              </span>
-            </div>
-
-            {/* Budget Progress Bar Box */}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-950/60 p-3.5 space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-zinc-200">72% Monthly Budget Used</span>
-                <span className="text-zinc-400">$144.00 / $200.00</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-zinc-800 overflow-hidden">
-                <div className="h-full rounded-full bg-gradient-to-r from-zinc-400 to-zinc-100 w-[72%]" />
-              </div>
-            </div>
-
-            {/* Subscriptions Checklist Rows */}
-            <div className="space-y-2.5">
-              {/* Item 1 */}
-              <div className="flex items-center justify-between rounded-xl border border-zinc-800/80 bg-zinc-950/50 p-3 transition-colors hover:border-zinc-700">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 text-emerald-400">
-                    <Check className="size-4 stroke-[2.5]" />
-                  </div>
-                  <div>
-                    <div className="text-xs sm:text-sm font-semibold text-zinc-200">
-                      Netflix Premium
-                    </div>
-                    <div className="text-[11px] text-zinc-400">$19.99 · Monthly</div>
-                  </div>
-                </div>
-                <span className="rounded-full bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 text-[11px] font-medium text-zinc-300">
-                  Paid
-                </span>
-              </div>
-
-              {/* Item 2 */}
-              <div className="flex items-center justify-between rounded-xl border border-zinc-800/80 bg-zinc-950/50 p-3 transition-colors hover:border-zinc-700">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 text-emerald-400">
-                    <Check className="size-4 stroke-[2.5]" />
-                  </div>
-                  <div>
-                    <div className="text-xs sm:text-sm font-semibold text-zinc-200">
-                      Spotify Duo Plan
-                    </div>
-                    <div className="text-[11px] text-zinc-400">$14.99 · Monthly</div>
-                  </div>
-                </div>
-                <span className="rounded-full bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 text-[11px] font-medium text-zinc-300">
-                  Active
-                </span>
-              </div>
-
-              {/* Item 3 */}
-              <div className="flex items-center justify-between rounded-xl border border-zinc-800/80 bg-zinc-950/50 p-3 transition-colors hover:border-zinc-700">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 text-emerald-400">
-                    <Check className="size-4 stroke-[2.5]" />
-                  </div>
-                  <div>
-                    <div className="text-xs sm:text-sm font-semibold text-zinc-200">
-                      GitHub Copilot Pro
-                    </div>
-                    <div className="text-[11px] text-zinc-400">$10.00 · Monthly</div>
-                  </div>
-                </div>
-                <span className="rounded-full bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 text-[11px] font-medium text-zinc-300">
-                  Auto-Renew
-                </span>
-              </div>
-
-              {/* Item 4 (Alert / Trial ending badge like the Missing badge in reference image) */}
-              <div className="flex items-center justify-between rounded-xl border border-rose-900/40 bg-rose-950/20 p-3 transition-colors hover:border-rose-800/60">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-rose-950/80 border border-rose-800/60 text-rose-400">
-                    <Clock className="size-4 stroke-[2.5]" />
-                  </div>
-                  <div>
-                    <div className="text-xs sm:text-sm font-semibold text-rose-200">
-                      Apple TV+ Free Trial
-                    </div>
-                    <div className="text-[11px] text-rose-300/80">$9.99 · Ends in 2 days</div>
-                  </div>
-                </div>
-                <span className="rounded-full bg-rose-600 border border-rose-500 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-xs">
-                  Due Soon
-                </span>
-              </div>
-            </div>
-
-            {/* Bottom Security / Privacy notice */}
-            <div className="flex items-center justify-center gap-1.5 pt-1 text-[11px] text-zinc-500">
-              <ShieldCheck className="size-3.5 text-zinc-400" />
-              <span>Private & Client-Encrypted Storage</span>
-            </div>
-          </div>
-        </div>
+        </main>
       </div>
     </div>
   )

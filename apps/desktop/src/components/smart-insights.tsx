@@ -202,10 +202,10 @@ export function SmartInsights({
   if (insights.length === 0) return null
 
   return (
-    <div className="rounded-lg border border-border bg-background p-4 shadow-xs">
+    <div className="surface p-4">
       <div className="flex items-center gap-2 pb-3 mb-3 border-b border-border/60">
         <Sparkles className="size-4 text-muted-foreground" />
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+        <h3 className="label text-foreground">
           Savings Recommendations & Insights
         </h3>
       </div>
@@ -214,9 +214,9 @@ export function SmartInsights({
         {insights.map((item) => (
           <div
             key={item.id}
-            className="rounded-lg border border-border/80 bg-muted/30 p-3 text-xs transition-colors hover:bg-muted/50"
+            className="surface-inset p-3 text-xs transition-colors hover:bg-muted/50"
           >
-            <span className="font-semibold text-foreground block">{item.title}</span>
+            <span className="font-medium text-foreground block">{item.title}</span>
             <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
               {item.description}
             </p>

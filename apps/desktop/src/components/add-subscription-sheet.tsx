@@ -234,11 +234,11 @@ export function AddSubscriptionSheet({
               <button
                 type="button"
                 onClick={() => setIconOpen(true)}
-                className="flex items-center gap-3 rounded-lg bg-muted/60 p-3.5 w-full cursor-pointer hover:bg-muted transition-colors"
+                className="flex items-center gap-3 rounded-xl bg-muted/60 p-3.5 w-full cursor-pointer hover:bg-muted transition-colors"
               >
                 <div
                   className={cn(
-                    "flex size-10 items-center justify-center rounded-lg border border-black/10 dark:border-white/10 shadow-xs",
+                    "flex size-10 items-center justify-center rounded-xl border border-black/10 dark:border-white/10 shadow-none",
                     !selectedIcon && "border-dashed border-border"
                   )}
                   style={
@@ -256,7 +256,7 @@ export function AddSubscriptionSheet({
                   )}
                 </div>
                 <div className="text-left">
-                  <p className="text-sm font-semibold text-foreground">Select Icon & Brand</p>
+                  <p className="text-sm font-medium text-foreground">Select Icon & Brand</p>
                   <p className="text-xs text-muted-foreground">Click to customize icon or auto-fetch logo</p>
                 </div>
               </button>
@@ -270,7 +270,7 @@ export function AddSubscriptionSheet({
                       type="button"
                       onClick={() => setSelectedColor(c)}
                       className={cn(
-                        "size-7 rounded-lg border-2 transition-all cursor-pointer shadow-xs",
+                        "size-7 rounded-xl border-2 transition-all cursor-pointer shadow-none",
                         selectedColor?.toLowerCase() === c.toLowerCase()
                           ? "border-primary ring-2 ring-primary/30 scale-110"
                           : c.toLowerCase() === "#ffffff"
@@ -283,7 +283,7 @@ export function AddSubscriptionSheet({
                   ))}
                   <div className="flex items-center gap-1.5 ml-1 pl-2 border-l border-border">
                     <label
-                      className="relative size-7 rounded-lg border border-border cursor-pointer overflow-hidden flex items-center justify-center bg-muted/50 hover:bg-muted transition-colors shrink-0"
+                      className="relative size-7 rounded-xl border border-border cursor-pointer overflow-hidden flex items-center justify-center bg-muted/50 hover:bg-muted transition-colors shrink-0"
                       title="Pick custom color"
                     >
                       <Pipette className="size-3.5 text-muted-foreground" />
@@ -304,18 +304,18 @@ export function AddSubscriptionSheet({
                       onChange={(e) => setSelectedColor(e.target.value)}
                       placeholder="#FFFFFF"
                       maxLength={7}
-                      className="w-20 px-2 py-1 text-xs font-mono rounded-md border border-border bg-background focus:outline-hidden focus:ring-1 focus:ring-primary"
+                      className="w-20 px-2 py-1 text-xs font-mono rounded-xl border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] focus:outline-hidden focus:ring-1 focus:ring-primary"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Free Trial Toggle */}
-              <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 p-3.5">
+              <div className="flex items-center justify-between surface-inset p-3.5">
                 <div className="flex items-center gap-2.5">
                   <Sparkles className="size-4 text-foreground shrink-0" />
                   <div>
-                    <span className="text-xs font-bold text-foreground">
+                    <span className="text-xs font-medium text-foreground">
                       Free Trial Subscription
                     </span>
                     <p className="text-[11px] text-muted-foreground">
@@ -332,7 +332,7 @@ export function AddSubscriptionSheet({
               </div>
 
               {isTrial && (
-                <div className="space-y-2 rounded-lg bg-muted/40 p-3.5 border border-border">
+                <div className="space-y-2 rounded-xl bg-muted/40 p-3.5 border border-border">
                   <label className="text-xs font-medium text-foreground">
                     Trial Expiration Date *
                   </label>
@@ -345,11 +345,11 @@ export function AddSubscriptionSheet({
               )}
 
               {/* Shared / Split Subscription Toggle (SplitKeep) */}
-              <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 p-3.5">
+              <div className="flex items-center justify-between surface-inset p-3.5">
                 <div className="flex items-center gap-2.5">
                   <Users className="size-4 text-primary shrink-0" />
                   <div>
-                    <span className="text-xs font-bold text-foreground">
+                    <span className="text-xs font-medium text-foreground">
                       Shared / Split Plan (SplitKeep)
                     </span>
                     <p className="text-[11px] text-muted-foreground">
@@ -366,10 +366,10 @@ export function AddSubscriptionSheet({
               </div>
 
               {isShared && (
-                <div className="space-y-3 rounded-lg bg-muted/30 p-3.5 border border-border">
+                <div className="space-y-3 rounded-xl bg-muted/30 p-3.5 border border-border">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="text-xs font-semibold text-foreground">
+                      <label className="text-xs font-medium text-foreground">
                         Total Plan Price
                       </label>
                       <Input
@@ -382,7 +382,7 @@ export function AddSubscriptionSheet({
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-xs font-semibold text-foreground">
+                      <label className="text-xs font-medium text-foreground">
                         Total Members
                       </label>
                       <Input
@@ -398,7 +398,7 @@ export function AddSubscriptionSheet({
                   {/* Split members detail names */}
                   <div className="space-y-2 pt-2 border-t border-border">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-foreground">
+                      <span className="text-xs font-medium text-foreground">
                         Member Names & Split List
                       </span>
                       <Button
@@ -463,7 +463,7 @@ export function AddSubscriptionSheet({
                   <select
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
-                    className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-xs"
+                    className="flex h-10 w-full rounded-xl border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] px-3 text-xs"
                   >
                     {currencies.map((c) => (
                       <option key={c.value} value={c.value}>
@@ -483,7 +483,7 @@ export function AddSubscriptionSheet({
                 <select
                   value={selectedPaymentMethodId}
                   onChange={(e) => setSelectedPaymentMethodId(e.target.value)}
-                  className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-xs"
+                  className="flex h-10 w-full rounded-xl border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] px-3 text-xs"
                 >
                   <option value="">No linked payment method (Default)</option>
                   {paymentMethods?.map((pm) => (
@@ -503,7 +503,7 @@ export function AddSubscriptionSheet({
                 <select
                   value={selectedAccountId}
                   onChange={(e) => setSelectedAccountId(e.target.value)}
-                  className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-xs"
+                  className="flex h-10 w-full rounded-xl border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] px-3 text-xs"
                 >
                   <option value="">No linked account (Uses default on payment)</option>
                   {accounts
@@ -527,10 +527,10 @@ export function AddSubscriptionSheet({
                       key={bc.value}
                       type="button"
                       onClick={() => setCycle(bc.value)}
-                      className={`flex items-center justify-center rounded-lg border px-2.5 py-2 text-xs font-medium transition-all cursor-pointer ${
+                      className={`flex items-center justify-center rounded-xl border px-2.5 py-2 text-xs font-medium transition-all cursor-pointer ${
                         cycle === bc.value
-                          ? "border-foreground bg-foreground text-background font-semibold"
-                          : "border-border bg-background text-foreground hover:border-foreground/50"
+                          ? "border-foreground bg-foreground text-background font-medium"
+                          : "border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] text-foreground hover:border-foreground/30"
                       }`}
                     >
                       {bc.label}
@@ -544,7 +544,7 @@ export function AddSubscriptionSheet({
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-xs"
+                  className="flex h-10 w-full rounded-xl border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] px-3 text-xs"
                 >
                   {categories
                     .filter((c) => c.value !== "all")
@@ -608,7 +608,7 @@ export function AddSubscriptionSheet({
 
               <div className="pt-4 border-t border-border">
                 <Button
-                  className="w-full cursor-pointer h-10 font-semibold"
+                  className="w-full cursor-pointer h-10 font-medium"
                   onClick={handleSubmit}
                   disabled={!name || (!price && !isTrial)}
                 >

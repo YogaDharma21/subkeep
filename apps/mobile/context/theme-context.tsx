@@ -20,7 +20,7 @@ const THEME_STORAGE_KEY = "subkeep_theme_mode"
 
 export function AppThemeProvider({ children }: { children: React.ReactNode }) {
   const systemScheme = useColorScheme()
-  const [themeMode, setThemeModeState] = useState<ThemeMode>("system")
+  const [themeMode, setThemeModeState] = useState<ThemeMode>("dark")
 
   useEffect(() => {
     async function loadTheme() {
@@ -28,7 +28,7 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
         const saved = await AsyncStorage.getItem(THEME_STORAGE_KEY)
         if (saved === "light" || saved === "dark" || saved === "system") {
           setThemeModeState(saved)
-          Appearance.setColorScheme(saved === "system" ? null : saved)
+          Appearance.setColorScheme(saved === "system" ? "auto" : saved)
         }
       } catch {
         // ignore
@@ -41,14 +41,14 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
     setThemeModeState(mode)
     try {
       await AsyncStorage.setItem(THEME_STORAGE_KEY, mode)
-      Appearance.setColorScheme(mode === "system" ? null : mode)
+      Appearance.setColorScheme(mode === "system" ? "auto" : mode)
     } catch {
       // ignore
     }
   }
 
   const effectiveScheme: "light" | "dark" =
-    themeMode === "system" ? (systemScheme === "dark" ? "dark" : "light") : themeMode
+    themeMode === "system" ? (systemScheme === "light" ? "light" : "dark") : themeMode
 
   const isDark = effectiveScheme === "dark"
   const colors = isDark ? Colors.dark : Colors.light
@@ -74,11 +74,11 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
 
 export function useThemeColor(): ThemeContextType {
   const context = useContext(ThemeContext)
+  const systemScheme = useColorScheme()
   if (context) return context
 
   // Fallback if rendered outside provider
-  const systemScheme = useColorScheme()
-  const isDark = systemScheme === "dark"
+  const isDark = systemScheme !== "light"
   const colors = isDark ? Colors.dark : Colors.light
 
   return {

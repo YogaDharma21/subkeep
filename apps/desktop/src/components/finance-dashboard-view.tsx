@@ -3,14 +3,10 @@ import { useQuery } from "convex/react"
 import { useAuth } from "@clerk/clerk-react"
 import { api } from "@/convex/_generated/api"
 import {
-  ArrowDownRight,
-  ArrowUpRight,
   ArrowLeftRight,
   Wallet,
   Repeat,
-  Target,
   ChevronRight,
-  PiggyBank,
 } from "lucide-react"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
@@ -24,12 +20,123 @@ interface FinanceDashboardViewProps {
   onSelectSubscription?: (id: string) => void
 }
 
+function localDateKey(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
+function shortDate(value: string) {
+  return new Date(`${value}T12:00:00`).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  })
+}
+
+function Ring({ pct }: { pct: number }) {
+  const radius = 42
+  const circumference = 2 * Math.PI * radius
+  const clamped = Math.max(0, Math.min(100, pct))
+
+  return (
+    <div className="relative flex size-[118px] shrink-0 items-center justify-center sm:size-[130px]">
+      <svg viewBox="0 0 100 100" className="absolute inset-0 size-full -rotate-90">
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="none"
+          stroke="var(--border)"
+          strokeWidth="2.5"
+        />
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="none"
+          stroke="var(--foreground)"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference - (clamped / 100) * circumference}
+        />
+      </svg>
+      <div className="text-center">
+        <div className="numeral text-2xl font-medium text-foreground">{Math.round(pct)}%</div>
+        <div className="label mt-1">used</div>
+      </div>
+    </div>
+  )
+}
+
+function MetricCard({
+  hint,
+  value,
+  label,
+  onClick,
+}: {
+  hint: string
+  value: string
+  label: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="surface surface-interactive group relative flex min-h-[130px] cursor-pointer flex-col justify-end p-4 text-left"
+    >
+      <span className="absolute right-4 top-4 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/70">
+        {hint}
+      </span>
+      <span className="numeral text-[1.6rem] leading-none text-foreground">{value}</span>
+      <span className="mt-2 text-xs text-muted-foreground">{label}</span>
+    </button>
+  )
+}
+
+function PanelHead({
+  title,
+  hint,
+  linkLabel,
+  onClick,
+}: {
+  title: string
+  hint?: string
+  linkLabel: string
+  onClick: () => void
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <div>
+        <h2 className="text-[15px] font-medium tracking-tight text-foreground">{title}</h2>
+        {hint ? <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p> : null}
+      </div>
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex shrink-0 cursor-pointer items-center gap-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+      >
+        {linkLabel}
+        <ChevronRight className="size-3" />
+      </button>
+    </div>
+  )
+}
+
 export function FinanceDashboardView({ onNavigate }: FinanceDashboardViewProps) {
   const { isSignedIn } = useAuth()
   const month = currentMonthKey()
 
   const accounts = useQuery(api.accounts.list, isSignedIn ? {} : "skip")
-  const transactions = useQuery(api.transactions.list, isSignedIn ? { month } : "skip")
+  const transactions = useQuery(
+    api.transactions.list,
+    isSignedIn ? { month } : "skip"
+  )
+  const allTransactions = useQuery(
+    api.transactions.list,
+    isSignedIn ? { limit: 600 } : "skip"
+  )
   const budgets = useQuery(api.budgets.list, isSignedIn ? { month } : "skip")
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
   const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
@@ -78,10 +185,20 @@ export function FinanceDashboardView({ onNavigate }: FinanceDashboardViewProps) 
 
   const activeSubCount = subscriptions?.filter((s) => s.isActive !== false).length ?? 0
 
+  const nextRenewal = useMemo(() => {
+    const active = (subscriptions || []).filter((s) => s.isActive !== false)
+    const dates = active
+      .map((s) => (s.isTrial && s.trialEndDate ? s.trialEndDate : s.nextBilling))
+      .filter((value): value is string => !!value)
+      .sort()
+    return dates[0] ?? null
+  }, [subscriptions])
+
   const budgetCap = userSettings?.monthlyBudgetCap
   const monthlySpend = stats.expense + subscriptionMonthly
   const budgetUsedPct = budgetCap && budgetCap > 0 ? Math.round((monthlySpend / budgetCap) * 100) : null
   const isBudgetExceeded = !!budgetCap && monthlySpend > budgetCap
+  const leftToSpend = budgetCap ? budgetCap - monthlySpend : stats.net
 
   const topCategories = useMemo(() => {
     const entries = Object.entries(stats.byCategory)
@@ -89,261 +206,454 @@ export function FinanceDashboardView({ onNavigate }: FinanceDashboardViewProps) 
     return entries
       .sort((a, b) => b[1] - a[1])
       .slice(0, 4)
-      .map(([cat, amt]) => ({ ...financeCategoryMeta(cat), amount: amt, pct: Math.round((amt / total) * 100) }))
+      .map(([cat, amt]) => ({
+        ...financeCategoryMeta(cat),
+        amount: amt,
+        pct: Math.round((amt / total) * 100),
+      }))
   }, [stats])
 
   const recentTransactions = useMemo(() => {
     return [...(transactions || [])]
       .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
-      .slice(0, 5)
+      .slice(0, 6)
   }, [transactions])
+
+  const activity = useMemo(() => {
+    const spendByDate: Record<string, number> = {}
+    for (const t of allTransactions || []) {
+      if (t.type !== "expense") continue
+      spendByDate[t.date] =
+        (spendByDate[t.date] || 0) +
+        convertCurrency(t.amount, t.currency, primaryCurrency, rates)
+    }
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const start = new Date(today)
+    start.setDate(start.getDate() - 364)
+    start.setDate(start.getDate() - ((start.getDay() + 6) % 7))
+
+    const weeks: Array<{
+      monthLabel?: string
+      days: Array<{ key: string; amount: number; future: boolean }>
+    }> = []
+    const cursor = new Date(start)
+    let activeDays = 0
+    let peak = 0
+    let totalSpend = 0
+    let lastMonth = -1
+
+    while (cursor <= today) {
+      const days: Array<{ key: string; amount: number; future: boolean }> = []
+      let monthLabel: string | undefined = undefined
+
+      for (let i = 0; i < 7; i++) {
+        const day = new Date(cursor)
+        const key = localDateKey(day)
+        const amount = spendByDate[key] || 0
+        const future = day > today
+
+        if (!future && amount > 0) {
+          activeDays++
+          totalSpend += amount
+          if (amount > peak) peak = amount
+        }
+
+        days.push({ key, amount, future })
+
+        if (day.getMonth() !== lastMonth && (days.length === 1 || day.getDate() <= 7)) {
+          monthLabel = day.toLocaleDateString("en-US", { month: "short" })
+          lastMonth = day.getMonth()
+        }
+
+        cursor.setDate(cursor.getDate() + 1)
+      }
+      weeks.push({ monthLabel, days })
+    }
+
+    return { weeks, activeDays, peak, totalSpend }
+  }, [allTransactions, primaryCurrency, rates])
 
   const loading = accounts === undefined || transactions === undefined
   const monthShort = monthLabel(month).split(" ")[0]
-
-  const quickLinks = [
-    { label: "Transactions", icon: ArrowLeftRight, view: "transactions" },
-    { label: "Accounts", icon: Wallet, view: "accounts" },
-    { label: "Budgets", icon: PiggyBank, view: "budgets" },
-    { label: activeSubCount > 0 ? `Subs (${activeSubCount})` : "Subs", icon: Repeat, view: "subscriptions" },
-  ]
+  const hasUpcoming =
+    (subscriptions || []).some((s) => {
+      if (s.isActive === false) return false
+      const date = s.isTrial && s.trialEndDate ? s.trialEndDate : s.nextBilling
+      if (!date) return false
+      const diff = Math.ceil(
+        (new Date(`${date}T12:00:00`).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+      )
+      return diff <= 7
+    })
 
   return (
-    <div className="space-y-6 pb-16 max-w-5xl mx-auto">
-      {/* Net Worth + Cash Flow Hero */}
-      <div className="rounded-lg border border-border bg-background p-4 sm:p-5 shadow-xs">
-        <div className="flex items-center justify-between border-b border-border/60 pb-3 mb-3">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-            <Wallet className="size-3.5 text-primary" />
-            <span>Money Overview · {monthLabel(month)}</span>
-          </div>
-          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-            {primaryCurrency}
-          </span>
+    <div className="mx-auto max-w-6xl space-y-3 pb-16">
+      <div className="flex items-end justify-between gap-4 px-1 pb-2">
+        <div>
+          <p className="label">Overview</p>
+          <h1 className="page-title mt-2">{monthLabel(month)}</h1>
         </div>
-
-        {loading ? (
-          <div className="grid grid-cols-3 gap-4">
-            <div className="h-10 rounded-md bg-muted animate-pulse" />
-            <div className="h-10 rounded-md bg-muted animate-pulse" />
-            <div className="h-10 rounded-md bg-muted animate-pulse" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 divide-x divide-border/60 text-center items-center">
-            <div className="flex flex-col items-center gap-0.5 px-2">
-              <span className="text-xl font-extrabold text-foreground truncate max-w-full">
-                {formatCurrencyAmount(netWorth, primaryCurrency)}
-              </span>
-              <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
-                Net Worth
-              </span>
-            </div>
-            <div className="flex flex-col items-center gap-0.5 min-w-0 px-2">
-              <span className="flex items-center gap-1 text-xl font-extrabold text-emerald-500">
-                <ArrowDownRight className="size-4 shrink-0" />
-                <span className="truncate">{formatCurrencyAmount(stats.income, primaryCurrency)}</span>
-              </span>
-              <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
-                In · {monthShort}
-              </span>
-            </div>
-            <div className="flex flex-col items-center gap-0.5 min-w-0 px-2">
-              <span className="flex items-center gap-1 text-xl font-extrabold text-red-500">
-                <ArrowUpRight className="size-4 shrink-0" />
-                <span className="truncate">{formatCurrencyAmount(stats.expense, primaryCurrency)}</span>
-              </span>
-              <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
-                Out · {monthShort}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {budgetCap && budgetCap > 0 && !loading && (
-          <div className="mt-4 pt-3 border-t border-border/60 space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-1.5 font-medium text-foreground">
-                <Target className="size-3.5 text-primary" />
-                <span>Total Monthly Spend vs Cap</span>
-              </div>
-              <span className={cn("font-semibold", isBudgetExceeded ? "text-red-500" : "text-muted-foreground")}>
-                {formatCurrencyAmount(monthlySpend, primaryCurrency)} / {formatCurrencyAmount(budgetCap, primaryCurrency)} ({budgetUsedPct}%)
-              </span>
-            </div>
-            <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-              <div
-                className={cn(
-                  "h-full rounded-full transition-all duration-300",
-                  isBudgetExceeded ? "bg-red-500" : (budgetUsedPct || 0) >= 85 ? "bg-amber-500" : "bg-primary"
-                )}
-                style={{ width: `${Math.min(100, budgetUsedPct || 0)}%` }}
-              />
-            </div>
-          </div>
-        )}
+        <p className="hidden text-[11px] text-muted-foreground sm:block">
+          {primaryCurrency} · {activeSubCount} active recurring
+        </p>
       </div>
 
-      {/* Quick Links */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-        {quickLinks.map((q) => {
-          const Icon = q.icon
-          return (
-            <button
-              key={q.label}
-              onClick={() => onNavigate(q.view)}
-              className="flex items-center gap-2 rounded-lg border border-border bg-background p-3 transition-colors hover:border-foreground/40 cursor-pointer text-left"
-            >
-              <span className="flex size-8 items-center justify-center rounded-lg bg-muted text-foreground">
-                <Icon className="size-4" />
-              </span>
-              <span className="text-xs font-semibold">{q.label}</span>
-            </button>
-          )
-        })}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-        {/* Recent Transactions */}
-        <div className="rounded-lg border border-border bg-background">
-          <div className="flex items-center justify-between border-b border-border p-4">
-            <div className="flex items-center gap-2">
-              <ArrowLeftRight className="size-4 text-muted-foreground" />
-              <h3 className="text-sm font-semibold">Recent Transactions</h3>
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
+        <section className="surface relative overflow-hidden p-5 sm:p-6 lg:col-span-7">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="label">Net worth</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Across {accounts?.length || 0} accounts
+              </p>
             </div>
             <button
-              onClick={() => onNavigate("transactions")}
-              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer"
+              type="button"
+              onClick={() => onNavigate("accounts")}
+              className="flex shrink-0 cursor-pointer items-center gap-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              View all <ChevronRight className="size-3.5" />
+              Accounts
+              <ChevronRight className="size-3" />
             </button>
           </div>
-          {transactions === undefined ? (
-            <div className="space-y-2 p-4">
-              <div className="h-12 rounded-md bg-muted animate-pulse" />
-              <div className="h-12 rounded-md bg-muted animate-pulse" />
-              <div className="h-12 rounded-md bg-muted animate-pulse" />
-            </div>
-          ) : recentTransactions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <p className="text-sm font-medium text-muted-foreground">No transactions this month</p>
-              <p className="mt-1 text-xs text-muted-foreground/60">Add your first expense or income</p>
+
+          {loading ? (
+            <div className="mt-8 space-y-3">
+              <div className="h-9 w-48 animate-pulse rounded-xl bg-muted" />
+              <div className="h-3 w-24 animate-pulse rounded-full bg-muted" />
             </div>
           ) : (
-            <div className="divide-y divide-border/60">
+            <>
+              <p className="numeral mt-8 text-[2.4rem] leading-none text-foreground">
+                {formatCurrencyAmount(netWorth, primaryCurrency)}
+              </p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {stats.net >= 0 ? "Up" : "Down"}{" "}
+                {formatCurrencyAmount(Math.abs(stats.net), primaryCurrency)} this month
+              </p>
+            </>
+          )}
+
+          <div className="mt-7 grid grid-cols-3 gap-4 border-t border-border pt-4">
+            <div>
+              <p className="label">In</p>
+              <p className="numeral mt-1.5 text-[1.05rem] text-positive">
+                +{formatCurrencyAmount(stats.income, primaryCurrency)}
+              </p>
+            </div>
+            <div>
+              <p className="label">Out</p>
+              <p className="numeral mt-1.5 text-[1.05rem] text-foreground">
+                -{formatCurrencyAmount(stats.expense, primaryCurrency)}
+              </p>
+            </div>
+            <div>
+              <p className="label">Kept</p>
+              <p className="numeral mt-1.5 text-[1.05rem] text-foreground">
+                {formatCurrencyAmount(stats.net, primaryCurrency)}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="surface relative overflow-hidden p-5 sm:p-6 lg:col-span-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="label">{budgetCap ? "Monthly cap" : "Cash flow"}</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">{monthLabel(month)}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigate("budgets")}
+              className="flex shrink-0 cursor-pointer items-center gap-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Budgets
+              <ChevronRight className="size-3" />
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="mt-6 flex items-center gap-6">
+              <div className="size-[130px] animate-pulse rounded-full bg-muted" />
+              <div className="flex-1 space-y-2">
+                <div className="h-7 w-32 animate-pulse rounded-xl bg-muted" />
+                <div className="h-3 w-24 animate-pulse rounded-full bg-muted" />
+              </div>
+            </div>
+          ) : budgetCap ? (
+            <div className="mt-4 flex items-center gap-6">
+              <Ring pct={budgetUsedPct || 0} />
+              <div className="min-w-0">
+                <p className="numeral text-[1.55rem] leading-none text-foreground">
+                  {formatCurrencyAmount(Math.abs(leftToSpend), primaryCurrency)}
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {isBudgetExceeded ? "over the cap" : "left to spend"}
+                </p>
+                <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground/80">
+                  {formatCurrencyAmount(monthlySpend, primaryCurrency)} of{" "}
+                  {formatCurrencyAmount(budgetCap, primaryCurrency)}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-6 flex items-end justify-between gap-4">
+              <div>
+                <p className="numeral text-[1.9rem] leading-none text-foreground">
+                  {formatCurrencyAmount(stats.net, primaryCurrency)}
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">kept this month</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate("budgets")}
+                className="cursor-pointer rounded-full border border-border px-3 py-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Set a cap
+              </button>
+            </div>
+          )}
+        </section>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <MetricCard
+          hint="In"
+          value={`+${formatCurrencyAmount(stats.income, primaryCurrency)}`}
+          label="This month"
+          onClick={() => onNavigate("transactions")}
+        />
+        <MetricCard
+          hint="Out"
+          value={`-${formatCurrencyAmount(stats.expense, primaryCurrency)}`}
+          label="This month"
+          onClick={() => onNavigate("transactions")}
+        />
+        <MetricCard
+          hint="Fixed"
+          value={formatCurrencyAmount(subscriptionMonthly, primaryCurrency)}
+          label={`${activeSubCount} recurring · per month`}
+          onClick={() => onNavigate("subscriptions")}
+        />
+        <MetricCard
+          hint="Next"
+          value={nextRenewal ? shortDate(nextRenewal) : "—"}
+          label="Next renewal"
+          onClick={() => onNavigate("subscriptions")}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
+        <section
+          className={cn(
+            "surface relative overflow-hidden p-5 sm:p-6",
+            hasUpcoming ? "lg:col-span-8" : "lg:col-span-12"
+          )}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-[15px] font-medium tracking-tight">Activity</h2>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Daily spending, past 52 weeks
+              </p>
+            </div>
+            <span className="text-[11px] text-muted-foreground">
+              {activity.activeDays} active {activity.activeDays === 1 ? "day" : "days"}
+            </span>
+          </div>
+
+          <div className="quiet-scroll mt-6 overflow-x-auto pb-1">
+            <div className="flex min-w-max items-start gap-2">
+              {/* Weekday labels */}
+              <div className="flex flex-col gap-[3px] select-none text-[9px] font-medium text-muted-foreground">
+                <div className="h-4" />
+                <span className="flex h-[10px] items-center">Mon</span>
+                <span className="h-[10px]" />
+                <span className="flex h-[10px] items-center">Wed</span>
+                <span className="h-[10px]" />
+                <span className="flex h-[10px] items-center">Fri</span>
+                <span className="h-[10px]" />
+                <span className="h-[10px]" />
+              </div>
+
+              {/* 52-53 weeks */}
+              <div className="flex gap-[3px]">
+                {activity.weeks.map((week, index) => (
+                  <div key={index} className="flex flex-col gap-[3px]">
+                    <div className="relative h-4 w-[10px]">
+                      {week.monthLabel ? (
+                        <span className="absolute left-0 top-0 select-none whitespace-nowrap text-[10px] font-medium text-muted-foreground">
+                          {week.monthLabel}
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {week.days.map((day) => {
+                      const intensity =
+                        day.amount <= 0 || activity.peak <= 0
+                          ? 0
+                          : 0.22 + 0.78 * Math.sqrt(day.amount / activity.peak)
+                      return (
+                        <span
+                          key={day.key}
+                          title={
+                            day.future
+                              ? undefined
+                              : `${shortDate(day.key)}${
+                                  day.amount > 0
+                                    ? ` · ${formatCurrencyAmount(day.amount, primaryCurrency)}`
+                                    : " · No spend"
+                                }`
+                          }
+                          className={cn(
+                            "size-[10px] rounded-[2px] transition-colors",
+                            day.future
+                              ? "opacity-0 pointer-events-none"
+                              : day.amount > 0
+                                ? "bg-foreground"
+                                : "bg-muted/40 hover:bg-muted/70"
+                          )}
+                          style={
+                            day.future || day.amount <= 0
+                              ? undefined
+                              : { opacity: Math.max(0.18, intensity) }
+                          }
+                        />
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-4">
+              <span>
+                Peak day:{" "}
+                <span className="numeral font-medium text-foreground">
+                  {activity.peak > 0
+                    ? formatCurrencyAmount(activity.peak, primaryCurrency)
+                    : "—"}
+                </span>
+              </span>
+              {activity.activeDays > 0 ? (
+                <span>
+                  Avg active:{" "}
+                  <span className="numeral font-medium text-foreground">
+                    {formatCurrencyAmount(
+                      Math.round(activity.totalSpend / activity.activeDays),
+                      primaryCurrency
+                    )}
+                  </span>
+                </span>
+              ) : null}
+            </div>
+
+            <div className="flex items-center gap-1.5 text-[10px]">
+              <span>Less</span>
+              <span className="size-[10px] rounded-[2px] bg-muted/40" />
+              <span className="size-[10px] rounded-[2px] bg-foreground opacity-25" />
+              <span className="size-[10px] rounded-[2px] bg-foreground opacity-50" />
+              <span className="size-[10px] rounded-[2px] bg-foreground opacity-75" />
+              <span className="size-[10px] rounded-[2px] bg-foreground opacity-100" />
+              <span>More</span>
+            </div>
+          </div>
+        </section>
+
+        {hasUpcoming ? (
+          <div className="lg:col-span-4">
+            <UpcomingReminders
+              subscriptions={subscriptions || []}
+              primaryCurrency={primaryCurrency}
+              rates={rates}
+              compact
+            />
+          </div>
+        ) : null}
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
+        <section className="surface p-5 sm:p-6 lg:col-span-7">
+          <PanelHead
+            title="Recent"
+            hint={`${monthLabel(month)} · latest first`}
+            linkLabel="All"
+            onClick={() => onNavigate("transactions")}
+          />
+
+          {transactions === undefined ? (
+            <div className="mt-5 space-y-3">
+              <div className="h-11 w-full animate-pulse rounded-2xl bg-muted" />
+              <div className="h-11 w-full animate-pulse rounded-2xl bg-muted" />
+              <div className="h-11 w-full animate-pulse rounded-2xl bg-muted" />
+            </div>
+          ) : recentTransactions.length === 0 ? (
+            <p className="mt-8 pb-2 text-center text-sm text-muted-foreground">
+              No transactions yet this month.
+            </p>
+          ) : (
+            <div className="mt-3 divide-y divide-border/70">
               {recentTransactions.map((t) => {
                 const meta = financeCategoryMeta(t.category)
+                const isIncome = t.type === "income"
+                const isTransfer = t.type === "transfer"
                 return (
                   <button
                     key={t._id}
+                    type="button"
                     onClick={() => onNavigate("transactions")}
-                    className="flex w-full items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40 cursor-pointer text-left"
+                    className="flex w-full cursor-pointer items-center gap-3 py-3 text-left transition-opacity hover:opacity-75"
                   >
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
-                      <DynamicIcon name={t.icon || meta.icon} className="size-4" />
+                    <span className="surface-inset flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground">
+                      <DynamicIcon name={t.icon || meta.icon} className="size-3.5" />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium">{t.note || meta.label}</span>
-                      <span className="block text-[11px] text-muted-foreground">{meta.label} · {t.date}</span>
+                      <span className="block truncate text-[13px] text-foreground">
+                        {t.note || meta.label}
+                      </span>
+                      <span className="block text-[11px] text-muted-foreground">
+                        {meta.label} · {shortDate(t.date)}
+                      </span>
                     </span>
-                    <span className={cn(
-                      "shrink-0 text-sm font-bold",
-                      t.type === "income" ? "text-emerald-500" : t.type === "transfer" ? "text-blue-500" : "text-red-500"
-                    )}>
-                      {t.type === "income" ? "+" : t.type === "transfer" ? "" : "-"}
-                      {formatCurrencyAmount(convertCurrency(t.amount, t.currency, primaryCurrency, rates), primaryCurrency)}
+                    <span
+                      className={cn(
+                        "numeral shrink-0 text-[13px]",
+                        isIncome ? "text-positive" : isTransfer ? "text-muted-foreground" : "text-foreground"
+                      )}
+                    >
+                      {isIncome ? "+" : isTransfer ? "" : "-"}
+                      {formatCurrencyAmount(
+                        convertCurrency(t.amount, t.currency, primaryCurrency, rates),
+                        primaryCurrency
+                      )}
                     </span>
                   </button>
                 )
               })}
             </div>
           )}
-        </div>
+        </section>
 
-        <div className="space-y-4">
-          {/* Top Spending */}
-          {topCategories.length > 0 && (
-            <div className="rounded-lg border border-border bg-background">
-              <div className="flex items-center justify-between border-b border-border p-4">
-                <h3 className="text-sm font-semibold">Top Spending · {monthShort}</h3>
-                <button
-                  onClick={() => onNavigate("stats")}
-                  className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer"
-                >
-                  Analytics <ChevronRight className="size-3.5" />
-                </button>
-              </div>
-              <div className="space-y-3 p-4">
-                {topCategories.map((cat) => (
-                  <div key={cat.value} className="flex items-center gap-3">
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
-                      <DynamicIcon name={cat.icon} className="size-4" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium truncate">{cat.label}</span>
-                        <span className="text-xs text-muted-foreground shrink-0">
-                          {formatCurrencyAmount(cat.amount, primaryCurrency)}
-                        </span>
-                      </div>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-                        <div className="h-full rounded-full transition-all" style={{ width: `${cat.pct}%`, backgroundColor: cat.color }} />
-                      </div>
-                    </div>
-                    <div className="w-10 text-right text-xs font-semibold text-muted-foreground">{cat.pct}%</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Subscriptions preview */}
-          <div className="rounded-lg border border-border bg-background">
-            <div className="flex items-center justify-between border-b border-border p-4">
-              <div className="flex items-center gap-2">
-                <Repeat className="size-4 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">Subscriptions</h3>
-              </div>
-              <button
-                onClick={() => onNavigate("subscriptions")}
-                className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer"
-              >
-                Manage <ChevronRight className="size-3.5" />
-              </button>
-            </div>
-            <div className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="text-xs text-muted-foreground">
-                  <span className="text-sm font-bold text-foreground">{activeSubCount}</span> active ·{" "}
-                  <span className="text-sm font-bold text-foreground">
-                    {formatCurrencyAmount(subscriptionMonthly, primaryCurrency)}
-                  </span>/mo
-                </div>
-                <button
-                  onClick={() => onNavigate("subscriptions")}
-                  className="rounded-lg bg-muted px-3 py-1.5 text-xs font-semibold hover:bg-muted/70 cursor-pointer"
-                >
-                  Open tracker
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Budget snapshot */}
-          <div className="rounded-lg border border-border bg-background p-4">
-            <div className="flex items-center justify-between pb-3 mb-3 border-b border-border/60">
-              <h3 className="text-xs font-semibold uppercase tracking-wider">Budgets · {monthShort}</h3>
-              <button onClick={() => onNavigate("budgets")} className="text-[11px] font-semibold text-muted-foreground hover:text-foreground cursor-pointer">
-                View
-              </button>
-            </div>
-            {budgets === undefined || transactions === undefined ? (
-              <div className="h-16 rounded-md bg-muted animate-pulse" />
+        <div className="space-y-3 lg:col-span-5">
+          <section className="surface p-5 sm:p-6">
+            <PanelHead
+              title="Budgets"
+              hint={monthShort}
+              linkLabel="Manage"
+              onClick={() => onNavigate("budgets")}
+            />
+            {budgets === undefined ? (
+              <div className="mt-5 h-16 animate-pulse rounded-2xl bg-muted" />
             ) : budgets.length === 0 ? (
-              <p className="text-xs text-muted-foreground">
+              <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
                 No budgets set for {monthShort}. Set per-category limits to stay on track.
               </p>
             ) : (
-              <div className="space-y-2.5">
+              <div className="mt-4 space-y-3">
                 {budgets.slice(0, 4).map((b) => {
                   const spentNative = (transactions || [])
                     .filter((t) => t.type === "expense" && t.category === b.category)
@@ -354,13 +664,27 @@ export function FinanceDashboardView({ onNavigate }: FinanceDashboardViewProps) 
                   const meta = financeCategoryMeta(b.category)
                   return (
                     <div key={b._id}>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium">{meta.label}</span>
-                        <span className={cn("font-semibold", spent > cap ? "text-red-500" : "text-muted-foreground")}>{pct}%</span>
+                      <div className="flex items-center justify-between text-[12px]">
+                        <span className="text-foreground">{meta.label}</span>
+                        <span
+                          className={cn(
+                            "numeral",
+                            spent > cap ? "text-negative" : "text-muted-foreground"
+                          )}
+                        >
+                          {pct}%
+                        </span>
                       </div>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                      <div className="mt-1.5 h-[3px] overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--foreground)_4%,transparent)]">
                         <div
-                          className={cn("h-full rounded-full", spent > cap ? "bg-red-500" : pct >= 85 ? "bg-amber-500" : "bg-emerald-500")}
+                          className={cn(
+                            "h-full rounded-full",
+                            spent > cap
+                              ? "bg-negative"
+                              : pct >= 85
+                                ? "bg-warning"
+                                : "bg-foreground"
+                          )}
                           style={{ width: `${pct}%` }}
                         />
                       </div>
@@ -369,15 +693,80 @@ export function FinanceDashboardView({ onNavigate }: FinanceDashboardViewProps) 
                 })}
               </div>
             )}
-          </div>
+          </section>
+
+          <section className="surface p-5 sm:p-6">
+            <PanelHead
+              title="Top spending"
+              hint={monthShort}
+              linkLabel="Analytics"
+              onClick={() => onNavigate("stats")}
+            />
+            {topCategories.length === 0 ? (
+              <p className="mt-5 text-xs text-muted-foreground">
+                No expenses logged this month.
+              </p>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {topCategories.map((cat) => (
+                  <div key={cat.value} className="flex items-center gap-3">
+                    <span className="surface-inset flex size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground">
+                      <DynamicIcon name={cat.icon} className="size-3.5" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between text-[12px]">
+                        <span className="truncate text-foreground">{cat.label}</span>
+                        <span className="numeral shrink-0 text-muted-foreground">
+                          {formatCurrencyAmount(cat.amount, primaryCurrency)}
+                        </span>
+                      </div>
+                      <div className="mt-1.5 h-[3px] overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--foreground)_4%,transparent)]">
+                        <div
+                          className="h-full rounded-full bg-foreground/60"
+                          style={{ width: `${cat.pct}%` }}
+                        />
+                      </div>
+                    </div>
+                    <span className="numeral w-8 text-right text-[11px] text-muted-foreground">
+                      {cat.pct}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <button
+            type="button"
+            onClick={() => onNavigate("subscriptions")}
+            className="surface surface-interactive flex w-full cursor-pointer items-center justify-between gap-3 p-5 text-left sm:p-6"
+          >
+            <div className="flex items-center gap-3">
+              <span className="surface-inset flex size-9 items-center justify-center rounded-full text-foreground">
+                <Repeat className="size-4" />
+              </span>
+              <div>
+                <p className="text-[13px] text-foreground">Subscriptions</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {activeSubCount} active · {formatCurrencyAmount(subscriptionMonthly, primaryCurrency)}/mo
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </button>
         </div>
       </div>
 
-      <UpcomingReminders
-        subscriptions={subscriptions || []}
-        primaryCurrency={primaryCurrency}
-        rates={rates}
-      />
+      <div className="flex items-center justify-between gap-3 px-1 pt-2 text-[11px] text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <Wallet className="size-3.5" />
+          {primaryCurrency} · all values converted
+        </span>
+        <span className="flex items-center gap-1.5">
+          <ArrowLeftRight className="size-3.5" />
+          {transactions?.length || 0} entries this month
+        </span>
+      </div>
     </div>
   )
 }

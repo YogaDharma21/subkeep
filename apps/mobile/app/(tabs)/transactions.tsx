@@ -18,11 +18,10 @@ import {
   Search,
   Pencil,
   Trash2,
-  ArrowDownRight,
-  ArrowUpRight,
   ArrowLeftRight,
 } from "lucide-react-native"
 import { DynamicIcon } from "@/components/dynamic-icon"
+import { Label, Numeral, Surface } from "@/components/ui/surface"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
@@ -172,7 +171,7 @@ export default function TransactionsScreen() {
     return [...map.entries()]
   }, [filtered])
 
-  const filters: Array<{ value: "all" | TransactionType; label: string }> = [
+  const filters: { value: "all" | TransactionType; label: string }[] = [
     { value: "all", label: "All" },
     { value: "expense", label: "Expenses" },
     { value: "income", label: "Income" },
@@ -190,109 +189,89 @@ export default function TransactionsScreen() {
         }}
       >
         {/* Month + totals */}
-        <View
-          style={{
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 14,
-            padding: 14,
-            gap: 12,
-          }}
-        >
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <TouchableOpacity
-              onPress={() => setMonth(shiftMonth(month, -1))}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 8,
-                backgroundColor: colors.surface,
-                borderWidth: 1,
-                borderColor: colors.border,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <ChevronLeft size={16} color={colors.text} />
-            </TouchableOpacity>
-            <View style={{ alignItems: "center" }}>
-              <Text style={{ fontSize: 14, fontWeight: "800", color: colors.text }}>
+        <Surface style={{ padding: 18, gap: 14 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+            <View style={{ gap: 3 }}>
+              <Label>Transactions</Label>
+              <Text style={{ fontSize: 15, fontWeight: "500", letterSpacing: -0.2, color: colors.text }}>
                 {monthLabel(month)}
               </Text>
-              <Text style={{ fontSize: 11, color: colors.mutedText }}>
-                Net {formatCurrencyAmount(totals.net, primaryCurrency)}
-              </Text>
             </View>
-            <TouchableOpacity
-              onPress={() => setMonth(shiftMonth(month, 1))}
-              style={{
-                width: 30,
-                height: 30,
-                borderRadius: 8,
-                backgroundColor: colors.surface,
-                borderWidth: 1,
-                borderColor: colors.border,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <ChevronRight size={16} color={colors.text} />
-            </TouchableOpacity>
-          </View>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: colors.emeraldBackground,
-                borderRadius: 10,
-                padding: 10,
-                alignItems: "center",
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                <ArrowDownRight size={14} color={colors.emerald} />
-                <Text style={{ fontSize: 13, fontWeight: "800", color: colors.emerald }}>
-                  {formatCurrencyAmount(totals.income, primaryCurrency)}
-                </Text>
-              </View>
-              <Text style={{ fontSize: 10, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                Income
-              </Text>
-            </View>
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: colors.destructiveBackground,
-                borderRadius: 10,
-                padding: 10,
-                alignItems: "center",
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                <ArrowUpRight size={14} color={colors.destructive} />
-                <Text style={{ fontSize: 13, fontWeight: "800", color: colors.destructive }}>
-                  {formatCurrencyAmount(totals.expense, primaryCurrency)}
-                </Text>
-              </View>
-              <Text style={{ fontSize: 10, fontWeight: "600", color: colors.mutedText, textTransform: "uppercase" }}>
-                Expenses
-              </Text>
+            <View style={{ flexDirection: "row", gap: 6 }}>
+              <TouchableOpacity
+                onPress={() => setMonth(shiftMonth(month, -1))}
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 999,
+                  backgroundColor: colors.surfaceInset,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <ChevronLeft size={15} color={colors.text} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setMonth(shiftMonth(month, 1))}
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 999,
+                  backgroundColor: colors.surfaceInset,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <ChevronRight size={15} color={colors.text} />
+              </TouchableOpacity>
             </View>
           </View>
-        </View>
+
+          <View style={{ gap: 4 }}>
+            <Label>Net</Label>
+            <Numeral style={{ fontSize: 28 }}>
+              {formatCurrencyAmount(totals.net, primaryCurrency)}
+            </Numeral>
+          </View>
+
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 12,
+              borderTopWidth: 1,
+              borderTopColor: colors.border,
+              paddingTop: 12,
+            }}
+          >
+            <View style={{ flex: 1, gap: 4 }}>
+              <Label>Income</Label>
+              <Numeral style={{ fontSize: 14, color: colors.positive }}>
+                +{formatCurrencyAmount(totals.income, primaryCurrency)}
+              </Numeral>
+            </View>
+            <View style={{ flex: 1, gap: 4 }}>
+              <Label>Expenses</Label>
+              <Numeral style={{ fontSize: 14, color: colors.negative }}>
+                -{formatCurrencyAmount(totals.expense, primaryCurrency)}
+              </Numeral>
+            </View>
+          </View>
+        </Surface>
 
         {/* Search */}
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
-            backgroundColor: colors.card,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 10,
-            paddingHorizontal: 12,
+            backgroundColor: colors.surfaceInset,
+            borderRadius: 999,
+            paddingHorizontal: 14,
             gap: 8,
+            height: 40,
           }}
         >
           <Search size={16} color={colors.mutedText} />
@@ -315,8 +294,10 @@ export default function TransactionsScreen() {
               style={{
                 paddingHorizontal: 10,
                 paddingVertical: 6,
-                borderRadius: 8,
-                backgroundColor: typeFilter === f.value ? colors.primary : colors.surface,
+                borderRadius: 999,
+                backgroundColor: typeFilter === f.value ? colors.primary : colors.surfaceInset,
+                borderWidth: 1,
+                borderColor: typeFilter === f.value ? colors.primary : colors.border,
               }}
             >
               <Text
@@ -342,14 +323,14 @@ export default function TransactionsScreen() {
               borderWidth: 1,
               borderColor: colors.border,
               borderStyle: "dashed",
-              borderRadius: 14,
+              borderRadius: 24,
               padding: 24,
               alignItems: "center",
               gap: 6,
             }}
           >
             <ArrowLeftRight size={22} color={colors.subtleText} />
-            <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+            <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
               No transactions found
             </Text>
             <Text style={{ fontSize: 11, color: colors.mutedText, textAlign: "center" }}>
@@ -364,18 +345,20 @@ export default function TransactionsScreen() {
                 backgroundColor: colors.card,
                 borderWidth: 1,
                 borderColor: colors.border,
-                borderRadius: 14,
+                borderRadius: 20,
                 overflow: "hidden",
               }}
             >
               <View
                 style={{
-                  backgroundColor: colors.surface,
+                  backgroundColor: colors.surfaceInset,
                   paddingHorizontal: 12,
-                  paddingVertical: 6,
+                  paddingVertical: 7,
+                  borderBottomWidth: 1,
+                  borderBottomColor: colors.border,
                 }}
               >
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>
+                <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1, textTransform: "uppercase", color: colors.mutedText }}>
                   {new Date(`${date}T12:00:00`).toLocaleDateString("en-US", {
                     weekday: "short",
                     month: "short",
@@ -394,24 +377,26 @@ export default function TransactionsScreen() {
                       padding: 12,
                       gap: 10,
                       borderTopWidth: i > 0 ? 1 : 0,
-                      borderTopColor: colors.border,
+                      borderTopColor: colors.borderLight,
                     }}
                   >
                     <View
                       style={{
                         width: 36,
                         height: 36,
-                        borderRadius: 10,
-                        backgroundColor: colors.surface,
+                        borderRadius: 999,
+                        backgroundColor: colors.surfaceInset,
+                        borderWidth: 1,
+                        borderColor: colors.border,
                         alignItems: "center",
                         justifyContent: "center",
                       }}
                     >
-                      <DynamicIcon name={t.icon || meta.icon} size={16} color={colors.text} />
+                      <DynamicIcon name={t.icon || meta.icon} size={15} color={colors.mutedText} />
                     </View>
                     <View style={{ flex: 1 }}>
                       <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                        <Text numberOfLines={1} style={{ fontSize: 13, fontWeight: "700", color: colors.text, flexShrink: 1 }}>
+                        <Text numberOfLines={1} style={{ fontSize: 13, fontWeight: "500", color: colors.text, flexShrink: 1 }}>
                           {t.type === "transfer"
                             ? `Transfer${accountName(t.accountId) ? ` · ${accountName(t.accountId)}` : ""}${accountName(t.toAccountId) ? ` → ${accountName(t.toAccountId)}` : ""}`
                             : t.note || meta.label}
@@ -421,13 +406,15 @@ export default function TransactionsScreen() {
                           return sub ? (
                             <View
                               style={{
-                                backgroundColor: "rgba(99, 102, 241, 0.15)",
-                                paddingHorizontal: 5,
+                                backgroundColor: colors.surfaceInset,
+                                borderWidth: 1,
+                                borderColor: colors.border,
+                                paddingHorizontal: 6,
                                 paddingVertical: 1,
-                                borderRadius: 4,
+                                borderRadius: 999,
                               }}
                             >
-                              <Text style={{ fontSize: 9, fontWeight: "800", color: colors.primary }}>
+                              <Text style={{ fontSize: 8, fontWeight: "500", letterSpacing: 0.6, color: colors.mutedText }}>
                                 {sub.name}
                               </Text>
                             </View>
@@ -440,11 +427,10 @@ export default function TransactionsScreen() {
                       </Text>
                     </View>
                     <View style={{ alignItems: "flex-end" }}>
-                      <Text
+                      <Numeral
                         style={{
                           fontSize: 13,
-                          fontWeight: "800",
-                          color: t.type === "income" ? colors.emerald : t.type === "transfer" ? colors.blue : colors.destructive,
+                          color: t.type === "income" ? colors.positive : t.type === "transfer" ? colors.mutedText : colors.text,
                         }}
                       >
                         {t.type === "income" ? "+" : t.type === "expense" ? "-" : ""}
@@ -452,7 +438,7 @@ export default function TransactionsScreen() {
                           convertCurrency(t.amount, t.currency, primaryCurrency, rates),
                           primaryCurrency
                         )}
-                      </Text>
+                      </Numeral>
                       {t.currency !== primaryCurrency ? (
                         <Text style={{ fontSize: 10, color: colors.mutedText }}>
                           {t.amount} {t.currency}
@@ -494,20 +480,22 @@ export default function TransactionsScreen() {
           />
           <View
             style={{
-              backgroundColor: colors.background,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              padding: 16,
-              gap: 12,
+              backgroundColor: colors.card,
+              borderTopWidth: 1,
+              borderColor: colors.border,
+              borderTopLeftRadius: 28,
+              borderTopRightRadius: 28,
+              padding: 20,
+              gap: 14,
               paddingBottom: 32,
             }}
           >
-            <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
-              Edit Transaction
+            <Text style={{ fontSize: 18, fontWeight: "600", letterSpacing: -0.4, color: colors.text }}>
+              Edit transaction
             </Text>
             <View style={{ flexDirection: "row", gap: 10 }}>
               <View style={{ flex: 1, gap: 4 }}>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>AMOUNT</Text>
+                <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.4, textTransform: "uppercase", color: colors.mutedText }}>AMOUNT</Text>
                 <TextInput
                   value={editAmount}
                   onChangeText={setEditAmount}
@@ -515,17 +503,17 @@ export default function TransactionsScreen() {
                   style={{
                     borderWidth: 1,
                     borderColor: colors.border,
-                    borderRadius: 8,
-                    paddingHorizontal: 10,
-                    paddingVertical: 8,
+                    borderRadius: 14,
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
                     fontSize: 14,
                     color: colors.text,
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.surfaceInset,
                   }}
                 />
               </View>
               <View style={{ flex: 1, gap: 4 }}>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>DATE</Text>
+                <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.4, textTransform: "uppercase", color: colors.mutedText }}>DATE</Text>
                 <TextInput
                   value={editDate}
                   onChangeText={setEditDate}
@@ -534,18 +522,18 @@ export default function TransactionsScreen() {
                   style={{
                     borderWidth: 1,
                     borderColor: colors.border,
-                    borderRadius: 8,
-                    paddingHorizontal: 10,
-                    paddingVertical: 8,
+                    borderRadius: 14,
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
                     fontSize: 14,
                     color: colors.text,
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.surfaceInset,
                   }}
                 />
               </View>
             </View>
             <View style={{ gap: 4 }}>
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>CATEGORY</Text>
+              <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.4, textTransform: "uppercase", color: colors.mutedText }}>CATEGORY</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
                 {financeCategories.map((c) => (
                   <TouchableOpacity
@@ -554,8 +542,10 @@ export default function TransactionsScreen() {
                     style={{
                       paddingHorizontal: 10,
                       paddingVertical: 6,
-                      borderRadius: 8,
-                      backgroundColor: editCategory === c.value ? colors.primary : colors.surface,
+                      borderRadius: 999,
+                      backgroundColor: editCategory === c.value ? colors.primary : colors.surfaceInset,
+                      borderWidth: 1,
+                      borderColor: editCategory === c.value ? colors.primary : colors.border,
                     }}
                   >
                     <Text
@@ -572,7 +562,7 @@ export default function TransactionsScreen() {
               </ScrollView>
             </View>
             <View style={{ gap: 4 }}>
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>NOTE</Text>
+              <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.4, textTransform: "uppercase", color: colors.mutedText }}>NOTE</Text>
               <TextInput
                 value={editNote}
                 onChangeText={setEditNote}
@@ -581,12 +571,12 @@ export default function TransactionsScreen() {
                 style={{
                   borderWidth: 1,
                   borderColor: colors.border,
-                  borderRadius: 8,
-                  paddingHorizontal: 10,
-                  paddingVertical: 8,
+                  borderRadius: 14,
+                  paddingHorizontal: 12,
+                  paddingVertical: 10,
                   fontSize: 14,
                   color: colors.text,
-                  backgroundColor: colors.surface,
+                  backgroundColor: colors.surfaceInset,
                 }}
               />
             </View>
@@ -596,24 +586,26 @@ export default function TransactionsScreen() {
                 style={{
                   flex: 1,
                   paddingVertical: 12,
-                  borderRadius: 10,
-                  backgroundColor: colors.surface,
+                  borderRadius: 999,
+                  backgroundColor: colors.surfaceInset,
+                  borderWidth: 1,
+                  borderColor: colors.border,
                   alignItems: "center",
                 }}
               >
-                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>Cancel</Text>
+                <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleSaveEdit}
                 style={{
                   flex: 1,
                   paddingVertical: 12,
-                  borderRadius: 10,
+                  borderRadius: 999,
                   backgroundColor: colors.primary,
                   alignItems: "center",
                 }}
               >
-                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.primaryForeground }}>Save</Text>
+                <Text style={{ fontSize: 13, fontWeight: "500", color: colors.primaryForeground }}>Save</Text>
               </TouchableOpacity>
             </View>
           </View>

@@ -21,6 +21,9 @@
   --color-border: var(--border);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warning: var(--warning);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -38,83 +41,90 @@
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: var(--radius);
-  --radius-2xl: var(--radius);
-  --radius-3xl: var(--radius);
-  --radius: 0.625rem;
+  --radius-xl: calc(var(--radius) + 2px);
+  --radius-2xl: calc(var(--radius) + 4px);
+  --radius-3xl: calc(var(--radius) + 6px);
+  --radius-4xl: calc(var(--radius) + 8px);
+  --radius: 1rem;
 }
 
 :root {
   color-scheme: light;
-  --background: #ffffff;
-  --foreground: #09090b;
-  --card: #ffffff;
-  --card-foreground: #09090b;
-  --popover: #ffffff;
-  --popover-foreground: #09090b;
-  --primary: #18181b;
-  --primary-foreground: #fafafa;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f4f4f5;
-  --accent-foreground: #18181b;
-  --destructive: #ef4444;
-  --destructive-foreground: #fafafa;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #a1a1aa;
-  --chart-1: #18181b;
-  --chart-2: #71717a;
-  --chart-3: #a1a1aa;
-  --chart-4: #d4d4d8;
-  --chart-5: #e4e4e7;
-  --radius: 0.625rem;
-  --sidebar: #fafafa;
-  --sidebar-foreground: #09090b;
-  --sidebar-primary: #18181b;
-  --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #f4f4f5;
-  --sidebar-accent-foreground: #18181b;
-  --sidebar-border: #e4e4e7;
-  --sidebar-ring: #a1a1aa;
+  --background: #f2f1ed;
+  --foreground: #151514;
+  --card: #faf9f6;
+  --card-foreground: #151514;
+  --popover: #faf9f6;
+  --popover-foreground: #151514;
+  --primary: #171716;
+  --primary-foreground: #f6f4ef;
+  --secondary: #e7e5df;
+  --secondary-foreground: #171716;
+  --muted: #e8e6e0;
+  --muted-foreground: #6f6d67;
+  --accent: #e8e6e0;
+  --accent-foreground: #171716;
+  --destructive: #a8544b;
+  --destructive-foreground: #fbf7f2;
+  --positive: #4f7357;
+  --negative: #a2544a;
+  --warning: #8a6b34;
+  --border: rgba(21, 21, 20, 0.09);
+  --input: rgba(21, 21, 20, 0.06);
+  --ring: rgba(21, 21, 20, 0.28);
+  --chart-1: #262624;
+  --chart-2: #4b4b48;
+  --chart-3: #767671;
+  --chart-4: #a3a29b;
+  --chart-5: #cbc9c1;
+  --radius: 1rem;
+  --sidebar: #f7f6f2;
+  --sidebar-foreground: #151514;
+  --sidebar-primary: #171716;
+  --sidebar-primary-foreground: #f6f4ef;
+  --sidebar-accent: #e8e6e0;
+  --sidebar-accent-foreground: #171716;
+  --sidebar-border: rgba(21, 21, 20, 0.09);
+  --sidebar-ring: rgba(21, 21, 20, 0.28);
 }
 
 .dark {
   color-scheme: dark;
-  --background: #09090b;
-  --foreground: #fafafa;
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  --popover: #18181b;
-  --popover-foreground: #fafafa;
-  --primary: #fafafa;
-  --primary-foreground: #18181b;
-  --secondary: #27272a;
-  --secondary-foreground: #fafafa;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --accent: #27272a;
-  --accent-foreground: #fafafa;
-  --destructive: #7f1d1d;
-  --destructive-foreground: #fca5a5;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.15);
-  --ring: #71717a;
-  --chart-1: #fafafa;
-  --chart-2: #a1a1aa;
-  --chart-3: #71717a;
-  --chart-4: #52525b;
-  --chart-5: #3f3f46;
-  --sidebar: #121215;
-  --sidebar-foreground: #fafafa;
-  --sidebar-primary: #6366f1;
-  --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #27272a;
-  --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #71717a;
+  --background: #08090b;
+  --foreground: #f4f4f2;
+  --card: #121316;
+  --card-foreground: #f4f4f2;
+  --popover: #15161a;
+  --popover-foreground: #f4f4f2;
+  --primary: #f2f1ec;
+  --primary-foreground: #0a0a0b;
+  --secondary: #1a1b1f;
+  --secondary-foreground: #f4f4f2;
+  --muted: #17181c;
+  --muted-foreground: #8a8c92;
+  --accent: #1e2025;
+  --accent-foreground: #f4f4f2;
+  --destructive: #c2857b;
+  --destructive-foreground: #1a0f0d;
+  --positive: #a9bfa9;
+  --negative: #c99a90;
+  --warning: #d2bd93;
+  --border: rgba(255, 255, 255, 0.07);
+  --input: rgba(255, 255, 255, 0.06);
+  --ring: rgba(255, 255, 255, 0.24);
+  --chart-1: #f0efeb;
+  --chart-2: #b9b9b4;
+  --chart-3: #8c8d90;
+  --chart-4: #5f6065;
+  --chart-5: #3a3b40;
+  --sidebar: #0d0e10;
+  --sidebar-foreground: #f4f4f2;
+  --sidebar-primary: #f2f1ec;
+  --sidebar-primary-foreground: #0a0a0b;
+  --sidebar-accent: #1a1b1f;
+  --sidebar-accent-foreground: #f4f4f2;
+  --sidebar-border: rgba(255, 255, 255, 0.07);
+  --sidebar-ring: rgba(255, 255, 255, 0.24);
 }
 
 @layer base {
@@ -132,6 +142,8 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-feature-settings: "cv11", "ss01";
+    letter-spacing: -0.011em;
     user-select: none;
     overflow-x: hidden;
   }
@@ -153,8 +165,8 @@
   }
 
   .dark select option {
-    background-color: #18181b;
-    color: #fafafa;
+    background-color: #121316;
+    color: #f4f4f2;
   }
 }
 
@@ -218,4 +230,78 @@
 .titlebar-no-drag,
 .app-no-drag {
   -webkit-app-region: no-drag;
+}
+
+@layer components {
+  /* Core panel: hairline border, solid card background, deep soft shadow. */
+  .surface {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    background-color: var(--card);
+    box-shadow: 0 28px 56px -40px rgba(0, 0, 0, 0.9);
+  }
+
+  :root:not(.dark) .surface {
+    background-color: var(--card);
+    box-shadow: 0 24px 48px -40px rgba(30, 26, 18, 0.4);
+  }
+
+  .surface-inset {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: color-mix(in oklab, var(--foreground) 3%, transparent);
+  }
+
+  .surface-interactive {
+    transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+  }
+
+  .surface-interactive:hover {
+    border-color: color-mix(in oklab, var(--foreground) 16%, transparent);
+    background-color: color-mix(in oklab, var(--foreground) 3%, var(--card));
+  }
+
+  /* Small spaced-out caption used above every number. */
+  .label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  /* Numbers align in columns. */
+  .numeral {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum", "ss01";
+    letter-spacing: -0.045em;
+  }
+
+  .hairline {
+    border-color: var(--border);
+  }
+
+  .page-title {
+    font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+    font-weight: 550;
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+
+  .display-number {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum", "ss01";
+    font-weight: 550;
+    letter-spacing: -0.055em;
+    line-height: 0.92;
+  }
+
+  .quiet-scroll {
+    scrollbar-width: none;
+  }
+
+  .quiet-scroll::-webkit-scrollbar {
+    display: none;
+  }
 }

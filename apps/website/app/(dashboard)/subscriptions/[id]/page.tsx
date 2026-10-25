@@ -440,7 +440,7 @@ export default function SubscriptionDetailPage({
     : 0
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
+    <div className="max-w-2xl mx-auto space-y-5 pb-8">
       <input
         ref={receiptInputRef}
         type="file"
@@ -470,12 +470,12 @@ export default function SubscriptionDetailPage({
       </div>
 
       {sub.isTrial && (
-        <div className="mb-4 flex items-center justify-between rounded-lg bg-emerald-500/15 p-3 text-xs text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+        <div className="mb-4 flex items-center justify-between rounded-2xl border border-positive/25 bg-positive/[0.07] p-3 text-xs text-positive">
           <div className="flex items-center gap-2">
             <Sparkles className="size-4 shrink-0" />
             <div>
-              <p className="font-bold">Active Free Trial</p>
-              <p className="text-[11px] opacity-90">
+              <p className="font-medium">Active free trial</p>
+              <p className="text-[11px] text-muted-foreground">
                 {sub.trialEndDate
                   ? `Expires on ${format(new Date(sub.trialEndDate), "MMM d, yyyy")} (${trialDaysLeft} days left)`
                   : "Trial subscription mode"}
@@ -487,12 +487,12 @@ export default function SubscriptionDetailPage({
       )}
 
       {/* Main Card Header */}
-      <div className="mb-4 rounded-lg border border-border bg-background p-5">
+      <div className="surface mb-4 p-5">
         <div className="flex items-center gap-4">
           <button
             onClick={() => editing && setIconOpen(true)}
             className={cn(
-              "flex size-14 items-center justify-center rounded-lg border border-black/10 dark:border-white/10 shadow-xs",
+              "flex size-14 items-center justify-center rounded-2xl border border-black/10 dark:border-white/10 shadow-xs",
               editing && "cursor-pointer ring-2 ring-primary ring-offset-2"
             )}
             style={{ backgroundColor: (editing ? editColor : sub.color) || "#6366F1" }}
@@ -509,17 +509,17 @@ export default function SubscriptionDetailPage({
               <Input
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="mb-1 text-lg font-bold"
+                className="mb-1 text-lg font-medium"
               />
             ) : (
-              <h2 className="text-lg font-bold">{sub.name}</h2>
+              <h2 className="text-xl font-medium tracking-tight">{sub.name}</h2>
             )}
             <div className="flex flex-wrap items-center gap-2">
               {editing ? (
                 <select
                   value={editCategory}
                   onChange={(e) => setEditCategory(e.target.value)}
-                  className="rounded-lg border border-border bg-background px-2 py-1 text-xs"
+                  className="rounded-xl border border-border bg-foreground/[0.03] px-2 py-1 text-xs"
                 >
                   {categories
                     .filter((c) => c.value !== "all")
@@ -532,7 +532,7 @@ export default function SubscriptionDetailPage({
               ) : (
                 <Badge
                   variant="secondary"
-                  className="text-xs rounded-md"
+                  className="text-xs rounded-full"
                   style={{
                     backgroundColor: categoryColors[sub.category] + "20",
                     color: categoryColors[sub.category],
@@ -543,26 +543,26 @@ export default function SubscriptionDetailPage({
               )}
 
               {sub.isTrial && (
-                <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold rounded-md">
-                  FREE TRIAL
+                <Badge className="rounded-full border border-positive/25 bg-positive/10 text-[10px] font-medium uppercase tracking-[0.12em] text-positive">
+                  Free trial
                 </Badge>
               )}
 
               {sub.isShared && (
-                <Badge className="bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-xs font-bold rounded-md">
-                  SPLIT PLAN {sub.totalMembers ? `(1/${sub.totalMembers})` : ""}
+                <Badge className="rounded-full border border-border bg-foreground/[0.05] text-[10px] font-medium uppercase tracking-[0.12em] text-foreground/75">
+                  Split plan {sub.totalMembers ? `(1/${sub.totalMembers})` : ""}
                 </Badge>
               )}
 
               {hasPriceHike && (
-                <Badge className="bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold rounded-md">
-                  +{priceHikeDiff}% PRICE HIKE
+                <Badge className="rounded-full border border-warning/25 bg-warning/10 text-[10px] font-medium uppercase tracking-[0.12em] text-warning">
+                  +{priceHikeDiff}% price hike
                 </Badge>
               )}
 
               <Badge
                 variant={sub.isActive ? "default" : "destructive"}
-                className="text-xs rounded-md"
+                className="text-xs rounded-full"
               >
                 {sub.isActive ? "Active" : "Suspended"}
               </Badge>
@@ -573,8 +573,8 @@ export default function SubscriptionDetailPage({
 
       {/* Quick Metrics */}
       <div className="mb-4 grid grid-cols-3 gap-2">
-        <div className="rounded-lg bg-muted p-3 text-center">
-          <div className="text-sm font-extrabold text-foreground truncate">
+        <div className="surface-inset p-3 text-center">
+          <div className="numeral text-sm font-medium text-foreground truncate">
             {convertAndFormat(
               editing ? parseFloat(editPrice || "0") : sub.price,
               editing ? editCurrency : sub.currency,
@@ -582,22 +582,22 @@ export default function SubscriptionDetailPage({
               rates
             )}
           </div>
-          <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
+          <div className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
             Price ({primaryCurrency})
           </div>
         </div>
-        <div className="rounded-lg bg-muted p-3 text-center">
-          <div className="text-sm font-bold truncate">
+        <div className="surface-inset p-3 text-center">
+          <div className="text-sm font-medium truncate">
             {editing
               ? editCycle.charAt(0).toUpperCase() + editCycle.slice(1)
               : sub.cycle.charAt(0).toUpperCase() + sub.cycle.slice(1)}
           </div>
-          <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
+          <div className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
             Cycle
           </div>
         </div>
-        <div className="rounded-lg bg-muted p-3 text-center">
-          <div className="text-sm font-extrabold text-foreground truncate">
+        <div className="surface-inset p-3 text-center">
+          <div className="numeral text-sm font-medium text-foreground truncate">
             {convertAndFormat(
               nativeYearlyCost,
               sub.currency,
@@ -605,31 +605,31 @@ export default function SubscriptionDetailPage({
               rates
             )}
           </div>
-          <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
-            Yearly Total
+          <div className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+            Yearly total
           </div>
         </div>
       </div>
 
       {/* Editing Form */}
       {editing ? (
-        <div className="space-y-4 rounded-lg border border-border bg-background p-4">
-          <div className="flex items-center justify-between rounded-lg bg-emerald-500/10 p-3 border border-emerald-500/30">
-            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-              Free Trial Subscription
+        <div className="surface space-y-4 p-4 sm:p-5">
+          <div className="flex items-center justify-between rounded-2xl border border-positive/25 bg-positive/[0.07] p-3">
+            <span className="text-xs font-medium text-positive">
+              Free trial subscription
             </span>
             <input
               type="checkbox"
               checked={editIsTrial}
               onChange={(e) => setEditIsTrial(e.target.checked)}
-              className="size-4 rounded accent-emerald-500 cursor-pointer"
+              className="size-4 rounded accent-[var(--positive)] cursor-pointer"
             />
           </div>
 
           {editIsTrial && (
             <div className="space-y-1">
-              <label className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                Trial End Date
+              <label className="text-xs font-medium text-muted-foreground">
+                Trial end date
               </label>
               <Input
                 type="date"
@@ -654,7 +654,7 @@ export default function SubscriptionDetailPage({
               <select
                 value={editCurrency}
                 onChange={(e) => setEditCurrency(e.target.value)}
-                className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-3 text-sm"
               >
                 {currencies.map((c) => (
                   <option key={c.value} value={c.value}>
@@ -674,7 +674,7 @@ export default function SubscriptionDetailPage({
             <select
               value={editPaymentMethodId}
               onChange={(e) => setEditPaymentMethodId(e.target.value)}
-              className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+              className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-3 text-sm"
             >
               <option value="">No linked payment method</option>
               {paymentMethods?.map((pm) => (
@@ -694,7 +694,7 @@ export default function SubscriptionDetailPage({
             <select
               value={editAccountId}
               onChange={(e) => setEditAccountId(e.target.value)}
-              className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-sm"
+              className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-3 text-sm"
             >
               <option value="">No linked account (Uses default on payment)</option>
               {accounts
@@ -715,10 +715,10 @@ export default function SubscriptionDetailPage({
                   key={bc.value}
                   type="button"
                   onClick={() => setEditCycle(bc.value)}
-                  className={`flex items-center justify-center rounded-lg border-2 px-3 py-2 text-xs font-medium transition-all cursor-pointer ${
+                  className={`flex items-center justify-center rounded-xl border px-3 py-2 text-xs font-medium transition-all cursor-pointer ${
                     editCycle === bc.value
                       ? "border-foreground bg-foreground text-background"
-                      : "border-border bg-background text-foreground hover:border-foreground/50"
+                      : "border-border bg-foreground/[0.03] text-foreground hover:border-foreground/40"
                   }`}
                 >
                   {bc.label}
@@ -789,7 +789,7 @@ export default function SubscriptionDetailPage({
               ))}
               <div className="flex items-center gap-1.5 ml-1 pl-2 border-l border-border">
                 <label
-                  className="relative size-7 rounded-full border border-border cursor-pointer overflow-hidden flex items-center justify-center bg-muted/50 hover:bg-muted transition-colors shrink-0"
+                  className="relative size-7 rounded-full border border-border cursor-pointer overflow-hidden flex items-center justify-center bg-foreground/[0.03] hover:bg-foreground/[0.06] transition-colors shrink-0"
                   title="Pick custom color"
                 >
                   <Pipette className="size-3.5 text-muted-foreground" />
@@ -810,7 +810,7 @@ export default function SubscriptionDetailPage({
                   onChange={(e) => setEditColor(e.target.value)}
                   placeholder="#FFFFFF"
                   maxLength={7}
-                  className="w-20 px-2 py-1 text-xs font-mono rounded-md border border-border bg-background focus:outline-hidden focus:ring-1 focus:ring-primary"
+                  className="w-20 px-2 py-1 text-xs font-mono rounded-lg border border-border bg-foreground/[0.03] focus:outline-hidden focus:ring-1 focus:ring-primary"
                 />
               </div>
             </div>
@@ -823,9 +823,9 @@ export default function SubscriptionDetailPage({
       ) : (
         <div className="space-y-4">
           {/* Details Block */}
-          <div className="rounded-lg border border-border bg-background p-4 space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Subscription Information
+          <div className="surface space-y-3 p-4 sm:p-5">
+            <h3 className="label">
+              Subscription information
             </h3>
 
             <div className="space-y-3">
@@ -910,7 +910,7 @@ export default function SubscriptionDetailPage({
                       href={sub.cancelUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-medium text-blue-500 hover:underline flex items-center gap-1 truncate max-w-[180px]"
+                      className="text-sm font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-foreground/50 flex items-center gap-1 truncate max-w-[180px]"
                     >
                       <ExternalLink className="size-3 shrink-0" />
                       <span className="truncate">Cancellation Page</span>
@@ -936,15 +936,15 @@ export default function SubscriptionDetailPage({
 
           {/* SplitKeep Household Splitting Section */}
           {sub.isShared && sub.splitMembers && sub.splitMembers.length > 0 && (
-            <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-4 space-y-3">
+            <div className="surface space-y-3 p-4 sm:p-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Users className="size-4 text-blue-500" />
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">
-                    SplitKeep: Household Split Tracker
+                  <Users className="size-4 text-muted-foreground" />
+                  <h3 className="label">
+                    SplitKeep: household split tracker
                   </h3>
                 </div>
-                <span className="text-xs text-muted-foreground">
+                <span className="numeral text-xs text-muted-foreground">
                   Total: {getSymbol(sub.currency)}{sub.totalPlanPrice || sub.price * (sub.totalMembers || 1)}
                 </span>
               </div>
@@ -953,15 +953,15 @@ export default function SubscriptionDetailPage({
                 {sub.splitMembers.map((member, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between rounded-lg bg-background p-2.5 border border-border text-xs"
+                    className="flex items-center justify-between rounded-2xl border border-border bg-foreground/[0.02] p-2.5 text-xs"
                   >
                     <div className="flex items-center gap-2.5">
                       <button
                         onClick={() => handleToggleMemberPaid(idx)}
                         className={cn(
-                          "size-5 rounded flex items-center justify-center border transition-all cursor-pointer",
+                          "size-5 rounded-md flex items-center justify-center border transition-all cursor-pointer",
                           member.isPaid
-                            ? "bg-emerald-500 text-white border-emerald-600"
+                            ? "bg-positive text-background border-positive"
                             : "border-border hover:border-foreground/50"
                         )}
                         title={member.isPaid ? "Mark as unpaid" : "Mark as paid"}
@@ -982,10 +982,10 @@ export default function SubscriptionDetailPage({
                       size="sm"
                       variant="ghost"
                       onClick={() => handleCopyPaymentReminder(member)}
-                      className="h-7 text-[11px] gap-1 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 cursor-pointer"
+                      className="h-7 text-[11px] gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       <MessageSquare className="size-3" />
-                      Copy Reminder
+                      Copy reminder
                     </Button>
                   </div>
                 ))}
@@ -995,16 +995,16 @@ export default function SubscriptionDetailPage({
 
           {/* Price Hike History */}
           {priceHistory.length > 0 && (
-            <div className="rounded-lg border border-border bg-background p-4 space-y-3">
+            <div className="surface space-y-3 p-4 sm:p-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="size-4 text-primary" />
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Price History & Inflation Log
+                  <TrendingUp className="size-4 text-muted-foreground" />
+                  <h3 className="label">
+                    Price history & inflation log
                   </h3>
                 </div>
                 {hasPriceHike && (
-                  <span className="text-xs font-bold text-amber-500">
+                  <span className="text-xs font-medium text-warning">
                     +{priceHikeDiff}% overall increase
                   </span>
                 )}
@@ -1029,12 +1029,12 @@ export default function SubscriptionDetailPage({
           )}
 
           {/* Invoice / Receipt Attachment */}
-          <div className="rounded-lg border border-border bg-background p-4 space-y-3">
+          <div className="surface space-y-3 p-4 sm:p-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Paperclip className="size-4 text-primary" />
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Invoice & Warranty Receipt
+                <Paperclip className="size-4 text-muted-foreground" />
+                <h3 className="label">
+                  Invoice & warranty receipt
                 </h3>
               </div>
               <Button
@@ -1050,20 +1050,20 @@ export default function SubscriptionDetailPage({
             </div>
 
             {sub.receiptUrl ? (
-              <div className="flex items-center justify-between rounded-lg bg-muted/40 p-3 border border-border text-xs">
+              <div className="flex items-center justify-between rounded-2xl border border-border bg-foreground/[0.02] p-3 text-xs">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <FileText className="size-5 text-primary shrink-0" />
+                  <FileText className="size-5 text-muted-foreground shrink-0" />
                   <div className="min-w-0">
                     <p className="font-medium text-foreground truncate">
-                      {sub.receiptFileName || "Attached Invoice"}
+                      {sub.receiptFileName || "Attached invoice"}
                     </p>
                     <a
                       href={sub.receiptUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[11px] text-blue-500 hover:underline flex items-center gap-1"
+                      className="text-[11px] text-muted-foreground underline decoration-border underline-offset-4 hover:text-foreground flex items-center gap-1"
                     >
-                      <ExternalLink className="size-3" /> View / Download Document
+                      <ExternalLink className="size-3" /> View / download document
                     </a>
                   </div>
                 </div>
@@ -1084,12 +1084,12 @@ export default function SubscriptionDetailPage({
           </div>
 
           {/* Payment History Log */}
-          <div className="rounded-lg border border-border bg-background p-4 space-y-3">
+          <div className="surface space-y-3 p-4 sm:p-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <History className="size-4 text-primary" />
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Payment History & Billing Logs
+                <History className="size-4 text-muted-foreground" />
+                <h3 className="label">
+                  Payment history & billing logs
                 </h3>
               </div>
               <span className="text-xs text-muted-foreground">
@@ -1104,17 +1104,17 @@ export default function SubscriptionDetailPage({
                   return (
                     <div
                       key={p._id}
-                      className="flex items-center justify-between rounded-lg bg-muted/40 p-2.5 border border-border text-xs"
+                      className="flex items-center justify-between rounded-2xl border border-border bg-foreground/[0.02] p-2.5 text-xs"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div
-                          className="flex size-7 shrink-0 items-center justify-center rounded-md font-bold text-white text-[11px]"
-                          style={{ backgroundColor: p.color || sub.color }}
+                          className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-border bg-foreground/[0.05] font-medium text-foreground text-[11px]"
+                          style={{ backgroundColor: (p.color || sub.color) + "22", color: p.color || sub.color }}
                         >
                           {p.name.charAt(0)}
                         </div>
                         <div className="min-w-0">
-                          <p className="font-semibold text-foreground truncate">
+                          <p className="font-medium text-foreground truncate">
                             {format(paymentDate, "MMM d, yyyy")}
                           </p>
                           <p className="text-[11px] text-muted-foreground">
@@ -1124,7 +1124,7 @@ export default function SubscriptionDetailPage({
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-red-500 text-xs">
+                        <span className="numeral font-medium text-negative text-xs">
                           -{convertAndFormat(p.amount, p.currency, primaryCurrency, rates)}
                         </span>
                         <div className="flex items-center gap-0.5">
@@ -1228,7 +1228,7 @@ export default function SubscriptionDetailPage({
       </div>
 
       <Dialog open={cancelUrlModalOpen} onOpenChange={setCancelUrlModalOpen}>
-        <DialogContent className="max-w-sm rounded-lg p-5">
+        <DialogContent className="max-w-sm rounded-3xl p-5">
           <DialogHeader className="pr-6 space-y-1 text-left">
             <DialogTitle className="text-base font-semibold">Change Cancellation Page</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
@@ -1276,7 +1276,7 @@ export default function SubscriptionDetailPage({
 
       {/* Edit Payment Dialog */}
       <Dialog open={!!editingPayment} onOpenChange={(open) => !open && setEditingPayment(null)}>
-        <DialogContent className="max-w-sm rounded-lg p-5">
+        <DialogContent className="max-w-sm rounded-3xl p-5">
           <DialogHeader className="space-y-1 text-left">
             <DialogTitle className="text-base font-semibold">Edit Payment Record</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
@@ -1300,7 +1300,7 @@ export default function SubscriptionDetailPage({
                 <select
                   value={editPaymentCurrency}
                   onChange={(e) => setEditPaymentCurrency(e.target.value)}
-                  className="flex h-9 w-full rounded-lg border border-border bg-background px-2.5 text-xs"
+                  className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-2.5 text-xs"
                 >
                   {currencies.map((c) => (
                     <option key={c.value} value={c.value}>
@@ -1343,7 +1343,7 @@ export default function SubscriptionDetailPage({
 
       {/* Delete Payment Dialog */}
       <Dialog open={!!deletingPayment} onOpenChange={(open) => !open && setDeletingPayment(null)}>
-        <DialogContent className="max-w-sm rounded-lg p-5">
+        <DialogContent className="max-w-sm rounded-3xl p-5">
           <DialogHeader className="space-y-1 text-left">
             <DialogTitle className="text-base font-semibold">Delete Payment Record</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">

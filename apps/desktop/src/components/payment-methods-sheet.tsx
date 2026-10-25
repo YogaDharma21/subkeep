@@ -188,9 +188,9 @@ export function PaymentMethodsSheet({
 
           {/* Add New Card Form */}
           {isAdding && (
-            <div className="rounded-lg border border-border bg-muted/40 p-4 space-y-4 animate-in fade-in-50">
+            <div className="surface-inset p-4 space-y-4 animate-in fade-in-50">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                <h4 className="text-xs font-medium uppercase tracking-[0.18em] text-foreground">
                   New Payment Method
                 </h4>
                 <Button
@@ -217,7 +217,7 @@ export function PaymentMethodsSheet({
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value)}
-                    className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-xs"
+                    className="flex h-10 w-full rounded-xl border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] px-3 text-xs"
                   >
                     {CARD_TYPES.map((ct) => (
                       <option key={ct.value} value={ct.value}>
@@ -271,7 +271,7 @@ export function PaymentMethodsSheet({
                       type="button"
                       onClick={() => setColor(c)}
                       className={cn(
-                        "size-7 rounded-lg border-2 transition-transform cursor-pointer",
+                        "size-7 rounded-xl border-2 transition-transform cursor-pointer",
                         color === c ? "border-foreground scale-110" : "border-transparent"
                       )}
                       style={{ backgroundColor: c }}
@@ -296,12 +296,12 @@ export function PaymentMethodsSheet({
                 return (
                   <div
                     key={pm._id}
-                    className="relative overflow-hidden rounded-lg border border-border bg-card p-4 transition-all hover:border-border/80 shadow-xs"
+                    className="relative overflow-hidden rounded-xl border border-border bg-card p-4 transition-all hover:border-border/80 shadow-none"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3">
                         <div
-                          className="flex size-10 items-center justify-center rounded-lg text-white shadow-xs shrink-0"
+                          className="flex size-10 items-center justify-center rounded-xl text-white shadow-none shrink-0"
                           style={{ backgroundColor: pm.color }}
                         >
                           {pm.type === "bank" ? (
@@ -313,7 +313,7 @@ export function PaymentMethodsSheet({
 
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-foreground">
+                            <span className="font-medium text-sm text-foreground">
                               {pm.name}
                             </span>
                             {pm.last4 && (
@@ -363,14 +363,14 @@ export function PaymentMethodsSheet({
 
                     {/* Expiry alerts */}
                     {expiryStatus === "expired" && (
-                      <div className="mt-3 flex items-center gap-2 rounded-lg bg-destructive/10 border border-destructive/20 p-2 text-xs text-destructive">
+                      <div className="mt-3 flex items-center gap-2 rounded-xl bg-destructive/10 border border-destructive/20 p-2 text-xs text-destructive">
                         <AlertTriangle className="size-4 shrink-0" />
                         <span>This card has expired! Update your subscriptions to prevent billing interruptions.</span>
                       </div>
                     )}
 
                     {expiryStatus === "expiring_soon" && (
-                      <div className="mt-3 flex items-center gap-2 rounded-lg bg-muted/60 border border-border p-2 text-xs text-foreground">
+                      <div className="mt-3 flex items-center gap-2 rounded-xl bg-muted/60 border border-border p-2 text-xs text-foreground">
                         <AlertTriangle className="size-4 shrink-0 text-muted-foreground" />
                         <span>Card expires soon. Remember to update renewal details.</span>
                       </div>
@@ -379,7 +379,7 @@ export function PaymentMethodsSheet({
                 )
               })
             ) : (
-              <div className="py-8 text-center rounded-lg border border-dashed border-border p-6 text-xs text-muted-foreground">
+              <div className="py-8 text-center rounded-3xl border border-dashed border-border p-6 text-xs text-muted-foreground">
                 <CreditCard className="size-8 mx-auto mb-2 text-muted-foreground/60" />
                 <p className="font-medium text-foreground">No payment methods added yet</p>
                 <p className="mt-1">Add your credit cards, PayPal, or bank accounts to track spending per payment source.</p>

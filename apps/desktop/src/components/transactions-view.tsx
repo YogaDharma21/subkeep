@@ -9,8 +9,7 @@ import {
   Search,
   Pencil,
   Trash2,
-  ArrowDownRight,
-  ArrowUpRight,
+  ArrowLeftRight,
 } from "lucide-react"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { Button } from "@/components/ui/button"
@@ -160,53 +159,56 @@ export function TransactionsView() {
   }, [filtered])
 
   return (
-    <div className="space-y-4 max-w-5xl mx-auto pb-12">
-      <div>
-        <h1 className="text-xl font-extrabold text-foreground">Transactions</h1>
-        <p className="text-xs text-muted-foreground mt-1">Log expenses, income, and transfers.</p>
+    <div className="mx-auto max-w-5xl space-y-3 pb-16">
+      <div className="px-1 pb-2">
+        <p className="label">Activity</p>
+        <h1 className="page-title mt-2">Transactions</h1>
       </div>
 
       {/* Month + totals */}
-      <div className="rounded-lg border border-border bg-background p-4">
+      <section className="surface relative overflow-hidden p-5 sm:p-6">
         <div className="flex items-center justify-between">
-          <Button variant="outline" size="icon-sm" onClick={() => setMonth(shiftMonth(month, -1))}>
+          <Button variant="outline" size="icon-sm" onClick={() => setMonth(shiftMonth(month, -1))} className="rounded-full" aria-label="Previous month">
             <ChevronLeft className="size-4" />
           </Button>
           <div className="text-center">
-            <h2 className="text-sm font-bold">{monthLabel(month)}</h2>
-            <p className="text-[11px] text-muted-foreground">Net {formatCurrencyAmount(totals.net, primaryCurrency)}</p>
+            <p className="label">This month</p>
+            <p className="mt-2 text-lg font-medium tracking-tight text-foreground">{monthLabel(month)}</p>
           </div>
-          <Button variant="outline" size="icon-sm" onClick={() => setMonth(shiftMonth(month, 1))}>
+          <Button variant="outline" size="icon-sm" onClick={() => setMonth(shiftMonth(month, 1))} className="rounded-full" aria-label="Next month">
             <ChevronRight className="size-4" />
           </Button>
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3 text-center">
-            <div className="flex items-center justify-center gap-1 text-sm font-extrabold text-emerald-500">
-              <ArrowDownRight className="size-4" />
-              {formatCurrencyAmount(totals.income, primaryCurrency)}
-            </div>
-            <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium mt-0.5">Income</div>
+        <div className="mt-6 grid grid-cols-3 gap-3 border-t border-border pt-4">
+          <div className="min-w-0">
+            <p className="label">Net</p>
+            <p className="numeral mt-1.5 truncate text-[15px] text-foreground">
+              {formatCurrencyAmount(totals.net, primaryCurrency)}
+            </p>
           </div>
-          <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-center">
-            <div className="flex items-center justify-center gap-1 text-sm font-extrabold text-red-500">
-              <ArrowUpRight className="size-4" />
-              {formatCurrencyAmount(totals.expense, primaryCurrency)}
-            </div>
-            <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium mt-0.5">Expenses</div>
+          <div className="min-w-0">
+            <p className="label">In</p>
+            <p className="numeral mt-1.5 truncate text-[15px] text-positive">
+              +{formatCurrencyAmount(totals.income, primaryCurrency)}
+            </p>
+          </div>
+          <div className="min-w-0">
+            <p className="label">Out</p>
+            <p className="numeral mt-1.5 truncate text-[15px] text-foreground">
+              -{formatCurrencyAmount(totals.expense, primaryCurrency)}
+            </p>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Search */}
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search notes, categories, dates..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 text-xs" />
+      {/* Search + filter */}
+      <div className="surface flex flex-col gap-2.5 p-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input placeholder="Search notes, categories, dates..." value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 border-0 bg-transparent pl-8 text-xs shadow-none focus-visible:ring-0" />
         </div>
-      </div>
 
-      <div className="flex items-center gap-1">
+        <div className="quiet-scroll flex items-center gap-1 overflow-x-auto">
         {(
           [
             { value: "all", label: "All" },
@@ -219,40 +221,42 @@ export function TransactionsView() {
             key={f.value}
             onClick={() => setTypeFilter(f.value)}
             className={cn(
-              "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors shrink-0 cursor-pointer",
-              typeFilter === f.value ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+              "shrink-0 cursor-pointer rounded-full px-3 py-1.5 text-[11px] transition-colors",
+              typeFilter === f.value ? "bg-foreground text-background" : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
             )}
           >
             {f.label}
           </button>
         ))}
+        </div>
       </div>
 
       {/* List */}
       {transactions === undefined ? (
         <div className="space-y-2">
-          <div className="h-14 rounded-md bg-muted animate-pulse" />
-          <div className="h-14 rounded-md bg-muted animate-pulse" />
-          <div className="h-14 rounded-md bg-muted animate-pulse" />
+          <div className="h-14 rounded-2xl bg-muted animate-pulse" />
+          <div className="h-14 rounded-2xl bg-muted animate-pulse" />
+          <div className="h-14 rounded-2xl bg-muted animate-pulse" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 text-center">
+        <div className="surface flex flex-col items-center justify-center py-12 text-center">
+          <ArrowLeftRight className="mb-2 size-5 text-muted-foreground/50" />
           <p className="text-sm font-medium text-muted-foreground">No transactions found</p>
           <p className="mt-1 text-xs text-muted-foreground/60">{search ? "Try a different search" : "Add your first transaction"}</p>
         </div>
       ) : (
         <div className="space-y-4">
           {grouped.map(([date, items]) => (
-            <div key={date} className="rounded-lg border border-border bg-background overflow-hidden">
-              <div className="border-b border-border/60 bg-muted/30 px-4 py-2 text-[11px] font-semibold text-muted-foreground">
+            <div key={date} className="surface overflow-hidden">
+              <div className="border-b border-border px-4 py-2.5 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                 {new Date(`${date}T12:00:00`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
               </div>
-              <div className="divide-y divide-border/60">
+              <div className="divide-y divide-border/70">
                 {items.map((t) => {
                   const meta = financeCategoryMeta(t.category)
                   return (
-                    <div key={t._id} className="flex items-center gap-3 px-4 py-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
+                    <div key={t._id} className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-foreground/[0.025]">
+                      <span className="surface-inset flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground">
                         <DynamicIcon name={t.icon || meta.icon} className="size-4" />
                       </span>
                       <div className="min-w-0 flex-1">
@@ -264,7 +268,7 @@ export function TransactionsView() {
                           </span>
                           {t.subscriptionId && (
                             <span
-                              className="inline-flex shrink-0 items-center rounded-xs bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary"
+                              className="inline-flex shrink-0 items-center rounded-xs bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
                               title="Linked to subscription"
                             >
                               Subscription
@@ -278,8 +282,8 @@ export function TransactionsView() {
                       </div>
                       <div className="shrink-0 text-right">
                         <div className={cn(
-                          "text-sm font-bold",
-                          t.type === "income" ? "text-emerald-500" : t.type === "transfer" ? "text-blue-500" : "text-red-500"
+                          "numeral text-[13px]",
+                          t.type === "income" ? "text-positive" : t.type === "transfer" ? "text-muted-foreground" : "text-foreground"
                         )}>
                           {t.type === "income" ? "+" : t.type === "expense" ? "-" : ""}
                           {formatCurrencyAmount(convertCurrency(t.amount, t.currency, primaryCurrency, rates), primaryCurrency)}
@@ -307,9 +311,9 @@ export function TransactionsView() {
 
       {/* Edit dialog */}
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent className="max-w-sm rounded-lg p-5">
+        <DialogContent className="max-w-sm rounded-3xl p-5">
           <DialogHeader className="space-y-1 text-left">
-            <DialogTitle className="text-base font-semibold">Edit Transaction</DialogTitle>
+            <DialogTitle className="text-base font-medium">Edit Transaction</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">Update amount, date, category, or note.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
@@ -325,7 +329,7 @@ export function TransactionsView() {
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium">Category</label>
-              <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)} className="flex h-9 w-full rounded-lg border border-border bg-background px-2.5 text-xs">
+              <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)} className="flex h-10 w-full rounded-xl border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] px-2.5 text-xs">
                 {financeCategories.map((c) => (
                   <option key={c.value} value={c.value}>{c.label}</option>
                 ))}
@@ -345,9 +349,9 @@ export function TransactionsView() {
 
       {/* Delete dialog */}
       <Dialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
-        <DialogContent className="max-w-sm rounded-lg p-5">
+        <DialogContent className="max-w-sm rounded-3xl p-5">
           <DialogHeader className="space-y-1 text-left">
-            <DialogTitle className="text-base font-semibold">Delete Transaction</DialogTitle>
+            <DialogTitle className="text-base font-medium">Delete Transaction</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">This will permanently remove this transaction.</DialogDescription>
           </DialogHeader>
           <div className="flex gap-2 justify-end mt-3">

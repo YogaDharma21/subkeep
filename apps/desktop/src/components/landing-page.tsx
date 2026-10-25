@@ -138,24 +138,24 @@ export function LandingPage() {
   }
 
   return (
-    <div className="min-h-full w-full bg-black text-white flex flex-col items-center justify-center px-4 py-8 selection:bg-zinc-800 selection:text-white select-none">
+    <div className="min-h-full w-full bg-background text-foreground flex flex-col items-center justify-center px-4 py-8 selection:bg-foreground/10 selection:text-foreground select-none">
       <div className="w-full max-w-sm mx-auto flex flex-col items-center text-center space-y-7 sm:space-y-8 animate-in fade-in zoom-in-95 duration-300">
         {/* SubKeep App Icon */}
         <img
           src="/app-icon.png"
           alt="SubKeep"
-          className="size-24 sm:size-28 rounded-2xl shadow-2xl shadow-white/10 transition-transform hover:scale-105 object-contain"
+          className="size-24 sm:size-28 rounded-[28px] object-contain shadow-2xl"
         />
 
         {/* Brand Title: SUB (white) + KEEP (gray) */}
         <div className="space-y-3">
-          <h1 className="text-3xl sm:text-4xl font-black tracking-wider uppercase">
-            <span className="text-white">SUB</span>
-            <span className="text-zinc-500">KEEP</span>
+          <h1 className="text-[2rem] sm:text-[2.4rem] font-medium tracking-[0.2em] uppercase">
+            <span className="text-foreground">SUB</span>
+            <span className="text-muted-foreground">KEEP</span>
           </h1>
 
           {/* Tagline Subtitle */}
-          <div className="space-y-1 text-xs sm:text-sm font-medium text-zinc-400 leading-relaxed max-w-xs mx-auto">
+          <div className="space-y-1 text-[13px] text-muted-foreground leading-relaxed max-w-xs mx-auto">
             <p>All your money in one place — budgets, bills, and subscriptions.</p>
             <p>Track spending, tame trials, and never miss a payment.</p>
           </div>
@@ -166,12 +166,12 @@ export function LandingPage() {
           <button
             onClick={handleContinueWithGoogle}
             disabled={loading}
-            className="w-full h-13 sm:h-14 rounded-lg bg-white text-black font-extrabold text-xs sm:text-sm tracking-wider uppercase flex items-center justify-center gap-3 transition-all hover:bg-zinc-100 hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-xl shadow-black/60 disabled:opacity-75 disabled:cursor-not-allowed"
+            className="flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-foreground text-[11px] font-medium uppercase tracking-[0.18em] text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-75 sm:h-14"
           >
             {loading ? (
               <>
-                <Loader2 className="size-5 animate-spin text-black" />
-                <span>Waiting for browser...</span>
+                <Loader2 className="size-4 animate-spin text-background" />
+                <span>Waiting for browser</span>
               </>
             ) : (
               <>

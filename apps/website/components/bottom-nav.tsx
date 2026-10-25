@@ -2,28 +2,9 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {
-  Home,
-  ArrowLeftRight,
-  Wallet,
-  PiggyBank,
-  Repeat,
-  Plus,
-  BarChart3,
-} from "lucide-react"
+import { Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-const leftNavItems = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
-  { href: "/subscriptions", label: "Subscriptions", icon: Repeat },
-]
-
-const rightNavItems = [
-  { href: "/budgets", label: "Budgets", icon: PiggyBank },
-  { href: "/accounts", label: "Accounts", icon: Wallet },
-  { href: "/stats", label: "Stats", icon: BarChart3 },
-]
+import { primaryNav, type PrimaryNavItem } from "@/lib/navigation"
 
 interface BottomNavProps {
   onAddClick?: () => void
@@ -31,13 +12,17 @@ interface BottomNavProps {
 
 export function BottomNav({ onAddClick }: BottomNavProps) {
   const pathname = usePathname()
+  const splitIndex = Math.ceil(primaryNav.length / 2)
+  const leftItems = primaryNav.slice(0, splitIndex)
+  const rightItems = primaryNav.slice(splitIndex)
 
-  const renderItem = (item: { href: string; label: string; icon: typeof Home }) => {
+  const renderItem = (item: PrimaryNavItem) => {
     const Icon = item.icon
-    const isActive =
-      item.href === "/"
+    const isActive = item.match.some((href) =>
+      href === "/"
         ? pathname === "/"
-        : pathname === item.href || pathname.startsWith(`${item.href}/`)
+        : pathname === href || pathname.startsWith(`${href}/`)
+    )
     return (
       <Link
         key={item.href}
@@ -48,7 +33,7 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
         className={cn(
           "flex size-11 shrink-0 items-center justify-center rounded-full transition-colors",
           isActive
-            ? "text-foreground"
+            ? "bg-muted text-foreground"
             : "text-muted-foreground hover:bg-accent hover:text-foreground"
         )}
       >
@@ -63,18 +48,18 @@ export function BottomNav({ onAddClick }: BottomNavProps) {
         aria-label="Primary"
         className="flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border bg-background/90 p-1.5 shadow-lg backdrop-blur-md"
       >
-        {leftNavItems.map(renderItem)}
+        {leftItems.map(renderItem)}
 
         <button
           onClick={onAddClick}
           title="Quick add"
           aria-label="Quick add"
-          className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-foreground/15 bg-foreground text-background shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+          className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-foreground text-background shadow-md transition-transform hover:scale-105 active:scale-95"
         >
-          <Plus className="size-6" strokeWidth={2.5} />
+          <Plus className="size-5" strokeWidth={2.5} />
         </button>
 
-        {rightNavItems.map(renderItem)}
+        {rightItems.map(renderItem)}
       </nav>
     </div>
   )

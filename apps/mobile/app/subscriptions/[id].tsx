@@ -41,7 +41,7 @@ import { Button } from "@/components/ui/button"
 import { IconPickerModal } from "@/components/icon-picker-modal"
 import { convertAndFormat, formatCycleLabel } from "@/lib/currency"
 import { getSymbol, currencies } from "@/constants/currencies"
-import { categoryColors, colorPresets, getContrastTextColor } from "@/constants/categories"
+import { colorPresets } from "@/constants/categories"
 import { format, differenceInDays } from "date-fns"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
@@ -424,7 +424,7 @@ export default function SubscriptionDetailPage() {
   if (sub === null) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, justifyContent: "center", alignItems: "center", padding: 20 }}>
-        <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>Subscription not found</Text>
+        <Text style={{ fontSize: 16, fontWeight: "500", color: colors.text }}>Subscription not found</Text>
         <Button onPress={() => router.back()} style={{ marginTop: 12 }}>Go Back</Button>
       </SafeAreaView>
     )
@@ -473,33 +473,37 @@ export default function SubscriptionDetailPage() {
         <TouchableOpacity
           onPress={() => router.back()}
           style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: colors.surface,
+            width: 34,
+            height: 34,
+            borderRadius: 999,
+            backgroundColor: colors.surfaceInset,
+            borderWidth: 1,
+            borderColor: colors.border,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <ArrowLeft size={18} color={colors.text} />
+          <ArrowLeft size={17} color={colors.text} />
         </TouchableOpacity>
 
-        <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
-          Subscription Details
+        <Text style={{ fontSize: 14, fontWeight: "500", color: colors.mutedText }}>
+          Subscription
         </Text>
 
         <TouchableOpacity
           onPress={editing ? () => setEditing(false) : startEditing}
           style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: colors.surface,
+            width: 34,
+            height: 34,
+            borderRadius: 999,
+            backgroundColor: colors.surfaceInset,
+            borderWidth: 1,
+            borderColor: colors.border,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <Pencil size={16} color={colors.text} />
+          <Pencil size={15} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -508,11 +512,11 @@ export default function SubscriptionDetailPage() {
         {isTrial && (
           <View
             style={{
-              backgroundColor: "rgba(16, 185, 129, 0.12)",
+              backgroundColor: colors.emeraldBackground,
               borderWidth: 1,
-              borderColor: "rgba(16, 185, 129, 0.3)",
-              borderRadius: 12,
-              padding: 12,
+              borderColor: colors.border,
+              borderRadius: 16,
+              padding: 14,
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
@@ -522,8 +526,8 @@ export default function SubscriptionDetailPage() {
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10, flex: 1 }}>
               <Sparkles size={18} color={colors.emerald} />
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 13, fontWeight: "800", color: colors.emerald }}>
-                  Active Free Trial
+                <Text style={{ fontSize: 12, fontWeight: "500", color: colors.emerald }}>
+                  Active free trial
                 </Text>
                 <Text style={{ fontSize: 11, color: colors.emerald, opacity: 0.9, marginTop: 1 }}>
                   {sub.trialEndDate
@@ -541,8 +545,8 @@ export default function SubscriptionDetailPage() {
             backgroundColor: colors.card,
             borderWidth: 1,
             borderColor: colors.border,
-            borderRadius: 14,
-            padding: 16,
+            borderRadius: 24,
+            padding: 18,
             flexDirection: "row",
             alignItems: "center",
             gap: 14,
@@ -554,8 +558,8 @@ export default function SubscriptionDetailPage() {
             style={{
               width: 52,
               height: 52,
-              borderRadius: 12,
-              backgroundColor: (editing ? editColor : sub.color) || "#6366F1",
+              borderRadius: 16,
+              backgroundColor: colors.surfaceInset,
               borderWidth: 1,
               borderColor: colors.border,
               alignItems: "center",
@@ -564,13 +568,13 @@ export default function SubscriptionDetailPage() {
           >
             <DynamicIcon
               name={editing ? editIcon || sub.icon : sub.icon}
-              size={26}
-              color={getContrastTextColor(editing ? editColor : sub.color)}
+              size={24}
+              color={colors.text}
             />
           </TouchableOpacity>
 
           <View style={{ flex: 1, gap: 6 }}>
-            <Text style={{ fontSize: 18, fontWeight: "800", color: colors.text }}>
+            <Text style={{ fontSize: 18, fontWeight: "600", letterSpacing: -0.5, color: colors.text }}>
               {sub.name}
             </Text>
 
@@ -578,13 +582,15 @@ export default function SubscriptionDetailPage() {
               {/* Category badge */}
               <View
                 style={{
-                  backgroundColor: (categoryColors[sub.category] || "#6b7280") + "20",
+                  backgroundColor: colors.surfaceInset,
+                  borderWidth: 1,
+                  borderColor: colors.border,
                   paddingHorizontal: 8,
                   paddingVertical: 3,
-                  borderRadius: 6,
+                  borderRadius: 999,
                 }}
               >
-                <Text style={{ fontSize: 11, fontWeight: "600", color: categoryColors[sub.category] || colors.text }}>
+                <Text style={{ fontSize: 10, fontWeight: "500", color: colors.mutedText }}>
                   {sub.category}
                 </Text>
               </View>
@@ -593,15 +599,15 @@ export default function SubscriptionDetailPage() {
               {sub.isTrial && (
                 <View
                   style={{
-                    backgroundColor: "rgba(16, 185, 129, 0.2)",
+                    backgroundColor: colors.emeraldBackground,
                     borderWidth: 1,
-                    borderColor: "rgba(16, 185, 129, 0.3)",
+                    borderColor: colors.border,
                     paddingHorizontal: 8,
                     paddingVertical: 3,
-                    borderRadius: 6,
+                    borderRadius: 999,
                   }}
                 >
-                  <Text style={{ fontSize: 10, fontWeight: "800", color: colors.emerald }}>
+                  <Text style={{ fontSize: 9, fontWeight: "500", letterSpacing: 0.8, color: colors.emerald }}>
                     FREE TRIAL
                   </Text>
                 </View>
@@ -611,15 +617,15 @@ export default function SubscriptionDetailPage() {
               {sub.isShared && (
                 <View
                   style={{
-                    backgroundColor: "rgba(59, 130, 246, 0.2)",
+                    backgroundColor: colors.blueBackground,
                     borderWidth: 1,
-                    borderColor: "rgba(59, 130, 246, 0.3)",
+                    borderColor: colors.border,
                     paddingHorizontal: 8,
                     paddingVertical: 3,
-                    borderRadius: 6,
+                    borderRadius: 999,
                   }}
                 >
-                  <Text style={{ fontSize: 10, fontWeight: "800", color: colors.blue }}>
+                  <Text style={{ fontSize: 9, fontWeight: "500", letterSpacing: 0.8, color: colors.blue }}>
                     SPLIT {sub.totalMembers ? `(1/${sub.totalMembers})` : ""}
                   </Text>
                 </View>
@@ -628,17 +634,20 @@ export default function SubscriptionDetailPage() {
               {/* Active / Suspended badge */}
               <View
                 style={{
-                  backgroundColor: sub.isActive ? colors.text : colors.destructive,
+                  backgroundColor: sub.isActive ? colors.primary : colors.destructiveBackground,
+                  borderWidth: 1,
+                  borderColor: sub.isActive ? colors.primary : colors.border,
                   paddingHorizontal: 8,
                   paddingVertical: 3,
-                  borderRadius: 6,
+                  borderRadius: 999,
                 }}
               >
                 <Text
                   style={{
-                    fontSize: 10,
-                    fontWeight: "800",
-                    color: sub.isActive ? colors.background : "#ffffff",
+                    fontSize: 9,
+                    fontWeight: "500",
+                    letterSpacing: 0.8,
+                    color: sub.isActive ? colors.primaryForeground : colors.negative,
                   }}
                 >
                   {sub.isActive ? "Active" : "Suspended"}
@@ -653,9 +662,9 @@ export default function SubscriptionDetailPage() {
           <View
             style={{
               flex: 1,
-              backgroundColor: colors.surface,
-              borderRadius: 10,
-              paddingVertical: 12,
+              backgroundColor: colors.surfaceInset,
+              borderRadius: 14,
+              paddingVertical: 14,
               paddingHorizontal: 8,
               alignItems: "center",
               justifyContent: "center",
@@ -663,11 +672,11 @@ export default function SubscriptionDetailPage() {
           >
             <Text
               numberOfLines={1}
-              style={{ fontSize: 14, fontWeight: "800", color: colors.text, textAlign: "center" }}
+              style={{ fontSize: 13, fontWeight: "500", color: colors.text, textAlign: "center", fontVariant: ["tabular-nums"] }}
             >
               {convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)}
             </Text>
-            <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
+            <Text style={{ fontSize: 9, fontWeight: "500", letterSpacing: 1.1, color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
               PRICE ({primaryCurrency})
             </Text>
           </View>
@@ -675,9 +684,9 @@ export default function SubscriptionDetailPage() {
           <View
             style={{
               flex: 1,
-              backgroundColor: colors.surface,
-              borderRadius: 10,
-              paddingVertical: 12,
+              backgroundColor: colors.surfaceInset,
+              borderRadius: 14,
+              paddingVertical: 14,
               paddingHorizontal: 8,
               alignItems: "center",
               justifyContent: "center",
@@ -685,11 +694,11 @@ export default function SubscriptionDetailPage() {
           >
             <Text
               numberOfLines={1}
-              style={{ fontSize: 14, fontWeight: "800", color: colors.text, textAlign: "center" }}
+              style={{ fontSize: 13, fontWeight: "500", color: colors.text, textAlign: "center", fontVariant: ["tabular-nums"] }}
             >
               {sub.cycle ? sub.cycle.charAt(0).toUpperCase() + sub.cycle.slice(1) : "None"}
             </Text>
-            <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
+            <Text style={{ fontSize: 9, fontWeight: "500", letterSpacing: 1.1, color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
               CYCLE
             </Text>
           </View>
@@ -697,9 +706,9 @@ export default function SubscriptionDetailPage() {
           <View
             style={{
               flex: 1,
-              backgroundColor: colors.surface,
-              borderRadius: 10,
-              paddingVertical: 12,
+              backgroundColor: colors.surfaceInset,
+              borderRadius: 14,
+              paddingVertical: 14,
               paddingHorizontal: 8,
               alignItems: "center",
               justifyContent: "center",
@@ -707,11 +716,11 @@ export default function SubscriptionDetailPage() {
           >
             <Text
               numberOfLines={1}
-              style={{ fontSize: 14, fontWeight: "800", color: colors.text, textAlign: "center" }}
+              style={{ fontSize: 13, fontWeight: "500", color: colors.text, textAlign: "center", fontVariant: ["tabular-nums"] }}
             >
               {convertAndFormat(nativeYearlyCost, sub.currency, primaryCurrency, rates)}
             </Text>
-            <Text style={{ fontSize: 9, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
+            <Text style={{ fontSize: 9, fontWeight: "500", letterSpacing: 1.1, color: colors.mutedText, textTransform: "uppercase", marginTop: 4 }}>
               YEARLY TOTAL
             </Text>
           </View>
@@ -724,12 +733,12 @@ export default function SubscriptionDetailPage() {
               backgroundColor: colors.card,
               borderWidth: 1,
               borderColor: colors.border,
-              borderRadius: 14,
+              borderRadius: 20,
               padding: 16,
               gap: 14,
             }}
           >
-            <Text style={{ fontSize: 14, fontWeight: "800", color: colors.text }}>
+            <Text style={{ fontSize: 14, fontWeight: "600", color: colors.text }}>
               Edit Subscription
             </Text>
 
@@ -749,7 +758,7 @@ export default function SubscriptionDetailPage() {
                 />
               </View>
               <View style={{ flex: 1, gap: 6 }}>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+                <Text style={{ fontSize: 11, fontWeight: "500", color: colors.mutedText, textTransform: "uppercase" }}>
                   Currency
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 4 }}>
@@ -767,7 +776,7 @@ export default function SubscriptionDetailPage() {
                       <Text
                         style={{
                           fontSize: 11,
-                          fontWeight: "700",
+                          fontWeight: "500",
                           color: editCurrency === curr ? colors.primaryForeground : colors.mutedText,
                         }}
                       >
@@ -796,7 +805,7 @@ export default function SubscriptionDetailPage() {
             {/* Financial Account Selector */}
             {accounts && accounts.length > 0 && (
               <View style={{ gap: 6 }}>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+                <Text style={{ fontSize: 11, fontWeight: "500", color: colors.mutedText, textTransform: "uppercase" }}>
                   Financial Account
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 6 }}>
@@ -812,7 +821,7 @@ export default function SubscriptionDetailPage() {
                     <Text
                       style={{
                         fontSize: 11,
-                        fontWeight: "700",
+                        fontWeight: "500",
                         color: !editAccountId ? colors.primaryForeground : colors.mutedText,
                       }}
                     >
@@ -833,7 +842,7 @@ export default function SubscriptionDetailPage() {
                       <Text
                         style={{
                           fontSize: 11,
-                          fontWeight: "700",
+                          fontWeight: "500",
                           color: editAccountId === a._id ? colors.primaryForeground : colors.text,
                         }}
                       >
@@ -847,7 +856,7 @@ export default function SubscriptionDetailPage() {
 
             {/* Color Circles & Custom Hex Input */}
             <View style={{ gap: 8 }}>
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase" }}>
+              <Text style={{ fontSize: 11, fontWeight: "500", color: colors.mutedText, textTransform: "uppercase" }}>
                 Icon Color
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8, alignItems: "center" }}>
@@ -860,7 +869,7 @@ export default function SubscriptionDetailPage() {
                       style={{
                         width: 28,
                         height: 28,
-                        borderRadius: 14,
+                        borderRadius: 20,
                         backgroundColor: c,
                         borderWidth: isSelected ? 2.5 : c.toLowerCase() === "#ffffff" ? 1 : 0,
                         borderColor: isSelected ? colors.primary : colors.border,
@@ -877,7 +886,7 @@ export default function SubscriptionDetailPage() {
                   style={{
                     width: 28,
                     height: 28,
-                    borderRadius: 14,
+                    borderRadius: 20,
                     backgroundColor: editColor?.startsWith("#") ? editColor : "#FFFFFF",
                     borderWidth: 1,
                     borderColor: colors.border,
@@ -903,7 +912,7 @@ export default function SubscriptionDetailPage() {
                     paddingHorizontal: 12,
                     fontSize: 13,
                     color: colors.text,
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.surfaceInset,
                   }}
                 />
               </View>
@@ -921,12 +930,12 @@ export default function SubscriptionDetailPage() {
                 backgroundColor: colors.card,
                 borderWidth: 1,
                 borderColor: colors.border,
-                borderRadius: 14,
+                borderRadius: 20,
                 padding: 16,
                 gap: 12,
               }}
             >
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8 }}>
+              <Text style={{ fontSize: 11, fontWeight: "500", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8 }}>
                 SUBSCRIPTION INFORMATION
               </Text>
 
@@ -936,7 +945,7 @@ export default function SubscriptionDetailPage() {
                   <Text style={{ fontSize: 13, color: colors.mutedText }}>
                     Original Price
                   </Text>
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                  <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                     {getSymbol(sub.currency)}{sub.price} ({sub.currency})
                   </Text>
                 </View>
@@ -1015,7 +1024,7 @@ export default function SubscriptionDetailPage() {
                         gap: 3,
                         paddingHorizontal: 8,
                         paddingVertical: 4,
-                        backgroundColor: colors.surface,
+                        backgroundColor: colors.surfaceInset,
                         borderRadius: 6,
                         borderWidth: 1,
                         borderColor: colors.border,
@@ -1038,7 +1047,7 @@ export default function SubscriptionDetailPage() {
                   backgroundColor: "rgba(59, 130, 246, 0.06)",
                   borderWidth: 1,
                   borderColor: "rgba(59, 130, 246, 0.2)",
-                  borderRadius: 14,
+                  borderRadius: 20,
                   padding: 16,
                   gap: 12,
                 }}
@@ -1046,7 +1055,7 @@ export default function SubscriptionDetailPage() {
                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                     <Users size={16} color={colors.blue} />
-                    <Text style={{ fontSize: 12, fontWeight: "700", color: colors.blue, textTransform: "uppercase" }}>
+                    <Text style={{ fontSize: 12, fontWeight: "500", color: colors.blue, textTransform: "uppercase" }}>
                       SplitKeep Tracker
                     </Text>
                   </View>
@@ -1063,7 +1072,7 @@ export default function SubscriptionDetailPage() {
                         flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        backgroundColor: colors.surface,
+                        backgroundColor: colors.surfaceInset,
                         borderRadius: 10,
                         padding: 10,
                         borderWidth: 1,
@@ -1125,7 +1134,7 @@ export default function SubscriptionDetailPage() {
                 backgroundColor: colors.card,
                 borderWidth: 1,
                 borderColor: colors.border,
-                borderRadius: 14,
+                borderRadius: 20,
                 padding: 16,
                 gap: 10,
               }}
@@ -1133,7 +1142,7 @@ export default function SubscriptionDetailPage() {
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                   <Paperclip size={14} color={colors.text} />
-                  <Text style={{ fontSize: 11, fontWeight: "700", color: colors.text, textTransform: "uppercase", letterSpacing: 0.8 }}>
+                  <Text style={{ fontSize: 11, fontWeight: "500", color: colors.text, textTransform: "uppercase", letterSpacing: 0.8 }}>
                     INVOICE & WARRANTY RECEIPT
                   </Text>
                 </View>
@@ -1146,7 +1155,7 @@ export default function SubscriptionDetailPage() {
                     flexDirection: "row",
                     alignItems: "center",
                     gap: 4,
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.surfaceInset,
                     borderWidth: 1,
                     borderColor: colors.border,
                     paddingHorizontal: 8,
@@ -1167,7 +1176,7 @@ export default function SubscriptionDetailPage() {
                     flexDirection: "row",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.surfaceInset,
                     borderRadius: 10,
                     padding: 10,
                     borderWidth: 1,
@@ -1204,7 +1213,7 @@ export default function SubscriptionDetailPage() {
                 backgroundColor: colors.card,
                 borderWidth: 1,
                 borderColor: colors.border,
-                borderRadius: 14,
+                borderRadius: 20,
                 padding: 16,
                 gap: 12,
               }}
@@ -1212,7 +1221,7 @@ export default function SubscriptionDetailPage() {
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                   <History size={14} color={colors.text} />
-                  <Text style={{ fontSize: 11, fontWeight: "700", color: colors.text, textTransform: "uppercase", letterSpacing: 0.8 }}>
+                  <Text style={{ fontSize: 11, fontWeight: "500", color: colors.text, textTransform: "uppercase", letterSpacing: 0.8 }}>
                     PAYMENT HISTORY & BILLING LOGS
                   </Text>
                 </View>
@@ -1231,7 +1240,7 @@ export default function SubscriptionDetailPage() {
                         style={{
                           flexDirection: "row",
                           alignItems: "center",
-                          backgroundColor: colors.surface,
+                          backgroundColor: colors.surfaceInset,
                           borderRadius: 10,
                           padding: 10,
                           borderWidth: 1,
@@ -1249,13 +1258,13 @@ export default function SubscriptionDetailPage() {
                             justifyContent: "center",
                           }}
                         >
-                          <Text style={{ fontSize: 13, fontWeight: "800", color: "#ffffff" }}>
+                          <Text style={{ fontSize: 13, fontWeight: "600", color: "#ffffff" }}>
                             {p.name.charAt(0).toUpperCase()}
                           </Text>
                         </View>
 
                         <View style={{ flex: 1 }}>
-                          <Text style={{ fontSize: 12, fontWeight: "700", color: colors.text }}>
+                          <Text style={{ fontSize: 12, fontWeight: "500", color: colors.text }}>
                             {format(paymentDate, "MMM d, yyyy")}
                           </Text>
                           <Text style={{ fontSize: 10, color: colors.mutedText }}>
@@ -1264,7 +1273,7 @@ export default function SubscriptionDetailPage() {
                         </View>
 
                         <View style={{ alignItems: "flex-end", gap: 3 }}>
-                          <Text style={{ fontSize: 12, fontWeight: "700", color: colors.destructive }}>
+                          <Text style={{ fontSize: 12, fontWeight: "500", color: colors.destructive }}>
                             -{convertAndFormat(p.amount, p.currency, primaryCurrency, rates)}
                           </Text>
                           <View style={{ flexDirection: "row", gap: 6, marginTop: 2 }}>
@@ -1311,7 +1320,7 @@ export default function SubscriptionDetailPage() {
                   style={{
                     flex: 1,
                     height: 44,
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.surfaceInset,
                     borderWidth: 1,
                     borderColor: colors.border,
                     borderRadius: 12,
@@ -1324,12 +1333,12 @@ export default function SubscriptionDetailPage() {
                   {sub.isActive ? (
                     <>
                       <Pause size={15} color={colors.text} />
-                      <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>Suspend</Text>
+                      <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>Suspend</Text>
                     </>
                   ) : (
                     <>
                       <Play size={15} color={colors.text} />
-                      <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>Resume</Text>
+                      <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>Resume</Text>
                     </>
                   )}
                 </TouchableOpacity>
@@ -1340,7 +1349,7 @@ export default function SubscriptionDetailPage() {
                   style={{
                     flex: 1,
                     height: 44,
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.surfaceInset,
                     borderWidth: 1,
                     borderColor: colors.border,
                     borderRadius: 12,
@@ -1351,7 +1360,7 @@ export default function SubscriptionDetailPage() {
                   }}
                 >
                   <Copy size={15} color={colors.text} />
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>Clone</Text>
+                  <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>Clone</Text>
                 </TouchableOpacity>
               </View>
 
@@ -1361,7 +1370,7 @@ export default function SubscriptionDetailPage() {
                 activeOpacity={0.7}
                 style={{
                   height: 44,
-                  backgroundColor: colors.surface,
+                  backgroundColor: colors.surfaceInset,
                   borderWidth: 1,
                   borderColor: colors.border,
                   borderRadius: 12,
@@ -1372,7 +1381,7 @@ export default function SubscriptionDetailPage() {
                 }}
               >
                 <DollarSign size={15} color={colors.text} />
-                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                   Record Payment
                 </Text>
               </TouchableOpacity>
@@ -1394,7 +1403,7 @@ export default function SubscriptionDetailPage() {
                 }}
               >
                 <Trash2 size={15} color={colors.destructive} />
-                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.destructive }}>
+                <Text style={{ fontSize: 13, fontWeight: "500", color: colors.destructive }}>
                   Delete Subscription
                 </Text>
               </TouchableOpacity>
@@ -1411,9 +1420,9 @@ export default function SubscriptionDetailPage() {
         onRequestClose={() => setCancelUrlModalOpen(false)}
       >
         <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", alignItems: "center", padding: 20 }}>
-          <View style={{ backgroundColor: colors.card, borderRadius: 14, borderWidth: 1, borderColor: colors.border, padding: 18, width: "100%", maxWidth: 360, gap: 12 }}>
+          <View style={{ backgroundColor: colors.card, borderRadius: 20, borderWidth: 1, borderColor: colors.border, padding: 18, width: "100%", maxWidth: 360, gap: 12 }}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-              <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>
+              <Text style={{ fontSize: 16, fontWeight: "500", color: colors.text }}>
                 Change Cancellation Page
               </Text>
               <TouchableOpacity onPress={() => setCancelUrlModalOpen(false)}>
@@ -1495,7 +1504,7 @@ export default function SubscriptionDetailPage() {
                 marginBottom: 16,
               }}
             >
-              <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
+              <Text style={{ fontSize: 16, fontWeight: "600", color: colors.text }}>
                 Edit Payment Record
               </Text>
               <TouchableOpacity
@@ -1503,8 +1512,8 @@ export default function SubscriptionDetailPage() {
                 style={{
                   width: 28,
                   height: 28,
-                  borderRadius: 14,
-                  backgroundColor: colors.surface,
+                  borderRadius: 20,
+                  backgroundColor: colors.surfaceInset,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
@@ -1523,7 +1532,7 @@ export default function SubscriptionDetailPage() {
                 onChangeText={setEditPaymentAmount}
                 keyboardType="numeric"
                 style={{
-                  backgroundColor: colors.surface,
+                  backgroundColor: colors.surfaceInset,
                   borderWidth: 1,
                   borderColor: colors.border,
                   borderRadius: 10,
@@ -1560,7 +1569,7 @@ export default function SubscriptionDetailPage() {
                     <Text
                       style={{
                         fontSize: 11,
-                        fontWeight: "700",
+                        fontWeight: "500",
                         color: editPaymentCurrency === c.value ? colors.primaryForeground : colors.text,
                       }}
                     >
@@ -1580,7 +1589,7 @@ export default function SubscriptionDetailPage() {
                 value={editPaymentDate}
                 onChangeText={setEditPaymentDate}
                 style={{
-                  backgroundColor: colors.surface,
+                  backgroundColor: colors.surfaceInset,
                   borderWidth: 1,
                   borderColor: colors.border,
                   borderRadius: 10,
@@ -1602,14 +1611,14 @@ export default function SubscriptionDetailPage() {
                   flex: 1,
                   paddingVertical: 12,
                   borderRadius: 12,
-                  backgroundColor: colors.surface,
+                  backgroundColor: colors.surfaceInset,
                   borderWidth: 1,
                   borderColor: colors.border,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                   Cancel
                 </Text>
               </TouchableOpacity>
@@ -1626,7 +1635,7 @@ export default function SubscriptionDetailPage() {
                   justifyContent: "center",
                 }}
               >
-                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.primaryForeground }}>
+                <Text style={{ fontSize: 13, fontWeight: "500", color: colors.primaryForeground }}>
                   {isUpdatingPayment ? "Saving..." : "Save Changes"}
                 </Text>
               </TouchableOpacity>

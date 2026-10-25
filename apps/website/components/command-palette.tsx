@@ -173,7 +173,7 @@ export function CommandPalette({
       {
         id: "nav-txns",
         label: "Go to Transactions",
-        detail: "View expenses, income & transfers",
+        detail: "Money · Expenses, income & transfers",
         icon: ArrowLeftRight,
         category: "Navigation",
         run: () => {
@@ -184,7 +184,7 @@ export function CommandPalette({
       {
         id: "nav-subs",
         label: "Go to Subscriptions",
-        detail: "Manage recurring bills & trials",
+        detail: "Subscriptions · Manage recurring bills & trials",
         icon: Repeat,
         category: "Navigation",
         run: () => {
@@ -195,7 +195,7 @@ export function CommandPalette({
       {
         id: "nav-budgets",
         label: "Go to Budgets",
-        detail: "Category spending limits & progress",
+        detail: "Insights · Category spending limits & progress",
         icon: PiggyBank,
         category: "Navigation",
         run: () => {
@@ -206,7 +206,7 @@ export function CommandPalette({
       {
         id: "nav-accounts",
         label: "Go to Accounts",
-        detail: "Wallets, banks & net worth",
+        detail: "Money · Wallets, banks & net worth",
         icon: Wallet,
         category: "Navigation",
         run: () => {
@@ -217,7 +217,7 @@ export function CommandPalette({
       {
         id: "nav-calendar",
         label: "Go to Calendar",
-        detail: "View billing projections and renewal dates",
+        detail: "Subscriptions · Billing projections and renewal dates",
         icon: Calendar,
         category: "Navigation",
         run: () => {
@@ -228,7 +228,7 @@ export function CommandPalette({
       {
         id: "nav-stats",
         label: "Go to Spending Analytics",
-        detail: "View charts, category breakdown & insights",
+        detail: "Insights · Charts, category breakdown & trends",
         icon: BarChart3,
         category: "Navigation",
         run: () => {
@@ -443,7 +443,7 @@ export function CommandPalette({
                         router.push(`/subscriptions/${sub._id}`)
                       }}
                       onMouseEnter={() => setSelectedIndex(idx)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors group cursor-pointer ${
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors group cursor-pointer ${
                         isSelected ? "bg-muted text-foreground" : "hover:bg-muted/60"
                       }`}
                     >
@@ -512,7 +512,7 @@ export function CommandPalette({
                         router.push("/transactions")
                       }}
                       onMouseEnter={() => setSelectedIndex(globalIdx)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors group cursor-pointer ${
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors group cursor-pointer ${
                         isSelected ? "bg-muted text-foreground" : "hover:bg-muted/60"
                       }`}
                     >
@@ -570,7 +570,7 @@ export function CommandPalette({
                       key={action.id}
                       onClick={action.run}
                       onMouseEnter={() => setSelectedIndex(globalIdx)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors group cursor-pointer ${
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors group cursor-pointer ${
                         isSelected ? "bg-muted text-foreground" : "hover:bg-muted/60"
                       }`}
                     >
@@ -615,7 +615,7 @@ export function CommandPalette({
                       key={action.id}
                       onClick={action.run}
                       onMouseEnter={() => setSelectedIndex(globalIdx)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors group cursor-pointer ${
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors group cursor-pointer ${
                         isSelected ? "bg-muted text-foreground" : "hover:bg-muted/60"
                       }`}
                     >

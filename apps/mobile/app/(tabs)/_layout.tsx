@@ -7,29 +7,81 @@ import { useUser } from "@clerk/expo"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
 import { QuickAddSheet, QuickAddKind } from "@/components/quick-add-sheet"
+import { SectionHeader } from "@/components/section-header"
+import { ClerkUserMenu } from "@/components/clerk-user-menu"
 import {
   Home,
-  ArrowLeftRight,
   Repeat,
-  PiggyBank,
   Wallet,
   Plus,
   BarChart3,
   Search,
-  Settings,
 } from "lucide-react-native"
 
-const LEFT_TABS = [
-  { name: "index", label: "Home", icon: Home },
-  { name: "transactions", label: "Transactions", icon: ArrowLeftRight },
-  { name: "subscriptions", label: "Subscriptions", icon: Repeat },
-] as const
+const PRIMARY_TABS: {
+  label: string
+  icon: typeof Home
+  href: string
+  match: string[]
+}[] = [
+  {
+    label: "Home",
+    icon: Home,
+    href: "/(tabs)",
+    match: ["index"],
+  },
+  {
+    label: "Money",
+    icon: Wallet,
+    href: "/(tabs)/transactions",
+    match: ["transactions", "accounts"],
+  },
+  {
+    label: "Subscriptions",
+    icon: Repeat,
+    href: "/(tabs)/subscriptions",
+    match: ["subscriptions", "calendar"],
+  },
+  {
+    label: "Insights",
+    icon: BarChart3,
+    href: "/(tabs)/stats",
+    match: ["stats", "budgets"],
+  },
+]
 
-const RIGHT_TABS = [
-  { name: "budgets", label: "Budgets", icon: PiggyBank },
-  { name: "accounts", label: "Accounts", icon: Wallet },
-  { name: "stats", label: "Stats", icon: BarChart3 },
-] as const
+const SECTION_TABS = {
+  money: {
+    title: "Money",
+    tabs: [
+      { name: "transactions", label: "Transactions" },
+      { name: "accounts", label: "Accounts" },
+    ],
+  },
+  subscriptions: {
+    title: "Subscriptions",
+    tabs: [
+      { name: "subscriptions", label: "Tracker" },
+      { name: "calendar", label: "Calendar" },
+    ],
+  },
+  insights: {
+    title: "Insights",
+    tabs: [
+      { name: "stats", label: "Analytics" },
+      { name: "budgets", label: "Budgets" },
+    ],
+  },
+} as const
+
+const TAB_TO_SECTION: Record<string, keyof typeof SECTION_TABS> = {
+  transactions: "money",
+  accounts: "money",
+  subscriptions: "subscriptions",
+  calendar: "subscriptions",
+  stats: "insights",
+  budgets: "insights",
+}
 
 export default function TabLayout() {
   const router = useRouter()
@@ -39,6 +91,7 @@ export default function TabLayout() {
   const { user } = useUser()
   const insets = useSafeAreaInsets()
   const [quickAddOpen, setQuickAddOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   const handleQuickAddSelect = (kind: QuickAddKind) => {
     setQuickAddOpen(false)
@@ -59,24 +112,29 @@ export default function TabLayout() {
 
   const activeTab =
     (segments as string[]).length >= 2 ? String((segments as string[])[1]) : "index"
+  const sectionKey = TAB_TO_SECTION[activeTab]
+  const section = sectionKey ? SECTION_TABS[sectionKey] : null
+  const splitIndex = Math.ceil(PRIMARY_TABS.length / 2)
+  const leftTabs = PRIMARY_TABS.slice(0, splitIndex)
+  const rightTabs = PRIMARY_TABS.slice(splitIndex)
 
-  const renderTab = (item: { name: string; label: string; icon: typeof Home }) => {
+  const renderTab = (item: (typeof PRIMARY_TABS)[number]) => {
     const Icon = item.icon
-    const isActive = activeTab === item.name
-    const href = item.name === "index" ? "/(tabs)" : `/(tabs)/${item.name}`
+    const isActive = item.match.includes(activeTab)
     return (
       <TouchableOpacity
-        key={item.name}
+        key={item.label}
         activeOpacity={0.7}
         accessibilityLabel={item.label}
-        onPress={() => router.push(href as never)}
+        accessibilityState={{ selected: isActive }}
+        onPress={() => router.push(item.href as never)}
         style={{
           width: 40,
           height: 40,
           borderRadius: 999,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "transparent",
+          backgroundColor: isActive ? colors.surfaceInset : "transparent",
         }}
       >
         <Icon
@@ -95,42 +153,35 @@ export default function TabLayout() {
           flexDirection: "row",
           alignItems: "center",
           paddingHorizontal: 16,
-          paddingTop: insets.top + 8,
+          paddingTop: insets.top + 6,
           paddingBottom: 10,
           backgroundColor: colors.background,
-          borderBottomWidth: 1,
+          borderBottomWidth: 0.5,
           borderBottomColor: colors.border,
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <Image
             source={require("@/assets/images/icon.png")}
-            style={{ width: 30, height: 30, borderRadius: 8 }}
+            style={{ width: 28, height: 28, borderRadius: 8 }}
             resizeMode="contain"
           />
-          <Text style={{ fontSize: 18, fontWeight: "900", color: colors.text, letterSpacing: -0.4 }}>
+          <Text style={{ fontSize: 17, fontWeight: "600", color: colors.text, letterSpacing: -0.6 }}>
             SubKeep
           </Text>
         </View>
         <View style={{ flex: 1 }} />
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => router.push("/(tabs)/settings" as never)}
-          accessibilityLabel="Settings"
-          style={{ padding: 6 }}
-        >
-          <Settings size={20} color={colors.text} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={0.7}
           onPress={showSearchModal}
+          accessibilityLabel="Search"
           style={{ padding: 6 }}
         >
-          <Search size={20} color={colors.text} />
+          <Search size={18} color={colors.mutedText} />
         </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => router.push("/modal/profile" as never)}
+          onPress={() => setUserMenuOpen(true)}
           accessibilityLabel={avatarLabel}
           style={{ marginLeft: 2, padding: 2 }}
         >
@@ -157,7 +208,7 @@ export default function TabLayout() {
                 justifyContent: "center",
               }}
             >
-              <Text style={{ fontSize: 14, fontWeight: "800", color: colors.primaryForeground }}>
+              <Text style={{ fontSize: 13, fontWeight: "600", color: colors.primaryForeground }}>
                 {avatarInitial}
               </Text>
             </View>
@@ -167,6 +218,15 @@ export default function TabLayout() {
 
       {/* Screens */}
       <View style={{ flex: 1 }}>
+        {section ? (
+          <SectionHeader
+            title={section.title}
+            tabs={[...section.tabs]}
+            activeTab={activeTab}
+            onSelect={(tab) => router.push(`/(tabs)/${tab.name}` as never)}
+          />
+        ) : null}
+
         <Tabs
           screenOptions={{
             headerShown: false,
@@ -211,12 +271,12 @@ export default function TabLayout() {
             maxWidth: "100%",
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.22,
-            shadowRadius: 14,
+            shadowOpacity: 0.32,
+            shadowRadius: 18,
             elevation: 10,
           }}
         >
-          {LEFT_TABS.map(renderTab)}
+          {leftTabs.map(renderTab)}
 
           <TouchableOpacity
             activeOpacity={0.8}
@@ -229,14 +289,12 @@ export default function TabLayout() {
               backgroundColor: colors.primary,
               alignItems: "center",
               justifyContent: "center",
-              borderWidth: 1,
-              borderColor: colors.border,
             }}
           >
-            <Plus size={24} color={colors.primaryForeground} strokeWidth={2.5} />
+            <Plus size={22} color={colors.primaryForeground} strokeWidth={2.4} />
           </TouchableOpacity>
 
-          {RIGHT_TABS.map(renderTab)}
+          {rightTabs.map(renderTab)}
         </View>
       </View>
 
@@ -244,6 +302,12 @@ export default function TabLayout() {
         visible={quickAddOpen}
         onClose={() => setQuickAddOpen(false)}
         onSelect={handleQuickAddSelect}
+      />
+
+      <ClerkUserMenu
+        visible={userMenuOpen}
+        onClose={() => setUserMenuOpen(false)}
+        topOffset={insets.top + 52}
       />
     </View>
   )

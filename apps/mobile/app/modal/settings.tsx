@@ -75,10 +75,10 @@ export default function SettingsModal() {
           paddingHorizontal: 16,
           paddingVertical: 14,
           borderBottomWidth: 1,
-          borderBottomColor: colors.border,
+          borderBottomColor: colors.borderLight,
         }}
       >
-        <Text style={{ fontSize: 17, fontWeight: "700", color: colors.text }}>
+        <Text style={{ fontSize: 17, fontWeight: "500", color: colors.text }}>
           Settings & Preferences
         </Text>
         <TouchableOpacity
@@ -87,7 +87,7 @@ export default function SettingsModal() {
             width: 32,
             height: 32,
             borderRadius: 16,
-            backgroundColor: colors.surface,
+            backgroundColor: colors.surfaceInset,
             alignItems: "center",
             justifyContent: "center",
           }}
@@ -102,7 +102,7 @@ export default function SettingsModal() {
           <Text
             style={{
               fontSize: 11,
-              fontWeight: "700",
+              fontWeight: "500",
               color: colors.mutedText,
               textTransform: "uppercase",
               letterSpacing: 0.5,
@@ -140,13 +140,13 @@ export default function SettingsModal() {
                 style={{
                   paddingHorizontal: 12,
                   paddingVertical: 6,
-                  borderRadius: 8,
-                  backgroundColor: colors.surface,
+                  borderRadius: 14,
+                  backgroundColor: colors.surfaceInset,
                   borderWidth: 1,
                   borderColor: colors.border,
                 }}
               >
-                <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                   {primaryCurrency} ({getSymbol(primaryCurrency)})
                 </Text>
               </TouchableOpacity>
@@ -159,7 +159,7 @@ export default function SettingsModal() {
           <Text
             style={{
               fontSize: 11,
-              fontWeight: "700",
+              fontWeight: "500",
               color: colors.mutedText,
               textTransform: "uppercase",
               letterSpacing: 0.5,
@@ -200,8 +200,8 @@ export default function SettingsModal() {
                     style={{
                       flex: 1,
                       paddingVertical: 8,
-                      borderRadius: 8,
-                      backgroundColor: isSelected ? colors.primary : colors.surface,
+                      borderRadius: 14,
+                      backgroundColor: isSelected ? colors.primary : colors.surfaceInset,
                       borderWidth: 1,
                       borderColor: isSelected ? colors.primary : colors.border,
                       alignItems: "center",
@@ -210,7 +210,7 @@ export default function SettingsModal() {
                     <Text
                       style={{
                         fontSize: 11,
-                        fontWeight: "700",
+                        fontWeight: "500",
                         color: isSelected ? colors.primaryForeground : colors.mutedText,
                       }}
                     >
@@ -228,7 +228,7 @@ export default function SettingsModal() {
           <Text
             style={{
               fontSize: 11,
-              fontWeight: "700",
+              fontWeight: "500",
               color: colors.mutedText,
               textTransform: "uppercase",
               letterSpacing: 0.5,
@@ -296,8 +296,8 @@ export default function SettingsModal() {
           <View
             style={{
               backgroundColor: colors.background,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
+              borderTopLeftRadius: 28,
+              borderTopRightRadius: 28,
               maxHeight: "75%",
               paddingBottom: 24,
             }}
@@ -309,10 +309,10 @@ export default function SettingsModal() {
                 justifyContent: "space-between",
                 padding: 16,
                 borderBottomWidth: 1,
-                borderBottomColor: colors.border,
+                borderBottomColor: colors.borderLight,
               }}
             >
-              <Text style={{ fontSize: 16, fontWeight: "700", color: colors.text }}>
+              <Text style={{ fontSize: 16, fontWeight: "500", color: colors.text }}>
                 Select Primary Currency
               </Text>
               <TouchableOpacity onPress={() => setCurrencyModalOpen(false)}>
@@ -336,7 +336,7 @@ export default function SettingsModal() {
                       justifyContent: "space-between",
                       paddingHorizontal: 14,
                       paddingVertical: 12,
-                      borderRadius: 10,
+                      borderRadius: 999,
                       backgroundColor: isSelected ? colors.surfaceHover : "transparent",
                     }}
                   >

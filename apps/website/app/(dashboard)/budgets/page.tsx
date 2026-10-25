@@ -11,6 +11,7 @@ import {
   PiggyBank,
   Trash2,
 } from "lucide-react"
+import { SectionHeader } from "@/components/section-nav"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import {
@@ -25,6 +26,7 @@ import { DynamicIcon } from "@/components/dynamic-icon"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
+import { insightTabs } from "@/lib/navigation"
 import {
   financeCategoryMeta,
   currentMonthKey,
@@ -104,42 +106,58 @@ export default function BudgetsPage() {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Month navigator + totals */}
-      <div className="rounded-lg border border-border bg-background p-4">
-        <div className="flex items-center justify-between">
-          <Button variant="outline" size="icon-sm" onClick={() => setMonth(shiftMonth(month, -1))}>
-            <ChevronLeft className="size-4" />
-          </Button>
-          <div className="text-center">
-            <h2 className="text-sm font-bold">
-              {monthLabel(month)}
-            </h2>
-            <p className="text-[11px] text-muted-foreground">
-              {formatCurrencyAmount(totals.spent, primaryCurrency)} of{" "}
-              {formatCurrencyAmount(totals.cap, primaryCurrency)} budgeted ({totals.pct}%)
-            </p>
+    <div className="space-y-4 sm:space-y-5">
+      <SectionHeader title="Budgets" eyebrow={monthLabel(month)} tabs={insightTabs} />
+
+      {/* Month + totals */}
+      <section className="surface p-5 sm:p-7">
+        <div className="flex items-start justify-between gap-3">
+          <p className="label">Spent this month</p>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon-sm"
+              onClick={() => setMonth(shiftMonth(month, -1))}
+              className="size-7 rounded-full"
+              aria-label="Previous month"
+            >
+              <ChevronLeft className="size-3.5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon-sm"
+              onClick={() => setMonth(shiftMonth(month, 1))}
+              className="size-7 rounded-full"
+              aria-label="Next month"
+            >
+              <ChevronRight className="size-3.5" />
+            </Button>
           </div>
-          <Button variant="outline" size="icon-sm" onClick={() => setMonth(shiftMonth(month, 1))}>
-            <ChevronRight className="size-4" />
-          </Button>
         </div>
+
+        <p className="display-number mt-6 text-[clamp(2.1rem,4.6vw,3.2rem)]">
+          {formatCurrencyAmount(totals.spent, primaryCurrency)}
+        </p>
+        <p className="mt-3 text-[11px] text-muted-foreground">
+          of {formatCurrencyAmount(totals.cap, primaryCurrency)} budgeted · {totals.pct}%
+        </p>
+
         {totals.cap > 0 && (
-          <div className="mt-3 h-2.5 w-full rounded-full bg-muted overflow-hidden">
+          <div className="mt-5 h-1 overflow-hidden rounded-full bg-foreground/10">
             <div
               className={cn(
                 "h-full rounded-full transition-all",
                 totals.spent > totals.cap
-                  ? "bg-red-500"
+                  ? "bg-negative"
                   : totals.pct >= 85
-                    ? "bg-amber-500"
-                    : "bg-emerald-500"
+                    ? "bg-warning"
+                    : "bg-foreground/70"
               )}
               style={{ width: `${Math.min(100, totals.pct)}%` }}
             />
           </div>
         )}
-      </div>
+      </section>
 
       {/* Budget rows */}
       {budgets === undefined || transactions === undefined ? (
@@ -148,8 +166,8 @@ export default function BudgetsPage() {
           <Skeleton className="h-20 w-full" />
         </div>
       ) : rows.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-12 text-center">
-          <PiggyBank className="size-6 text-muted-foreground/50 mb-2" />
+        <div className="surface flex flex-col items-center justify-center py-12 text-center">
+          <PiggyBank className="mb-2 size-5 text-muted-foreground/50" />
           <p className="text-sm font-medium text-muted-foreground">No budgets for {monthLabel(month).split(" ")[0]}</p>
           <p className="mt-1 text-xs text-muted-foreground/60">
             Set per-category spending limits to track progress
@@ -160,15 +178,15 @@ export default function BudgetsPage() {
           {rows.map(({ budget, meta, spent, cap, pct, remaining }) => {
             const subSpend = subscriptionSpendByCategory.get(budget.category) || 0
             return (
-              <div key={budget._id} className="rounded-lg border border-border bg-background p-4">
+              <div key={budget._id} className="surface p-4">
                 <div className="flex items-center gap-3">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
+                  <span className="surface-inset flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground">
                     <DynamicIcon name={meta.icon} className="size-4" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <span className="block text-sm font-semibold truncate">{meta.label}</span>
-                    <div className="text-[11px] text-muted-foreground">
-                      {formatCurrencyAmount(spent, primaryCurrency)} spent of{" "}
+                    <span className="block truncate text-[13px] font-medium">{meta.label}</span>
+                    <div className="mt-1 text-[11px] text-muted-foreground">
+                      {formatCurrencyAmount(spent, primaryCurrency)} of{" "}
                       {formatCurrencyAmount(cap, primaryCurrency)}
                       {subSpend > 0 && (
                         <span> · incl. {formatCurrencyAmount(subSpend, primaryCurrency)} subs</span>
@@ -178,35 +196,39 @@ export default function BudgetsPage() {
                   <div className="flex shrink-0 items-center gap-1">
                     <button
                       onClick={() => setDeleteId(budget._id)}
-                      className="flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                      className="flex size-7 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
                       title="Remove budget"
                     >
                       <Trash2 className="size-3.5" />
                     </button>
                     <div
                       className={cn(
-                        "min-w-10 text-right text-sm font-extrabold",
-                        remaining < 0 ? "text-red-500" : pct >= 85 ? "text-amber-500" : "text-emerald-500"
+                        "numeral min-w-9 text-right text-[13px]",
+                        remaining < 0 ? "text-negative" : "text-foreground"
                       )}
                     >
                       {pct}%
                     </div>
                   </div>
                 </div>
-                <div className="mt-2.5 h-2 w-full rounded-full bg-muted overflow-hidden">
+                <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-foreground/10">
                   <div
                     className={cn(
                       "h-full rounded-full transition-all",
-                      remaining < 0 ? "bg-red-500" : pct >= 85 ? "bg-amber-500" : "bg-emerald-500"
+                      remaining < 0
+                        ? "bg-negative"
+                        : pct >= 85
+                          ? "bg-warning"
+                          : "bg-foreground/70"
                     )}
                     style={{ width: `${Math.min(100, pct)}%` }}
                   />
                 </div>
-                <div className="mt-1.5 text-[11px] text-muted-foreground">
+                <div className="mt-2 text-[11px] text-muted-foreground">
                   {remaining >= 0 ? (
                     <span>{formatCurrencyAmount(remaining, primaryCurrency)} remaining</span>
                   ) : (
-                    <span className="text-red-500 font-medium">
+                    <span className="text-negative">
                       Over by {formatCurrencyAmount(Math.abs(remaining), primaryCurrency)}
                     </span>
                   )}

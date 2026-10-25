@@ -166,8 +166,8 @@ export function AddTransactionSheet({
         <View
           style={{
             backgroundColor: colors.background,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+            borderTopLeftRadius: 28,
+            borderTopRightRadius: 28,
             maxHeight: "90%",
             paddingBottom: 28,
           }}
@@ -180,10 +180,10 @@ export function AddTransactionSheet({
               paddingHorizontal: 16,
               paddingVertical: 14,
               borderBottomWidth: 1,
-              borderBottomColor: colors.border,
+              borderBottomColor: colors.borderLight,
             }}
           >
-            <Text style={{ fontSize: 16, fontWeight: "800", color: colors.text }}>
+            <Text style={{ fontSize: 18, fontWeight: "600", letterSpacing: -0.4, color: colors.text }}>
               Add Transaction
             </Text>
             <TouchableOpacity
@@ -192,7 +192,7 @@ export function AddTransactionSheet({
                 width: 30,
                 height: 30,
                 borderRadius: 15,
-                backgroundColor: colors.surface,
+                backgroundColor: colors.surfaceInset,
                 alignItems: "center",
                 justifyContent: "center",
               }}
@@ -207,7 +207,7 @@ export function AddTransactionSheet({
               style={{
                 flexDirection: "row",
                 gap: 6,
-                backgroundColor: colors.surface,
+                backgroundColor: colors.surfaceInset,
                 borderRadius: 12,
                 padding: 4,
               }}
@@ -219,7 +219,7 @@ export function AddTransactionSheet({
                   style={{
                     flex: 1,
                     paddingVertical: 9,
-                    borderRadius: 8,
+                    borderRadius: 14,
                     alignItems: "center",
                     backgroundColor:
                       type === t.value
@@ -234,7 +234,7 @@ export function AddTransactionSheet({
                   <Text
                     style={{
                       fontSize: 12,
-                      fontWeight: "700",
+                      fontWeight: "500",
                       color:
                         type === t.value
                           ? t.value === "expense"
@@ -251,7 +251,7 @@ export function AddTransactionSheet({
 
             {/* Amount */}
             <View style={{ gap: 4 }}>
-              <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>AMOUNT</Text>
+              <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>AMOUNT</Text>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                 <TextInput
                   value={amount}
@@ -263,16 +263,16 @@ export function AddTransactionSheet({
                     flex: 1,
                     borderWidth: 1,
                     borderColor: colors.border,
-                    borderRadius: 10,
+                    borderRadius: 999,
                     paddingHorizontal: 12,
                     paddingVertical: 12,
                     fontSize: 20,
-                    fontWeight: "800",
+                    fontWeight: "600",
                     color: colors.text,
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.surfaceInset,
                   }}
                 />
-                <Text style={{ fontSize: 12, fontWeight: "700", color: colors.mutedText, width: 36 }}>
+                <Text style={{ fontSize: 12, fontWeight: "500", color: colors.mutedText, width: 36 }}>
                   {accounts?.find((a) => a._id === accountId)?.currency || "IDR"}
                 </Text>
               </View>
@@ -281,7 +281,7 @@ export function AddTransactionSheet({
             {/* Categories */}
             {type !== "transfer" ? (
               <View style={{ gap: 6 }}>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>CATEGORY</Text>
+                <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>CATEGORY</Text>
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                   {categoryOptions.map((c) => (
                     <TouchableOpacity
@@ -294,7 +294,7 @@ export function AddTransactionSheet({
                         paddingVertical: 10,
                         paddingHorizontal: 4,
                         borderRadius: 12,
-                        backgroundColor: category === c.value ? colors.surfaceHover : colors.surface,
+                        backgroundColor: category === c.value ? colors.surfaceHover : colors.surfaceInset,
                         borderWidth: category === c.value ? 1.5 : 0,
                         borderColor: colors.primary,
                       }}
@@ -303,7 +303,7 @@ export function AddTransactionSheet({
                         style={{
                           width: 32,
                           height: 32,
-                          borderRadius: 10,
+                          borderRadius: 999,
                           backgroundColor: category === c.value ? colors.background : colors.surfaceHover,
                           alignItems: "center",
                           justifyContent: "center",
@@ -326,7 +326,7 @@ export function AddTransactionSheet({
             {/* Accounts */}
             <View style={{ flexDirection: type === "transfer" ? "row" : "column", gap: 10 }}>
               <View style={{ flex: 1, gap: 4 }}>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>
+                <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>
                   {type === "transfer" ? "FROM ACCOUNT" : "ACCOUNT"}
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
@@ -337,8 +337,8 @@ export function AddTransactionSheet({
                       style={{
                         paddingHorizontal: 12,
                         paddingVertical: 8,
-                        borderRadius: 8,
-                        backgroundColor: accountId === a._id ? colors.primary : colors.surface,
+                        borderRadius: 14,
+                        backgroundColor: accountId === a._id ? colors.primary : colors.surfaceInset,
                       }}
                     >
                       <Text
@@ -356,7 +356,7 @@ export function AddTransactionSheet({
               </View>
               {type === "transfer" ? (
                 <View style={{ flex: 1, gap: 4 }}>
-                  <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>TO ACCOUNT</Text>
+                  <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>TO ACCOUNT</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
                     {(accounts || [])
                       .filter((a) => a._id !== accountId)
@@ -367,8 +367,8 @@ export function AddTransactionSheet({
                           style={{
                             paddingHorizontal: 12,
                             paddingVertical: 8,
-                            borderRadius: 8,
-                            backgroundColor: toAccountId === a._id ? colors.primary : colors.surface,
+                            borderRadius: 14,
+                            backgroundColor: toAccountId === a._id ? colors.primary : colors.surfaceInset,
                           }}
                         >
                           <Text
@@ -390,7 +390,7 @@ export function AddTransactionSheet({
             {/* Linked Subscription */}
             {type === "expense" && subscriptions && subscriptions.length > 0 ? (
               <View style={{ gap: 4 }}>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>
+                <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>
                   LINK TO SUBSCRIPTION (OPTIONAL)
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
@@ -399,8 +399,8 @@ export function AddTransactionSheet({
                     style={{
                       paddingHorizontal: 12,
                       paddingVertical: 8,
-                      borderRadius: 8,
-                      backgroundColor: !subscriptionId ? colors.primary : colors.surface,
+                      borderRadius: 14,
+                      backgroundColor: !subscriptionId ? colors.primary : colors.surfaceInset,
                     }}
                   >
                     <Text
@@ -420,8 +420,8 @@ export function AddTransactionSheet({
                       style={{
                         paddingHorizontal: 12,
                         paddingVertical: 8,
-                        borderRadius: 8,
-                        backgroundColor: subscriptionId === s._id ? colors.primary : colors.surface,
+                        borderRadius: 14,
+                        backgroundColor: subscriptionId === s._id ? colors.primary : colors.surfaceInset,
                       }}
                     >
                       <Text
@@ -442,7 +442,7 @@ export function AddTransactionSheet({
             {/* Date & Note */}
             <View style={{ flexDirection: "row", gap: 10 }}>
               <View style={{ flex: 1, gap: 4 }}>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>DATE</Text>
+                <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>DATE</Text>
                 <TextInput
                   value={date}
                   onChangeText={setDate}
@@ -451,17 +451,17 @@ export function AddTransactionSheet({
                   style={{
                     borderWidth: 1,
                     borderColor: colors.border,
-                    borderRadius: 8,
+                    borderRadius: 14,
                     paddingHorizontal: 10,
                     paddingVertical: 9,
                     fontSize: 14,
                     color: colors.text,
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.surfaceInset,
                   }}
                 />
               </View>
               <View style={{ flex: 1.4, gap: 4 }}>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: colors.mutedText }}>NOTE</Text>
+                <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>NOTE</Text>
                 <TextInput
                   value={note}
                   onChangeText={setNote}
@@ -470,12 +470,12 @@ export function AddTransactionSheet({
                   style={{
                     borderWidth: 1,
                     borderColor: colors.border,
-                    borderRadius: 8,
+                    borderRadius: 14,
                     paddingHorizontal: 10,
                     paddingVertical: 9,
                     fontSize: 14,
                     color: colors.text,
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.surfaceInset,
                   }}
                 />
               </View>

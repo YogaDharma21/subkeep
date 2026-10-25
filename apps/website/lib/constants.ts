@@ -23,29 +23,29 @@ export const currencySymbols: Record<string, string> = {
 }
 
 export const categoryColors: Record<string, string> = {
-  entertainment: "#6366f1",
-  music: "#10b981",
-  productivity: "#3b82f6",
-  cloud: "#06b6d4",
-  gaming: "#8b5cf6",
-  education: "#f59e0b",
-  fitness: "#ec4899",
-  news: "#64748b",
-  finance: "#14b8a6",
-  other: "#71717a",
+  entertainment: "#8e94a3",
+  music: "#a7b3a2",
+  productivity: "#b3aa9a",
+  cloud: "#93a4ac",
+  gaming: "#a79aae",
+  education: "#bda983",
+  fitness: "#b59a98",
+  news: "#7f858f",
+  finance: "#93a6a0",
+  other: "#7c7d80",
 }
 
 export const colorPresets = [
-  "#FFFFFF",
-  "#09090B",
-  "#64748B",
-  "#3B82F6",
-  "#6366F1",
-  "#8B5CF6",
-  "#EC4899",
-  "#EF4444",
-  "#F59E0B",
-  "#10B981",
+  "#F4F4F2",
+  "#8A8C92",
+  "#5C6068",
+  "#93A4AC",
+  "#8E94A3",
+  "#A79AAE",
+  "#B59A98",
+  "#C19B87",
+  "#BDA983",
+  "#A7B3A2",
 ]
 
 export const colorOptions = colorPresets

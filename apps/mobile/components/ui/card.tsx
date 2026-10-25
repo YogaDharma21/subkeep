@@ -17,7 +17,7 @@ export function Card({ style, children, ...props }: CardProps) {
           backgroundColor: colors.card,
           borderColor: colors.border,
           borderWidth: 1,
-          borderRadius: 12,
+          borderRadius: 24,
           padding: 16,
           overflow: "hidden",
         },

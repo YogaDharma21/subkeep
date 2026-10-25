@@ -150,7 +150,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
               <select
                 value={primaryCurrency}
                 onChange={(e) => handleCurrencyChange(e.target.value)}
-                className="h-8 rounded-lg border border-border bg-background px-2 text-xs font-semibold text-foreground focus:outline-none"
+                className="h-8 rounded-xl border border-border bg-foreground/[0.03] px-2 text-xs font-medium text-foreground focus:outline-none"
               >
                 {currencies.map((c) => (
                   <option key={c.value} value={c.value}>
@@ -226,7 +226,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
             </div>
 
             {/* Reminder Timing */}
-            <div className="space-y-2 rounded-lg bg-muted/40 p-3 border border-border">
+            <div className="surface-inset space-y-2 p-3">
               <label className="text-xs font-semibold text-foreground">
                 Reminder Timing
               </label>
@@ -240,7 +240,7 @@ export function SettingsSheet({ open, onOpenChange }: SettingsSheetProps) {
                     key={item.days}
                     type="button"
                     onClick={() => handleReminderDaysChange(item.days)}
-                    className={`rounded-lg py-2 text-xs font-medium border transition-all cursor-pointer ${
+                    className={`rounded-xl border py-2 text-xs font-medium transition-all cursor-pointer ${
                       reminderDays === item.days
                         ? "border-foreground bg-foreground text-background"
                         : "border-border bg-background text-foreground hover:border-foreground/50"

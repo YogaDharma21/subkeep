@@ -4,6 +4,7 @@ import {
   View,
   Text,
   TextInput,
+  type TextInputInstance,
   TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
@@ -17,6 +18,7 @@ import { api } from "@/convex/_generated/api"
 import {
   Search,
   Plus,
+  Home,
   Calendar,
   BarChart3,
   Settings,
@@ -67,15 +69,19 @@ export function SearchModal({
   )
 
   const [query, setQuery] = useState("")
-  const inputRef = useRef<TextInput>(null)
+  const [prevVisible, setPrevVisible] = useState(visible)
+  const inputRef = useRef<TextInputInstance>(null)
+
+  if (prevVisible !== visible) {
+    setPrevVisible(visible)
+    if (!visible) setQuery("")
+  }
 
   useEffect(() => {
     if (visible) {
       setTimeout(() => {
         inputRef.current?.focus()
       }, 100)
-    } else {
-      setQuery("")
     }
   }, [visible])
 
@@ -179,9 +185,20 @@ export function SearchModal({
         },
       },
       {
+        id: "nav-home",
+        label: "Home",
+        detail: "Your money overview",
+        icon: Home,
+        category: "Navigation",
+        run: () => {
+          onClose()
+          router.push("/(tabs)" as never)
+        },
+      },
+      {
         id: "nav-txns",
         label: "Transactions",
-        detail: "View expenses, income & transfers",
+        detail: "Money · Expenses, income & transfers",
         icon: ArrowLeftRight,
         category: "Navigation",
         run: () => {
@@ -190,31 +207,9 @@ export function SearchModal({
         },
       },
       {
-        id: "nav-subs",
-        label: "Subscriptions",
-        detail: "Manage recurring bills & trials",
-        icon: Repeat,
-        category: "Navigation",
-        run: () => {
-          onClose()
-          router.push("/(tabs)/subscriptions" as never)
-        },
-      },
-      {
-        id: "nav-budgets",
-        label: "Budgets",
-        detail: "Category spending limits & progress",
-        icon: PiggyBank,
-        category: "Navigation",
-        run: () => {
-          onClose()
-          router.push("/(tabs)/budgets" as never)
-        },
-      },
-      {
         id: "nav-accounts",
         label: "Accounts",
-        detail: "Wallets, banks & net worth",
+        detail: "Money · Wallets, banks & net worth",
         icon: Wallet,
         category: "Navigation",
         run: () => {
@@ -223,9 +218,20 @@ export function SearchModal({
         },
       },
       {
+        id: "nav-subs",
+        label: "Subscriptions",
+        detail: "Subscriptions · Recurring bills & trials",
+        icon: Repeat,
+        category: "Navigation",
+        run: () => {
+          onClose()
+          router.push("/(tabs)/subscriptions" as never)
+        },
+      },
+      {
         id: "nav-calendar",
         label: "Calendar",
-        detail: "View billing projections and renewal dates",
+        detail: "Subscriptions · Billing projections & renewal dates",
         icon: Calendar,
         category: "Navigation",
         run: () => {
@@ -235,8 +241,8 @@ export function SearchModal({
       },
       {
         id: "nav-stats",
-        label: "Statistics",
-        detail: "View charts, category breakdown & insights",
+        label: "Analytics",
+        detail: "Insights · Charts, category breakdown & trends",
         icon: BarChart3,
         category: "Navigation",
         run: () => {
@@ -245,8 +251,19 @@ export function SearchModal({
         },
       },
       {
+        id: "nav-budgets",
+        label: "Budgets",
+        detail: "Insights · Category spending limits & progress",
+        icon: PiggyBank,
+        category: "Navigation",
+        run: () => {
+          onClose()
+          router.push("/(tabs)/budgets" as never)
+        },
+      },
+      {
         id: "nav-settings",
-        label: "Settings",
+        label: "Settings & Backup",
         detail: "Export, restore, currency & preferences",
         icon: Settings,
         category: "Navigation",
@@ -339,7 +356,7 @@ export function SearchModal({
                 flexDirection: "row",
                 alignItems: "center",
                 borderBottomWidth: 1,
-                borderBottomColor: colors.border,
+                borderBottomColor: colors.borderLight,
                 paddingHorizontal: 14,
                 paddingVertical: 12,
                 gap: 10,
@@ -387,7 +404,7 @@ export function SearchModal({
               {/* Subscriptions Section */}
               {filteredSubs.length > 0 && (
                 <View style={{ gap: 6 }}>
-                  <Text style={{ fontSize: 10, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 6 }}>
+                  <Text style={{ fontSize: 10, fontWeight: "500", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 6 }}>
                     SUBSCRIPTIONS ({filteredSubs.length})
                   </Text>
                   <View style={{ gap: 4 }}>
@@ -403,8 +420,8 @@ export function SearchModal({
                           flexDirection: "row",
                           alignItems: "center",
                           padding: 10,
-                          borderRadius: 10,
-                          backgroundColor: colors.surface,
+                          borderRadius: 999,
+                          backgroundColor: colors.surfaceInset,
                           gap: 10,
                         }}
                       >
@@ -412,7 +429,7 @@ export function SearchModal({
                           style={{
                             width: 32,
                             height: 32,
-                            borderRadius: 8,
+                            borderRadius: 14,
                             backgroundColor: sub.color,
                             alignItems: "center",
                             justifyContent: "center",
@@ -422,7 +439,7 @@ export function SearchModal({
                         </View>
 
                         <View style={{ flex: 1 }}>
-                          <Text numberOfLines={1} style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                          <Text numberOfLines={1} style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                             {sub.name}
                           </Text>
                           <Text numberOfLines={1} style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
@@ -432,7 +449,7 @@ export function SearchModal({
                         </View>
 
                         <View style={{ alignItems: "flex-end" }}>
-                          <Text style={{ fontSize: 12, fontWeight: "700", color: colors.text }}>
+                          <Text style={{ fontSize: 12, fontWeight: "500", color: colors.text }}>
                             {convertAndFormat(sub.price, sub.currency, primaryCurrency, rates)}
                           </Text>
                           <Text style={{ fontSize: 10, color: colors.mutedText }}>
@@ -450,7 +467,7 @@ export function SearchModal({
               {/* Transactions Section */}
               {filteredTxns.length > 0 && (
                 <View style={{ gap: 6 }}>
-                  <Text style={{ fontSize: 10, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 6 }}>
+                  <Text style={{ fontSize: 10, fontWeight: "500", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 6 }}>
                     TRANSACTIONS ({filteredTxns.length})
                   </Text>
                   <View style={{ gap: 4 }}>
@@ -468,8 +485,8 @@ export function SearchModal({
                             flexDirection: "row",
                             alignItems: "center",
                             padding: 10,
-                            borderRadius: 10,
-                            backgroundColor: colors.surface,
+                            borderRadius: 999,
+                            backgroundColor: colors.surfaceInset,
                             gap: 10,
                           }}
                         >
@@ -477,7 +494,7 @@ export function SearchModal({
                             style={{
                               width: 32,
                               height: 32,
-                              borderRadius: 8,
+                              borderRadius: 14,
                               backgroundColor: colors.surfaceHover,
                               alignItems: "center",
                               justifyContent: "center",
@@ -487,7 +504,7 @@ export function SearchModal({
                           </View>
 
                           <View style={{ flex: 1 }}>
-                            <Text numberOfLines={1} style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                            <Text numberOfLines={1} style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                               {txn.note || meta.label}
                             </Text>
                             <Text numberOfLines={1} style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
@@ -496,7 +513,7 @@ export function SearchModal({
                           </View>
 
                           <View style={{ alignItems: "flex-end" }}>
-                            <Text style={{ fontSize: 12, fontWeight: "700", color: colors.text }}>
+                            <Text style={{ fontSize: 12, fontWeight: "500", color: colors.text }}>
                               {convertAndFormat(txn.amount, txn.currency, primaryCurrency, rates)}
                             </Text>
                           </View>
@@ -512,7 +529,7 @@ export function SearchModal({
               {/* Actions & Navigation Section */}
               {quickActions.length > 0 && (
                 <View style={{ gap: 6 }}>
-                  <Text style={{ fontSize: 10, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 6 }}>
+                  <Text style={{ fontSize: 10, fontWeight: "500", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 6 }}>
                     ACTIONS & NAVIGATION
                   </Text>
                   <View style={{ gap: 4 }}>
@@ -527,8 +544,8 @@ export function SearchModal({
                             flexDirection: "row",
                             alignItems: "center",
                             padding: 10,
-                            borderRadius: 10,
-                            backgroundColor: colors.surface,
+                            borderRadius: 999,
+                            backgroundColor: colors.surfaceInset,
                             gap: 10,
                           }}
                         >
@@ -536,7 +553,7 @@ export function SearchModal({
                             style={{
                               width: 32,
                               height: 32,
-                              borderRadius: 8,
+                              borderRadius: 14,
                               backgroundColor: colors.surfaceHover,
                               alignItems: "center",
                               justifyContent: "center",
@@ -546,7 +563,7 @@ export function SearchModal({
                           </View>
 
                           <View style={{ flex: 1 }}>
-                            <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                            <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                               {action.label}
                             </Text>
                             <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
@@ -565,7 +582,7 @@ export function SearchModal({
               {/* Currency Actions Section */}
               {currencyActions.length > 0 && (
                 <View style={{ gap: 6 }}>
-                  <Text style={{ fontSize: 10, fontWeight: "700", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 6 }}>
+                  <Text style={{ fontSize: 10, fontWeight: "500", color: colors.mutedText, textTransform: "uppercase", letterSpacing: 0.8, paddingHorizontal: 6 }}>
                     CURRENCIES
                   </Text>
                   <View style={{ gap: 4 }}>
@@ -578,8 +595,8 @@ export function SearchModal({
                           flexDirection: "row",
                           alignItems: "center",
                           padding: 10,
-                          borderRadius: 10,
-                          backgroundColor: colors.surface,
+                          borderRadius: 999,
+                          backgroundColor: colors.surfaceInset,
                           gap: 10,
                         }}
                       >
@@ -587,7 +604,7 @@ export function SearchModal({
                           style={{
                             width: 32,
                             height: 32,
-                            borderRadius: 8,
+                            borderRadius: 14,
                             backgroundColor: colors.surfaceHover,
                             alignItems: "center",
                             justifyContent: "center",
@@ -597,7 +614,7 @@ export function SearchModal({
                         </View>
 
                         <View style={{ flex: 1 }}>
-                          <Text style={{ fontSize: 13, fontWeight: "700", color: colors.text }}>
+                          <Text style={{ fontSize: 13, fontWeight: "500", color: colors.text }}>
                             {action.label}
                           </Text>
                           <Text style={{ fontSize: 11, color: colors.mutedText, marginTop: 1 }}>
@@ -630,8 +647,8 @@ export function SearchModal({
                 paddingHorizontal: 12,
                 paddingVertical: 10,
                 borderTopWidth: 1,
-                borderTopColor: colors.border,
-                backgroundColor: colors.surface,
+                borderTopColor: colors.borderLight,
+                backgroundColor: colors.surfaceInset,
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>

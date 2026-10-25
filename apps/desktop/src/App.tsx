@@ -17,6 +17,7 @@ import { SettingsView } from "@/components/settings-view"
 import { SubscriptionDetailView } from "@/components/subscription-detail-view"
 import { AddSubscriptionSheet } from "@/components/add-subscription-sheet"
 import { AddTransactionSheet } from "@/components/add-transaction-sheet"
+import { AddAccountSheet } from "@/components/add-account-sheet"
 import { AddBudgetSheet } from "@/components/add-budget-sheet"
 import { PaymentMethodsSheet } from "@/components/payment-methods-sheet"
 import { CommandPalette } from "@/components/command-palette"
@@ -47,6 +48,7 @@ export function App() {
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null)
   const [addSheetOpen, setAddSheetOpen] = useState(false)
   const [addTxnOpen, setAddTxnOpen] = useState(false)
+  const [addAccountOpen, setAddAccountOpen] = useState(false)
   const [addBudgetOpen, setAddBudgetOpen] = useState(false)
   const [paymentSheetOpen, setPaymentSheetOpen] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
@@ -104,7 +106,7 @@ export function App() {
     return (
       <div className="h-screen w-screen flex flex-col bg-background text-foreground items-center justify-center">
         <div className="size-8 rounded-full border-2 border-primary border-t-transparent animate-spin mb-3" />
-        <p className="text-xs text-muted-foreground font-semibold">Loading SubKeep Desktop...</p>
+        <p className="text-xs text-muted-foreground font-medium">Loading SubKeep Desktop...</p>
       </div>
     )
   }
@@ -141,12 +143,13 @@ export function App() {
           onNavigate={(v) => handleNavigate(v)}
           onAddSubscription={() => setAddSheetOpen(true)}
           onAddTransaction={() => setAddTxnOpen(true)}
+          onAddAccount={() => setAddAccountOpen(true)}
           onAddBudget={() => setAddBudgetOpen(true)}
           onSearchClick={() => setCommandPaletteOpen(true)}
           activeSubCount={activeSubsCount}
         />
 
-        <main className="flex-1 min-w-0 overflow-y-auto p-4 sm:p-6 bg-background">
+        <main className="flex-1 min-w-0 overflow-y-auto bg-background p-5 sm:p-8">
           {currentView === "dashboard" && (
             <FinanceDashboardView onNavigate={(v) => handleNavigate(v)} />
           )}
@@ -164,12 +167,10 @@ export function App() {
           {currentView === "budgets" && <BudgetsView />}
 
           {currentView === "calendar" && (
-            <div className="space-y-4 max-w-5xl mx-auto pb-12">
-              <div>
-                <h1 className="text-xl font-extrabold text-foreground">Calendar</h1>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Scheduled renewals, trial deadlines, and daily cash flow.
-                </p>
+            <div className="mx-auto max-w-6xl space-y-3 pb-16">
+              <div className="px-1 pb-2">
+                <p className="label">Schedule</p>
+                <h1 className="page-title mt-2">Calendar</h1>
               </div>
               <CalendarGrid
                 subscriptions={subscriptions || []}
@@ -180,12 +181,10 @@ export function App() {
           )}
 
           {currentView === "stats" && (
-            <div className="space-y-4 max-w-5xl mx-auto pb-12">
-              <div>
-                <h1 className="text-xl font-extrabold text-foreground">Spending Analytics</h1>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Income vs expenses, category breakdown, and subscription trends.
-                </p>
+            <div className="mx-auto max-w-6xl space-y-3 pb-16">
+              <div className="px-1 pb-2">
+                <p className="label">Analytics</p>
+                <h1 className="page-title mt-2">Spending</h1>
               </div>
               <FinanceAnalytics
                 transactions={transactions || []}
@@ -229,6 +228,12 @@ export function App() {
         onOpenChange={setAddTxnOpen}
       />
 
+      {/* Global Add Account Sheet */}
+      <AddAccountSheet
+        open={addAccountOpen}
+        onOpenChange={setAddAccountOpen}
+      />
+
       {/* Global Set Budget Sheet */}
       <AddBudgetSheet
         open={addBudgetOpen}
@@ -248,6 +253,7 @@ export function App() {
         onNavigate={handleNavigate}
         onAddSubscription={() => setAddSheetOpen(true)}
         onAddTransaction={() => setAddTxnOpen(true)}
+        onAddAccount={() => setAddAccountOpen(true)}
         onAddBudget={() => setAddBudgetOpen(true)}
         onOpenPaymentMethods={() => setPaymentSheetOpen(true)}
       />
