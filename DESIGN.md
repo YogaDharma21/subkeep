@@ -8,78 +8,350 @@ A specification for utilitarian, dark-first interfaces across web, desktop, and 
 
 - **Balanced minimalism**: High information density without decorative fluff. State only what is necessary to inform the user and enable action. Avoid extreme minimalism that trims away vital dates, figures, or navigation controls.
 - **Dark-first foundation**: Warm charcoal tones (`#08090b` canvas, `#121316` card surface). Never harsh pitch black (`#000000`).
-- **Solid matte surfaces**: Solid card colors with 1px hairline borders (`rgba(255, 255, 255, 0.07)`) and soft directional drop shadows. No gradient card overlays or glossy highlights.
-- **Muted mineral accents**: Accent colors are desaturated earthy minerals (sage emerald, terracotta crimson, warm amber, steel blue). Never neon or high-saturation primaries.
-- **Tabular financial figures**: Every financial numeral uses tabular alignment (`tabular-nums`) with tight tracking for vertical scanning.
+- **Solid matte surfaces**: Solid card colors with 1px hairline borders (`rgba(255, 255, 255, 0.07)`) and soft directional drop shadows (`0 28px 56px -40px rgba(0, 0, 0, 0.9)`). No gradient card overlays, glassmorphism blur, or glossy highlights.
+- **Muted mineral accents**: Accent colors are desaturated earthy minerals (sage emerald, terracotta crimson, warm amber, steel blue) paired with 10% to 14% opacity background tints. Never neon or high-saturation primaries.
+- **Tabular figures**: Every numeric value, financial figure, and timer uses tabular alignment (`tabular-nums`) with tight tracking for vertical scanning.
 
 ---
 
-## 2. Color Palette & Tokens
+## 2. Typography & Font Configuration
 
-### Dark theme (default)
+### Font Stack
 
-| Token | Value | Description |
-| :--- | :--- | :--- |
-| `background` | `#08090b` | App canvas background. Warm charcoal. |
-| `card` | `#121316` | Solid card and surface background. |
-| `surface` | `#17181c` | Secondary surface, active rows, hover cards. |
-| `surface-inset` | `rgba(255, 255, 255, 0.035)` | Recessed sections, search input tracks, pills. |
-| `popover` | `#15161a` | Menus, dropdowns, dialogs. |
-| `border` | `rgba(255, 255, 255, 0.07)` | Hairline container border. |
-| `border-subtle` | `rgba(255, 255, 255, 0.04)` | Inset dividers, row separators. |
-| `foreground` | `#f4f4f2` | Primary text and strong icons. Warm off-white. |
-| `muted-foreground` | `#8a8c92` | Secondary labels, descriptions, timestamps. |
-| `subtle-foreground` | `#5f6065` | Inactive icons, placeholder text, hints. |
-| `primary` | `#f2f1ec` | Inverted action buttons, high-emphasis triggers. |
-| `primary-foreground`| `#0a0a0b` | Text on inverted primary buttons. |
+- **Primary UI Sans**: `Geist` or `Inter` (`--font-sans`, `--font-geist-sans`).
+- **Monospace / Numerals / Timers**: `Geist Mono` or `JetBrains Mono` (`--font-mono`, `--font-geist-mono`).
 
-### Light theme
+### Next.js Font Setup Blueprint
 
-| Token | Value | Description |
-| :--- | :--- | :--- |
-| `background` | `#f2f1ed` | Warm linen / alabaster canvas. |
-| `card` | `#faf9f6` | Solid card surface, clean paper white. |
-| `surface` | `#e8e6e0` | Hover rows, secondary containers. |
-| `surface-inset` | `rgba(21, 21, 20, 0.035)` | Recessed chips, search input background. |
-| `border` | `rgba(21, 21, 20, 0.09)` | Hairline container border. |
-| `border-subtle` | `rgba(21, 21, 20, 0.05)` | Row dividers. |
-| `foreground` | `#151514` | Primary text. Soft charcoal ink. |
-| `muted-foreground` | `#6f6d67` | Secondary labels and body text. |
-| `subtle-foreground` | `#9a9890` | Footers and placeholders. |
-| `primary` | `#171716` | Dark CTA buttons. |
-| `primary-foreground`| `#f6f4ef` | Light text on primary buttons. |
+```tsx
+import { Geist, Geist_Mono, Inter } from "next/font/google";
 
-### Semantic accents
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const geistSans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
-Use accent tones with 10% to 14% opacity backgrounds for indicators, icon holders, and status chips.
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}>
+        {children}
+      </body>
+    </html>
+  );
+}
+```
 
-| Tone | Dark value | Dark BG tint (12%) | Light value | Meaning |
-| :--- | :--- | :--- | :--- | :--- |
-| **Emerald** | `#a9bfa9` | `rgba(169, 191, 169, 0.12)` | `#4f7357` | Income, positive cashflow, success |
-| **Crimson** | `#c99a90` | `rgba(194, 133, 123, 0.13)` | `#a2544a` | Expenses, negative net, cancellation, overdue |
-| **Amber** | `#d2bd93` | `rgba(210, 189, 147, 0.12)` | `#8a6b34` | Upcoming bills, warnings, trial ending soon |
-| **Blue** | `#a6b0bd` | `rgba(166, 176, 189, 0.12)` | `#5c6b7a` | Transfers, accounts, category tags |
-
----
-
-## 3. Typography Scale
-
-Default typeface: `Inter`, `SF Pro`, or system sans-serif.
+### Typography Scale
 
 | Role | Size | Weight | Tracking | Usage |
 | :--- | :--- | :--- | :--- | :--- |
-| **Display Number** | 28px - 32px | 600 (Semibold) | `-0.04em` (`-1.1px`) | Main balance, net worth, hero figures |
-| **Section Title** | 18px - 20px | 600 (Semibold) | `-0.025em` (`-0.5px`)| Page headers, view titles |
-| **Card / Panel Title**| 15px | 500 (Medium) | `-0.015em` (`-0.2px`)| Card header, table section titles |
+| **Hero Display** | 56px - 128px (`text-5xl` to `text-8xl`) | 700 (Bold) | `tracking-tighter`, `tabular-nums` | Stopwatches, countdown timers, giant figures |
+| **Display Number** | 28px - 32px | 600 (Semibold) | `-0.04em` (`tracking-[-0.04em]`) | Main balance, net worth, hero figures |
+| **Section Title** | 18px - 20px | 600 (Semibold) | `-0.025em` (`tracking-[-0.025em]`)| Page headers, view titles |
+| **Card / Panel Title**| 15px | 500 (Medium) | `-0.015em` (`tracking-[-0.015em]`)| Card header, table section titles |
 | **Metric Value** | 20px - 22px | 500 (Medium) | `-0.03em`, `tabular-nums` | MetricCard numbers, recurring totals |
 | **Body / Row Text** | 13px - 14px | 400 or 500 | Normal | Transaction descriptions, settings, lists |
 | **Meta / Subtitle** | 11px - 12px | 400 (Regular) | Normal | Card subtitles, secondary metadata, dates |
-| **Uppercase Label** | 10px | 500 or 600 | `+0.16em` (`+1.6px`) | Section category hints, micro KPI headers |
+| **Uppercase Label** | 10px | 500 or 600 | `+0.16em` (`tracking-[0.16em]`) | Section category hints, micro KPI headers |
 | **Micro Caption** | 9px - 10px | 500 (Medium) | Normal | Heatmap weekday/month markers, legends |
 
 ---
 
-## 4. Content & Copywriting Rules
+## 3. Color Tokens & CSS Variables
+
+### CSS Custom Properties
+
+```css
+:root {
+  --background: #f2f1ed;
+  --foreground: #151514;
+  --card: #faf9f6;
+  --card-foreground: #151514;
+  --surface: #e8e6e0;
+  --surface-foreground: #151514;
+  --surface-inset: rgba(21, 21, 20, 0.035);
+  --popover: #faf9f6;
+  --popover-foreground: #151514;
+  --primary: #171716;
+  --primary-foreground: #f6f4ef;
+  --secondary: #e8e6e0;
+  --secondary-foreground: #151514;
+  --muted: #e8e6e0;
+  --muted-foreground: #6f6d67;
+  --subtle-foreground: #9a9890;
+  --accent: #e8e6e0;
+  --accent-foreground: #151514;
+  --destructive: #a2544a;
+  --destructive-foreground: #f6f4ef;
+  --border: rgba(21, 21, 20, 0.09);
+  --border-subtle: rgba(21, 21, 20, 0.05);
+  --input: rgba(21, 21, 20, 0.09);
+  --ring: #9a9890;
+  --emerald: #4f7357;
+  --emerald-bg: rgba(79, 115, 87, 0.12);
+  --crimson: #a2544a;
+  --crimson-bg: rgba(162, 84, 74, 0.13);
+  --amber: #8a6b34;
+  --amber-bg: rgba(138, 107, 52, 0.12);
+  --blue: #5c6b7a;
+  --blue-bg: rgba(92, 107, 122, 0.12);
+  --radius: 24px;
+}
+
+.dark {
+  --background: #08090b;
+  --foreground: #f4f4f2;
+  --card: #121316;
+  --card-foreground: #f4f4f2;
+  --surface: #17181c;
+  --surface-foreground: #f4f4f2;
+  --surface-inset: rgba(255, 255, 255, 0.035);
+  --popover: #15161a;
+  --popover-foreground: #f4f4f2;
+  --primary: #f2f1ec;
+  --primary-foreground: #0a0a0b;
+  --secondary: #17181c;
+  --secondary-foreground: #f4f4f2;
+  --muted: #17181c;
+  --muted-foreground: #8a8c92;
+  --subtle-foreground: #5f6065;
+  --accent: #17181c;
+  --accent-foreground: #f4f4f2;
+  --destructive: #c99a90;
+  --destructive-foreground: #0a0a0b;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --input: rgba(255, 255, 255, 0.07);
+  --ring: #5f6065;
+  --emerald: #a9bfa9;
+  --emerald-bg: rgba(169, 191, 169, 0.12);
+  --crimson: #c99a90;
+  --crimson-bg: rgba(194, 133, 123, 0.13);
+  --amber: #d2bd93;
+  --amber-bg: rgba(210, 189, 147, 0.12);
+  --blue: #a6b0bd;
+  --blue-bg: rgba(166, 176, 189, 0.12);
+  --radius: 24px;
+}
+```
+
+### Tailwind Theme & Utilities
+
+```css
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-surface-inset: var(--surface-inset);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-emerald: var(--emerald);
+  --color-emerald-bg: var(--emerald-bg);
+  --color-crimson: var(--crimson);
+  --color-crimson-bg: var(--crimson-bg);
+  --color-amber: var(--amber);
+  --color-amber-bg: var(--amber-bg);
+  --color-blue: var(--blue);
+  --color-blue-bg: var(--blue-bg);
+
+  --radius-xs: 2px;
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+}
+
+@layer utilities {
+  .surface {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow: 0 28px 56px -40px rgba(0, 0, 0, 0.9);
+  }
+  .surface-inset {
+    background-color: var(--surface-inset);
+    border-radius: 16px;
+  }
+  .search-pill {
+    background-color: var(--surface-inset);
+    border: 0;
+    border-radius: 9999px;
+  }
+}
+```
+
+---
+
+## 4. Elevation, Radii & Shadows
+
+### Corner Radius Hierarchy
+
+- **Outer container / Main card**: `24px` (`rounded-[24px]` or `rounded-3xl`)
+- **Inset section / Nested list / Inner card**: `16px` (`rounded-[16px]` or `rounded-2xl`)
+- **Interactive buttons, form inputs, dialogs**: `10px` to `12px` (`rounded-[10px]` or `rounded-xl`)
+- **Pill navigations, status tags, toggle chips**: `9999px` (`rounded-full`)
+- **Micro-indicators, bar cells, heatmap units**: `2px` (`rounded-[2px]`)
+
+### Shadow Specification
+
+Use this exact shadow for all elevated cards and navigation containers:
+
+```css
+box-shadow: 0 28px 56px -40px rgba(0, 0, 0, 0.9);
+```
+
+Tailwind utility equivalent: `shadow-[0_28px_56px_-40px_rgba(0,0,0,0.9)]`.
+
+---
+
+## 5. Concrete Component Blueprints
+
+### 1. Main Surface Card
+
+Used for panels, stat containers, and dashboard modules.
+
+```tsx
+<div className="p-5 bg-card border border-border shadow-[0_28px_56px_-40px_rgba(0,0,0,0.9)] rounded-[24px]">
+  <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center gap-2">
+      <div className="p-1.5 bg-surface-inset rounded-[10px] text-muted-foreground">
+        <Icon className="w-4 h-4" />
+      </div>
+      <h3 className="text-[15px] font-medium tracking-[-0.015em] text-foreground">Card Title</h3>
+    </div>
+  </div>
+  {children}
+</div>
+```
+
+### 2. Floating Pill Navigation Bar
+
+Used for dock bars, view switchers, and persistent floating menus.
+
+```tsx
+<nav className="flex items-center gap-2 p-2 bg-card border border-border shadow-[0_28px_56px_-40px_rgba(0,0,0,0.9)] rounded-full">
+  <button className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full text-primary-foreground bg-primary shadow-sm transition-all duration-300 active:scale-95">
+    <Icon className="w-5 h-5" />
+  </button>
+  <button className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full text-muted-foreground hover:text-foreground hover:bg-surface transition-all duration-300 active:scale-95">
+    <Icon className="w-5 h-5" />
+  </button>
+</nav>
+```
+
+### 3. Metric KPI Card
+
+Used in grid layouts (2, 3, or 4 columns) for quick glances.
+
+```tsx
+<div className="p-5 flex flex-col justify-between bg-card border border-border shadow-[0_28px_56px_-40px_rgba(0,0,0,0.9)] rounded-[24px]">
+  <div className="flex items-center justify-between">
+    <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+      Label
+    </span>
+    <div className="p-1.5 bg-surface-inset rounded-[10px] text-muted-foreground">
+      <Icon className="w-4 h-4" />
+    </div>
+  </div>
+  <div className="text-[22px] font-medium tabular-nums tracking-[-0.03em] text-foreground my-1">
+    1,420
+  </div>
+  <span className="text-[11px] text-muted-foreground">
+    Subtext description
+  </span>
+</div>
+```
+
+### 4. Hero Display Figure / Timer
+
+Used for hero stopwatches, countdowns, and giant balances.
+
+```tsx
+<div className="text-[3.5rem] sm:text-[5rem] md:text-[8rem] font-bold leading-none tracking-tighter tabular-nums text-foreground drop-shadow">
+  25:00
+</div>
+```
+
+### 5. Semantic Icon Container
+
+Icon badges with muted mineral background tints.
+
+```tsx
+{/* Emerald (Success / Positive) */}
+<div className="p-1.5 bg-emerald-bg rounded-[10px] text-emerald">
+  <Icon className="w-4 h-4" />
+</div>
+
+{/* Amber (Warning / Active) */}
+<div className="p-1.5 bg-amber-bg rounded-[10px] text-amber">
+  <Icon className="w-4 h-4" />
+</div>
+
+{/* Crimson (Negative / Danger) */}
+<div className="p-1.5 bg-crimson-bg rounded-[10px] text-crimson">
+  <Icon className="w-4 h-4" />
+</div>
+
+{/* Blue (Info / Tag) */}
+<div className="p-1.5 bg-blue-bg rounded-[10px] text-blue">
+  <Icon className="w-4 h-4" />
+</div>
+```
+
+### 6. Interactive Action Buttons
+
+Buttons feature clear micro-interactions (`active:scale-95`, `transition-all duration-300`).
+
+```tsx
+{/* Primary CTA */}
+<button className="h-12 px-6 rounded-[12px] bg-primary text-primary-foreground font-medium shadow-md hover:shadow active:scale-95 transition-all duration-300 cursor-pointer">
+  Start Session
+</button>
+
+{/* Secondary / Outline Button */}
+<button className="h-12 px-4 rounded-[12px] border-2 border-border bg-transparent text-foreground hover:bg-secondary hover:border-border/80 active:scale-95 transition-all duration-300 cursor-pointer">
+  Settings
+</button>
+```
+
+### 7. Search and Filter Bar
+
+```tsx
+<div className="flex items-center gap-2 px-4 h-11 bg-surface-inset rounded-full border-0">
+  <SearchIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+  <input
+    type="text"
+    placeholder="Search..."
+    className="w-full bg-transparent text-sm text-foreground placeholder:text-subtle-foreground focus:outline-none border-0"
+  />
+</div>
+```
+
+---
+
+## 6. Layout & Spacing Rules
+
+- **Container widths**: Constrain readable interfaces with `max-w-md`, `max-w-2xl`, or `max-w-7xl mx-auto`.
+- **Page padding**: Standard responsive padding `p-4 sm:p-6 md:px-28 pb-24`.
+- **Vertical centering**: Center hero workflows (e.g. timers, focus blocks, key actions) in available viewport height (`min-h-[50vh] flex flex-col items-center justify-center`).
+- **Smooth transitions**: Every interactive element must define `transition-all duration-300 ease-out`.
+
+---
+
+## 7. Content & Copywriting Rules
 
 - **No subtitle fluff**: Do not place descriptive slogans or filler under headings (for example, omit "Balances, bills, and what is left"). If the header and numbers make the purpose obvious, skip the subtitle.
 - **No vanity status pills**: Never render decorative badges for obvious or trivial states like "Online", "Status: Active", "Normal", or "Dashboard". Badges exist only for actionable or urgent state:
@@ -90,82 +362,14 @@ Default typeface: `Inter`, `SF Pro`, or system sans-serif.
 
 ---
 
-## 5. Elevation, Radii & Surfaces
+## 8. Anti-Patterns & Strict Rules
 
-### Corner radius hierarchy
-
-- **Outer container / Main card (`.surface`)**: `24px` (`rounded-3xl` or `rounded-[24px]`)
-- **Inset section / Nested list (`.surface-inset`)**: `16px` (`rounded-2xl` or `rounded-[16px]`)
-- **Interactive buttons, form inputs, dialogs**: `10px` to `12px` (`rounded-xl` or `rounded-[10px]`)
-- **Pills / Status tags**: `9999px` (`rounded-full`)
-- **Heatmap cells & micro-indicators**: `2px` (`rounded-[2px]`)
-
-### Surface construction
-
-Every card uses three exact properties:
-
-```css
-/* Card Container */
-background-color: var(--card); /* Solid #121316 in dark mode */
-border: 1px solid var(--border); /* rgba(255, 255, 255, 0.07) */
-border-radius: 24px;
-box-shadow: 0 28px 56px -40px rgba(0, 0, 0, 0.9);
-```
-
-- **Solid matte background**: No linear or radial gradient overlays on card surfaces.
-- **No folder tabs**: Card headers sit flush inside standard card padding with uniform corners.
-- **Border-free search inputs**: Search inputs sit inside a pill container (`borderRadius: 999`) with `surfaceInset` background and zero border outline.
-
----
-
-## 6. Standard Components
-
-### 1. MetricCard
-Compact KPI card used across dashboards in 2, 3, or 4 column grids.
-
-- **Structure**:
-  1. Top row: Small uppercase label (`10px`, tracking `+0.16em`, muted).
-  2. Middle row: Tabular numeral (`20px - 22px`, font-medium, foreground).
-  3. Bottom row: Context label (`11px`, muted text) indicating recurrence or account count.
-- **Padding**: `16px` (`p-4`).
-- **Surface**: Solid card background, 24px radius, 1px border.
-
-### 2. Activity heatmap
-Full 52-week calendar spending matrix.
-
-- **Structure**:
-  - Header: "Activity", subtitle "Daily spending, past 52 weeks", active days count.
-  - Matrix layout: 7 rows (Mon through Sun) by 52-53 column weeks.
-  - Cell size: `10px` square, `2px` border radius, `3px` gap.
-  - Weekday indicators: Left column showing `Mon`, `Wed`, `Fri` at `9px` muted text.
-  - Month headers: Positioned above week columns where a new month starts.
-  - Intensity scale: Square root scaling `0.22 + 0.78 * sqrt(amount / peak)` on foreground opacity. Zero spend renders at `rgba(255, 255, 255, 0.04)`.
-  - Footer: Left displays "Peak day" currency value, right displays 5-step "Less ... More" intensity legend.
-
-### 3. List item / Transaction row
-Standard row item for transactions, bills, and accounts.
-
-- **Structure**:
-  - Left: `36px` rounded square icon container (`10px` radius) with 12% semantic tint background and matching icon color.
-  - Middle: Item title (`13px`, font-medium, foreground) with category or frequency subtitle (`11px`, muted).
-  - Right: Tabular amount (`13px`, font-medium, foreground or emerald for income) above date or status badge.
-
-### 4. Search and filter bar
-Input for filtering records by name, category, or date.
-
-- **Structure**: Rounded pill (`rounded-full` or `borderRadius: 999`), inset background (`surfaceInset`), border-free (`border: 0`).
-- **Left icon**: 14px search icon in muted foreground.
-- **Text input**: 12px - 14px, transparent background, no focus ring outline.
-
----
-
-## 7. Anti-Patterns & Strict Rules
-
-1. **No gradient card fills**: Never apply linear or radial gradients across `.surface` cards. Cards are solid matte.
-2. **No pure black canvas**: `#000000` is harsh. Canvas is `#08090b`; cards are `#121316`.
-3. **No folder-tab cutouts**: Headers sit flush inside card padding with equal border radii.
-4. **No vanity status pills**: Never display badges like "Online", "Active", "Operational", or "Normal". Use badges only for critical financial states or currency selection.
-5. **No subtitle fluff**: Do not add marketing taglines, explanatory paragraphs, or filler slogans under titles inside application views.
-6. **No over-trimming**: Never remove functional dates, transaction accounts, currency codes, or navigation buttons in the name of minimalism.
+1. **No generic zinc/gray defaults**: Never use unstyled Tailwind `bg-zinc-900 border-zinc-800`. Always use the custom tokens (`bg-card`, `bg-background`, `border-border`).
+2. **No gradient card fills**: Never apply linear or radial gradients across `.surface` cards. Cards are solid matte `#121316`.
+3. **No pure black canvas**: `#000000` is harsh. Canvas is `#08090b`; cards are `#121316`.
+4. **No folder-tab cutouts**: Headers sit flush inside card padding with equal border radii.
+5. **No vanity status pills**: Never display badges like "Online", "Active", "Operational", or "Normal".
+6. **No subtitle fluff**: Do not add marketing taglines, explanatory paragraphs, or filler slogans under titles inside application views.
 7. **No saturated neon accents**: Never use `#00ff00`, `#ff0000`, or default Tailwind `blue-600`. Use the desaturated mineral palette.
 8. **No borders on search pills**: Inset search inputs must remain borderless.
+9. **Never omit micro-interactions**: Every clickable item must feature `active:scale-95` and `transition-all duration-300`.

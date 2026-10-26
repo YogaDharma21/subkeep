@@ -4,10 +4,11 @@ I hate a lot of text and hate emojis so i prefer to use simple words when talkin
 
 ## Core Directives
 
-- Call skill tool with ID humanize before each reply.
+- On every user prompt, always execute this sequence before anything else:
+  1. Call skill tool with ID `command-center` first to inspect intent and route through the yoga-skills lifecycle.
+  2. Call skill tool with ID `humanize` immediately after `command-center`.
 - Always use my git and github account if you have anything being done in git / github.
 - Give important link in response if necessary.
-- When starting work, dispatch tasks via /command-center to route through the yoga-skills lifecycle (scout -> spec -> slice -> build -> test -> review -> launch).
 
 ## Rules
 
@@ -53,12 +54,6 @@ Follow the clean, pragmatic format:
 - `## Verification`: Exact tests or checks run and output.
 - `## Notes`: Optional critical trade-offs or rollback steps.
 
-### 8. Formatting & Anti-AI Tells
-- Zero emojis anywhere.
-- Zero em dashes (`—`) or en dashes (`–`). Use regular hyphens (`-`), commas, or periods.
-- Use forward slashes (`/`) for file paths in prose.
-- Wrap paths, commands, and code in backticks.
-
-### 9. UI & Design System
-- For frontend and UI work, strictly adhere to `design.md`.
+### 8. UI & Design System
+- For frontend and UI work, strictly adhere to `DESIGN.md`.
 - Follow the dark-first charcoal palette (`#08090b` canvas, `#121316` cards), solid matte surfaces, muted mineral accents, tabular numbers, and zero vanity pills or subtitle fluff.
