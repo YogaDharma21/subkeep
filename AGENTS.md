@@ -19,7 +19,7 @@ I hate a lot of text and hate emojis so i prefer to use simple words when talkin
 
 ### 2. Branching & Worktree
 - Every task belongs to one working branch.
-- Use simple, self-explanatory kebab-case branch names (e.g. `fix-auth-token`, `add-user-profile`).
+- Use semantic kebab-case branch names with standard prefixes: `feat/*`, `fix/*`, `chore/*`, `refactor/*`, `docs/*`, `test/*` (e.g. `feat/session-store`, `fix/auth-token`, `chore/bump-deps`).
 - NEVER prefix branches with `t3/*` or random tool prefixes.
 - Do not work directly on default or protected branches.
 - Stay on the branch until the task is complete.
