@@ -37,12 +37,5 @@
     "typescript": "^5.7.3",
     "vite": "^6.2.0",
     "vite-plugin-electron": "^0.29.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@clerk/shared",
-      "electron",
-      "esbuild"
-    ]
   }
 }

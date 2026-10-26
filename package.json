@@ -1,0 +1,28 @@
+{
+  "name": "subkeep",
+  "private": true,
+  "packageManager": "pnpm@10.33.4",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.8.3",
+    "turbo": "^2.4.4",
+    "typescript": "^5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@clerk/shared",
+      "browser-tabs-lock",
+      "core-js",
+      "electron",
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
+}

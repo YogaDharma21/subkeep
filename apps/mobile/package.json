@@ -9,7 +9,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@clerk/expo": "^4.14.0",
@@ -51,15 +52,6 @@
     "eslint": "^9.25.0",
     "eslint-config-expo": "~58.0.4",
     "typescript": "~6.0.3"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@clerk/shared",
-      "browser-tabs-lock",
-      "core-js",
-      "esbuild",
-      "unrs-resolver"
-    ]
   },
   "private": true
 }
