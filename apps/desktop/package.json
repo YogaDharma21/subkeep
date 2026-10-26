@@ -27,6 +27,7 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@subkeep/tsconfig": "workspace:*",
     "@tailwindcss/vite": "^4.0.0",
     "@types/node": "^20.19.43",
     "@types/react": "^19.0.0",
