@@ -29,6 +29,9 @@ importers:
       '@subkeep/convex':
         specifier: workspace:*
         version: link:../../packages/convex
+      '@subkeep/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -226,6 +229,9 @@ importers:
       '@subkeep/convex':
         specifier: workspace:*
         version: link:../../packages/convex
+      '@subkeep/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -339,6 +345,34 @@ importers:
         version: 5.9.3
 
   packages/tsconfig: {}
+
+  packages/ui:
+    dependencies:
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      tailwind-merge:
+        specifier: ^3.6.0
+        version: 3.7.0
+    devDependencies:
+      '@subkeep/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@types/react':
+        specifier: ^19
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19
+        version: 19.3.0(@types/react@19.3.0)
+      react:
+        specifier: ^19
+        version: 19.3.0
+      react-dom:
+        specifier: ^19
+        version: 19.3.0(react@19.3.0)
+      typescript:
+        specifier: ^5
+        version: 5.9.3
 
 packages:
 
