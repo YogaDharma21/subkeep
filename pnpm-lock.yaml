@@ -26,6 +26,9 @@ importers:
       '@clerk/themes':
         specifier: ^2.4.57
         version: 2.4.57(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@subkeep/convex':
+        specifier: workspace:*
+        version: link:../../packages/convex
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -102,6 +105,9 @@ importers:
       '@react-native-async-storage/async-storage':
         specifier: 2.2.0
         version: 2.2.0(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))
+      '@subkeep/convex':
+        specifier: workspace:*
+        version: link:../../packages/convex
       convex:
         specifier: ^1.45.0
         version: 1.48.0(@clerk/clerk-react@5.61.3(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@clerk/react@6.18.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
@@ -217,6 +223,9 @@ importers:
       '@clerk/nextjs':
         specifier: ^7.5.20
         version: 7.9.20(next@16.2.6(@babel/core@7.29.7)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@subkeep/convex':
+        specifier: workspace:*
+        version: link:../../packages/convex
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -312,6 +321,22 @@ importers:
       lightningcss-win32-x64-msvc:
         specifier: 1.32.0
         version: 1.32.0
+
+  packages/convex:
+    dependencies:
+      convex:
+        specifier: ^1.42.3
+        version: 1.48.0(@clerk/clerk-react@5.61.3(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@clerk/react@6.18.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
+    devDependencies:
+      '@subkeep/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
+      typescript:
+        specifier: ^5
+        version: 5.9.3
 
   packages/tsconfig: {}
 

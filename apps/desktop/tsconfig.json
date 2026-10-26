@@ -3,6 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "@/convex/*": ["../../packages/convex/convex/*"],
       "@/*": ["src/*"]
     },
     "types": ["vite/client", "node"]

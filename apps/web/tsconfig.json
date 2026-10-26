@@ -2,6 +2,7 @@
   "extends": "@subkeep/tsconfig/nextjs.json",
   "compilerOptions": {
     "paths": {
+      "@/convex/*": ["../../packages/convex/convex/*"],
       "@/*": ["./*"]
     }
   },
