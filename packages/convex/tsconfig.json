@@ -1,0 +1,12 @@
+{
+  "extends": "@subkeep/tsconfig/base.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["ES2023", "dom"],
+    "noEmit": true,
+    "allowJs": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["convex/**/*"],
+  "exclude": ["convex/_generated"]
+}
