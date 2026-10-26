@@ -7,31 +7,7 @@ on:
     branches: [main, master]
 
 jobs:
-  detect-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      web: ${{ steps.filter.outputs.web }}
-      mobile: ${{ steps.filter.outputs.mobile }}
-      desktop: ${{ steps.filter.outputs.desktop }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            web:
-              - 'apps/web/**'
-              - '.github/workflows/ci.yml'
-            mobile:
-              - 'apps/mobile/**'
-              - '.github/workflows/ci.yml'
-            desktop:
-              - 'apps/desktop/**'
-              - '.github/workflows/ci.yml'
-
-  build-web:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.web == 'true'
+  ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -46,81 +22,18 @@ jobs:
         with:
           node-version: 22
           cache: 'pnpm'
-          cache-dependency-path: 'apps/web/pnpm-lock.yaml'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        working-directory: apps/web
 
-      - name: Lint check
-        run: pnpm lint
-        working-directory: apps/web
+      - name: Turbo Typecheck
+        run: pnpm turbo run typecheck
 
-      - name: Type check
-        run: pnpm typecheck
-        working-directory: apps/web
-
-      - name: Next.js Build
-        run: pnpm build
-        working-directory: apps/web
+      - name: Turbo Build
+        run: pnpm turbo run build --filter=web --filter=desktop
         env:
           NEXT_PUBLIC_CONVEX_URL: "https://dummy-preview.convex.cloud"
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_dummy_clerk_key"
 
-  lint-mobile:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.mobile == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.33.4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'pnpm'
-          cache-dependency-path: 'apps/mobile/pnpm-lock.yaml'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: apps/mobile
-
-      - name: Lint check
-        run: pnpm lint
-        working-directory: apps/mobile
-
-  build-desktop:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.desktop == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.33.4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'pnpm'
-          cache-dependency-path: 'apps/desktop/pnpm-lock.yaml'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: apps/desktop
-
-      - name: Type check
-        run: pnpm typecheck
-        working-directory: apps/desktop
-
-      - name: Build
-        run: pnpm build
-        working-directory: apps/desktop
+      - name: Turbo Lint
+        run: pnpm turbo run lint --filter=web
