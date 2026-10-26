@@ -11,8 +11,11 @@ importers:
       prettier:
         specifier: ^3.8.3
         version: 3.9.10
+      prettier-plugin-tailwindcss:
+        specifier: ^0.8.0
+        version: 0.8.1(prettier@3.9.10)
       turbo:
-        specifier: ^2.4.4
+        specifier: ^2.11.10
         version: 2.11.10
       typescript:
         specifier: ^5
