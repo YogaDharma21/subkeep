@@ -10,7 +10,7 @@ jobs:
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
-      website: ${{ steps.filter.outputs.website }}
+      web: ${{ steps.filter.outputs.web }}
       mobile: ${{ steps.filter.outputs.mobile }}
       desktop: ${{ steps.filter.outputs.desktop }}
     steps:
@@ -19,8 +19,8 @@ jobs:
         id: filter
         with:
           filters: |
-            website:
-              - 'apps/website/**'
+            web:
+              - 'apps/web/**'
               - '.github/workflows/ci.yml'
             mobile:
               - 'apps/mobile/**'
@@ -29,9 +29,9 @@ jobs:
               - 'apps/desktop/**'
               - '.github/workflows/ci.yml'
 
-  build-website:
+  build-web:
     needs: detect-changes
-    if: needs.detect-changes.outputs.website == 'true'
+    if: needs.detect-changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -46,23 +46,23 @@ jobs:
         with:
           node-version: 22
           cache: 'pnpm'
-          cache-dependency-path: 'apps/website/pnpm-lock.yaml'
+          cache-dependency-path: 'apps/web/pnpm-lock.yaml'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        working-directory: apps/website
+        working-directory: apps/web
 
       - name: Lint check
         run: pnpm lint
-        working-directory: apps/website
+        working-directory: apps/web
 
       - name: Type check
         run: pnpm typecheck
-        working-directory: apps/website
+        working-directory: apps/web
 
       - name: Next.js Build
         run: pnpm build
-        working-directory: apps/website
+        working-directory: apps/web
         env:
           NEXT_PUBLIC_CONVEX_URL: "https://dummy-preview.convex.cloud"
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_dummy_clerk_key"

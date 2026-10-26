@@ -2,9 +2,9 @@ version: '3.8'
 
 services:
   # SubKeep Web Application
-  website:
+  web:
     build:
-      context: ../apps/website
+      context: ../apps/web
       dockerfile: Dockerfile
     ports:
       - "3000:3000"

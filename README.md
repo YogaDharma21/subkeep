@@ -12,15 +12,15 @@ SubKeep is a sleek, modern personal finance tracker that helps you log expenses 
 
 | Landing Page | Main Dashboard |
 | :---: | :---: |
-| ![Landing Page](./apps/website/public/screenshot-landing.png) | ![Dashboard](./apps/website/public/screenshot-home.png) |
+| ![Landing Page](./apps/web/public/screenshot-landing.png) | ![Dashboard](./apps/web/public/screenshot-home.png) |
 
 | Calendar Billing Projections | Custom Subscription & Fast Icon Search |
 | :---: | :---: |
-| ![Calendar View](./apps/website/public/screenshot-calendar.png) | ![Custom Subscription](./apps/website/public/screenshot-create.png) |
+| ![Calendar View](./apps/web/public/screenshot-calendar.png) | ![Custom Subscription](./apps/web/public/screenshot-create.png) |
 
 | Spending Analytics & Trends | Settings & Backups |
 | :---: | :---: |
-| ![Spending Analytics](./apps/website/public/screenshot-stats.png) | ![Settings](./apps/website/public/screenshot-settings.png) |
+| ![Spending Analytics](./apps/web/public/screenshot-stats.png) | ![Settings](./apps/web/public/screenshot-settings.png) |
 
 </details>
 
@@ -34,7 +34,7 @@ and `pnpm-lock.yaml` — install and run commands inside each app directory:
 ```text
 subkeep/
 ├── apps/
-│   ├── website/    # SubKeep Web App (Next.js 16 + Convex + Clerk + Tailwind CSS v4)
+│   ├── web/        # SubKeep Web App (Next.js 16 + Convex + Clerk + Tailwind CSS v4)
 │   ├── mobile/     # SubKeep Mobile App (Expo SDK 58 + Convex + Clerk)
 │   ├── desktop/    # SubKeep Desktop App (Electron + Vite + Convex + Clerk)
 ├── docker/         # Docker orchestration configurations
@@ -42,14 +42,14 @@ subkeep/
 └── scripts/        # Utility automation scripts
 ```
 
-For full setup details, environment configuration, and features, see [apps/website/README.md](./apps/website/README.md).
+For full setup details, environment configuration, and features, see [apps/web/README.md](./apps/web/README.md).
 
 ---
 
 ## Quick Start
 
 ```bash
-cd apps/website
+cd apps/web
 pnpm install
 pnpm dlx convex dev
 pnpm dev
