@@ -33,6 +33,9 @@ package-lock.json
 *.swo
 *~
 
+# Turbo
+.turbo/
+
 # OS
 .DS_Store
 Thumbs.db

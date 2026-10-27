@@ -1,0 +1,19 @@
+{
+  "extends": "@subkeep/tsconfig/nextjs.json",
+  "compilerOptions": {
+    "paths": {
+      "@/convex/*": ["../../packages/convex/convex/*"],
+      "@/*": ["./*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "next.config.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.mts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": ["node_modules", ".next"]
+}

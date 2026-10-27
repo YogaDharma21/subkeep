@@ -5,7 +5,7 @@
 ```text
 subkeep/
 ├── apps/
-│   ├── website/    # SubKeep Next.js 16 App Router (React 19, Convex, Clerk, Tailwind CSS v4)
+│   ├── web/        # SubKeep Next.js 16 App Router (React 19, Convex, Clerk, Tailwind CSS v4)
 │   ├── mobile/     # Reserved for mobile client
 │   ├── desktop/    # Reserved for desktop client
 │   ├── extension/  # Reserved for browser extension
@@ -28,13 +28,13 @@ Each application in `apps/` is self-contained:
 ### Per-App Scripts
 Each application in `apps/` manages its own dependencies with pnpm —
 there is no root workspace. Run commands inside each app directory:
-- `pnpm dev` (website): Starts the Next.js dev server for `apps/website`
-- `pnpm build` (website/desktop): Compiles and produces production assets
-- `pnpm lint` (website/mobile): Runs ESLint for that app
-- `pnpm typecheck` (website/desktop): Validates TypeScript types for that app
+- `pnpm dev` (web): Starts the Next.js dev server for `apps/web`
+- `pnpm build` (web/desktop): Compiles and produces production assets
+- `pnpm lint` (web/mobile): Runs ESLint for that app
+- `pnpm typecheck` (web/desktop): Validates TypeScript types for that app
 
 ## CI/CD Workflow
 
 The monorepo uses path-based filtering in GitHub Actions:
-- Changes to `apps/website/**` trigger the website build, lint, and typecheck jobs.
+- Changes to `apps/web/**` trigger the web build, lint, and typecheck jobs.
 - Path-based triggers ensure fast pipeline execution.
