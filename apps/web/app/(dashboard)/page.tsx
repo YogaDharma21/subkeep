@@ -270,7 +270,10 @@ export default function HomePage() {
     return { weeks, activeDays, peak, totalSpend }
   }, [allTransactions, primaryCurrency, rates])
 
-  const loading = accounts === undefined || transactions === undefined
+  const loading =
+    accounts === undefined ||
+    transactions === undefined ||
+    userSettings === undefined
 
   const hasUpcoming = useMemo(
     () => findUpcomingReminders(subscriptions || [], 3).length > 0,
@@ -351,13 +354,24 @@ export default function HomePage() {
           </div>
 
           {loading ? (
-            <div className="mt-6 flex items-center gap-6">
-              <Skeleton className="size-[130px] rounded-full" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-7 w-32" />
-                <Skeleton className="h-3 w-24" />
+            budgetCap ? (
+              <div className="mt-4 flex items-center gap-6">
+                <Skeleton className="size-[118px] shrink-0 rounded-full sm:size-[130px]" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-7 w-32 rounded-lg" />
+                  <Skeleton className="h-3 w-24 rounded" />
+                  <Skeleton className="mt-1 h-3 w-36 rounded" />
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="mt-6 flex items-end justify-between gap-4">
+                <div>
+                  <Skeleton className="h-8 w-40 rounded-lg" />
+                  <Skeleton className="mt-2 h-3.5 w-24 rounded" />
+                </div>
+                <Skeleton className="h-7 w-20 rounded-full" />
+              </div>
+            )
           ) : budgetCap ? (
             <div className="mt-4 flex items-center gap-6">
               <Ring pct={ringPct} />
