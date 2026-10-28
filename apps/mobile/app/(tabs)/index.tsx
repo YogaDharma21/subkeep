@@ -357,7 +357,10 @@ export default function DashboardScreen() {
     return { weeks, activeDays, peak, totalSpend }
   }, [allTransactions, primaryCurrency, rates])
 
-  const loading = accounts === undefined || transactions === undefined
+  const loading =
+    accounts === undefined ||
+    transactions === undefined ||
+    userSettings === undefined
   const monthShort = monthLabel(month).split(" ")[0]
 
   return (
