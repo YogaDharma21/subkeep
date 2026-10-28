@@ -399,7 +399,7 @@ export default function HomePage() {
                 </p>
               </div>
               <Link
-                href="/more"
+                href="/budgets"
                 className="rounded-full border border-border px-3 py-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
               >
                 Set a cap
