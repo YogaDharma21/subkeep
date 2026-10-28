@@ -6,7 +6,6 @@ import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
 import {
   ArrowUpDown,
-  ChevronDown,
   AlertTriangle,
   X,
   Search,
@@ -19,9 +18,13 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import {
-  convertCurrency,
-  formatCurrencyAmount,
-} from "@/lib/currency"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { currencies, categories, billingCycles } from "@/lib/constants"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
 import { findUpcomingReminders } from "@/lib/notifications"
@@ -42,10 +45,22 @@ export type SortOption =
   | "start-desc"
   | "name-asc"
 
+const sortOptions: Array<{ value: SortOption; label: string }> = [
+  { value: "billing-asc", label: "Next Renewal" },
+  { value: "billing-desc", label: "Furthest Renewal" },
+  { value: "price-desc", label: "Highest Price" },
+  { value: "price-asc", label: "Lowest Price" },
+  { value: "name-asc", label: "Name A-Z" },
+  { value: "start-desc", label: "Recently Added" },
+]
+
 export default function SubscriptionsPage() {
   useDocumentTitle("Subscriptions")
   const { isSignedIn } = useAuth()
-  const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
+  const subscriptions = useQuery(
+    api.subscriptions.list,
+    isSignedIn ? {} : "skip"
+  )
   const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
   const suspendMutation = useMutation(api.subscriptions.suspend)
 
@@ -72,7 +87,8 @@ export default function SubscriptionsPage() {
 
   // Multi-Currency Converted Monthly & Yearly Totals
   const { count, monthlyTotalConverted, yearlyTotalConverted } = useMemo(() => {
-    if (!subscriptions) return { count: 0, monthlyTotalConverted: 0, yearlyTotalConverted: 0 }
+    if (!subscriptions)
+      return { count: 0, monthlyTotalConverted: 0, yearlyTotalConverted: 0 }
 
     const activeSubs = subscriptions.filter((s) => s.isActive)
     const count = activeSubs.length
@@ -87,7 +103,12 @@ export default function SubscriptionsPage() {
       else if (cycle === "daily") nativeMonthly = s.price * 30
       else if (cycle === "none") nativeMonthly = 0
 
-      const converted = convertCurrency(nativeMonthly, s.currency, primaryCurrency, rates)
+      const converted = convertCurrency(
+        nativeMonthly,
+        s.currency,
+        primaryCurrency,
+        rates
+      )
       return sum + converted
     }, 0)
 
@@ -98,12 +119,16 @@ export default function SubscriptionsPage() {
 
   // Budget calculations
   const budgetCap = userSettings?.monthlyBudgetCap
-  const budgetUsedPct = budgetCap && budgetCap > 0 ? Math.round((monthlyTotalConverted / budgetCap) * 100) : null
+  const budgetUsedPct =
+    budgetCap && budgetCap > 0
+      ? Math.round((monthlyTotalConverted / budgetCap) * 100)
+      : null
   const isBudgetExceeded = budgetCap && monthlyTotalConverted > budgetCap
 
   // Status Counts for Badges
   const statusCounts = useMemo(() => {
-    if (!subscriptions) return { active: 0, due_soon: 0, trial: 0, canceled: 0, all: 0 }
+    if (!subscriptions)
+      return { active: 0, due_soon: 0, trial: 0, canceled: 0, all: 0 }
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
@@ -117,7 +142,8 @@ export default function SubscriptionsPage() {
       if (isActive) {
         active++
         if (sub.isTrial) trial++
-        const dateStr = sub.isTrial && sub.trialEndDate ? sub.trialEndDate : sub.nextBilling
+        const dateStr =
+          sub.isTrial && sub.trialEndDate ? sub.trialEndDate : sub.nextBilling
         if (dateStr) {
           const targetDate = new Date(dateStr)
           targetDate.setHours(0, 0, 0, 0)
@@ -154,7 +180,8 @@ export default function SubscriptionsPage() {
     } else if (statusFilter === "due_soon") {
       list = list.filter((s) => {
         if (s.isActive === false) return false
-        const dateStr = s.isTrial && s.trialEndDate ? s.trialEndDate : s.nextBilling
+        const dateStr =
+          s.isTrial && s.trialEndDate ? s.trialEndDate : s.nextBilling
         if (!dateStr) return false
         const targetDate = new Date(dateStr)
         targetDate.setHours(0, 0, 0, 0)
@@ -173,33 +200,60 @@ export default function SubscriptionsPage() {
       list = list.filter((s) => {
         const matchesName = s.name.toLowerCase().includes(q)
         const matchesCategory = s.category.toLowerCase().includes(q)
-        const matchesAccount = s.account ? s.account.toLowerCase().includes(q) : false
-        const matchesWebsite = s.website ? s.website.toLowerCase().includes(q) : false
-        return matchesName || matchesCategory || matchesAccount || matchesWebsite
+        const matchesAccount = s.account
+          ? s.account.toLowerCase().includes(q)
+          : false
+        const matchesWebsite = s.website
+          ? s.website.toLowerCase().includes(q)
+          : false
+        return (
+          matchesName || matchesCategory || matchesAccount || matchesWebsite
+        )
       })
     }
 
     // 3. Category Filter
     if (categoryFilter !== "all") {
-      list = list.filter((s) => s.category.toLowerCase() === categoryFilter.toLowerCase())
+      list = list.filter(
+        (s) => s.category.toLowerCase() === categoryFilter.toLowerCase()
+      )
     }
 
     // 4. Billing Cycle Filter
     if (cycleFilter !== "all") {
-      list = list.filter((s) => (s.cycle || "monthly").toLowerCase() === cycleFilter.toLowerCase())
+      list = list.filter(
+        (s) =>
+          (s.cycle || "monthly").toLowerCase() === cycleFilter.toLowerCase()
+      )
     }
 
     // 5. Sort logic
     return list.sort((a, b) => {
       switch (sortBy) {
         case "billing-asc": {
-          const dateA = new Date(a.isTrial && a.trialEndDate ? a.trialEndDate : a.nextBilling || "9999-12-31").getTime()
-          const dateB = new Date(b.isTrial && b.trialEndDate ? b.trialEndDate : b.nextBilling || "9999-12-31").getTime()
+          const dateA = new Date(
+            a.isTrial && a.trialEndDate
+              ? a.trialEndDate
+              : a.nextBilling || "9999-12-31"
+          ).getTime()
+          const dateB = new Date(
+            b.isTrial && b.trialEndDate
+              ? b.trialEndDate
+              : b.nextBilling || "9999-12-31"
+          ).getTime()
           return (isNaN(dateA) ? 0 : dateA) - (isNaN(dateB) ? 0 : dateB)
         }
         case "billing-desc": {
-          const dateA = new Date(a.isTrial && a.trialEndDate ? a.trialEndDate : a.nextBilling || "1970-01-01").getTime()
-          const dateB = new Date(b.isTrial && b.trialEndDate ? b.trialEndDate : b.nextBilling || "1970-01-01").getTime()
+          const dateA = new Date(
+            a.isTrial && a.trialEndDate
+              ? a.trialEndDate
+              : a.nextBilling || "1970-01-01"
+          ).getTime()
+          const dateB = new Date(
+            b.isTrial && b.trialEndDate
+              ? b.trialEndDate
+              : b.nextBilling || "1970-01-01"
+          ).getTime()
           return (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA)
         }
         case "start-desc": {
@@ -208,13 +262,33 @@ export default function SubscriptionsPage() {
           return (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA)
         }
         case "price-asc": {
-          const pA = convertCurrency(a.price, a.currency, primaryCurrency, rates)
-          const pB = convertCurrency(b.price, b.currency, primaryCurrency, rates)
+          const pA = convertCurrency(
+            a.price,
+            a.currency,
+            primaryCurrency,
+            rates
+          )
+          const pB = convertCurrency(
+            b.price,
+            b.currency,
+            primaryCurrency,
+            rates
+          )
           return pA - pB
         }
         case "price-desc": {
-          const pA = convertCurrency(a.price, a.currency, primaryCurrency, rates)
-          const pB = convertCurrency(b.price, b.currency, primaryCurrency, rates)
+          const pA = convertCurrency(
+            a.price,
+            a.currency,
+            primaryCurrency,
+            rates
+          )
+          const pB = convertCurrency(
+            b.price,
+            b.currency,
+            primaryCurrency,
+            rates
+          )
           return pB - pA
         }
         case "name-asc":
@@ -223,7 +297,16 @@ export default function SubscriptionsPage() {
           return 0
       }
     })
-  }, [subscriptions, statusFilter, searchQuery, categoryFilter, cycleFilter, sortBy, primaryCurrency, rates])
+  }, [
+    subscriptions,
+    statusFilter,
+    searchQuery,
+    categoryFilter,
+    cycleFilter,
+    sortBy,
+    primaryCurrency,
+    rates,
+  ])
 
   const hasReminders = useMemo(
     () => findUpcomingReminders(subscriptions || [], 3).length > 0,
@@ -244,10 +327,15 @@ export default function SubscriptionsPage() {
   }
 
   const getEmptyMessage = () => {
-    if (searchQuery.trim() !== "" || categoryFilter !== "all" || cycleFilter !== "all") {
+    if (
+      searchQuery.trim() !== "" ||
+      categoryFilter !== "all" ||
+      cycleFilter !== "all"
+    ) {
       return {
         title: "No subscriptions match your filters",
-        subtitle: "Try adjusting your search query, category, or billing cycle filters.",
+        subtitle:
+          "Try adjusting your search query, category, or billing cycle filters.",
       }
     }
     switch (statusFilter) {
@@ -282,21 +370,30 @@ export default function SubscriptionsPage() {
       <section className="surface p-5 sm:p-7">
         <div className="flex items-start justify-between gap-3">
           <p className="label">Recurring</p>
-          <div className="relative">
-            <select
-              value={primaryCurrency}
-              onChange={(e) => handleCurrencyChange(e.target.value)}
+          <Select
+            value={primaryCurrency}
+            onValueChange={(val) => {
+              if (val) handleCurrencyChange(val)
+            }}
+          >
+            <SelectTrigger
+              size="sm"
               aria-label="Primary currency"
-              className="h-7 cursor-pointer appearance-none rounded-full border border-border bg-transparent px-3 pr-7 text-[10px] font-medium tracking-[0.12em] text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              className="h-7 rounded-full border border-border bg-transparent px-3 text-[10px] font-medium tracking-[0.12em] text-muted-foreground focus:ring-1 focus:ring-ring focus:outline-none"
             >
+              <SelectValue>
+                {currencies.find((c) => c.value === primaryCurrency)?.label ??
+                  primaryCurrency}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent align="end">
               {currencies.map((c) => (
-                <option key={c.value} value={c.value}>
+                <SelectItem key={c.value} value={c.value}>
                   {c.label}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3 -translate-y-1/2 text-muted-foreground" />
-          </div>
+            </SelectContent>
+          </Select>
         </div>
 
         {subscriptions ? (
@@ -306,7 +403,8 @@ export default function SubscriptionsPage() {
                 {formatCurrencyAmount(monthlyTotalConverted, primaryCurrency)}
               </p>
               <p className="mt-2 text-xs text-muted-foreground">
-                per month · {count} active {count === 1 ? "service" : "services"}
+                per month · {count} active{" "}
+                {count === 1 ? "service" : "services"}
               </p>
             </div>
             <div className="text-left sm:text-right">
@@ -327,8 +425,9 @@ export default function SubscriptionsPage() {
           <div className="mt-6 border-t border-border pt-4">
             <div className="flex items-center justify-between gap-3 text-[11px]">
               <span className="text-muted-foreground">
-                Monthly cap · {formatCurrencyAmount(monthlyTotalConverted, primaryCurrency)} of{" "}
-                {formatCurrencyAmount(budgetCap, primaryCurrency)}
+                Monthly cap ·{" "}
+                {formatCurrencyAmount(monthlyTotalConverted, primaryCurrency)}{" "}
+                of {formatCurrencyAmount(budgetCap, primaryCurrency)}
               </span>
               <span
                 className={cn(
@@ -370,26 +469,35 @@ export default function SubscriptionsPage() {
       </section>
 
       {/* Responsive Dashboard Grid */}
-      <div className={cn(hasReminders && "grid grid-cols-1 lg:grid-cols-12 gap-6 items-start")}>
+      <div
+        className={cn(
+          hasReminders && "grid grid-cols-1 items-start gap-6 lg:grid-cols-12"
+        )}
+      >
         {/* Main Column: Reimagined Filters & Subscriptions List */}
-        <div className={cn("space-y-4", hasReminders && "lg:col-span-7 xl:col-span-8")}>
+        <div
+          className={cn(
+            "space-y-4",
+            hasReminders && "lg:col-span-7 xl:col-span-8"
+          )}
+        >
           {/* Filter panel */}
-          <div className="surface p-3.5 sm:p-4 space-y-3">
+          <div className="surface space-y-3 p-3.5 sm:p-4">
             {/* Top Toolbar: Search + Secondary Filter Controls */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+            <div className="flex flex-col items-stretch gap-2.5 sm:flex-row sm:items-center">
               {/* Search Bar */}
-              <div className="relative flex-1 min-w-[200px]">
-                <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+              <div className="relative min-w-[200px] flex-1">
+                <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search by name, category, or account..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-8 pl-8 pr-7 text-xs bg-transparent"
+                  className="h-8 bg-transparent pr-7 pl-8 text-xs"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer text-muted-foreground hover:text-foreground"
                     aria-label="Clear search"
                   >
                     <X className="size-3" />
@@ -398,60 +506,89 @@ export default function SubscriptionsPage() {
               </div>
 
               {/* Filter Selects Group */}
-              <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
+              <div className="flex flex-wrap items-center gap-1.5 sm:flex-nowrap">
                 {/* Category Select */}
-                <div className="relative inline-flex items-center">
-                  <select
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
+                <Select
+                  value={categoryFilter}
+                  onValueChange={(val) => {
+                    if (val) setCategoryFilter(val)
+                  }}
+                >
+                  <SelectTrigger
+                    size="sm"
                     aria-label="Filter by category"
-                    className="h-8 rounded-full border border-border bg-transparent px-2.5 pr-6 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring appearance-none cursor-pointer"
+                    className="h-8 rounded-full border border-border bg-transparent px-2.5 text-xs font-medium text-foreground focus:ring-1 focus:ring-ring focus:outline-none"
                   >
+                    <SelectValue>
+                      {categoryFilter === "all"
+                        ? "All Categories"
+                        : categories.find((c) => c.value === categoryFilter)
+                            ?.label}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent align="start">
                     {categories.map((c) => (
-                      <option key={c.value} value={c.value}>
+                      <SelectItem key={c.value} value={c.value}>
                         {c.value === "all" ? "All Categories" : c.label}
-                      </option>
+                      </SelectItem>
                     ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-1.5 size-3 text-muted-foreground" />
-                </div>
+                  </SelectContent>
+                </Select>
 
                 {/* Billing Cycle Select */}
-                <div className="relative inline-flex items-center">
-                  <select
-                    value={cycleFilter}
-                    onChange={(e) => setCycleFilter(e.target.value)}
+                <Select
+                  value={cycleFilter}
+                  onValueChange={(val) => {
+                    if (val) setCycleFilter(val)
+                  }}
+                >
+                  <SelectTrigger
+                    size="sm"
                     aria-label="Filter by billing cycle"
-                    className="h-8 rounded-full border border-border bg-transparent px-2.5 pr-6 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring appearance-none cursor-pointer"
+                    className="h-8 rounded-full border border-border bg-transparent px-2.5 text-xs font-medium text-foreground focus:ring-1 focus:ring-ring focus:outline-none"
                   >
-                    <option value="all">All Cycles</option>
+                    <SelectValue>
+                      {cycleFilter === "all"
+                        ? "All Cycles"
+                        : billingCycles.find((bc) => bc.value === cycleFilter)
+                            ?.label}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent align="start">
+                    <SelectItem value="all">All Cycles</SelectItem>
                     {billingCycles.map((bc) => (
-                      <option key={bc.value} value={bc.value}>
+                      <SelectItem key={bc.value} value={bc.value}>
                         {bc.label}
-                      </option>
+                      </SelectItem>
                     ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-1.5 size-3 text-muted-foreground" />
-                </div>
+                  </SelectContent>
+                </Select>
 
                 {/* Sort Select */}
-                <div className="relative inline-flex items-center">
-                  <ArrowUpDown className="pointer-events-none absolute left-2 size-3 text-muted-foreground" />
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                <Select
+                  value={sortBy}
+                  onValueChange={(val) => {
+                    if (val) setSortBy(val as SortOption)
+                  }}
+                >
+                  <SelectTrigger
+                    size="sm"
                     aria-label="Sort subscriptions"
-                    className="h-8 rounded-full border border-border bg-transparent pl-6 pr-6 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring appearance-none cursor-pointer"
+                    className="h-8 rounded-full border border-border bg-transparent px-2.5 text-xs font-medium text-foreground focus:ring-1 focus:ring-ring focus:outline-none"
                   >
-                    <option value="billing-asc">Next Renewal</option>
-                    <option value="billing-desc">Furthest Renewal</option>
-                    <option value="price-desc">Highest Price</option>
-                    <option value="price-asc">Lowest Price</option>
-                    <option value="name-asc">Name A-Z</option>
-                    <option value="start-desc">Recently Added</option>
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-1.5 size-3 text-muted-foreground" />
-                </div>
+                    <ArrowUpDown className="mr-0.5 size-3 text-muted-foreground" />
+                    <SelectValue>
+                      {sortOptions.find((so) => so.value === sortBy)?.label}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent align="start">
+                    {sortOptions.map((so) => (
+                      <SelectItem key={so.value} value={so.value}>
+                        {so.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -493,18 +630,29 @@ export default function SubscriptionsPage() {
 
             {/* Active Filters Context Bar */}
             {isFiltered && (
-              <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/50 text-xs text-muted-foreground flex-wrap">
-                <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/50 pt-2 text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <span className="font-medium text-foreground">
-                    Showing {filteredSubs.length} of {subscriptions?.length ?? 0}
+                    Showing {filteredSubs.length} of{" "}
+                    {subscriptions?.length ?? 0}
                   </span>
 
                   {statusFilter !== "active" && (
-                    <Badge variant="secondary" className="gap-1 text-[11px] font-normal py-0.5">
-                      Status: {statusFilter === "due_soon" ? "Due Soon" : statusFilter === "trial" ? "Trials" : statusFilter === "canceled" ? "Canceled" : "All"}
+                    <Badge
+                      variant="secondary"
+                      className="gap-1 py-0.5 text-[11px] font-normal"
+                    >
+                      Status:{" "}
+                      {statusFilter === "due_soon"
+                        ? "Due Soon"
+                        : statusFilter === "trial"
+                          ? "Trials"
+                          : statusFilter === "canceled"
+                            ? "Canceled"
+                            : "All"}
                       <button
                         onClick={() => setStatusFilter("active")}
-                        className="hover:text-foreground cursor-pointer"
+                        className="cursor-pointer hover:text-foreground"
                         aria-label="Reset status filter"
                       >
                         <X className="size-2.5" />
@@ -513,11 +661,14 @@ export default function SubscriptionsPage() {
                   )}
 
                   {searchQuery && (
-                    <Badge variant="secondary" className="gap-1 text-[11px] font-normal py-0.5">
+                    <Badge
+                      variant="secondary"
+                      className="gap-1 py-0.5 text-[11px] font-normal"
+                    >
                       Search: &ldquo;{searchQuery}&rdquo;
                       <button
                         onClick={() => setSearchQuery("")}
-                        className="hover:text-foreground cursor-pointer"
+                        className="cursor-pointer hover:text-foreground"
                         aria-label="Clear search query"
                       >
                         <X className="size-2.5" />
@@ -526,11 +677,14 @@ export default function SubscriptionsPage() {
                   )}
 
                   {categoryFilter !== "all" && (
-                    <Badge variant="secondary" className="gap-1 text-[11px] font-normal py-0.5 capitalize">
+                    <Badge
+                      variant="secondary"
+                      className="gap-1 py-0.5 text-[11px] font-normal capitalize"
+                    >
                       Category: {categoryFilter}
                       <button
                         onClick={() => setCategoryFilter("all")}
-                        className="hover:text-foreground cursor-pointer"
+                        className="cursor-pointer hover:text-foreground"
                         aria-label="Clear category filter"
                       >
                         <X className="size-2.5" />
@@ -539,11 +693,16 @@ export default function SubscriptionsPage() {
                   )}
 
                   {cycleFilter !== "all" && (
-                    <Badge variant="secondary" className="gap-1 text-[11px] font-normal py-0.5 capitalize">
-                      Cycle: {billingCycles.find((bc) => bc.value === cycleFilter)?.label || cycleFilter}
+                    <Badge
+                      variant="secondary"
+                      className="gap-1 py-0.5 text-[11px] font-normal capitalize"
+                    >
+                      Cycle:{" "}
+                      {billingCycles.find((bc) => bc.value === cycleFilter)
+                        ?.label || cycleFilter}
                       <button
                         onClick={() => setCycleFilter("all")}
-                        className="hover:text-foreground cursor-pointer"
+                        className="cursor-pointer hover:text-foreground"
                         aria-label="Clear cycle filter"
                       >
                         <X className="size-2.5" />
@@ -554,7 +713,7 @@ export default function SubscriptionsPage() {
 
                 <button
                   onClick={handleClearFilters}
-                  className="flex items-center gap-1 text-[11px] font-medium text-primary hover:underline cursor-pointer ml-auto"
+                  className="ml-auto flex cursor-pointer items-center gap-1 text-[11px] font-medium text-primary hover:underline"
                 >
                   <RotateCcw className="size-3" />
                   <span>Reset filters</span>
@@ -572,20 +731,20 @@ export default function SubscriptionsPage() {
                 <Skeleton className="h-20 w-full" />
               </div>
             ) : filteredSubs.length === 0 ? (
-              <div className="surface flex flex-col items-center justify-center py-12 px-4 text-center">
+              <div className="surface flex flex-col items-center justify-center px-4 py-12 text-center">
                 <div className="surface-inset mb-3 flex size-10 items-center justify-center rounded-full text-muted-foreground">
                   <SlidersHorizontal className="size-4" />
                 </div>
                 <p className="text-sm font-semibold text-foreground">
                   {getEmptyMessage().title}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground max-w-sm">
+                <p className="mt-1 max-w-sm text-xs text-muted-foreground">
                   {getEmptyMessage().subtitle}
                 </p>
                 {isFiltered && (
                   <button
                     onClick={handleClearFilters}
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-[11px] text-foreground transition-colors hover:bg-foreground/5 cursor-pointer"
+                    className="mt-4 inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-[11px] text-foreground transition-colors hover:bg-foreground/5"
                   >
                     <RotateCcw className="size-3" />
                     <span>Clear all filters</span>
@@ -607,7 +766,7 @@ export default function SubscriptionsPage() {
 
         {/* Sidebar Column: Upcoming Reminders (only reserves space when items exist) */}
         {hasReminders && (
-          <div className="mt-6 lg:mt-0 lg:col-span-5 xl:col-span-4">
+          <div className="mt-6 lg:col-span-5 lg:mt-0 xl:col-span-4">
             <div className="surface p-5 sm:p-6">
               <UpcomingReminders
                 subscriptions={subscriptions || []}
@@ -622,4 +781,3 @@ export default function SubscriptionsPage() {
     </div>
   )
 }
-
