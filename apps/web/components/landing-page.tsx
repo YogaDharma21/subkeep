@@ -81,18 +81,18 @@ export function LandingPage() {
                   4 accounts · live balances
                 </p>
 
-                <div className="mt-6 flex gap-1.5">
-                  {Array.from({ length: 10 }).map((_, col) => (
+                <div className="mt-6 flex w-full justify-between gap-1">
+                  {Array.from({ length: 28 }).map((_, col) => (
                     <div key={col} className="flex flex-col gap-1.5">
-                      {dots
-                        .slice(col * 5, col * 5 + 5)
-                        .map((value, row) => (
-                          <span
-                            key={row}
-                            className="size-[5px] rounded-full bg-foreground"
-                            style={{ opacity: Math.max(0.07, value) }}
-                          />
-                        ))}
+                      {Array.from({ length: 5 }).map((_, row) => (
+                        <span
+                          key={row}
+                          className="size-[5px] rounded-full bg-foreground"
+                          style={{
+                            opacity: Math.max(0.07, dots[(col * 5 + row) % dots.length]),
+                          }}
+                        />
+                      ))}
                     </div>
                   ))}
                 </div>
