@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "convex/react"
 import { useAuth } from "@clerk/clerk-react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
-import { ArrowLeft, Plus, Sparkles, Link2, Users, CreditCard, UserPlus, Trash2, Pipette, Wallet } from "lucide-react"
+import { ArrowLeft, Plus, Sparkles, Link2, Users, CreditCard, UserPlus, Trash2, Wallet } from "lucide-react"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import {
   Sheet,
@@ -21,8 +21,6 @@ import {
   categories,
   currencies,
   billingCycles,
-  colorPresets,
-  getContrastTextColor,
 } from "@/lib/constants"
 
 interface AddSubscriptionSheetProps {
@@ -60,7 +58,6 @@ export function AddSubscriptionSheet({
   const [account, setAccount] = useState("")
   const [website, setWebsite] = useState("")
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
-  const [selectedColor, setSelectedColor] = useState("#000000")
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<string>("")
   const [selectedAccountId, setSelectedAccountId] = useState<string>("")
 
@@ -88,7 +85,6 @@ export function AddSubscriptionSheet({
     setAccount("")
     setWebsite("")
     setSelectedIcon(null)
-    setSelectedColor("#000000")
     setSelectedPaymentMethodId("")
     setSelectedAccountId("")
     setIsTrial(false)
@@ -114,7 +110,6 @@ export function AddSubscriptionSheet({
     setCurrency(template.currency)
     setCategory(template.category)
     setSelectedIcon(template.icon)
-    setSelectedColor(template.color)
     if (template.cancelUrl) setCancelUrl(template.cancelUrl)
     setStep(2)
   }, [])
@@ -167,7 +162,6 @@ export function AddSubscriptionSheet({
       await create({
         name,
         icon: selectedIcon || "Receipt",
-        color: selectedColor,
         price: price ? parseFloat(price) : 0,
         currency,
         cycle,
@@ -238,18 +232,14 @@ export function AddSubscriptionSheet({
               >
                 <div
                   className={cn(
-                    "flex size-10 items-center justify-center rounded-xl border border-black/10 dark:border-white/10 shadow-none",
-                    !selectedIcon && "border-dashed border-border"
+                    "surface-inset flex size-10 items-center justify-center rounded-xl text-foreground shadow-none",
+                    !selectedIcon && "border border-dashed border-border"
                   )}
-                  style={
-                    selectedIcon ? { backgroundColor: selectedColor || "#6366F1" } : undefined
-                  }
                 >
                   {selectedIcon ? (
                     <DynamicIcon
                       name={selectedIcon}
                       className="size-5"
-                      style={{ color: getContrastTextColor(selectedColor) }}
                     />
                   ) : (
                     <Plus className="size-5" />
@@ -260,55 +250,6 @@ export function AddSubscriptionSheet({
                   <p className="text-xs text-muted-foreground">Click to customize icon or auto-fetch logo</p>
                 </div>
               </button>
-
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-foreground">Brand Color</label>
-                <div className="flex flex-wrap items-center gap-2">
-                  {colorPresets.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setSelectedColor(c)}
-                      className={cn(
-                        "size-7 rounded-xl border-2 transition-all cursor-pointer shadow-none",
-                        selectedColor?.toLowerCase() === c.toLowerCase()
-                          ? "border-primary ring-2 ring-primary/30 scale-110"
-                          : c.toLowerCase() === "#ffffff"
-                            ? "border-muted-foreground/30"
-                            : "border-transparent"
-                      )}
-                      style={{ backgroundColor: c }}
-                      title={c}
-                    />
-                  ))}
-                  <div className="flex items-center gap-1.5 ml-1 pl-2 border-l border-border">
-                    <label
-                      className="relative size-7 rounded-xl border border-border cursor-pointer overflow-hidden flex items-center justify-center bg-muted/50 hover:bg-muted transition-colors shrink-0"
-                      title="Pick custom color"
-                    >
-                      <Pipette className="size-3.5 text-muted-foreground" />
-                      <input
-                        type="color"
-                        value={
-                          selectedColor?.startsWith("#") && selectedColor.length === 7
-                            ? selectedColor
-                            : "#FFFFFF"
-                        }
-                        onChange={(e) => setSelectedColor(e.target.value)}
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                      />
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedColor}
-                      onChange={(e) => setSelectedColor(e.target.value)}
-                      placeholder="#FFFFFF"
-                      maxLength={7}
-                      className="w-20 px-2 py-1 text-xs font-mono rounded-xl border border-border bg-[color-mix(in_oklab,var(--foreground)_3%,transparent)] focus:outline-hidden focus:ring-1 focus:ring-primary"
-                    />
-                  </div>
-                </div>
-              </div>
 
               {/* Free Trial Toggle */}
               <div className="flex items-center justify-between surface-inset p-3.5">

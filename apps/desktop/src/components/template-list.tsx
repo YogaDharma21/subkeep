@@ -2,7 +2,7 @@ import { useState, useMemo, useDeferredValue, memo, useCallback } from "react"
 import { Search, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { categories, getContrastTextColor } from "@/lib/constants"
+import { categories } from "@/lib/constants"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { DEFAULT_TEMPLATES, type SubscriptionTemplate } from "@/lib/default-templates"
 
@@ -31,11 +31,8 @@ const TemplateCard = memo(function TemplateCard({
       onClick={() => onSelect(template)}
       className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-border/70 bg-card/60 p-3 hover:bg-muted/80 hover:border-foreground/20 active:scale-[0.99] transition-all text-left group shadow-none"
     >
-      <div
-        className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-black/10 dark:border-white/10 shadow-none transition-transform group-hover:scale-105"
-        style={{ backgroundColor: template.color || "#6366F1" }}
-      >
-        <DynamicIcon name={template.icon} className="size-5" style={{ color: getContrastTextColor(template.color) }} />
+      <div className="surface-inset flex size-10 shrink-0 items-center justify-center rounded-xl text-foreground shadow-none transition-transform group-hover:scale-105">
+        <DynamicIcon name={template.icon} className="size-5" />
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-xs font-medium text-foreground truncate group-hover:text-foreground">

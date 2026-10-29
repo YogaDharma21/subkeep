@@ -133,7 +133,7 @@ export const create = mutation({
   args: {
     name: v.string(),
     icon: v.string(),
-    color: v.string(),
+    color: v.optional(v.string()),
     price: v.number(),
     currency: v.string(),
     cycle: v.string(),
@@ -172,7 +172,7 @@ export const create = mutation({
       userId: identity.subject,
       name: args.name,
       icon: args.icon,
-      color: args.color,
+      color: args.color || undefined,
       price: args.price,
       currency: args.currency,
       cycle: args.cycle,
@@ -488,7 +488,7 @@ export const recordPayment = mutation({
       subscriptionId: sub._id,
       name: sub.name,
       icon: sub.icon,
-      color: sub.color,
+      color: sub.color || undefined,
       amount,
       currency: sub.currency,
       category: txnCategory,
@@ -508,7 +508,7 @@ export const recordPayment = mutation({
       subscriptionId: sub._id,
       paymentId,
       icon: sub.icon,
-      color: sub.color,
+      color: sub.color || undefined,
     })
 
     // Link transactionId in payments
@@ -633,7 +633,7 @@ export const restoreAll = mutation({
       v.object({
         name: v.string(),
         icon: v.string(),
-        color: v.string(),
+        color: v.optional(v.string()),
         price: v.number(),
         currency: v.string(),
         cycle: v.string(),

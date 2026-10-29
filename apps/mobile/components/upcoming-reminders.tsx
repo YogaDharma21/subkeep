@@ -14,7 +14,7 @@ interface UpcomingRemindersProps {
     _id: string
     name: string
     icon: string
-    color: string
+    color?: string
     price: number
     currency: string
     cycle: string

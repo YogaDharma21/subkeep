@@ -41,7 +41,6 @@ import { Button } from "@/components/ui/button"
 import { IconPickerModal } from "@/components/icon-picker-modal"
 import { convertAndFormat, formatCycleLabel } from "@/lib/currency"
 import { getSymbol, currencies } from "@/constants/currencies"
-import { colorPresets } from "@/constants/categories"
 import { format, differenceInDays } from "date-fns"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
@@ -187,7 +186,6 @@ export default function SubscriptionDetailPage() {
   const [editCycle, setEditCycle] = useState("monthly")
   const [editCategory, setEditCategory] = useState("entertainment")
   const [editIcon, setEditIcon] = useState<string | null>(null)
-  const [editColor, setEditColor] = useState("#000000")
   const [editEndDate, setEditEndDate] = useState("")
   const [editAccount, setEditAccount] = useState("")
   const [editWebsite, setEditWebsite] = useState("")
@@ -212,7 +210,6 @@ export default function SubscriptionDetailPage() {
     setEditCycle(sub.cycle)
     setEditCategory(sub.category)
     setEditIcon(sub.icon)
-    setEditColor(sub.color)
     setEditEndDate(sub.endDate || "")
     setEditAccount(sub.account || "")
     setEditWebsite(sub.website || "")
@@ -239,7 +236,6 @@ export default function SubscriptionDetailPage() {
         cycle: editCycle,
         category: editCategory,
         icon: editIcon || sub.icon,
-        color: editColor,
         endDate: editEndDate,
         account: editAccount,
         website: editWebsite,
@@ -854,70 +850,6 @@ export default function SubscriptionDetailPage() {
               </View>
             )}
 
-            {/* Color Circles & Custom Hex Input */}
-            <View style={{ gap: 8 }}>
-              <Text style={{ fontSize: 11, fontWeight: "500", color: colors.mutedText, textTransform: "uppercase" }}>
-                Icon Color
-              </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8, alignItems: "center" }}>
-                {colorPresets.map((c) => {
-                  const isSelected = editColor?.toLowerCase() === c.toLowerCase()
-                  return (
-                    <TouchableOpacity
-                      key={c}
-                      onPress={() => setEditColor(c)}
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 20,
-                        backgroundColor: c,
-                        borderWidth: isSelected ? 2.5 : c.toLowerCase() === "#ffffff" ? 1 : 0,
-                        borderColor: isSelected ? colors.primary : colors.border,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    />
-                  )
-                })}
-              </ScrollView>
-
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 2 }}>
-                <View
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 20,
-                    backgroundColor: editColor?.startsWith("#") ? editColor : "#FFFFFF",
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                  }}
-                />
-                <TextInput
-                  value={editColor}
-                  onChangeText={(text) => {
-                    let val = text.trim()
-                    if (!val.startsWith("#") && val.length > 0) val = "#" + val
-                    setEditColor(val)
-                  }}
-                  placeholder="#FFFFFF"
-                  placeholderTextColor={colors.mutedText}
-                  maxLength={7}
-                  autoCapitalize="characters"
-                  style={{
-                    flex: 1,
-                    height: 38,
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                    borderRadius: 8,
-                    paddingHorizontal: 12,
-                    fontSize: 13,
-                    color: colors.text,
-                    backgroundColor: colors.surfaceInset,
-                  }}
-                />
-              </View>
-            </View>
-
             <Button onPress={saveEdit} style={{ marginTop: 6 }}>
               Save Changes
             </Button>
@@ -1253,12 +1185,12 @@ export default function SubscriptionDetailPage() {
                             width: 32,
                             height: 32,
                             borderRadius: 8,
-                            backgroundColor: p.color || sub.color,
+                            backgroundColor: colors.surfaceInset,
                             alignItems: "center",
                             justifyContent: "center",
                           }}
                         >
-                          <Text style={{ fontSize: 13, fontWeight: "600", color: "#ffffff" }}>
+                          <Text style={{ fontSize: 13, fontWeight: "600", color: colors.text }}>
                             {p.name.charAt(0).toUpperCase()}
                           </Text>
                         </View>
