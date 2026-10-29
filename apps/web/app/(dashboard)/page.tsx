@@ -460,16 +460,16 @@ export default function HomePage() {
           <div className="quiet-scroll mt-6 overflow-x-auto pb-1">
             <div className="flex w-full min-w-[640px] items-stretch gap-2">
               {/* Weekday labels */}
-              <div className="flex flex-col select-none text-[9px] font-medium text-muted-foreground">
+              <div className="flex flex-col select-none text-[9px] font-medium leading-none text-muted-foreground">
                 <div className="h-4" />
                 <div className="flex flex-1 flex-col gap-[3px]">
-                  <span className="flex flex-1 items-center">Mon</span>
-                  <span className="flex-1" />
-                  <span className="flex flex-1 items-center">Wed</span>
-                  <span className="flex-1" />
-                  <span className="flex flex-1 items-center">Fri</span>
-                  <span className="flex-1" />
-                  <span className="flex-1" />
+                  <span className="flex flex-1 min-h-0 items-center">Mon</span>
+                  <span className="flex-1 min-h-0" />
+                  <span className="flex flex-1 min-h-0 items-center">Wed</span>
+                  <span className="flex-1 min-h-0" />
+                  <span className="flex flex-1 min-h-0 items-center">Fri</span>
+                  <span className="flex-1 min-h-0" />
+                  <span className="flex-1 min-h-0" />
                 </div>
               </div>
 
