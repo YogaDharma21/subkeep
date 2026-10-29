@@ -144,3 +144,38 @@ export function shortMonthLabel(monthKey: string): string {
   if (!y || !m) return monthKey
   return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short" })
 }
+
+export function formatGoalDeadline(targetDateStr: string): { label: string; isOverdue: boolean } {
+  const [y, m, d] = targetDateStr.split("-").map(Number)
+  if (!y || !m || !d) return { label: targetDateStr, isOverdue: false }
+  const target = new Date(y, m - 1, d)
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const diffTime = target.getTime() - today.getTime()
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+
+  const dateFormatted = target.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: target.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+  })
+
+  if (diffDays < 0) {
+    const overdueDays = Math.abs(diffDays)
+    return {
+      label: `${dateFormatted} (${overdueDays}d overdue)`,
+      isOverdue: true,
+    }
+  }
+  if (diffDays === 0) {
+    return { label: "Due today", isOverdue: false }
+  }
+  if (diffDays === 1) {
+    return { label: "Due tomorrow", isOverdue: false }
+  }
+  if (diffDays < 30) {
+    return { label: `${dateFormatted} (${diffDays}d left)`, isOverdue: false }
+  }
+  const months = Math.round(diffDays / 30)
+  return { label: `${dateFormatted} (~${months}mo left)`, isOverdue: false }
+}

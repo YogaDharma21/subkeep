@@ -5,7 +5,7 @@ import { useMutation, useQuery } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
-import { Wallet, Pencil, Trash2, Archive } from "lucide-react"
+import { Wallet, Pencil, Trash2, Archive, Target, Calendar } from "lucide-react"
 import { SectionHeader } from "@/components/section-nav"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,7 @@ import { DynamicIcon } from "@/components/dynamic-icon"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
-import { accountTypeMeta, currentMonthKey } from "@/lib/finance"
+import { accountTypeMeta, currentMonthKey, formatGoalDeadline } from "@/lib/finance"
 import { moneyTabs } from "@/lib/navigation"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -28,6 +28,8 @@ type AccountDoc = {
   icon: string
   color: string
   last4?: string
+  targetBalance?: number
+  targetDate?: string
   isArchived?: boolean
 }
 
@@ -54,6 +56,7 @@ export default function AccountsPage() {
 
   const [editing, setEditing] = useState<AccountDoc | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<AccountDoc | null>(null)
+  const [filter, setFilter] = useState<"all" | "goals">("all")
 
   const { active, archived, totalNetWorth } = useMemo(() => {
     const all = accounts || []
@@ -65,6 +68,25 @@ export default function AccountsPage() {
     )
     return { active, archived, totalNetWorth }
   }, [accounts, primaryCurrency, rates])
+
+  const goals = useMemo(() => {
+    return active.filter((a) => a.targetBalance !== undefined && a.targetBalance > 0)
+  }, [active])
+
+  const { totalTargetConverted, totalSavedConverted, overallGoalProgress } = useMemo(() => {
+    let targetSum = 0
+    let savedSum = 0
+    for (const g of goals) {
+      targetSum += convertCurrency(g.targetBalance!, g.currency, primaryCurrency, rates)
+      savedSum += convertCurrency(Math.min(g.balance, g.targetBalance!), g.currency, primaryCurrency, rates)
+    }
+    const pct = targetSum > 0 ? Math.min(100, Math.round((savedSum / targetSum) * 100)) : 0
+    return {
+      totalTargetConverted: targetSum,
+      totalSavedConverted: savedSum,
+      overallGoalProgress: pct,
+    }
+  }, [goals, primaryCurrency, rates])
 
   const monthFlowByAccount = useMemo(() => {
     const map = new Map<string, { income: number; expense: number }>()
@@ -200,6 +222,70 @@ export default function AccountsPage() {
           )
         })()}
 
+        {(() => {
+          if (!a.targetBalance || a.targetBalance <= 0) return null
+          const pct = Math.min(100, Math.max(0, Math.round((a.balance / a.targetBalance) * 100)))
+          const remaining = Math.max(0, a.targetBalance - a.balance)
+          const isReached = a.balance >= a.targetBalance
+          const deadlineInfo = a.targetDate ? formatGoalDeadline(a.targetDate) : null
+          return (
+            <div className="surface-inset mt-2.5 rounded-xl border border-border/60 p-2.5">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="flex items-center gap-1.5 font-medium text-foreground">
+                  <Target className="size-3 text-muted-foreground" />
+                  <span>Goal progress</span>
+                </span>
+                <span
+                  className={cn(
+                    "numeral font-medium",
+                    isReached ? "text-positive" : "text-foreground"
+                  )}
+                >
+                  {isReached ? "Target reached" : `${pct}% funded`}
+                </span>
+              </div>
+
+              <div className="surface mt-2 h-1.5 w-full overflow-hidden rounded-full">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all duration-300",
+                    isReached ? "bg-positive" : "bg-primary"
+                  )}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+
+              <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
+                <span className="numeral">
+                  Target: {formatCurrencyAmount(a.targetBalance, a.currency)}
+                </span>
+                {!isReached && (
+                  <span className="numeral">
+                    {formatCurrencyAmount(remaining, a.currency)} left
+                  </span>
+                )}
+              </div>
+
+              {deadlineInfo && (
+                <div className="mt-1.5 flex items-center justify-between border-t border-border/40 pt-1.5 text-[10px] text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="size-3" />
+                    <span>Deadline</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "numeral font-medium",
+                      deadlineInfo.isOverdue ? "text-destructive" : "text-foreground"
+                    )}
+                  >
+                    {deadlineInfo.label}
+                  </span>
+                </div>
+              )}
+            </div>
+          )
+        })()}
+
         <div className="mt-3 flex items-center gap-1">
           <Button
             variant="ghost"
@@ -254,6 +340,49 @@ export default function AccountsPage() {
         </p>
       </section>
 
+      {goals.length > 0 && (
+        <section className="surface p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Target className="size-4 text-positive" />
+              <p className="label">Savings goals & sinking funds</p>
+            </div>
+            <span className="numeral text-xs font-semibold text-positive">
+              {overallGoalProgress}% funded
+            </span>
+          </div>
+
+          <div className="mt-4 flex items-baseline justify-between gap-2">
+            <div className="numeral text-xl font-semibold sm:text-2xl">
+              {formatCurrencyAmount(totalSavedConverted, primaryCurrency)}
+            </div>
+            <div className="numeral text-xs text-muted-foreground">
+              of {formatCurrencyAmount(totalTargetConverted, primaryCurrency)} target
+            </div>
+          </div>
+
+          <div className="surface-inset mt-3 h-2 w-full overflow-hidden rounded-full">
+            <div
+              className="h-full rounded-full bg-positive transition-all duration-300"
+              style={{ width: `${overallGoalProgress}%` }}
+            />
+          </div>
+
+          <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
+            <span>
+              {goals.length} active {goals.length === 1 ? "fund" : "funds"} tracked
+            </span>
+            <span>
+              {formatCurrencyAmount(
+                Math.max(0, totalTargetConverted - totalSavedConverted),
+                primaryCurrency
+              )}{" "}
+              remaining
+            </span>
+          </div>
+        </section>
+      )}
+
       {accounts === undefined ? (
         <div className="space-y-3">
           <Skeleton className="h-28 w-full" />
@@ -269,10 +398,51 @@ export default function AccountsPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {active.map(renderCard)}
-          </div>
-          {archived.length > 0 && (
+          {goals.length > 0 && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setFilter("all")}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-medium transition-colors cursor-pointer",
+                  filter === "all"
+                    ? "bg-foreground text-background"
+                    : "surface text-muted-foreground hover:text-foreground"
+                )}
+              >
+                All Accounts ({active.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilter("goals")}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5",
+                  filter === "goals"
+                    ? "bg-foreground text-background"
+                    : "surface text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Target className="size-3" />
+                <span>Goals & Sinking Funds ({goals.length})</span>
+              </button>
+            </div>
+          )}
+
+          {filter === "goals" && goals.length === 0 ? (
+            <div className="surface flex flex-col items-center justify-center py-10 text-center">
+              <Target className="mb-2 size-5 text-muted-foreground/50" />
+              <p className="text-sm font-medium text-muted-foreground">No active savings goals</p>
+              <p className="mt-1 text-xs text-muted-foreground/60">
+                Edit an account to set a target balance and deadline
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(filter === "goals" ? goals : active).map(renderCard)}
+            </div>
+          )}
+
+          {filter === "all" && archived.length > 0 && (
             <div className="space-y-2">
               <h3 className="px-1 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                 Archived ({archived.length})

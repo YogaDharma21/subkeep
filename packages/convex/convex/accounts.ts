@@ -36,6 +36,8 @@ export const create = mutation({
     icon: v.string(),
     color: v.string(),
     last4: v.optional(v.string()),
+    targetBalance: v.optional(v.number()),
+    targetDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
@@ -49,6 +51,8 @@ export const create = mutation({
       icon: args.icon,
       color: args.color,
       last4: args.last4 || undefined,
+      targetBalance: args.targetBalance,
+      targetDate: args.targetDate || undefined,
       isArchived: false,
     })
   },
@@ -64,6 +68,8 @@ export const update = mutation({
     icon: v.optional(v.string()),
     color: v.optional(v.string()),
     last4: v.optional(v.string()),
+    targetBalance: v.optional(v.union(v.number(), v.null())),
+    targetDate: v.optional(v.union(v.string(), v.null())),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
@@ -77,7 +83,11 @@ export const update = mutation({
     const patchObj: Record<string, unknown> = {}
     for (const [k, val] of Object.entries(updates)) {
       if (val !== undefined) {
-        patchObj[k] = val === "" && (k === "last4" || k === "icon") ? undefined : val
+        patchObj[k] =
+          (val === "" || val === null) &&
+          (k === "last4" || k === "icon" || k === "targetBalance" || k === "targetDate")
+            ? undefined
+            : val
       }
     }
     await ctx.db.patch(args.id, patchObj)

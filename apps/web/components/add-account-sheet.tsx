@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
@@ -31,6 +31,8 @@ interface AddAccountSheetProps {
     icon: string
     color: string
     last4?: string
+    targetBalance?: number
+    targetDate?: string
   } | null
 }
 
@@ -45,7 +47,25 @@ export function AddAccountSheet({ open, onOpenChange, editing }: AddAccountSheet
   const [last4, setLast4] = useState(editing?.last4 || "")
   const [selectedIcon, setSelectedIcon] = useState(editing?.icon || "Wallet")
   const [selectedColor, setSelectedColor] = useState(editing?.color || "#6366F1")
+  const [targetBalance, setTargetBalance] = useState(
+    editing?.targetBalance ? String(editing.targetBalance) : ""
+  )
+  const [targetDate, setTargetDate] = useState(editing?.targetDate || "")
   const [isSaving, setIsSaving] = useState(false)
+
+  useEffect(() => {
+    if (editing) {
+      setName(editing.name)
+      setType(editing.type)
+      setBalance(String(editing.balance))
+      setCurrency(editing.currency)
+      setLast4(editing.last4 || "")
+      setSelectedIcon(editing.icon)
+      setSelectedColor(editing.color)
+      setTargetBalance(editing.targetBalance ? String(editing.targetBalance) : "")
+      setTargetDate(editing.targetDate || "")
+    }
+  }, [editing])
 
   const resetForm = () => {
     setName("")
@@ -55,6 +75,8 @@ export function AddAccountSheet({ open, onOpenChange, editing }: AddAccountSheet
     setLast4("")
     setSelectedIcon("Wallet")
     setSelectedColor("#6366F1")
+    setTargetBalance("")
+    setTargetDate("")
   }
 
   const handleSubmit = async () => {
@@ -65,6 +87,11 @@ export function AddAccountSheet({ open, onOpenChange, editing }: AddAccountSheet
     const parsed = parseFloat(balance || "0")
     if (isNaN(parsed)) {
       toast.error("Please enter a valid balance")
+      return
+    }
+    const parsedTarget = targetBalance.trim() ? parseFloat(targetBalance) : undefined
+    if (parsedTarget !== undefined && (isNaN(parsedTarget) || parsedTarget < 0)) {
+      toast.error("Please enter a valid target balance")
       return
     }
     setIsSaving(true)
@@ -79,6 +106,8 @@ export function AddAccountSheet({ open, onOpenChange, editing }: AddAccountSheet
           icon: selectedIcon,
           color: selectedColor,
           last4: last4 || undefined,
+          targetBalance: parsedTarget !== undefined ? parsedTarget : null,
+          targetDate: targetDate.trim() ? targetDate.trim() : null,
         })
         toast.success("Account updated")
       } else {
@@ -90,6 +119,8 @@ export function AddAccountSheet({ open, onOpenChange, editing }: AddAccountSheet
           icon: selectedIcon,
           color: selectedColor,
           last4: last4 || undefined,
+          targetBalance: parsedTarget,
+          targetDate: targetDate.trim() || undefined,
         })
         toast.success(`Added ${name.trim()} account`)
       }
@@ -226,6 +257,53 @@ export function AddAccountSheet({ open, onOpenChange, editing }: AddAccountSheet
               value={last4}
               onChange={(e) => setLast4(e.target.value.replace(/[^0-9]/g, ""))}
             />
+          </div>
+
+          <div className="border-t border-border/70 pt-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  Savings Goal & Sinking Fund
+                </p>
+                <p className="text-[11px] text-muted-foreground/80 mt-0.5">
+                  Track target balance for emergency funds or major purchases
+                </p>
+              </div>
+              {(targetBalance || targetDate) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTargetBalance("")
+                    setTargetDate("")
+                  }}
+                  className="text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground">Target Balance</label>
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  step="0.01"
+                  value={targetBalance}
+                  onChange={(e) => setTargetBalance(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground">Target Deadline</label>
+                <Input
+                  type="date"
+                  value={targetDate}
+                  onChange={(e) => setTargetDate(e.target.value)}
+                  className="text-xs"
+                />
+              </div>
+            </div>
           </div>
         </div>
 

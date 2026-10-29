@@ -118,6 +118,8 @@ export default defineSchema({
     icon: v.string(),
     color: v.string(),
     last4: v.optional(v.string()),
+    targetBalance: v.optional(v.number()),
+    targetDate: v.optional(v.string()),
     isArchived: v.optional(v.boolean()),
   })
     .index("by_user", ["userId"])
