@@ -26,7 +26,6 @@ import {
   MessageSquare,
   Paperclip,
   History,
-  Pipette,
   Wallet,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -52,8 +51,6 @@ import {
   billingCycles,
   getSymbol,
   categoryColors,
-  colorPresets,
-  getContrastTextColor,
 } from "@/lib/constants"
 import { format, differenceInDays } from "date-fns"
 import { convertAndFormat } from "@/lib/currency"
@@ -116,7 +113,6 @@ export default function SubscriptionDetailPage({
   const [editCycle, setEditCycle] = useState("monthly")
   const [editCategory, setEditCategory] = useState("entertainment")
   const [editIcon, setEditIcon] = useState<string | null>(null)
-  const [editColor, setEditColor] = useState("#000000")
   const [editEndDate, setEditEndDate] = useState("")
   const [editAccount, setEditAccount] = useState("")
   const [editAccountId, setEditAccountId] = useState("")
@@ -223,7 +219,6 @@ export default function SubscriptionDetailPage({
     setEditCycle(sub.cycle)
     setEditCategory(sub.category)
     setEditIcon(sub.icon)
-    setEditColor(sub.color)
     setEditEndDate(sub.endDate || "")
     setEditAccount(sub.account || "")
     setEditAccountId(sub.accountId || "")
@@ -250,7 +245,6 @@ export default function SubscriptionDetailPage({
         cycle: editCycle,
         category: editCategory,
         icon: editIcon || sub.icon,
-        color: editColor,
         endDate: editEndDate,
         account: editAccount,
         accountId: editAccountId ? (editAccountId as Id<"accounts">) : null,
@@ -492,16 +486,14 @@ export default function SubscriptionDetailPage({
           <button
             onClick={() => editing && setIconOpen(true)}
             className={cn(
-              "flex size-14 items-center justify-center rounded-2xl border border-black/10 dark:border-white/10 shadow-xs",
+              "surface-inset flex size-14 items-center justify-center rounded-2xl text-foreground shadow-xs",
               editing && "cursor-pointer ring-2 ring-primary ring-offset-2"
             )}
-            style={{ backgroundColor: (editing ? editColor : sub.color) || "#6366F1" }}
             disabled={!editing}
           >
             <DynamicIcon
               name={currentIcon}
               className="size-7"
-              style={{ color: getContrastTextColor(editing ? editColor : sub.color) }}
             />
           </button>
           <div className="flex-1">
@@ -765,55 +757,6 @@ export default function SubscriptionDetailPage({
               value={editEndDate}
               onChange={(e) => setEditEndDate(e.target.value)}
             />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-medium">Icon Color</label>
-            <div className="flex flex-wrap items-center gap-2">
-              {colorPresets.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setEditColor(c)}
-                  className={cn(
-                    "size-7 rounded-full border-2 transition-all cursor-pointer shadow-xs",
-                    editColor?.toLowerCase() === c.toLowerCase()
-                      ? "border-primary ring-2 ring-primary/30 scale-110"
-                      : c.toLowerCase() === "#ffffff"
-                        ? "border-muted-foreground/30"
-                        : "border-transparent"
-                  )}
-                  style={{ backgroundColor: c }}
-                  title={c}
-                />
-              ))}
-              <div className="flex items-center gap-1.5 ml-1 pl-2 border-l border-border">
-                <label
-                  className="relative size-7 rounded-full border border-border cursor-pointer overflow-hidden flex items-center justify-center bg-foreground/[0.03] hover:bg-foreground/[0.06] transition-colors shrink-0"
-                  title="Pick custom color"
-                >
-                  <Pipette className="size-3.5 text-muted-foreground" />
-                  <input
-                    type="color"
-                    value={
-                      editColor?.startsWith("#") && editColor.length === 7
-                        ? editColor
-                        : "#FFFFFF"
-                    }
-                    onChange={(e) => setEditColor(e.target.value)}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                  />
-                </label>
-                <input
-                  type="text"
-                  value={editColor}
-                  onChange={(e) => setEditColor(e.target.value)}
-                  placeholder="#FFFFFF"
-                  maxLength={7}
-                  className="w-20 px-2 py-1 text-xs font-mono rounded-lg border border-border bg-foreground/[0.03] focus:outline-hidden focus:ring-1 focus:ring-primary"
-                />
-              </div>
-            </div>
           </div>
 
           <Button className="w-full cursor-pointer" onClick={saveEdit}>
@@ -1108,8 +1051,7 @@ export default function SubscriptionDetailPage({
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div
-                          className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-border bg-foreground/[0.05] font-medium text-foreground text-[11px]"
-                          style={{ backgroundColor: (p.color || sub.color) + "22", color: p.color || sub.color }}
+                          className="surface-inset flex size-7 shrink-0 items-center justify-center rounded-lg font-medium text-foreground text-[11px]"
                         >
                           {p.name.charAt(0)}
                         </div>
@@ -1376,7 +1318,6 @@ export default function SubscriptionDetailPage({
         selected={editIcon}
         onSelect={(icon) => {
           setEditIcon(icon)
-          setEditColor("#000000")
         }}
         open={iconOpen}
         onClose={() => setIconOpen(false)}

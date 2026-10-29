@@ -2,7 +2,7 @@ export interface ReminderItem {
   _id: string
   name: string
   icon: string
-  color: string
+  color?: string
   price: number
   currency: string
   cycle: string
@@ -92,7 +92,7 @@ export function findUpcomingReminders(
     _id: string
     name: string
     icon: string
-    color: string
+    color?: string
     price: number
     currency: string
     cycle: string

@@ -5,7 +5,6 @@ import { Id } from "@/convex/_generated/dataModel"
 import { ExternalLink, Check } from "lucide-react"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { convertAndFormat } from "@/lib/currency"
-import { getContrastTextColor } from "@/lib/constants"
 import { findUpcomingReminders, ReminderItem } from "@/lib/notifications"
 import Link from "next/link"
 import { RecordPaymentDialog, RecordPaymentTarget } from "@/components/record-payment-dialog"
@@ -15,7 +14,7 @@ interface UpcomingRemindersProps {
     _id: string
     name: string
     icon: string
-    color: string
+    color?: string
     price: number
     currency: string
     cycle: string
@@ -75,14 +74,10 @@ export function UpcomingReminders({
                 href={`/subscriptions/${item._id}`}
                 className="flex min-w-0 flex-1 items-center gap-3 transition-opacity hover:opacity-75"
               >
-                <span
-                  className="flex size-8 shrink-0 items-center justify-center rounded-full border border-white/10"
-                  style={{ backgroundColor: item.color || "#3f3f46" }}
-                >
+                <span className="surface-inset flex size-8 shrink-0 items-center justify-center rounded-full text-foreground">
                   <DynamicIcon
                     name={item.icon}
                     className="size-3.5"
-                    style={{ color: getContrastTextColor(item.color) }}
                   />
                 </span>
                 <span className="min-w-0 flex-1">

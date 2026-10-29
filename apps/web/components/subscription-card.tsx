@@ -11,7 +11,7 @@ interface Subscription {
   _id: string
   name: string
   icon: string
-  color: string
+  color?: string
   price: number
   currency: string
   cycle: string
@@ -82,11 +82,6 @@ export function SubscriptionCard({
         <DynamicIcon
           name={sub.icon}
           className="size-4 text-foreground/80"
-        />
-        <span
-          className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full ring-2 ring-card"
-          style={{ backgroundColor: sub.color || "#6366F1" }}
-          aria-hidden
         />
       </span>
 

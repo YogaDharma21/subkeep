@@ -430,12 +430,12 @@ export function SearchModal({
                             width: 32,
                             height: 32,
                             borderRadius: 14,
-                            backgroundColor: sub.color,
+                            backgroundColor: colors.surfaceInset,
                             alignItems: "center",
                             justifyContent: "center",
                           }}
                         >
-                          <DynamicIcon name={sub.icon} size={16} color="#ffffff" />
+                          <DynamicIcon name={sub.icon} size={16} color={colors.text} />
                         </View>
 
                         <View style={{ flex: 1 }}>
