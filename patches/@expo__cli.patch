@@ -1,0 +1,73 @@
+diff --git a/build/src/api/rest/cache/wrapFetchWithCache.js b/build/src/api/rest/cache/wrapFetchWithCache.js
+index daad31c8c31e9e3fefa4de61c325343c5fbdc35d..2ca3cd6def8a866414b465439cbf53739b3cb7c6 100644
+--- a/build/src/api/rest/cache/wrapFetchWithCache.js
++++ b/build/src/api/rest/cache/wrapFetchWithCache.js
+@@ -36,11 +36,22 @@ function wrapFetchWithCache(fetch, cache) {
+             if (!response.ok || !response.body) {
+                 return response;
+             }
++            // Clone before caching so the original response body is never consumed if caching fails
++            let responseToCache = response;
++            try {
++                if (typeof response.clone === 'function') {
++                    responseToCache = response.clone();
++                }
++            } catch {}
+             // Cache the response
+-            cachedResponse = await cache.set(cacheKey, {
+-                body: response.body,
+-                info: (0, _ResponseCache.getResponseInfo)(response)
+-            });
++            try {
++                cachedResponse = await cache.set(cacheKey, {
++                    body: responseToCache.body,
++                    info: (0, _ResponseCache.getResponseInfo)(responseToCache)
++                });
++            } catch (error) {
++                debug(`Failed to cache response for: ${url}`, error);
++            }
+             // Warn through debug logs that caching failed
+             if (!cachedResponse) {
+                 debug(`Failed to cache response for: ${url}`);
+diff --git a/build/src/api/rest/client.js b/build/src/api/rest/client.js
+index 2ae6a9ced9b8ec1dde53248783813ea9005d18db..00482ec03a3fa240f4119b56ddd6a3f836b08093 100644
+--- a/build/src/api/rest/client.js
++++ b/build/src/api/rest/client.js
+@@ -160,10 +160,15 @@ function isExpoApiUrl(url, expoApiBaseUrl, expoApiOrigin) {
+  * @see https://nodejs.org/api/errors.html
+  * @see https://github.com/nodejs/undici#network-address-family-autoselection
+  */ function isNetworkError(error) {
++    if (!error) return false;
++    if (error.name === 'TypeError' && error.message === 'fetch failed') return true;
+     return 'code' in error && error.code && [
+         'ENOTFOUND',
+         'EAI_AGAIN',
+-        'UND_ERR_CONNECT_TIMEOUT'
++        'UND_ERR_CONNECT_TIMEOUT',
++        'ECONNRESET',
++        'ECONNREFUSED',
++        'ETIMEDOUT'
+     ].includes(error.code);
+ }
+ const fetchWithOffline = (0, _wrapFetchWithOffline.wrapFetchWithOffline)((0, _wrapFetchWithUserAgent.wrapFetchWithUserAgent)(_fetch.fetch));
+diff --git a/build/src/start/doctor/dependencies/validateDependenciesVersions.js b/build/src/start/doctor/dependencies/validateDependenciesVersions.js
+index e0325297d27caf9d3451458727af6140f7860112..6ef1142bc229122c3ded1b851fb6a88ce7e60ee2 100644
+--- a/build/src/start/doctor/dependencies/validateDependenciesVersions.js
++++ b/build/src/start/doctor/dependencies/validateDependenciesVersions.js
+@@ -116,8 +116,14 @@ async function validateDependenciesVersionsAsync(projectRoot, exp, pkg, packages
+         debug('Dependency validation is disabled through EXPO_NO_DEPENDENCY_VALIDATION=1');
+         return null;
+     }
+-    const incorrectDeps = await getVersionedDependenciesAsync(projectRoot, exp, pkg, packagesToCheck);
+-    return logIncorrectDependencies(incorrectDeps);
++    try {
++        const incorrectDeps = await getVersionedDependenciesAsync(projectRoot, exp, pkg, packagesToCheck);
++        return logIncorrectDependencies(incorrectDeps);
++    } catch (error) {
++        debug('Failed to validate dependency versions:', error);
++        _log.warn('Skipping dependency validation: unable to contact Expo servers (' + (error.message || error) + ')');
++        return null;
++    }
+ }
+ function logInvalidDependency({ packageName, expectedVersionOrRange, actualVersion }) {
+     _log.warn((0, _chalk().default)`  {bold ${packageName}}{cyan @}{red ${actualVersion}} - expected version: {green ${expectedVersionOrRange}}`);

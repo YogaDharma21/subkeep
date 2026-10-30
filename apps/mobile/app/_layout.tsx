@@ -1,7 +1,7 @@
 import { ClerkProvider, useAuth } from "@clerk/expo"
 import { ConvexProviderWithClerk } from "convex/react-clerk"
 import { ConvexReactClient } from "convex/react"
-import { DarkTheme, DefaultTheme, ThemeProvider } from "expo-router/react-navigation"
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { Stack, useRouter, useSegments } from "expo-router"
 import { StatusBar } from "expo-status-bar"

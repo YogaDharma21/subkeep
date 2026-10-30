@@ -4,7 +4,6 @@ import {
   View,
   Text,
   TextInput,
-  type TextInputInstance,
   TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
@@ -70,7 +69,7 @@ export function SearchModal({
 
   const [query, setQuery] = useState("")
   const [prevVisible, setPrevVisible] = useState(visible)
-  const inputRef = useRef<TextInputInstance>(null)
+  const inputRef = useRef<TextInput>(null)
 
   if (prevVisible !== visible) {
     setPrevVisible(visible)
