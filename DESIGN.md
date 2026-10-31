@@ -47,8 +47,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 | :--- | :--- | :--- | :--- | :--- |
 | **Hero Display** | 56px - 128px (`text-5xl` to `text-8xl`) | 700 (Bold) | `tracking-tighter`, `tabular-nums` | Stopwatches, countdown timers, giant figures |
 | **Display Number** | 28px - 32px | 600 (Semibold) | `-0.04em` (`tracking-[-0.04em]`) | Main balance, net worth, hero figures |
-| **Section Title** | 18px - 20px | 600 (Semibold) | `-0.025em` (`tracking-[-0.025em]`) | Page headers, view titles |
-| **Card / Panel Title** | 15px | 500 (Medium) | `-0.015em` (`tracking-[-0.015em]`) | Card header, table section titles |
+| **Section Title** | 18px - 20px | 600 (Semibold) | `-0.025em` (`tracking-[-0.025em]`)| Page headers, view titles |
+| **Card / Panel Title**| 15px | 500 (Medium) | `-0.015em` (`tracking-[-0.015em]`)| Card header, table section titles |
 | **Metric Value** | 20px - 22px | 500 (Medium) | `-0.03em`, `tabular-nums` | MetricCard numbers, recurring totals |
 | **Body / Row Text** | 13px - 14px | 400 or 500 | Normal | Transaction descriptions, settings, lists |
 | **Meta / Subtitle** | 11px - 12px | 400 (Regular) | Normal | Card subtitles, secondary metadata, dates |
