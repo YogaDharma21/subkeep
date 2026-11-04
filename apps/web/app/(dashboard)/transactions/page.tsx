@@ -9,6 +9,7 @@ import Link from "next/link"
 import {
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Search,
   Pencil,
   Trash2,
@@ -34,6 +35,8 @@ import {
   TransactionType,
   financeCategoryMeta,
   financeCategories,
+  expenseCategories,
+  incomeCategories,
   currentMonthKey,
   monthLabel,
   shiftMonth,
@@ -172,6 +175,75 @@ function InlineNoteCell({
         {displayText}
       </span>
     </button>
+  )
+}
+
+function InlineCategorySelect({
+  transaction,
+  onSave,
+}: {
+  transaction: TxnDoc
+  onSave: (category: string) => Promise<unknown>
+}) {
+  const [optimisticCategory, setOptimisticCategory] = useState<string | null>(null)
+  const isSavingRef = useRef(false)
+
+  const currentCategory = optimisticCategory ?? transaction.category
+  const currentMeta = financeCategoryMeta(currentCategory)
+
+  useEffect(() => {
+    if (optimisticCategory !== null && transaction.category === optimisticCategory) {
+      setOptimisticCategory(null)
+    }
+  }, [transaction.category, optimisticCategory])
+
+  const options = useMemo(() => {
+    const list = transaction.type === "income" ? incomeCategories : expenseCategories
+    if (list.some((c) => c.value === currentCategory)) {
+      return list
+    }
+    return [...list, currentMeta]
+  }, [transaction.type, currentCategory, currentMeta])
+
+  const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCategory = e.target.value
+    if (!newCategory || newCategory === transaction.category || isSavingRef.current) return
+
+    isSavingRef.current = true
+    setOptimisticCategory(newCategory)
+    try {
+      await onSave(newCategory)
+      toast.success("Category updated")
+    } catch {
+      setOptimisticCategory(null)
+      toast.error("Failed to update category")
+    } finally {
+      isSavingRef.current = false
+    }
+  }
+
+  return (
+    <div className="group/cat relative inline-flex items-center min-w-0 max-w-full rounded-xs px-1 -mx-1 py-0.5 -my-0.5 transition-colors hover:bg-foreground/[0.04] focus-within:ring-1 focus-within:ring-ring border border-transparent hover:border-border cursor-pointer">
+      <span className="truncate text-[11px] text-muted-foreground group-hover/cat:text-foreground">
+        {currentMeta.label}
+      </span>
+      <ChevronDown className="ml-1 size-2.5 shrink-0 text-muted-foreground/40 group-hover/cat:text-foreground/70" />
+      <select
+        value={currentCategory}
+        onChange={handleChange}
+        onClick={(e) => e.stopPropagation()}
+        disabled={isSavingRef.current}
+        aria-label="Change category"
+        title="Change category"
+        className="absolute inset-0 size-full cursor-pointer opacity-0 disabled:cursor-not-allowed [&>option]:bg-card [&>option]:text-foreground"
+      >
+        {options.map((c) => (
+          <option key={c.value} value={c.value}>
+            {c.label}
+          </option>
+        ))}
+      </select>
+    </div>
   )
 }
 
@@ -443,9 +515,26 @@ export default function TransactionsPage() {
                             </Link>
                           )}
                         </div>
-                        <div className="text-[11px] text-muted-foreground truncate">
-                          {meta.label}
-                          {t.type !== "transfer" && accountName(t.accountId) ? ` · ${accountName(t.accountId)}` : ""}
+                        <div className="flex items-center text-[11px] text-muted-foreground min-w-0 truncate">
+                          {t.type === "transfer" ? (
+                            <span className="truncate">{meta.label}</span>
+                          ) : (
+                            <InlineCategorySelect
+                              transaction={t}
+                              onSave={async (newCategory) => {
+                                const catMeta = financeCategoryMeta(newCategory)
+                                await updateMutation({
+                                  id: t._id as Id<"transactions">,
+                                  category: newCategory,
+                                  icon: catMeta.icon,
+                                  color: catMeta.color,
+                                })
+                              }}
+                            />
+                          )}
+                          {t.type !== "transfer" && accountName(t.accountId) ? (
+                            <span className="truncate"> · {accountName(t.accountId)}</span>
+                          ) : null}
                         </div>
                       </div>
                       <div className="shrink-0 text-right">
