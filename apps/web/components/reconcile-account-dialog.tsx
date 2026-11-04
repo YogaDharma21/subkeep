@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { formatCurrencyAmount } from "@/lib/currency"
+import { todayKey } from "@/lib/finance"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { CheckCircle2, ArrowUpRight, ArrowDownRight } from "lucide-react"
@@ -49,7 +50,8 @@ function ReconcileAccountForm({
   const isInputValid = actualBalance.trim() !== "" && !isNaN(parsedActual)
   const actual = isInputValid ? parsedActual : 0
   const rawDelta = isInputValid ? actual - account.balance : 0
-  const delta = Math.abs(rawDelta) < 0.000001 ? 0 : rawDelta
+  const roundedDelta = Math.round(rawDelta * 100) / 100
+  const delta = Math.abs(roundedDelta) < 0.000001 ? 0 : roundedDelta
   const hasDiscrepancy = isInputValid && delta !== 0
   const direction: "income" | "expense" = delta > 0 ? "income" : "expense"
 
@@ -64,7 +66,7 @@ function ReconcileAccountForm({
         amount: Math.abs(delta),
         currency: account.currency,
         category: "Adjustment",
-        date: new Date().toISOString().split("T")[0],
+        date: todayKey(),
         note: note.trim() || "Reconciliation adjustment",
         accountId: account._id as Id<"accounts">,
       })

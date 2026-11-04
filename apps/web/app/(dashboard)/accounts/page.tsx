@@ -203,15 +203,17 @@ export default function AccountsPage() {
         })()}
 
         <div className="mt-3 flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => setReconciling(a)}
-            title="Reconcile account"
-            className="size-7 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
-          >
-            <Scale className="size-3.5" />
-          </Button>
+          {!a.isArchived && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setReconciling(a)}
+              title="Reconcile account"
+              className="size-7 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
+            >
+              <Scale className="size-3.5" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon-sm"
