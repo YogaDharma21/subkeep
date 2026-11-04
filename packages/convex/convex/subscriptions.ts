@@ -1,4 +1,5 @@
 import { query, mutation } from "./_generated/server"
+import type { Id } from "./_generated/dataModel"
 import { v } from "convex/values"
 
 export const list = query({
@@ -584,6 +585,37 @@ export const remove = mutation({
     const sub = await ctx.db.get(args.id)
     if (!sub) throw new Error("Subscription not found")
     if (sub.userId !== identity.subject) throw new Error("Unauthorized")
+
+    const payments = await ctx.db
+      .query("payments")
+      .withIndex("by_subscription", (q) => q.eq("subscriptionId", args.id))
+      .collect()
+
+    const txnsBySub = await ctx.db
+      .query("transactions")
+      .withIndex("by_subscription", (q) => q.eq("subscriptionId", args.id))
+      .collect()
+
+    const txnIdsToDecouple = new Set<Id<"transactions">>()
+    for (const txn of txnsBySub) {
+      txnIdsToDecouple.add(txn._id)
+    }
+    for (const payment of payments) {
+      if (payment.transactionId) {
+        txnIdsToDecouple.add(payment.transactionId)
+      }
+    }
+
+    for (const txnId of txnIdsToDecouple) {
+      const txn = await ctx.db.get(txnId)
+      if (txn && txn.userId === identity.subject) {
+        await ctx.db.patch(txnId, { subscriptionId: undefined, paymentId: undefined })
+      }
+    }
+
+    for (const payment of payments) {
+      await ctx.db.delete(payment._id)
+    }
 
     // Delete associated receipt storage file if present
     if (sub.receiptStorageId) {
