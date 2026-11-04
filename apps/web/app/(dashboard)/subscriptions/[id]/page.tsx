@@ -27,6 +27,7 @@ import {
   Paperclip,
   History,
   Wallet,
+  Compass,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -57,6 +58,7 @@ import { convertAndFormat } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { SubscriptionDetailSkeleton } from "@/components/subscription-detail-skeleton"
 import { RecordPaymentDialog } from "@/components/record-payment-dialog"
+import { CancellationGuideDialog } from "@/components/cancellation-guide-dialog"
 
 export default function SubscriptionDetailPage({
   params,
@@ -70,6 +72,7 @@ export default function SubscriptionDetailPage({
   const [iconOpen, setIconOpen] = useState(false)
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [cancellationGuideOpen, setCancellationGuideOpen] = useState(false)
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const receiptInputRef = useRef<HTMLInputElement>(null)
 
@@ -874,6 +877,28 @@ export default function SubscriptionDetailPage({
                   </Button>
                 </div>
               </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="space-y-0.5">
+                  <span className="text-sm text-muted-foreground block">
+                    Cancellation Guide
+                  </span>
+                  <span className="text-xs text-muted-foreground/75 block">
+                    Step-by-step checklist walkthrough
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setCancellationGuideOpen(true)}
+                  className="h-8 gap-1.5 px-3 text-xs cursor-pointer"
+                >
+                  <Compass className="size-3.5" />
+                  <span>How to Cancel</span>
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -1330,6 +1355,15 @@ export default function SubscriptionDetailPage({
         subscription={sub ? { ...sub, _id: sub._id } : null}
         rates={rates}
       />
+
+      {sub && (
+        <CancellationGuideDialog
+          open={cancellationGuideOpen}
+          onOpenChange={setCancellationGuideOpen}
+          subscriptionName={sub.name}
+          customCancelUrl={sub.cancelUrl}
+        />
+      )}
     </div>
   )
 }
