@@ -59,10 +59,12 @@ export default function BudgetsPage() {
     const txns = transactions || []
     return (budgets || []).map((b) => {
       const meta = financeCategoryMeta(b.category)
-      const spentNative = txns
+      const spent = txns
         .filter((t) => t.type === "expense" && t.category === b.category)
-        .reduce((s, t) => s + t.amount, 0)
-      const spent = convertCurrency(spentNative, b.currency, primaryCurrency, rates)
+        .reduce(
+          (s, t) => s + convertCurrency(t.amount, t.currency, primaryCurrency, rates),
+          0
+        )
       const cap = convertCurrency(b.amount, b.currency, primaryCurrency, rates)
       const pct = cap > 0 ? Math.round((spent / cap) * 100) : 0
       const remaining = cap - spent
