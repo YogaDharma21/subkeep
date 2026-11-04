@@ -5,11 +5,12 @@ import { useMutation, useQuery } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
-import { Wallet, Pencil, Trash2, Archive } from "lucide-react"
+import { Wallet, Pencil, Trash2, Archive, Scale } from "lucide-react"
 import { SectionHeader } from "@/components/section-nav"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { AddAccountSheet } from "@/components/add-account-sheet"
+import { ReconcileAccountDialog } from "@/components/reconcile-account-dialog"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
@@ -53,6 +54,7 @@ export default function AccountsPage() {
   const { primaryCurrency, rates } = usePrimaryCurrency()
 
   const [editing, setEditing] = useState<AccountDoc | null>(null)
+  const [reconciling, setReconciling] = useState<AccountDoc | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<AccountDoc | null>(null)
 
   const { active, archived, totalNetWorth } = useMemo(() => {
@@ -204,6 +206,15 @@ export default function AccountsPage() {
           <Button
             variant="ghost"
             size="icon-sm"
+            onClick={() => setReconciling(a)}
+            title="Reconcile account"
+            className="size-7 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
+          >
+            <Scale className="size-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={() => setEditing(a)}
             title="Edit account"
             className="size-7 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
@@ -284,6 +295,12 @@ export default function AccountsPage() {
           )}
         </>
       )}
+
+      <ReconcileAccountDialog
+        open={!!reconciling}
+        onOpenChange={(o) => !o && setReconciling(null)}
+        account={reconciling}
+      />
 
       <AddAccountSheet
         key={editing?._id ?? "new"}
