@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState, useRef, useMemo } from "react"
+import { use, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
@@ -78,16 +78,10 @@ export default function SubscriptionDetailPage({
     id ? { id: id as Id<"subscriptions"> } : "skip"
   )
   useDocumentTitle(sub?.name ?? "Subscription")
-  const allPayments = useQuery(
-    api.payments.list,
-    isSignedIn ? {} : "skip"
+  const subPayments = useQuery(
+    api.payments.listBySubscription,
+    isSignedIn && id ? { subscriptionId: id as Id<"subscriptions"> } : "skip"
   )
-  const subPayments = useMemo(() => {
-    if (!allPayments || !id) return []
-    return allPayments.filter(
-      (p) => p.subscriptionId === id || (sub && p.name === sub.name)
-    )
-  }, [allPayments, id, sub])
   const paymentMethods = useQuery(
     api.paymentMethods.list,
     isSignedIn ? {} : "skip"
