@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useMutation, useQuery } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
@@ -55,6 +55,124 @@ type TxnDoc = {
   subscriptionId?: string
   icon?: string
   color?: string
+}
+
+function InlineNoteCell({
+  transaction,
+  metaLabel,
+  onSave,
+}: {
+  transaction: TxnDoc
+  metaLabel: string
+  onSave: (note: string | undefined) => Promise<unknown>
+}) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [value, setValue] = useState(transaction.note || "")
+  const [optimisticNote, setOptimisticNote] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const skipBlurRef = useRef(false)
+  const isSavingRef = useRef(false)
+
+  const displayNote = optimisticNote !== null ? optimisticNote : (transaction.note || "")
+  const displayText = displayNote || metaLabel
+
+  useEffect(() => {
+    if (optimisticNote !== null) {
+      const current = transaction.note || ""
+      if (current === optimisticNote) {
+        setOptimisticNote(null)
+      }
+    }
+  }, [transaction.note, optimisticNote])
+
+  useEffect(() => {
+    if (!isEditing) {
+      setValue(displayNote)
+    }
+  }, [displayNote, isEditing])
+
+  useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    }
+  }, [isEditing])
+
+  const handleSave = async () => {
+    if (isSavingRef.current) return
+    const trimmed = value.trim()
+    const original = (transaction.note || "").trim()
+
+    setIsEditing(false)
+
+    if (trimmed === original) {
+      return
+    }
+
+    isSavingRef.current = true
+    setOptimisticNote(trimmed)
+    try {
+      await onSave(trimmed || undefined)
+      toast.success("Note updated")
+    } catch {
+      setOptimisticNote(null)
+      toast.error("Failed to update note")
+    } finally {
+      isSavingRef.current = false
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.nativeEvent.isComposing) return
+
+    if (e.key === "Enter") {
+      e.preventDefault()
+      skipBlurRef.current = true
+      handleSave()
+    } else if (e.key === "Escape") {
+      e.preventDefault()
+      skipBlurRef.current = true
+      setValue(displayNote)
+      setIsEditing(false)
+    }
+  }
+
+  const handleBlur = () => {
+    if (skipBlurRef.current) {
+      skipBlurRef.current = false
+      return
+    }
+    handleSave()
+  }
+
+  if (isEditing) {
+    return (
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        onClick={(e) => e.stopPropagation()}
+        placeholder="Add note..."
+        className="h-6.5 w-full min-w-0 max-w-[280px] rounded-md border border-border bg-foreground/[0.04] px-2 py-0.5 text-xs font-normal text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring/30 transition-colors"
+      />
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setIsEditing(true)}
+      className="group/note flex max-w-full items-center gap-1.5 truncate text-left font-medium text-foreground transition-colors hover:text-foreground/80 cursor-pointer rounded-xs px-1 -mx-1 py-0.5 -my-0.5 hover:bg-foreground/[0.04] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      title="Click to edit note"
+    >
+      <span className={cn("truncate", !displayNote && "text-muted-foreground/80")}>
+        {displayText}
+      </span>
+    </button>
+  )
 }
 
 export default function TransactionsPage() {
@@ -112,7 +230,7 @@ export default function TransactionsPage() {
   }, [filtered, primaryCurrency, rates])
 
   const accountName = (id?: string) =>
-    accounts?.find((a) => a._id === id)?.name
+    accounts?.find((a: { _id: string; name: string }) => a._id === id)?.name
 
   const openEdit = (t: TxnDoc) => {
     setEditing(t)
@@ -298,12 +416,23 @@ export default function TransactionsPage() {
                         <DynamicIcon name={t.icon || meta.icon} className="size-3.5" />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 truncate text-sm font-medium">
-                          <span className="truncate">
-                            {t.type === "transfer"
-                              ? `Transfer${accountName(t.accountId) ? ` · ${accountName(t.accountId)}` : ""}${accountName(t.toAccountId) ? ` → ${accountName(t.toAccountId)}` : ""}`
-                              : t.note || meta.label}
-                          </span>
+                        <div className="flex items-center gap-1.5 text-sm font-medium min-w-0">
+                          {t.type === "transfer" ? (
+                            <span className="truncate">
+                              {`Transfer${accountName(t.accountId) ? ` · ${accountName(t.accountId)}` : ""}${accountName(t.toAccountId) ? ` → ${accountName(t.toAccountId)}` : ""}`}
+                            </span>
+                          ) : (
+                            <InlineNoteCell
+                              transaction={t}
+                              metaLabel={meta.label}
+                              onSave={(note) =>
+                                updateMutation({
+                                  id: t._id as Id<"transactions">,
+                                  note,
+                                })
+                              }
+                            />
+                          )}
                           {t.subscriptionId && (
                             <Link
                               href={`/subscriptions/${t.subscriptionId}`}
