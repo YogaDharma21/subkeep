@@ -1,4 +1,30 @@
-import { internalMutation } from "./_generated/server"
+import { internalAction, internalMutation } from "./_generated/server"
+import { v } from "convex/values"
+
+export const sendTelegramReminder = internalAction({
+  args: {
+    botToken: v.string(),
+    chatId: v.string(),
+    text: v.string(),
+  },
+  handler: async (_ctx, args) => {
+    try {
+      await fetch(
+        `https://api.telegram.org/bot${args.botToken}/sendMessage`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: args.chatId,
+            text: args.text,
+          }),
+        }
+      )
+    } catch {
+      // Best effort notification
+    }
+  },
+})
 
 export const checkAndSendDueReminders = internalMutation({
   args: {},
