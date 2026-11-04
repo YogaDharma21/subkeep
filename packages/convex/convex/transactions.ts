@@ -75,11 +75,22 @@ export const list = query({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new Error("Not authenticated")
-    let txns = await ctx.db
-      .query("transactions")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
-      .order("desc")
-      .collect()
+    let txns = args.month
+      ? await ctx.db
+          .query("transactions")
+          .withIndex("by_user_and_date", (q) =>
+            q
+              .eq("userId", identity.subject)
+              .gte("date", `${args.month}-01`)
+              .lte("date", `${args.month}-31`)
+          )
+          .order("desc")
+          .collect()
+      : await ctx.db
+          .query("transactions")
+          .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+          .order("desc")
+          .collect()
     if (args.month) {
       txns = txns.filter((t) => monthOf(t.date) === args.month)
     }
