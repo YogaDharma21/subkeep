@@ -7,12 +7,23 @@ function monthOf(date: string): string {
   return date.slice(0, 7)
 }
 
-function assertValidTransaction(type: string, amount: number) {
+function assertValidTransaction(
+  type: string,
+  amount: number,
+  toAmount?: number | undefined,
+  fee?: number | undefined
+) {
   if (type !== "expense" && type !== "income" && type !== "transfer") {
     throw new Error("Invalid transaction type")
   }
   if (!Number.isFinite(amount) || amount <= 0) {
     throw new Error("Invalid amount")
+  }
+  if (toAmount !== undefined && (!Number.isFinite(toAmount) || toAmount <= 0)) {
+    throw new Error("Invalid toAmount")
+  }
+  if (fee !== undefined && (!Number.isFinite(fee) || fee < 0)) {
+    throw new Error("Invalid fee")
   }
 }
 
@@ -42,25 +53,38 @@ async function applyBalanceEffect(
     amount: number
     accountId?: Id<"accounts"> | undefined
     toAccountId?: Id<"accounts"> | undefined
+    toAmount?: number | undefined
+    fee?: number | undefined
   },
   sign: 1 | -1,
   opts?: { lenient?: boolean }
 ) {
-  const amount = txn.amount * sign
   if (txn.type === "expense") {
     if (txn.accountId) {
-      await adjustBalance(ctx, txn.accountId, userId, -amount, opts)
+      await adjustBalance(ctx, txn.accountId, userId, -txn.amount * sign, opts)
     }
   } else if (txn.type === "income") {
     if (txn.accountId) {
-      await adjustBalance(ctx, txn.accountId, userId, amount, opts)
+      await adjustBalance(ctx, txn.accountId, userId, txn.amount * sign, opts)
     }
   } else if (txn.type === "transfer") {
     if (txn.accountId) {
-      await adjustBalance(ctx, txn.accountId, userId, -amount, opts)
+      await adjustBalance(
+        ctx,
+        txn.accountId,
+        userId,
+        -(txn.amount + (txn.fee ?? 0)) * sign,
+        opts
+      )
     }
     if (txn.toAccountId) {
-      await adjustBalance(ctx, txn.toAccountId, userId, amount, opts)
+      await adjustBalance(
+        ctx,
+        txn.toAccountId,
+        userId,
+        (txn.toAmount ?? txn.amount) * sign,
+        opts
+      )
     }
   }
 }
@@ -134,6 +158,8 @@ export const create = mutation({
     note: v.optional(v.string()),
     accountId: v.optional(v.id("accounts")),
     toAccountId: v.optional(v.id("accounts")),
+    toAmount: v.optional(v.number()),
+    fee: v.optional(v.number()),
     subscriptionId: v.optional(v.id("subscriptions")),
     paymentId: v.optional(v.id("payments")),
     icon: v.optional(v.string()),
@@ -143,7 +169,7 @@ export const create = mutation({
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new Error("Not authenticated")
 
-    assertValidTransaction(args.type, args.amount)
+    assertValidTransaction(args.type, args.amount, args.toAmount, args.fee)
 
     if (args.accountId) {
       const account = await ctx.db.get(args.accountId)
@@ -176,6 +202,8 @@ export const create = mutation({
       note: args.note || undefined,
       accountId: args.accountId,
       toAccountId: args.toAccountId,
+      toAmount: args.toAmount,
+      fee: args.fee,
       subscriptionId: args.subscriptionId,
       paymentId: args.paymentId,
       icon: args.icon || undefined,
@@ -190,6 +218,8 @@ export const create = mutation({
         amount: args.amount,
         accountId: args.accountId,
         toAccountId: args.toAccountId,
+        toAmount: args.toAmount,
+        fee: args.fee,
       },
       1
     )
@@ -209,6 +239,8 @@ export const update = mutation({
     note: v.optional(v.string()),
     accountId: v.optional(v.id("accounts")),
     toAccountId: v.optional(v.id("accounts")),
+    toAmount: v.optional(v.number()),
+    fee: v.optional(v.number()),
     subscriptionId: v.optional(v.id("subscriptions")),
     paymentId: v.optional(v.id("payments")),
     icon: v.optional(v.string()),
@@ -225,8 +257,10 @@ export const update = mutation({
     const newAmount = args.amount ?? txn.amount
     const newAccountId = args.accountId ?? txn.accountId
     const newToAccountId = args.toAccountId ?? txn.toAccountId
+    const newToAmount = args.toAmount !== undefined ? args.toAmount : txn.toAmount
+    const newFee = args.fee !== undefined ? args.fee : txn.fee
 
-    assertValidTransaction(newType, newAmount)
+    assertValidTransaction(newType, newAmount, newToAmount, newFee)
 
     // Validate newly-assigned accounts (old ones were validated at creation).
     if (args.accountId) {
@@ -254,7 +288,9 @@ export const update = mutation({
       newType !== txn.type ||
       newAmount !== txn.amount ||
       newAccountId !== txn.accountId ||
-      newToAccountId !== txn.toAccountId
+      newToAccountId !== txn.toAccountId ||
+      newToAmount !== txn.toAmount ||
+      newFee !== txn.fee
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id: _, ...updates } = args
@@ -291,6 +327,8 @@ export const update = mutation({
         amount: txn.amount,
         accountId: txn.accountId,
         toAccountId: txn.toAccountId,
+        toAmount: txn.toAmount,
+        fee: txn.fee,
       },
       -1,
       { lenient: true }
@@ -308,6 +346,8 @@ export const update = mutation({
         amount: newAmount,
         accountId: newAccountId,
         toAccountId: newToAccountId,
+        toAmount: newToAmount,
+        fee: newFee,
       },
       1
     )
@@ -343,6 +383,8 @@ export const remove = mutation({
         amount: txn.amount,
         accountId: txn.accountId,
         toAccountId: txn.toAccountId,
+        toAmount: txn.toAmount,
+        fee: txn.fee,
       },
       -1,
       { lenient: true }
