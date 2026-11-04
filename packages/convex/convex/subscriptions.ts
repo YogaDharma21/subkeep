@@ -73,12 +73,21 @@ export const getStats = query({
   },
 })
 
-function addMonths(year: number, month: number, day: number, count: number): string {
+function addMonths(
+  year: number,
+  month: number,
+  day: number,
+  count: number,
+  anchorDay?: number
+): string {
   const totalMonths = month - 1 + count
   const targetYear = year + Math.floor(totalMonths / 12)
   const targetMonth = (totalMonths % 12) + 1
   const daysInTargetMonth = new Date(targetYear, targetMonth, 0).getDate()
-  const targetDay = Math.min(day, daysInTargetMonth)
+  const targetDay = Math.min(
+    anchorDay && anchorDay >= 1 && anchorDay <= 31 ? anchorDay : day,
+    daysInTargetMonth
+  )
 
   const yStr = String(targetYear)
   const mStr = String(targetMonth).padStart(2, "0")
@@ -93,7 +102,11 @@ function formatDate(d: Date): string {
   return `${yStr}-${mStr}-${dStr}`
 }
 
-export function calculateNextBilling(dateStr: string, cycle: string): string {
+export function calculateNextBilling(
+  dateStr: string,
+  cycle: string,
+  anchorDay?: number
+): string {
   const parts = dateStr.split("-").map(Number)
   if (parts.length !== 3 || parts.some(isNaN)) {
     const d = new Date()
@@ -115,16 +128,16 @@ export function calculateNextBilling(dateStr: string, cycle: string): string {
     return formatDate(d)
   }
   if (c === "monthly") {
-    return addMonths(year, month, day, 1)
+    return addMonths(year, month, day, 1, anchorDay)
   }
   if (c === "quarterly") {
-    return addMonths(year, month, day, 3)
+    return addMonths(year, month, day, 3, anchorDay)
   }
   if (c === "semi-annual") {
-    return addMonths(year, month, day, 6)
+    return addMonths(year, month, day, 6, anchorDay)
   }
   if (c === "yearly") {
-    return addMonths(year, month, day, 12)
+    return addMonths(year, month, day, 12, anchorDay)
   }
   return dateStr
 }
