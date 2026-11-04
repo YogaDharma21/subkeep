@@ -635,6 +635,17 @@ export const removeAll = mutation({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new Error("Not authenticated")
+
+    const userTxns = await ctx.db
+      .query("transactions")
+      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .collect()
+    for (const t of userTxns) {
+      if (t.subscriptionId !== undefined || t.paymentId !== undefined) {
+        await ctx.db.patch(t._id, { subscriptionId: undefined, paymentId: undefined })
+      }
+    }
+
     const subs = await ctx.db
       .query("subscriptions")
       .withIndex("by_user", (q) => q.eq("userId", identity.subject))
