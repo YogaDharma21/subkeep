@@ -9,6 +9,7 @@
  */
 
 import type * as accounts from "../accounts.js";
+import type * as backup from "../backup.js";
 import type * as budgets from "../budgets.js";
 import type * as crons from "../crons.js";
 import type * as paymentMethods from "../paymentMethods.js";
@@ -28,6 +29,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   accounts: typeof accounts;
+  backup: typeof backup;
   budgets: typeof budgets;
   crons: typeof crons;
   paymentMethods: typeof paymentMethods;
