@@ -67,32 +67,17 @@ function InlineNoteCell({
 }: {
   transaction: TxnDoc
   metaLabel: string
-  onSave: (note: string | undefined) => Promise<unknown>
+  onSave: (note: string) => Promise<unknown>
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [value, setValue] = useState(transaction.note || "")
   const [optimisticNote, setOptimisticNote] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const skipBlurRef = useRef(false)
-  const isSavingRef = useRef(false)
 
   const displayNote = optimisticNote !== null ? optimisticNote : (transaction.note || "")
   const displayText = displayNote || metaLabel
-
-  useEffect(() => {
-    if (optimisticNote !== null) {
-      const current = transaction.note || ""
-      if (current === optimisticNote) {
-        setOptimisticNote(null)
-      }
-    }
-  }, [transaction.note, optimisticNote])
-
-  useEffect(() => {
-    if (!isEditing) {
-      setValue(displayNote)
-    }
-  }, [displayNote, isEditing])
 
   useEffect(() => {
     if (isEditing) {
@@ -101,8 +86,14 @@ function InlineNoteCell({
     }
   }, [isEditing])
 
+  const startEditing = () => {
+    if (isSaving) return
+    setValue(displayNote)
+    setIsEditing(true)
+  }
+
   const handleSave = async () => {
-    if (isSavingRef.current) return
+    if (isSaving) return
     const trimmed = value.trim()
     const original = (transaction.note || "").trim()
 
@@ -112,16 +103,16 @@ function InlineNoteCell({
       return
     }
 
-    isSavingRef.current = true
+    setIsSaving(true)
     setOptimisticNote(trimmed)
     try {
-      await onSave(trimmed || undefined)
+      await onSave(trimmed)
       toast.success("Note updated")
     } catch {
-      setOptimisticNote(null)
       toast.error("Failed to update note")
     } finally {
-      isSavingRef.current = false
+      setIsSaving(false)
+      setOptimisticNote(null)
     }
   }
 
@@ -159,7 +150,8 @@ function InlineNoteCell({
         onBlur={handleBlur}
         onClick={(e) => e.stopPropagation()}
         placeholder="Add note..."
-        className="h-6.5 w-full min-w-0 max-w-[280px] rounded-md border border-border bg-foreground/[0.04] px-2 py-0.5 text-xs font-normal text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring/30 transition-colors"
+        maxLength={280}
+        className="h-6.5 w-full min-w-0 max-w-[280px] rounded-[10px] border border-border bg-foreground/[0.04] px-2 py-0.5 text-xs font-normal text-foreground placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-1 focus:ring-ring/30 transition-colors"
       />
     )
   }
@@ -167,8 +159,9 @@ function InlineNoteCell({
   return (
     <button
       type="button"
-      onClick={() => setIsEditing(true)}
-      className="group/note flex max-w-full items-center gap-1.5 truncate text-left font-medium text-foreground transition-colors hover:text-foreground/80 cursor-pointer rounded-xs px-1 -mx-1 py-0.5 -my-0.5 hover:bg-foreground/[0.04] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      onClick={startEditing}
+      disabled={isSaving}
+      className="group/note flex max-w-full items-center gap-1.5 truncate text-left font-medium text-foreground transition-colors hover:text-foreground/80 cursor-pointer rounded-xs px-1 -mx-1 py-0.5 -my-0.5 hover:bg-foreground/[0.04] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-70"
       title="Click to edit note"
     >
       <span className={cn("truncate", !displayNote && "text-muted-foreground/80")}>
@@ -186,16 +179,10 @@ function InlineCategorySelect({
   onSave: (category: string) => Promise<unknown>
 }) {
   const [optimisticCategory, setOptimisticCategory] = useState<string | null>(null)
-  const isSavingRef = useRef(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   const currentCategory = optimisticCategory ?? transaction.category
   const currentMeta = financeCategoryMeta(currentCategory)
-
-  useEffect(() => {
-    if (optimisticCategory !== null && transaction.category === optimisticCategory) {
-      setOptimisticCategory(null)
-    }
-  }, [transaction.category, optimisticCategory])
 
   const options = useMemo(() => {
     const list = transaction.type === "income" ? incomeCategories : expenseCategories
@@ -207,18 +194,18 @@ function InlineCategorySelect({
 
   const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newCategory = e.target.value
-    if (!newCategory || newCategory === transaction.category || isSavingRef.current) return
+    if (!newCategory || newCategory === transaction.category || isSaving) return
 
-    isSavingRef.current = true
+    setIsSaving(true)
     setOptimisticCategory(newCategory)
     try {
       await onSave(newCategory)
       toast.success("Category updated")
     } catch {
-      setOptimisticCategory(null)
       toast.error("Failed to update category")
     } finally {
-      isSavingRef.current = false
+      setIsSaving(false)
+      setOptimisticCategory(null)
     }
   }
 
@@ -232,7 +219,7 @@ function InlineCategorySelect({
         value={currentCategory}
         onChange={handleChange}
         onClick={(e) => e.stopPropagation()}
-        disabled={isSavingRef.current}
+        disabled={isSaving}
         aria-label="Change category"
         title="Change category"
         className="absolute inset-0 size-full cursor-pointer opacity-0 disabled:cursor-not-allowed [&>option]:bg-card [&>option]:text-foreground"
@@ -325,7 +312,7 @@ export default function TransactionsPage() {
         id: editing._id as Id<"transactions">,
         amount: parsed,
         date: editDate,
-        note: editNote || undefined,
+        note: editNote.trim(),
         category: editCategory || undefined,
       })
       toast.success("Transaction updated")
@@ -637,6 +624,7 @@ export default function TransactionsPage() {
               <Input
                 value={editNote}
                 onChange={(e) => setEditNote(e.target.value)}
+                maxLength={280}
                 className="text-xs"
                 placeholder="Optional note"
               />
