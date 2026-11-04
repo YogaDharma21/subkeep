@@ -2,7 +2,12 @@ import { useState, useEffect, useCallback } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/clerk-react"
 import { api } from "@/convex/_generated/api"
-import { fallbackRates, fetchExchangeRates } from "@/lib/currency"
+import {
+  fallbackRates,
+  fetchExchangeRates,
+  getStoredExchangeRates,
+  setExchangeRatesCache,
+} from "@/lib/currency"
 
 const STORAGE_KEY = "subkeep_primary_currency"
 const CURRENCY_CHANGE_EVENT = "subkeep_currency_changed"
@@ -11,18 +16,34 @@ export function usePrimaryCurrency() {
   const { isSignedIn } = useAuth()
   const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
   const updateSettings = useMutation(api.userSettings.update)
+  const convexRatesDoc = useQuery(api.exchangeRates.getLatest, { baseCurrency: "USD" })
 
   const [localCurrency, setLocalCurrency] = useState<string | null>(null)
-  const [rates, setRates] = useState<Record<string, number>>(fallbackRates)
+  const [rates, setRates] = useState<Record<string, number>>(() => getStoredExchangeRates())
   const [ratesLoaded, setRatesLoaded] = useState(false)
 
-  // Fetch exchange rates once on mount
+  // Hydrate from localStorage or trigger initial fallback fetch
   useEffect(() => {
+    const local = getStoredExchangeRates()
+    if (local && Object.keys(local).length > 2) {
+      setRates(local)
+      setRatesLoaded(true)
+    }
+
     fetchExchangeRates().then((loadedRates) => {
       setRates(loadedRates)
       setRatesLoaded(true)
     })
   }, [])
+
+  // Reactive sync when Convex exchangeRates cache updates
+  useEffect(() => {
+    if (convexRatesDoc?.rates) {
+      const updated = setExchangeRatesCache(convexRatesDoc.rates, convexRatesDoc.updatedAt)
+      setRates(updated)
+      setRatesLoaded(true)
+    }
+  }, [convexRatesDoc])
 
   // Listen to cross-component currency changes
   useEffect(() => {
