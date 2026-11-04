@@ -324,7 +324,9 @@ export function getCancellationGuide(
     const matchedTemplate =
       DEFAULT_TEMPLATES.find((t) => t.name.toLowerCase() === lowerName) ||
       DEFAULT_TEMPLATES.find((t) => lowerName.includes(t.name.toLowerCase())) ||
-      DEFAULT_TEMPLATES.find((t) => t.name.toLowerCase().includes(lowerName))
+      (lowerName.length >= 3
+        ? DEFAULT_TEMPLATES.find((t) => t.name.toLowerCase().includes(lowerName))
+        : undefined)
 
     if (matchedTemplate?.cancellationSteps && matchedTemplate.cancellationSteps.length > 0) {
       return {
