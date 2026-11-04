@@ -549,7 +549,9 @@ export const recordPayment = mutation({
     if (baseDate < paymentDate) {
       baseDate = paymentDate
     }
-    const nextDate = calculateNextBilling(baseDate, sub.cycle)
+    const parsedDay = sub.startDate ? parseInt(sub.startDate.split("-")[2], 10) : NaN
+    const anchorDay = !isNaN(parsedDay) && parsedDay >= 1 && parsedDay <= 31 ? parsedDay : undefined
+    const nextDate = calculateNextBilling(baseDate, sub.cycle, anchorDay)
     const patchObj: Record<string, unknown> = {
       lastPaymentDate: paymentDate,
     }
