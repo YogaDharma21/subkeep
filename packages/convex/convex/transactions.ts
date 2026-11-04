@@ -102,7 +102,12 @@ export const monthlySummary = query({
     if (!identity) throw new Error("Not authenticated")
     const txns = await ctx.db
       .query("transactions")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .withIndex("by_user_and_date", (q) =>
+        q
+          .eq("userId", identity.subject)
+          .gte("date", `${args.month}-01`)
+          .lte("date", `${args.month}-31`)
+      )
       .collect()
 
     let income = 0
