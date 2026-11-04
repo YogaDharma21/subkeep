@@ -88,6 +88,7 @@ function InlineNoteCell({
 
   const startEditing = () => {
     if (isSaving) return
+    skipBlurRef.current = false
     setValue(displayNote)
     setIsEditing(true)
   }
