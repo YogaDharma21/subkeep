@@ -1,4 +1,4 @@
-import { query, mutation } from "./_generated/server"
+import { query, mutation, internalMutation } from "./_generated/server"
 import type { Doc } from "./_generated/dataModel"
 import { v } from "convex/values"
 
@@ -258,5 +258,124 @@ export const toggleActive = mutation({
     const nextState = !existing.isActive
     await ctx.db.patch(args.id, { isActive: nextState })
     return nextState
+  },
+})
+
+export function calculateNextDueDate(currentDateStr: string, frequency: string): string {
+  const [yearStr, monthStr, dayStr] = currentDateStr.split("-")
+  const year = parseInt(yearStr, 10)
+  const month = parseInt(monthStr, 10)
+  const day = parseInt(dayStr, 10)
+
+  if (frequency === "daily") {
+    const d = new Date(Date.UTC(year, month - 1, day + 1))
+    return d.toISOString().slice(0, 10)
+  }
+  if (frequency === "weekly") {
+    const d = new Date(Date.UTC(year, month - 1, day + 7))
+    return d.toISOString().slice(0, 10)
+  }
+  if (frequency === "bi-weekly") {
+    const d = new Date(Date.UTC(year, month - 1, day + 14))
+    return d.toISOString().slice(0, 10)
+  }
+  if (frequency === "monthly") {
+    let targetYear = year
+    let targetMonth = month + 1
+    if (targetMonth > 12) {
+      targetYear += 1
+      targetMonth = 1
+    }
+    const daysInTargetMonth = new Date(Date.UTC(targetYear, targetMonth, 0)).getUTCDate()
+    const targetDay = Math.min(day, daysInTargetMonth)
+    return `${targetYear}-${String(targetMonth).padStart(2, "0")}-${String(targetDay).padStart(2, "0")}`
+  }
+  if (frequency === "yearly") {
+    const targetYear = year + 1
+    const targetMonth = month
+    const daysInTargetMonth = new Date(Date.UTC(targetYear, targetMonth, 0)).getUTCDate()
+    const targetDay = Math.min(day, daysInTargetMonth)
+    return `${targetYear}-${String(targetMonth).padStart(2, "0")}-${String(targetDay).padStart(2, "0")}`
+  }
+
+  return currentDateStr
+}
+
+export const processDueRecurringTransactions = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const todayStr = new Date().toISOString().slice(0, 10)
+
+    const dueItems = await ctx.db
+      .query("recurringTransactions")
+      .withIndex("by_next_due", (q) =>
+        q.eq("isActive", true).lte("nextDueDate", todayStr)
+      )
+      .collect()
+
+    let processedCount = 0
+
+    for (const item of dueItems) {
+      await ctx.db.insert("transactions", {
+        userId: item.userId,
+        type: item.type,
+        amount: item.amount,
+        currency: item.currency,
+        category: item.category,
+        date: item.nextDueDate,
+        note: item.note ? `${item.name}: ${item.note}` : `${item.name} (Recurring)`,
+        accountId: item.accountId,
+        toAccountId: item.toAccountId,
+        recurringTransactionId: item._id,
+        icon: item.icon,
+        color: item.color,
+      })
+
+      if (item.type === "expense") {
+        if (item.accountId) {
+          const account = await ctx.db.get(item.accountId)
+          if (account) {
+            await ctx.db.patch(item.accountId, { balance: account.balance - item.amount })
+          }
+        }
+      } else if (item.type === "income") {
+        if (item.accountId) {
+          const account = await ctx.db.get(item.accountId)
+          if (account) {
+            await ctx.db.patch(item.accountId, { balance: account.balance + item.amount })
+          }
+        }
+      } else if (item.type === "transfer") {
+        if (item.accountId) {
+          const account = await ctx.db.get(item.accountId)
+          if (account) {
+            await ctx.db.patch(item.accountId, { balance: account.balance - item.amount })
+          }
+        }
+        if (item.toAccountId) {
+          const toAccount = await ctx.db.get(item.toAccountId)
+          if (toAccount) {
+            await ctx.db.patch(item.toAccountId, { balance: toAccount.balance + item.amount })
+          }
+        }
+      }
+
+      let nextDate = calculateNextDueDate(item.nextDueDate, item.frequency)
+      let newIsActive = true
+      if (item.endDate && nextDate > item.endDate) {
+        newIsActive = false
+        nextDate = item.endDate
+      }
+
+      await ctx.db.patch(item._id, {
+        lastProcessedDate: todayStr,
+        nextDueDate: nextDate,
+        isActive: newIsActive,
+      })
+
+      processedCount++
+    }
+
+    return { processedCount, date: todayStr }
   },
 })
