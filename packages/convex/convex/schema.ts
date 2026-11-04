@@ -141,6 +141,7 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_and_date", ["userId", "date"])
     .index("by_account", ["accountId"])
+    .index("by_to_account", ["toAccountId"])
     .index("by_subscription", ["subscriptionId"]),
 
   budgets: defineTable({
