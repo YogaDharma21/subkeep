@@ -201,9 +201,9 @@ export const restoreData = mutation({
     let paymentsCount = 0
     for (const item of args.data.payments ?? []) {
       const oldId = item._id ?? item.id
-      const targetSubId = item.subscriptionId
-        ? subscriptionIdMap.get(String(item.subscriptionId))
-        : (item.name ? subscriptionNameMap.get(item.name) : undefined)
+      const targetSubId =
+        (item.subscriptionId ? subscriptionIdMap.get(String(item.subscriptionId)) : undefined) ??
+        (item.name ? subscriptionNameMap.get(item.name) : undefined)
 
       if (!targetSubId) {
         continue
