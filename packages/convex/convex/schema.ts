@@ -133,6 +133,8 @@ export default defineSchema({
     note: v.optional(v.string()),
     accountId: v.optional(v.id("accounts")),
     toAccountId: v.optional(v.id("accounts")),
+    toAmount: v.optional(v.number()),
+    fee: v.optional(v.number()),
     subscriptionId: v.optional(v.id("subscriptions")),
     paymentId: v.optional(v.id("payments")),
     icon: v.optional(v.string()),
