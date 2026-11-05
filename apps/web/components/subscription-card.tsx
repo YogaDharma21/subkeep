@@ -52,10 +52,17 @@ export function SubscriptionCard({
 
   const priceHistory = sub.priceHistory || []
   const originalPriceEntry = priceHistory[0]
-  const hasPriceHike =
+  const sameCurrency =
+    !sub.currency ||
+    !originalPriceEntry?.currency ||
+    sub.currency === originalPriceEntry.currency
+  const hasPriceHike = Boolean(
     originalPriceEntry &&
-    priceHistory.length > 1 &&
-    sub.price > originalPriceEntry.price
+      priceHistory.length > 1 &&
+      originalPriceEntry.price > 0 &&
+      sameCurrency &&
+      sub.price > originalPriceEntry.price
+  )
   const priceHikeDiff = hasPriceHike
     ? Math.round(((sub.price - originalPriceEntry.price) / originalPriceEntry.price) * 100)
     : 0

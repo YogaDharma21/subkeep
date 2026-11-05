@@ -3,15 +3,23 @@ import assert from "node:assert/strict"
 function calculatePriceHike(sub) {
   const priceHistory = sub.priceHistory || []
   const originalPriceEntry = priceHistory[0]
-  const hasPriceHike =
+  const sameCurrency =
+    !sub.currency ||
+    !originalPriceEntry?.currency ||
+    sub.currency === originalPriceEntry.currency
+
+  const hasPriceHike = Boolean(
     originalPriceEntry &&
-    priceHistory.length > 1 &&
-    sub.price > originalPriceEntry.price
+      priceHistory.length > 1 &&
+      originalPriceEntry.price > 0 &&
+      sameCurrency &&
+      sub.price > originalPriceEntry.price
+  )
   const priceHikeDiff = hasPriceHike
     ? Math.round(((sub.price - originalPriceEntry.price) / originalPriceEntry.price) * 100)
     : 0
 
-  return { hasPriceHike: Boolean(hasPriceHike), priceHikeDiff }
+  return { hasPriceHike, priceHikeDiff }
 }
 
 // Empty price history
@@ -87,6 +95,36 @@ function calculatePriceHike(sub) {
   const resIncreasedMultiple = calculatePriceHike(subIncreasedMultiple)
   assert.equal(resIncreasedMultiple.hasPriceHike, true)
   assert.equal(resIncreasedMultiple.priceHikeDiff, 50)
+}
+
+// Zero original price (safe guard against division by zero)
+{
+  const subZeroOrig = {
+    price: 15,
+    currency: "USD",
+    priceHistory: [
+      { price: 0, currency: "USD", changedAt: "2026-01-01" },
+      { price: 15, currency: "USD", changedAt: "2026-02-01" },
+    ],
+  }
+  const resZero = calculatePriceHike(subZeroOrig)
+  assert.equal(resZero.hasPriceHike, false)
+  assert.equal(resZero.priceHikeDiff, 0)
+}
+
+// Currency mismatch (prevents cross-currency false hike calculation)
+{
+  const subCurrencyMismatch = {
+    price: 150000,
+    currency: "IDR",
+    priceHistory: [
+      { price: 10, currency: "USD", changedAt: "2026-01-01" },
+      { price: 150000, currency: "IDR", changedAt: "2026-02-01" },
+    ],
+  }
+  const resMismatch = calculatePriceHike(subCurrencyMismatch)
+  assert.equal(resMismatch.hasPriceHike, false)
+  assert.equal(resMismatch.priceHikeDiff, 0)
 }
 
 console.log("All price hike tests passed.")
