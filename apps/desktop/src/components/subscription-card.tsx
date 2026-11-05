@@ -59,6 +59,23 @@ export function SubscriptionCard({
   const isShared = !!sub.isShared
   const showConverted = primaryCurrency && primaryCurrency !== sub.currency
 
+  const priceHistory = sub.priceHistory || []
+  const originalPriceEntry = priceHistory[0]
+  const sameCurrency =
+    !sub.currency ||
+    !originalPriceEntry?.currency ||
+    sub.currency === originalPriceEntry.currency
+  const hasPriceHike = Boolean(
+    originalPriceEntry &&
+      priceHistory.length > 1 &&
+      originalPriceEntry.price > 0 &&
+      sameCurrency &&
+      sub.price > originalPriceEntry.price
+  )
+  const priceHikeDiff = hasPriceHike
+    ? Math.round(((sub.price - originalPriceEntry.price) / originalPriceEntry.price) * 100)
+    : 0
+
   let trialDaysLeft: number | null = null
   if (isTrial && sub.trialEndDate) {
     const today = new Date()
@@ -117,6 +134,14 @@ export function SubscriptionCard({
               )}
             >
               {badge.label}
+            </span>
+          ) : null}
+          {hasPriceHike ? (
+            <span
+              className="shrink-0 rounded-full border border-warning/30 bg-warning/10 px-1.5 py-px text-[9px] font-medium text-warning numeral"
+              title={`Price increased by +${priceHikeDiff}%`}
+            >
+              +{priceHikeDiff}%
             </span>
           ) : null}
         </div>
