@@ -3,6 +3,7 @@
 import React from "react"
 import { Coins, PiggyBank } from "lucide-react"
 import { DynamicIcon } from "@/components/dynamic-icon"
+import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrencyAmount } from "@/lib/currency"
 import type { SinkingFundItem, SinkingFundsTotals } from "@/lib/sinking-funds"
 import { cn } from "@/lib/utils"
@@ -14,24 +15,48 @@ export interface SinkingFundsAllocatorProps {
   totals: SinkingFundsTotals
   primaryCurrency: string
   className?: string
+  isLoading?: boolean
 }
 
 function formatCycleBadge(cycle?: string, cycleMonths?: number): string {
   if (cycle) {
     const c = cycle.toLowerCase().trim()
-    if (c === "yearly" || c === "annual") return "Annual"
+    if (
+      c === "yearly" ||
+      c === "annual" ||
+      c === "annually" ||
+      c === "1 year" ||
+      c === "12 months" ||
+      c === "12 mo"
+    ) {
+      return "Annual"
+    }
     if (
       c === "semi-annual" ||
       c === "semiannual" ||
       c === "semi_annual" ||
-      c === "6 months"
+      c === "biannual" ||
+      c === "bi-annual" ||
+      c === "half-yearly" ||
+      c === "6 months" ||
+      c === "6 mo"
     ) {
       return "6-Month"
     }
-    if (c === "quarterly" || c === "3 months") return "Quarterly"
+    if (
+      c === "quarterly" ||
+      c === "quarter" ||
+      c === "3 months" ||
+      c === "3 mo"
+    ) {
+      return "Quarterly"
+    }
     return cycle.charAt(0).toUpperCase() + cycle.slice(1)
   }
   if (cycleMonths) {
+    if (cycleMonths === 12) return "Annual"
+    if (cycleMonths === 6) return "6-Month"
+    if (cycleMonths === 3) return "Quarterly"
     return `${cycleMonths} mo`
   }
   return "Reserve"
@@ -42,7 +67,7 @@ function formatRenewalDate(dateStr?: string): string | null {
   const trimmed = dateStr.trim()
   if (!trimmed) return null
 
-  const parts = trimmed.slice(0, 10).split("-")
+  const parts = trimmed.slice(0, 10).replace(/\//g, "-").split("-")
   if (parts.length === 3) {
     const year = parseInt(parts[0], 10)
     const month = parseInt(parts[1], 10) - 1
@@ -73,28 +98,24 @@ function formatRenewalDate(dateStr?: string): string | null {
 
 function getItemProperties(item: SinkingFundItem) {
   const sub = (item.subscription as Record<string, unknown> | undefined) || {}
-  const name =
-    item.name ?? (sub.name as string | undefined) ?? "Subscription"
-  const icon =
-    item.icon ?? (sub.icon as string | undefined) ?? "coins"
+  const name = item.name ?? (sub.name as string | undefined) ?? "Subscription"
+  const icon = item.icon ?? (sub.icon as string | undefined) ?? "coins"
   const category =
     item.category ?? (sub.category as string | undefined) ?? "General"
-  const cycle =
-    item.cycle ?? (sub.cycle as string | undefined)
+  const cycle = item.cycle ?? (sub.cycle as string | undefined)
   const nextBilling =
     item.nextBilling ?? (sub.nextBilling as string | undefined)
   const totalCost =
-    item.totalCost ??
-    item.cost ??
-    (sub.price as number | undefined) ??
-    0
+    item.totalCost ?? item.cost ?? (sub.price as number | undefined) ?? 0
   const monthlyReserve = item.monthlyReserve ?? 0
   const accruedAmount = item.accruedAmount ?? 0
   const pct =
-    typeof item.pct === "number"
-      ? Math.min(100, Math.max(0, item.pct))
-      : 0
+    typeof item.pct === "number" ? Math.min(100, Math.max(0, item.pct)) : 0
   const cycleMonths = item.cycleMonths
+  const diffMonths = item.diffMonths ?? 0
+  const isOverdue =
+    item.isOverdue ??
+    (diffMonths < 0 && Boolean(nextBilling && nextBilling.trim()))
 
   return {
     name,
@@ -107,6 +128,8 @@ function getItemProperties(item: SinkingFundItem) {
     accruedAmount,
     pct,
     cycleMonths,
+    diffMonths,
+    isOverdue,
   }
 }
 
@@ -115,12 +138,13 @@ export function SinkingFundsAllocator({
   totals,
   primaryCurrency,
   className,
+  isLoading,
 }: SinkingFundsAllocatorProps) {
   return (
-    <section className={cn("surface p-5 sm:p-7 rounded-[24px]", className)}>
+    <section className={cn("surface rounded-[24px] p-5 sm:p-7", className)}>
       {/* Section Header */}
       <div className="flex items-center gap-3">
-        <div className="surface-inset size-9 rounded-full text-muted-foreground flex items-center justify-center shrink-0">
+        <div className="surface-inset flex size-9 shrink-0 items-center justify-center rounded-[10px] text-muted-foreground">
           <Coins className="size-4" />
         </div>
         <div className="min-w-0">
@@ -137,9 +161,9 @@ export function SinkingFundsAllocator({
       <div className="mt-6 grid grid-cols-1 gap-4 border-b border-border/40 pb-6 sm:grid-cols-3">
         <div className="space-y-1">
           <span className="label">Monthly Reserve</span>
-          <div className="display-number text-2xl sm:text-3xl font-semibold tabular-nums text-foreground">
+          <div className="display-number text-2xl font-semibold text-foreground tabular-nums sm:text-3xl">
             +{formatCurrencyAmount(totals.totalMonthlyReserve, primaryCurrency)}
-            <span className="ml-1 text-xs font-normal text-muted-foreground tracking-normal">
+            <span className="ml-1 text-xs font-normal tracking-normal text-muted-foreground">
               / mo
             </span>
           </div>
@@ -149,7 +173,7 @@ export function SinkingFundsAllocator({
         </div>
         <div className="space-y-1">
           <span className="label">Total Accrued Target</span>
-          <div className="display-number text-2xl sm:text-3xl font-semibold tabular-nums text-foreground">
+          <div className="display-number text-2xl font-semibold text-foreground tabular-nums sm:text-3xl">
             {formatCurrencyAmount(totals.totalAccruedTarget, primaryCurrency)}
           </div>
           <p className="text-[11px] text-muted-foreground">
@@ -158,7 +182,7 @@ export function SinkingFundsAllocator({
         </div>
         <div className="space-y-1">
           <span className="label">Active Funds</span>
-          <div className="display-number text-2xl sm:text-3xl font-semibold tabular-nums text-foreground">
+          <div className="display-number text-2xl font-semibold text-foreground tabular-nums sm:text-3xl">
             {totals.count}
           </div>
           <p className="text-[11px] text-muted-foreground">
@@ -168,7 +192,12 @@ export function SinkingFundsAllocator({
       </div>
 
       {/* Breakdown or Empty State */}
-      {items.length === 0 ? (
+      {isLoading ? (
+        <div className="mt-6 space-y-3">
+          <Skeleton className="h-20 w-full rounded-[16px]" />
+          <Skeleton className="h-20 w-full rounded-[16px]" />
+        </div>
+      ) : items.length === 0 ? (
         <div className="surface-inset mt-6 flex flex-col items-center justify-center rounded-[16px] py-10 text-center">
           <PiggyBank className="mb-2 size-5 text-muted-foreground/40" />
           <p className="text-[13px] font-medium text-foreground">
@@ -193,10 +222,12 @@ export function SinkingFundsAllocator({
               accruedAmount,
               pct,
               cycleMonths,
+              isOverdue,
             } = getItemProperties(item)
 
             const renewalDate = formatRenewalDate(nextBilling)
-            const sub = (item.subscription as Record<string, unknown> | undefined) || {}
+            const sub =
+              (item.subscription as Record<string, unknown> | undefined) || {}
             const itemKey =
               item.id ??
               (sub._id as string | undefined) ??
@@ -206,7 +237,7 @@ export function SinkingFundsAllocator({
             return (
               <div
                 key={itemKey}
-                className="surface-inset p-3.5 sm:p-4 rounded-[16px] space-y-3"
+                className="surface-inset space-y-3 rounded-[16px] p-3.5 sm:p-4"
               >
                 <div className="flex items-center gap-3">
                   <span className="surface flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground">
@@ -217,18 +248,36 @@ export function SinkingFundsAllocator({
                       <span className="truncate text-[13px] font-medium text-foreground">
                         {name}
                       </span>
-                      <span className="rounded-full bg-foreground/5 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                      <span className="rounded-full bg-foreground/5 px-2 py-0.5 text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
                         {formatCycleBadge(cycle, cycleMonths)}
                       </span>
+                      {isOverdue && (
+                        <span className="rounded-full bg-negative/15 px-2 py-0.5 text-[10px] font-medium tracking-wider text-negative uppercase">
+                          Overdue
+                        </span>
+                      )}
                     </div>
                     <div className="mt-0.5 text-[11px] text-muted-foreground">
                       <span>{category}</span>
-                      {renewalDate && <span> · Renews {renewalDate}</span>}
+                      {renewalDate && (
+                        <span>
+                          {" "}
+                          ·{" "}
+                          <span
+                            className={isOverdue ? "text-negative" : undefined}
+                          >
+                            {isOverdue
+                              ? `Due ${renewalDate}`
+                              : `Renews ${renewalDate}`}
+                          </span>
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
+                  <div className="shrink-0 text-right">
                     <div className="numeral text-[13px] font-medium text-foreground tabular-nums">
-                      +{formatCurrencyAmount(monthlyReserve, primaryCurrency)} / mo
+                      +{formatCurrencyAmount(monthlyReserve, primaryCurrency)} /
+                      mo
                     </div>
                   </div>
                 </div>
@@ -236,18 +285,38 @@ export function SinkingFundsAllocator({
                 <div className="space-y-1.5">
                   <div className="h-1 w-full overflow-hidden rounded-full bg-foreground/10">
                     <div
-                      className="h-full rounded-full bg-foreground/70 transition-all"
+                      className={cn(
+                        "h-full rounded-full transition-all",
+                        isOverdue
+                          ? "bg-negative"
+                          : pct >= 100
+                            ? "bg-positive"
+                            : pct >= 85
+                              ? "bg-warning"
+                              : "bg-foreground/70"
+                      )}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
                   <div className="flex items-center justify-between text-[11px] text-muted-foreground tabular-nums">
                     <span>
-                      {formatCurrencyAmount(accruedAmount, primaryCurrency)} accrued of{" "}
-                      {formatCurrencyAmount(totalCost, primaryCurrency)} ({pct}%)
+                      {formatCurrencyAmount(accruedAmount, primaryCurrency)}{" "}
+                      accrued of{" "}
+                      {formatCurrencyAmount(totalCost, primaryCurrency)} ({pct}
+                      %)
                     </span>
                     {renewalDate && (
-                      <span className="hidden sm:inline text-muted-foreground/80">
-                        Renewal: {renewalDate}
+                      <span
+                        className={cn(
+                          "hidden sm:inline",
+                          isOverdue
+                            ? "text-negative"
+                            : "text-muted-foreground/80"
+                        )}
+                      >
+                        {isOverdue
+                          ? `Due: ${renewalDate}`
+                          : `Renewal: ${renewalDate}`}
                       </span>
                     )}
                   </div>

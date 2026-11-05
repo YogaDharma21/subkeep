@@ -11,9 +11,20 @@ assert.equal(getCycleMonths("yearly"), 12)
 assert.equal(getCycleMonths("annual"), 12)
 assert.equal(getCycleMonths("Annual"), 12)
 assert.equal(getCycleMonths("YEARLY"), 12)
+assert.equal(getCycleMonths("annually"), 12)
+assert.equal(getCycleMonths("1 year"), 12)
+assert.equal(getCycleMonths("12 months"), 12)
 assert.equal(getCycleMonths("semi-annual"), 6)
 assert.equal(getCycleMonths("semiannual"), 6)
+assert.equal(getCycleMonths("biannual"), 6)
+assert.equal(getCycleMonths("bi-annual"), 6)
+assert.equal(getCycleMonths("half-yearly"), 6)
 assert.equal(getCycleMonths("quarterly"), 3)
+assert.equal(getCycleMonths("quarter"), 3)
+assert.equal(getCycleMonths("3 months"), 3)
+assert.equal(getCycleMonths("24 months"), 24)
+assert.equal(getCycleMonths("2 years"), 24)
+assert.equal(getCycleMonths(undefined, 6), 6)
 assert.equal(getCycleMonths("monthly"), null)
 assert.equal(getCycleMonths("weekly"), null)
 assert.equal(getCycleMonths("daily"), null)
@@ -88,6 +99,13 @@ assert.equal(calculateMonthDiff("2026-11", "2026-10-15"), -1)
 assert.equal(calculateMonthDiff("2026-11", "2026-12-01"), 1)
 assert.equal(calculateMonthDiff("2026-11", "2027-02-15"), 3)
 assert.equal(calculateMonthDiff("2026-11", "2027-11-15"), 12)
+// Leap years
+assert.equal(calculateMonthDiff("2028-01", "2028-02-29"), 1)
+assert.equal(calculateMonthDiff("2024-02", "2024-02-29"), 0)
+// Slashes, whitespace, and ISO timestamps
+assert.equal(calculateMonthDiff("2026-11", "2027/05/15"), 6)
+assert.equal(calculateMonthDiff(" 2026-11 ", " 2027-02-15 "), 3)
+assert.equal(calculateMonthDiff("2026-11", "2027-11-20T00:00:00.000Z"), 12)
 
 // 4. Calculations: current/past renewal (diffMonths <= 0)
 const currentMonthSubs = [
@@ -217,17 +235,18 @@ const idrSubs = [
     nextBilling: "2026-11-01",
   },
 ]
-const convertedRes = calculateSinkingFunds(
-  idrSubs,
-  { selectedMonth: "2026-11", targetCurrency: "USD", rates: customRates }
-)
+const convertedRes = calculateSinkingFunds(idrSubs, {
+  selectedMonth: "2026-11",
+  targetCurrency: "USD",
+  rates: customRates,
+})
 assert.equal(convertedRes.items[0].cost, 10) // 160000 / 16000
 assert.equal(convertedRes.items[0].monthlyReserve, 10 / 12)
 assert.equal(convertedRes.items[0].accruedAmount, 10)
 assert.equal(convertedRes.items[0].pct, 100)
 assert.equal(convertedRes.totalCommitment, 10)
 
-// 8. Empty input
+// 8. Empty and corrupt inputs
 const emptyRes = calculateSinkingFunds([])
 assert.equal(emptyRes.count, 0)
 assert.equal(emptyRes.totalMonthlyReserve, 0)
@@ -235,5 +254,52 @@ assert.equal(emptyRes.totalAccruedTarget, 0)
 assert.equal(emptyRes.totalCommitment, 0)
 assert.equal(emptyRes.totals.count, 0)
 assert.deepEqual(emptyRes.items, [])
+
+const nullRes = calculateSinkingFunds(null)
+assert.equal(nullRes.count, 0)
+assert.deepEqual(nullRes.items, [])
+
+const undefRes = calculateSinkingFunds(undefined)
+assert.equal(undefRes.count, 0)
+assert.deepEqual(undefRes.items, [])
+
+// 9. Overdue nextBilling detection
+const overdueSubs = [
+  {
+    id: "sub-overdue",
+    name: "Overdue Yearly",
+    price: 120,
+    currency: "USD",
+    cycle: "yearly",
+    isActive: true,
+    nextBilling: "2026-09-15", // 2 months overdue relative to 2026-11
+  },
+]
+const overdueRes = calculateSinkingFunds(overdueSubs, "2026-11", "USD")
+assert.equal(overdueRes.count, 1)
+assert.equal(overdueRes.items[0].diffMonths, -2)
+assert.equal(overdueRes.items[0].accruedMonths, 12)
+assert.equal(overdueRes.items[0].accruedAmount, 120)
+assert.equal(overdueRes.items[0].pct, 100)
+assert.equal(overdueRes.items[0].isOverdue, true)
+
+// 10. Corrupt elements and negative price sanitization
+const dirtySubs = [
+  null as any,
+  undefined as any,
+  {
+    id: "sub-neg",
+    name: "Negative Price",
+    price: -50,
+    currency: "USD",
+    cycle: "yearly",
+    isActive: true,
+    nextBilling: "2027-11-01",
+  },
+]
+const dirtyRes = calculateSinkingFunds(dirtySubs, "2026-11", "USD")
+assert.equal(dirtyRes.count, 1)
+assert.equal(dirtyRes.items[0].cost, 0)
+assert.equal(dirtyRes.items[0].monthlyReserve, 0)
 
 console.log("All sinking funds test assertions passed.")

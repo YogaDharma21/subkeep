@@ -9,6 +9,7 @@ export interface SinkingFundSubscriptionInput {
   cycle: string
   isActive?: boolean
   nextBilling?: string
+  cycleMonths?: number
   [key: string]: unknown
 }
 
@@ -31,6 +32,7 @@ export interface SinkingFundItem<
   accruedAmount: number
   pct: number
   currency: string
+  isOverdue?: boolean
 }
 
 export interface SinkingFundsTotals {
@@ -59,38 +61,114 @@ export interface CalculateSinkingFundsOptions {
   rates?: Record<string, number>
 }
 
-export function getCycleMonths(cycle: string | null | undefined): number | null {
+export function getCycleMonths(
+  cycle: string | null | undefined,
+  fallbackMonths?: number
+): number | null {
+  if (
+    typeof fallbackMonths === "number" &&
+    !isNaN(fallbackMonths) &&
+    fallbackMonths > 1
+  ) {
+    return Math.round(fallbackMonths)
+  }
   if (!cycle) return null
   const normalized = cycle.toLowerCase().trim()
-  if (normalized === "yearly" || normalized === "annual") return 12
+  if (
+    normalized === "yearly" ||
+    normalized === "annual" ||
+    normalized === "annually" ||
+    normalized === "1 year" ||
+    normalized === "12 months" ||
+    normalized === "12 mo"
+  ) {
+    return 12
+  }
   if (
     normalized === "semi-annual" ||
     normalized === "semiannual" ||
     normalized === "semi_annual" ||
-    normalized === "6 months"
+    normalized === "biannual" ||
+    normalized === "bi-annual" ||
+    normalized === "half-yearly" ||
+    normalized === "6 months" ||
+    normalized === "6 mo"
   ) {
     return 6
   }
-  if (normalized === "quarterly" || normalized === "3 months") return 3
+  if (
+    normalized === "quarterly" ||
+    normalized === "quarter" ||
+    normalized === "3 months" ||
+    normalized === "3 mo"
+  ) {
+    return 3
+  }
+
+  const monthMatch = normalized.match(/^(\d+)\s*(months?|mos?)$/)
+  if (monthMatch) {
+    const m = parseInt(monthMatch[1], 10)
+    if (!isNaN(m) && m > 1) return m
+  }
+
+  const yearMatch = normalized.match(/^(\d+)\s*(years?|yrs?)$/)
+  if (yearMatch) {
+    const y = parseInt(yearMatch[1], 10)
+    if (!isNaN(y) && y >= 1) return y * 12
+  }
+
   return null
 }
 
 export function isSinkingFundSubscription(
   sub: SinkingFundSubscriptionInput | null | undefined
 ): boolean {
-  if (!sub || sub.isActive !== true) return false
-  return getCycleMonths(sub.cycle) !== null
+  if (!sub || typeof sub !== "object" || sub.isActive !== true) return false
+  const fallback =
+    typeof sub.cycleMonths === "number" ? sub.cycleMonths : undefined
+  return getCycleMonths(sub.cycle, fallback) !== null
 }
 
-export function calculateMonthDiff(selectedMonth: string, nextBilling: string): number {
+export function calculateMonthDiff(
+  selectedMonth: string,
+  nextBilling: string
+): number {
   if (!selectedMonth || !nextBilling) return 0
-  const sParts = selectedMonth.split("-").map(Number)
-  const rParts = nextBilling.slice(0, 7).split("-").map(Number)
+  const sTrimmed = selectedMonth.trim()
+  const rTrimmed = nextBilling.trim()
+  if (!sTrimmed || !rTrimmed) return 0
 
-  const sYear = sParts[0]
-  const sMonth = sParts[1]
-  const rYear = rParts[0]
-  const rMonth = rParts[1]
+  let sYear = NaN
+  let sMonth = NaN
+  const sParts = sTrimmed.slice(0, 7).replace(/\//g, "-").split("-").map(Number)
+  if (sParts.length >= 2) {
+    sYear = sParts[0]
+    sMonth = sParts[1]
+  }
+
+  let rYear = NaN
+  let rMonth = NaN
+  const rParts = rTrimmed.slice(0, 7).replace(/\//g, "-").split("-").map(Number)
+  if (rParts.length >= 2) {
+    rYear = rParts[0]
+    rMonth = rParts[1]
+  }
+
+  if (isNaN(sYear) || isNaN(sMonth) || sMonth < 1 || sMonth > 12) {
+    const sDate = new Date(sTrimmed)
+    if (!isNaN(sDate.getTime())) {
+      sYear = sDate.getFullYear()
+      sMonth = sDate.getMonth() + 1
+    }
+  }
+
+  if (isNaN(rYear) || isNaN(rMonth) || rMonth < 1 || rMonth > 12) {
+    const rDate = new Date(rTrimmed)
+    if (!isNaN(rDate.getTime())) {
+      rYear = rDate.getFullYear()
+      rMonth = rDate.getMonth() + 1
+    }
+  }
 
   if (
     isNaN(sYear) ||
@@ -124,7 +202,8 @@ export function calculateSinkingFunds<
   ratesParam?: Record<string, number>
 ): SinkingFundsSummary<T> {
   const isOptionsObject =
-    typeof selectedMonthOrOptions === "object" && selectedMonthOrOptions !== null
+    typeof selectedMonthOrOptions === "object" &&
+    selectedMonthOrOptions !== null
 
   const selectedMonth =
     (isOptionsObject
@@ -160,12 +239,24 @@ export function calculateSinkingFunds<
   const items: SinkingFundItem<T>[] = []
 
   for (const sub of subscriptions) {
+    if (!sub || typeof sub !== "object") continue
     if (!isSinkingFundSubscription(sub)) continue
 
-    const cycleMonths = getCycleMonths(sub.cycle)
-    if (!cycleMonths) continue
+    const fallbackMonths =
+      typeof sub.cycleMonths === "number" ? sub.cycleMonths : undefined
+    const cycleMonths = getCycleMonths(sub.cycle, fallbackMonths)
+    if (!cycleMonths || cycleMonths <= 0) continue
 
-    const cost = convertCurrency(sub.price, sub.currency, targetCurrency, rates)
+    const rawPrice =
+      typeof sub.price === "number" && !isNaN(sub.price)
+        ? Math.max(0, sub.price)
+        : 0
+    const cost = convertCurrency(
+      rawPrice,
+      sub.currency || targetCurrency,
+      targetCurrency,
+      rates
+    )
     const monthlyReserve = cost / cycleMonths
     const diffMonths = calculateMonthDiff(selectedMonth, sub.nextBilling || "")
 
@@ -187,6 +278,9 @@ export function calculateSinkingFunds<
       pct = Math.round((accruedMonths / cycleMonths) * 100)
     }
 
+    const isOverdue =
+      diffMonths < 0 && Boolean(sub.nextBilling && sub.nextBilling.trim())
+
     items.push({
       subscription: sub,
       id:
@@ -206,11 +300,18 @@ export function calculateSinkingFunds<
       accruedAmount,
       pct,
       currency: targetCurrency,
+      isOverdue,
     })
   }
 
-  const totalMonthlyReserve = items.reduce((sum, item) => sum + item.monthlyReserve, 0)
-  const totalAccruedTarget = items.reduce((sum, item) => sum + item.accruedAmount, 0)
+  const totalMonthlyReserve = items.reduce(
+    (sum, item) => sum + item.monthlyReserve,
+    0
+  )
+  const totalAccruedTarget = items.reduce(
+    (sum, item) => sum + item.accruedAmount,
+    0
+  )
   const totalCommitment = items.reduce((sum, item) => sum + item.cost, 0)
 
   const totals: SinkingFundsTotals = {

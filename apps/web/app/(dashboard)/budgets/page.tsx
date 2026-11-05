@@ -5,12 +5,7 @@ import { useMutation, useQuery } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
-import {
-  ChevronLeft,
-  ChevronRight,
-  PiggyBank,
-  Trash2,
-} from "lucide-react"
+import { ChevronLeft, ChevronRight, PiggyBank, Trash2 } from "lucide-react"
 import { SectionHeader } from "@/components/section-nav"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
@@ -43,15 +38,15 @@ export default function BudgetsPage() {
   const { isSignedIn } = useAuth()
   const [month, setMonth] = useState(currentMonthKey())
 
-  const budgets = useQuery(
-    api.budgets.list,
-    isSignedIn ? { month } : "skip"
-  )
+  const budgets = useQuery(api.budgets.list, isSignedIn ? { month } : "skip")
   const transactions = useQuery(
     api.transactions.list,
     isSignedIn ? { month } : "skip"
   )
-  const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
+  const subscriptions = useQuery(
+    api.subscriptions.list,
+    isSignedIn ? {} : "skip"
+  )
   const removeMutation = useMutation(api.budgets.remove)
 
   const { primaryCurrency, rates } = usePrimaryCurrency()
@@ -59,17 +54,29 @@ export default function BudgetsPage() {
 
   const rows = useMemo(() => {
     const txns = transactions || []
-    return (budgets || []).map((b) => {
-      const meta = financeCategoryMeta(b.category)
-      const spentNative = txns
-        .filter((t) => t.type === "expense" && t.category === b.category)
-        .reduce((s, t) => s + t.amount, 0)
-      const spent = convertCurrency(spentNative, b.currency, primaryCurrency, rates)
-      const cap = convertCurrency(b.amount, b.currency, primaryCurrency, rates)
-      const pct = cap > 0 ? Math.round((spent / cap) * 100) : 0
-      const remaining = cap - spent
-      return { budget: b, meta, spent, cap, pct, remaining }
-    }).sort((a, b) => b.pct - a.pct)
+    return (budgets || [])
+      .map((b) => {
+        const meta = financeCategoryMeta(b.category)
+        const spentNative = txns
+          .filter((t) => t.type === "expense" && t.category === b.category)
+          .reduce((s, t) => s + t.amount, 0)
+        const spent = convertCurrency(
+          spentNative,
+          b.currency,
+          primaryCurrency,
+          rates
+        )
+        const cap = convertCurrency(
+          b.amount,
+          b.currency,
+          primaryCurrency,
+          rates
+        )
+        const pct = cap > 0 ? Math.round((spent / cap) * 100) : 0
+        const remaining = cap - spent
+        return { budget: b, meta, spent, cap, pct, remaining }
+      })
+      .sort((a, b) => b.pct - a.pct)
   }, [budgets, transactions, primaryCurrency, rates])
 
   const subscriptionSpendByCategory = useMemo(() => {
@@ -84,7 +91,12 @@ export default function BudgetsPage() {
       else if (cycle === "weekly") nativeMonthly = s.price * 4.33
       else if (cycle === "daily") nativeMonthly = s.price * 30
       else if (cycle === "none") nativeMonthly = 0
-      const converted = convertCurrency(nativeMonthly, s.currency, primaryCurrency, rates)
+      const converted = convertCurrency(
+        nativeMonthly,
+        s.currency,
+        primaryCurrency,
+        rates
+      )
       map.set(s.category, (map.get(s.category) || 0) + converted)
     }
     return map
@@ -113,7 +125,11 @@ export default function BudgetsPage() {
 
   return (
     <div className="space-y-4 sm:space-y-5">
-      <SectionHeader title="Budgets" eyebrow={monthLabel(month)} tabs={insightTabs} />
+      <SectionHeader
+        title="Budgets"
+        eyebrow={monthLabel(month)}
+        tabs={insightTabs}
+      />
 
       {/* Month + totals */}
       <section className="surface p-5 sm:p-7">
@@ -145,7 +161,8 @@ export default function BudgetsPage() {
           {formatCurrencyAmount(totals.spent, primaryCurrency)}
         </p>
         <p className="mt-3 text-[11px] text-muted-foreground">
-          of {formatCurrencyAmount(totals.cap, primaryCurrency)} budgeted · {totals.pct}%
+          of {formatCurrencyAmount(totals.cap, primaryCurrency)} budgeted ·{" "}
+          {totals.pct}%
         </p>
 
         {totals.cap > 0 && (
@@ -174,7 +191,9 @@ export default function BudgetsPage() {
       ) : rows.length === 0 ? (
         <div className="surface flex flex-col items-center justify-center py-12 text-center">
           <PiggyBank className="mb-2 size-5 text-muted-foreground/50" />
-          <p className="text-sm font-medium text-muted-foreground">No budgets for {monthLabel(month).split(" ")[0]}</p>
+          <p className="text-sm font-medium text-muted-foreground">
+            No budgets for {monthLabel(month).split(" ")[0]}
+          </p>
           <p className="mt-1 text-xs text-muted-foreground/60">
             Set per-category spending limits to track progress
           </p>
@@ -182,7 +201,8 @@ export default function BudgetsPage() {
       ) : (
         <div className="space-y-3">
           {rows.map(({ budget, meta, spent, cap, pct, remaining }) => {
-            const subSpend = subscriptionSpendByCategory.get(budget.category) || 0
+            const subSpend =
+              subscriptionSpendByCategory.get(budget.category) || 0
             return (
               <div key={budget._id} className="surface p-4">
                 <div className="flex items-center gap-3">
@@ -190,12 +210,18 @@ export default function BudgetsPage() {
                     <DynamicIcon name={meta.icon} className="size-4" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-medium">{meta.label}</span>
+                    <span className="block truncate text-[13px] font-medium">
+                      {meta.label}
+                    </span>
                     <div className="mt-1 text-[11px] text-muted-foreground">
                       {formatCurrencyAmount(spent, primaryCurrency)} of{" "}
                       {formatCurrencyAmount(cap, primaryCurrency)}
                       {subSpend > 0 && (
-                        <span> · incl. {formatCurrencyAmount(subSpend, primaryCurrency)} subs</span>
+                        <span>
+                          {" "}
+                          · incl.{" "}
+                          {formatCurrencyAmount(subSpend, primaryCurrency)} subs
+                        </span>
                       )}
                     </div>
                   </div>
@@ -232,10 +258,17 @@ export default function BudgetsPage() {
                 </div>
                 <div className="mt-2 text-[11px] text-muted-foreground">
                   {remaining >= 0 ? (
-                    <span>{formatCurrencyAmount(remaining, primaryCurrency)} remaining</span>
+                    <span>
+                      {formatCurrencyAmount(remaining, primaryCurrency)}{" "}
+                      remaining
+                    </span>
                   ) : (
                     <span className="text-negative">
-                      Over by {formatCurrencyAmount(Math.abs(remaining), primaryCurrency)}
+                      Over by{" "}
+                      {formatCurrencyAmount(
+                        Math.abs(remaining),
+                        primaryCurrency
+                      )}
                     </span>
                   )}
                 </div>
@@ -250,21 +283,35 @@ export default function BudgetsPage() {
         items={sinkingFunds.items}
         totals={sinkingFunds.totals}
         primaryCurrency={primaryCurrency}
+        isLoading={subscriptions === undefined}
       />
 
       <Dialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <DialogContent className="max-w-sm rounded-lg p-5">
           <DialogHeader className="space-y-1 text-left">
-            <DialogTitle className="text-base font-semibold">Remove Budget</DialogTitle>
+            <DialogTitle className="text-base font-semibold">
+              Remove Budget
+            </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              This removes the budget cap for this category and month. Your transactions are kept.
+              This removes the budget cap for this category and month. Your
+              transactions are kept.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0 mt-3">
-            <Button variant="outline" size="sm" onClick={() => setDeleteId(null)} className="cursor-pointer">
+          <DialogFooter className="mt-3 gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDeleteId(null)}
+              className="cursor-pointer"
+            >
               Cancel
             </Button>
-            <Button variant="destructive" size="sm" onClick={handleDelete} className="cursor-pointer">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDelete}
+              className="cursor-pointer"
+            >
               Remove
             </Button>
           </DialogFooter>
