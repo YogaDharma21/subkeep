@@ -616,7 +616,7 @@ export default function TransactionsPage() {
 
       {/* Floating Bulk Action Dock */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-2 bg-card border border-border shadow-[0_28px_56px_-40px_rgba(0,0,0,0.9)] rounded-full">
+        <div className="fixed bottom-20 sm:bottom-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-2 bg-card border border-border shadow-[0_28px_56px_-40px_rgba(0,0,0,0.9)] rounded-full">
           <span className="tabular-nums text-xs font-medium text-foreground pl-2 pr-1">
             {selectedIds.size} selected
           </span>

@@ -412,8 +412,11 @@ export const removeBatch = mutation({
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new Error("Not authenticated")
 
+    const uniqueIds = Array.from(new Set(args.ids))
+    if (uniqueIds.length > 100) throw new Error("Maximum batch size is 100")
+
     let count = 0
-    for (const id of args.ids) {
+    for (const id of uniqueIds) {
       const txn = await ctx.db.get(id)
       if (!txn) throw new Error("Transaction not found")
       if (txn.userId !== identity.subject) throw new Error("Unauthorized")
@@ -469,8 +472,11 @@ export const updateCategoryBatch = mutation({
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new Error("Not authenticated")
 
+    const uniqueIds = Array.from(new Set(args.ids))
+    if (uniqueIds.length > 100) throw new Error("Maximum batch size is 100")
+
     let count = 0
-    for (const id of args.ids) {
+    for (const id of uniqueIds) {
       const txn = await ctx.db.get(id)
       if (!txn) throw new Error("Transaction not found")
       if (txn.userId !== identity.subject) throw new Error("Unauthorized")
@@ -500,13 +506,16 @@ export const updateAccountBatch = mutation({
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new Error("Not authenticated")
 
+    const uniqueIds = Array.from(new Set(args.ids))
+    if (uniqueIds.length > 100) throw new Error("Maximum batch size is 100")
+
     const targetAccount = await ctx.db.get(args.accountId)
     if (!targetAccount || targetAccount.userId !== identity.subject) {
       throw new Error("Account not found")
     }
 
     let count = 0
-    for (const id of args.ids) {
+    for (const id of uniqueIds) {
       const txn = await ctx.db.get(id)
       if (!txn) throw new Error("Transaction not found")
       if (txn.userId !== identity.subject) throw new Error("Unauthorized")
