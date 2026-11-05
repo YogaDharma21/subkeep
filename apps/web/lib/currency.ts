@@ -1,4 +1,4 @@
-import { getSymbol } from "./constants"
+import { getSymbol } from "./constants.ts"
 
 // Fallback rates relative to USD (1 USD = X target currency)
 export const fallbackRates: Record<string, number> = {

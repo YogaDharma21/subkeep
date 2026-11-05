@@ -106,6 +106,10 @@ function RecordPaymentForm({
         amount: numAmount,
         date,
         accountId: accountId ? (accountId as Id<"accounts">) : undefined,
+        accountAmount:
+          selectedAccount && selectedAccount.currency !== subscription.currency
+            ? convertedAccountDeduction
+            : undefined,
         linkAccount: Boolean(accountId && linkAccount),
       })
 
