@@ -1,5 +1,5 @@
-import React from "react"
-import { View, Text, TouchableOpacity } from "react-native"
+import React, { useRef } from "react"
+import { View, Text, TouchableOpacity, Platform } from "react-native"
 import { useRouter } from "expo-router"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { Badge } from "@/components/ui/badge"
@@ -8,6 +8,9 @@ import { convertAndFormat, formatCurrencyAmount, formatCycleLabel } from "@/lib/
 import { getSymbol } from "@/constants/currencies"
 import { format, differenceInDays } from "date-fns"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import Swipeable from "react-native-gesture-handler/Swipeable"
+import * as Haptics from "expo-haptics"
+import { Check, Play, Pause } from "lucide-react-native"
 
 export interface SubscriptionItemProps {
   _id: string
@@ -37,15 +40,26 @@ interface SubscriptionCardProps {
   sub: SubscriptionItemProps
   primaryCurrency?: string
   rates?: Record<string, number>
+  onRecordPayment?: (sub: SubscriptionItemProps) => void
+  onTogglePause?: (sub: SubscriptionItemProps) => void
 }
 
 export function SubscriptionCard({
   sub,
   primaryCurrency = "USD",
   rates,
+  onRecordPayment,
+  onTogglePause,
 }: SubscriptionCardProps) {
   const router = useRouter()
   const { colors } = useThemeColor()
+  const swipeableRef = useRef<Swipeable>(null)
+
+  const triggerHaptic = () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {})
+    }
+  }
 
   const isTrial = !!sub.isTrial
   const isShared = !!sub.isShared
@@ -60,11 +74,94 @@ export function SubscriptionCard({
     trialDaysLeft = Math.max(0, differenceInDays(tEnd, today))
   }
 
-  return (
+  const isPaused = sub.isActive === false
+  const rightLabel = isPaused ? "Resume" : "Pause"
+  const RightIcon = isPaused ? Play : Pause
+  const rightColor = isPaused ? colors.amber : colors.destructive
+  const rightBg = isPaused ? colors.amberBackground : colors.destructiveBackground
+
+  const renderLeftActions = () => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => {
+          triggerHaptic()
+          swipeableRef.current?.close()
+          onRecordPayment?.(sub)
+        }}
+        style={{
+          width: 96,
+          height: "100%",
+          backgroundColor: colors.emeraldBackground,
+          borderWidth: 1,
+          borderColor: colors.border,
+          borderRadius: 20,
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 4,
+          paddingHorizontal: 8,
+        }}
+      >
+        <Check size={18} color={colors.emerald} />
+        <Text
+          numberOfLines={1}
+          style={{
+            fontSize: 11,
+            fontWeight: "500",
+            color: colors.emerald,
+            letterSpacing: -0.1,
+          }}
+        >
+          Record Paid
+        </Text>
+      </TouchableOpacity>
+    )
+  }
+
+  const renderRightActions = () => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => {
+          triggerHaptic()
+          swipeableRef.current?.close()
+          onTogglePause?.(sub)
+        }}
+        style={{
+          width: 96,
+          height: "100%",
+          backgroundColor: rightBg,
+          borderWidth: 1,
+          borderColor: colors.border,
+          borderRadius: 20,
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 4,
+          paddingHorizontal: 8,
+        }}
+      >
+        <RightIcon size={18} color={rightColor} />
+        <Text
+          numberOfLines={1}
+          style={{
+            fontSize: 11,
+            fontWeight: "500",
+            color: rightColor,
+            letterSpacing: -0.1,
+          }}
+        >
+          {rightLabel}
+        </Text>
+      </TouchableOpacity>
+    )
+  }
+
+  const cardContent = (
     <TouchableOpacity
       activeOpacity={0.7}
       onPress={() => router.push(`/subscriptions/${sub._id}` as never)}
       style={{
+        width: "100%",
         flexDirection: "row",
         alignItems: "center",
         backgroundColor: colors.card,
@@ -175,5 +272,29 @@ export function SubscriptionCard({
         </Text>
       </View>
     </TouchableOpacity>
+  )
+
+  if (Platform.OS === "web") {
+    return cardContent
+  }
+
+  return (
+    <Swipeable
+      ref={swipeableRef}
+      friction={2}
+      overshootLeft={false}
+      overshootRight={false}
+      onSwipeableWillOpen={() => {
+        triggerHaptic()
+      }}
+      renderLeftActions={renderLeftActions}
+      renderRightActions={renderRightActions}
+      containerStyle={{
+        borderRadius: 20,
+        overflow: "hidden",
+      }}
+    >
+      {cardContent}
+    </Swipeable>
   )
 }
