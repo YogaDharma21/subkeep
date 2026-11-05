@@ -14,6 +14,7 @@ import {
   Trash2,
   ArrowLeftRight,
   Check,
+  X,
 } from "lucide-react"
 import { SectionHeader } from "@/components/section-nav"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -75,6 +76,9 @@ export default function TransactionsPage() {
   const accounts = useQuery(api.accounts.list, isSignedIn ? {} : "skip")
   const updateMutation = useMutation(api.transactions.update)
   const removeMutation = useMutation(api.transactions.remove)
+  const removeBatch = useMutation(api.transactions.removeBatch)
+  const updateCategoryBatch = useMutation(api.transactions.updateCategoryBatch)
+  const updateAccountBatch = useMutation(api.transactions.updateAccountBatch)
 
   const { primaryCurrency, rates } = usePrimaryCurrency()
 
@@ -83,6 +87,13 @@ export default function TransactionsPage() {
   const [editNote, setEditNote] = useState("")
   const [editCategory, setEditCategory] = useState("")
   const [isSaving, setIsSaving] = useState(false)
+
+  const [isBatchOperating, setIsBatchOperating] = useState(false)
+  const [isBatchCategoryOpen, setIsBatchCategoryOpen] = useState(false)
+  const [batchCategory, setBatchCategory] = useState<string>(financeCategories[0].value)
+  const [isBatchAccountOpen, setIsBatchAccountOpen] = useState(false)
+  const [batchAccountId, setBatchAccountId] = useState<string>("")
+  const [isBatchDeleteOpen, setIsBatchDeleteOpen] = useState(false)
 
   const filtered = useMemo(() => {
     let list = [...(transactions || [])]
@@ -192,6 +203,65 @@ export default function TransactionsPage() {
     }
   }
 
+  const handleBatchCategory = async () => {
+    if (selectedIds.size === 0) return
+    const category = batchCategory || financeCategories[0].value
+    setIsBatchOperating(true)
+    try {
+      const res = await updateCategoryBatch({
+        ids: Array.from(selectedIds) as Id<"transactions">[],
+        category,
+      })
+      toast.success(`${res.count} transactions updated`)
+      clearSelection()
+      setIsBatchCategoryOpen(false)
+    } catch {
+      toast.error("Failed to update transactions")
+    } finally {
+      setIsBatchOperating(false)
+    }
+  }
+
+  const handleBatchAccount = async () => {
+    if (selectedIds.size === 0) return
+    const accountId = (batchAccountId || accounts?.[0]?._id) as Id<"accounts"> | undefined
+    if (!accountId) {
+      toast.error("Please select an account")
+      return
+    }
+    setIsBatchOperating(true)
+    try {
+      const res = await updateAccountBatch({
+        ids: Array.from(selectedIds) as Id<"transactions">[],
+        accountId,
+      })
+      toast.success(`${res.count} transactions updated`)
+      clearSelection()
+      setIsBatchAccountOpen(false)
+    } catch {
+      toast.error("Failed to update transactions")
+    } finally {
+      setIsBatchOperating(false)
+    }
+  }
+
+  const handleBatchDelete = async () => {
+    if (selectedIds.size === 0) return
+    setIsBatchOperating(true)
+    try {
+      const res = await removeBatch({
+        ids: Array.from(selectedIds) as Id<"transactions">[],
+      })
+      toast.success(`${res.count} transactions deleted`)
+      clearSelection()
+      setIsBatchDeleteOpen(false)
+    } catch {
+      toast.error("Failed to delete transactions")
+    } finally {
+      setIsBatchOperating(false)
+    }
+  }
+
   const grouped = useMemo(() => {
     const map = new Map<string, TxnDoc[]>()
     for (const t of filtered) {
@@ -275,7 +345,8 @@ export default function TransactionsPage() {
               <button
                 type="button"
                 onClick={isAllSelected ? clearSelection : selectAll}
-                className="rounded-full px-2.5 py-1.5 text-[11px] text-muted-foreground hover:bg-foreground/5 hover:text-foreground transition-colors cursor-pointer"
+                disabled={isBatchOperating}
+                className="rounded-full px-2.5 py-1.5 text-[11px] text-muted-foreground hover:bg-foreground/5 hover:text-foreground transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
               >
                 {isAllSelected ? "Clear" : "Select All"}
               </button>
@@ -288,7 +359,8 @@ export default function TransactionsPage() {
                     <button
                       type="button"
                       onClick={clearSelection}
-                      className="rounded-full px-2 py-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                      disabled={isBatchOperating}
+                      className="rounded-full px-2 py-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                     >
                       Clear
                     </button>
@@ -367,12 +439,13 @@ export default function TransactionsPage() {
                         role="checkbox"
                         aria-checked={isSelected}
                         aria-label="Select transaction"
+                        disabled={isBatchOperating}
                         onClick={(e) => {
                           e.stopPropagation()
-                          toggleSelect(t._id)
+                          if (!isBatchOperating) toggleSelect(t._id)
                         }}
                         className={cn(
-                          "rounded-[4px] border size-4 shrink-0 flex items-center justify-center cursor-pointer transition-colors",
+                          "rounded-[4px] border size-4 shrink-0 flex items-center justify-center cursor-pointer transition-colors disabled:opacity-50 disabled:pointer-events-none",
                           isSelected
                             ? "bg-primary border-primary text-primary-foreground"
                             : "border-border/80 hover:border-foreground/40 bg-foreground/[0.02]"
@@ -536,6 +609,199 @@ export default function TransactionsPage() {
             </Button>
             <Button variant="destructive" size="sm" onClick={handleDelete} disabled={isSaving} className="cursor-pointer">
               {isSaving ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Floating Bulk Action Dock */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-2 bg-card border border-border shadow-[0_28px_56px_-40px_rgba(0,0,0,0.9)] rounded-full">
+          <span className="tabular-nums text-xs font-medium text-foreground pl-2 pr-1">
+            {selectedIds.size} selected
+          </span>
+          <div className="h-4 w-px bg-border" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsBatchCategoryOpen(true)}
+            disabled={isBatchOperating}
+            className="h-7 rounded-full px-2.5 text-xs font-normal"
+            aria-label="Batch Category"
+          >
+            Category
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              if (accounts && accounts.length > 0 && !batchAccountId) {
+                setBatchAccountId(accounts[0]._id)
+              }
+              setIsBatchAccountOpen(true)
+            }}
+            disabled={isBatchOperating}
+            className="h-7 rounded-full px-2.5 text-xs font-normal"
+            aria-label="Batch Account"
+          >
+            Account
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsBatchDeleteOpen(true)}
+            disabled={isBatchOperating}
+            className="h-7 rounded-full px-2.5 text-xs font-normal text-destructive hover:bg-destructive/10"
+            aria-label="Batch Delete"
+          >
+            Delete
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={clearSelection}
+            disabled={isBatchOperating}
+            className="rounded-full size-7"
+            aria-label="Clear selection"
+          >
+            <X className="size-3.5" />
+          </Button>
+        </div>
+      )}
+
+      {/* Batch Category Dialog */}
+      <Dialog
+        open={isBatchCategoryOpen}
+        onOpenChange={(o) => !isBatchOperating && setIsBatchCategoryOpen(o)}
+      >
+        <DialogContent className="max-w-sm rounded-lg p-5">
+          <DialogHeader className="space-y-1 text-left">
+            <DialogTitle className="text-base font-semibold">Update Category</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Choose a category for {selectedIds.size} selected transactions.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1 py-2">
+            <label className="text-xs font-medium">Category</label>
+            <select
+              value={batchCategory}
+              onChange={(e) => setBatchCategory(e.target.value)}
+              disabled={isBatchOperating}
+              className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-2.5 text-xs text-foreground"
+            >
+              {financeCategories.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0 mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsBatchCategoryOpen(false)}
+              disabled={isBatchOperating}
+              className="cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleBatchCategory}
+              disabled={isBatchOperating}
+              className="cursor-pointer"
+            >
+              {isBatchOperating ? "Updating..." : "Update Category"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Batch Account Dialog */}
+      <Dialog
+        open={isBatchAccountOpen}
+        onOpenChange={(o) => !isBatchOperating && setIsBatchAccountOpen(o)}
+      >
+        <DialogContent className="max-w-sm rounded-lg p-5">
+          <DialogHeader className="space-y-1 text-left">
+            <DialogTitle className="text-base font-semibold">Update Account</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Choose an account for {selectedIds.size} selected transactions.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1 py-2">
+            <label className="text-xs font-medium">Account</label>
+            <select
+              value={batchAccountId || accounts?.[0]?._id || ""}
+              onChange={(e) => setBatchAccountId(e.target.value)}
+              disabled={isBatchOperating}
+              className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-2.5 text-xs text-foreground"
+            >
+              {accounts && accounts.length === 0 && (
+                <option value="" disabled>
+                  No accounts available
+                </option>
+              )}
+              {accounts?.map((a) => (
+                <option key={a._id} value={a._id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0 mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsBatchAccountOpen(false)}
+              disabled={isBatchOperating}
+              className="cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleBatchAccount}
+              disabled={isBatchOperating || !accounts || accounts.length === 0}
+              className="cursor-pointer"
+            >
+              {isBatchOperating ? "Updating..." : "Update Account"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Batch Delete Dialog */}
+      <Dialog
+        open={isBatchDeleteOpen}
+        onOpenChange={(o) => !isBatchOperating && setIsBatchDeleteOpen(o)}
+      >
+        <DialogContent className="max-w-sm rounded-lg p-5">
+          <DialogHeader className="space-y-1 text-left">
+            <DialogTitle className="text-base font-semibold">Delete Transactions</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Permanently delete {selectedIds.size} transactions? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0 mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsBatchDeleteOpen(false)}
+              disabled={isBatchOperating}
+              className="cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBatchDelete}
+              disabled={isBatchOperating}
+              className="cursor-pointer"
+            >
+              {isBatchOperating ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>
