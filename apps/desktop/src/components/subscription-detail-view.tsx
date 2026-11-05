@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react"
+import { useState, useRef } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/clerk-react"
 import { api } from "@/convex/_generated/api"
@@ -39,7 +39,7 @@ import {
 import { IconPicker } from "@/components/icon-picker"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
+import { cn, isCardExpired } from "@/lib/utils"
 import {
   categories,
   currencies,
@@ -76,20 +76,14 @@ export function SubscriptionDetailView({
     api.subscriptions.get,
     subscriptionId ? { id: subscriptionId as Id<"subscriptions"> } : "skip"
   )
-  const allPayments = useQuery(
-    api.payments.list,
-    isSignedIn ? {} : "skip"
+  const subPayments = useQuery(
+    api.payments.listBySubscription,
+    isSignedIn && subscriptionId ? { subscriptionId: subscriptionId as Id<"subscriptions"> } : "skip"
   )
-  const subPayments = useMemo(() => {
-    if (!allPayments || !subscriptionId) return []
-    return allPayments.filter(
-      (p) => p.subscriptionId === subscriptionId || (sub && p.name === sub.name)
-    )
-  }, [allPayments, subscriptionId, sub])
   const paymentMethods = useQuery(
     api.paymentMethods.list,
     isSignedIn ? {} : "skip"
-  ) as Array<{ _id: string; name: string; type: string; last4?: string }> | undefined
+  ) as Array<{ _id: string; name: string; type: string; last4?: string; expiryMonth?: number; expiryYear?: number }> | undefined
   const accounts = useQuery(
     api.accounts.list,
     isSignedIn ? {} : "skip"
@@ -678,7 +672,7 @@ export function SubscriptionDetailView({
               <option value="">No linked payment method</option>
               {paymentMethods?.map((pm) => (
                 <option key={pm._id} value={pm._id}>
-                  {pm.name} {pm.last4 ? `(•••• ${pm.last4})` : ""}
+                  {pm.name} {pm.last4 ? `(•••• ${pm.last4})` : ""}{isCardExpired(pm.expiryMonth, pm.expiryYear) ? " [Expired]" : ""}
                 </option>
               ))}
             </select>

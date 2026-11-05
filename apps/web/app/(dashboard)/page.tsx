@@ -662,10 +662,12 @@ export default function HomePage() {
           ) : (
             <div className="mt-4 space-y-4">
               {budgets.slice(0, 4).map((b) => {
-                const spentNative = (transactions || [])
+                const spent = (transactions || [])
                   .filter((t) => t.type === "expense" && t.category === b.category)
-                  .reduce((s, t) => s + t.amount, 0)
-                const spent = convertCurrency(spentNative, b.currency, primaryCurrency, rates)
+                  .reduce(
+                    (s, t) => s + convertCurrency(t.amount, t.currency, primaryCurrency, rates),
+                    0
+                  )
                 const cap = convertCurrency(b.amount, b.currency, primaryCurrency, rates)
                 const pct = cap > 0 ? Math.min(100, Math.round((spent / cap) * 100)) : 0
                 const meta = financeCategoryMeta(b.category)

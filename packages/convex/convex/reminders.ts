@@ -1,4 +1,31 @@
-import { internalMutation } from "./_generated/server"
+import { internal } from "./_generated/api"
+import { internalAction, internalMutation } from "./_generated/server"
+import { v } from "convex/values"
+
+export const sendTelegramReminder = internalAction({
+  args: {
+    botToken: v.string(),
+    chatId: v.string(),
+    text: v.string(),
+  },
+  handler: async (_ctx, args) => {
+    try {
+      await fetch(
+        `https://api.telegram.org/bot${args.botToken}/sendMessage`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: args.chatId,
+            text: args.text,
+          }),
+        }
+      )
+    } catch {
+      // Best effort notification
+    }
+  },
+})
 
 export const checkAndSendDueReminders = internalMutation({
   args: {},
@@ -45,25 +72,14 @@ export const checkAndSendDueReminders = internalMutation({
           userSetting.telegramBotToken &&
           userSetting.telegramChatId
         ) {
-          try {
-            const text = sub.isTrial
-              ? `Trial Ending Soon: ${sub.name} ends in ${diffDays} day(s).`
-              : `Upcoming Billing: ${sub.name} is due in ${diffDays} day(s) (${sub.currency} ${sub.price}).`
-            // Best effort telegram webhook notification
-            await fetch(
-              `https://api.telegram.org/bot${userSetting.telegramBotToken}/sendMessage`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  chat_id: userSetting.telegramChatId,
-                  text,
-                }),
-              }
-            )
-          } catch {
-            // best effort notification
-          }
+          const text = sub.isTrial
+            ? `Trial Ending Soon: ${sub.name} ends in ${diffDays} day(s).`
+            : `Upcoming Billing: ${sub.name} is due in ${diffDays} day(s) (${sub.currency} ${sub.price}).`
+          await ctx.scheduler.runAfter(0, internal.reminders.sendTelegramReminder, {
+            botToken: userSetting.telegramBotToken,
+            chatId: userSetting.telegramChatId,
+            text,
+          })
         }
       }
     }

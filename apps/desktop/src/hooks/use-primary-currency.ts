@@ -2,7 +2,12 @@ import { useState, useEffect, useCallback } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/clerk-react"
 import { api } from "@/convex/_generated/api"
-import { fallbackRates, fetchExchangeRates } from "@/lib/currency"
+import {
+  fallbackRates,
+  fetchExchangeRates,
+  getStoredExchangeRates,
+  setExchangeRatesCache,
+} from "@/lib/currency"
 
 const STORAGE_KEY = "subkeep_primary_currency"
 const CURRENCY_CHANGE_EVENT = "subkeep_currency_changed"
@@ -11,18 +16,38 @@ export function usePrimaryCurrency() {
   const { isSignedIn } = useAuth()
   const userSettings = useQuery(api.userSettings.get, isSignedIn ? {} : "skip")
   const updateSettings = useMutation(api.userSettings.update)
+  const convexRatesDoc = useQuery(
+    api.exchangeRates.getLatest,
+    isSignedIn ? { baseCurrency: "USD" } : "skip"
+  )
 
   const [localCurrency, setLocalCurrency] = useState<string | null>(null)
-  const [rates, setRates] = useState<Record<string, number>>(fallbackRates)
-  const [ratesLoaded, setRatesLoaded] = useState(false)
+  const [fetchedRates, setFetchedRates] = useState<Record<string, number>>(() => getStoredExchangeRates())
+  const [fetchedRatesLoaded, setFetchedRatesLoaded] = useState(() => {
+    const local = getStoredExchangeRates()
+    return Boolean(local && Object.keys(local).length > 2)
+  })
 
-  // Fetch exchange rates once on mount
+  // Trigger initial fallback fetch
   useEffect(() => {
     fetchExchangeRates().then((loadedRates) => {
-      setRates(loadedRates)
-      setRatesLoaded(true)
+      setFetchedRates(loadedRates)
+      setFetchedRatesLoaded(true)
     })
   }, [])
+
+  // Reactive sync when Convex exchangeRates cache updates
+  useEffect(() => {
+    if (convexRatesDoc?.rates) {
+      setExchangeRatesCache(convexRatesDoc.rates, convexRatesDoc.updatedAt)
+    }
+  }, [convexRatesDoc])
+
+  const rates = convexRatesDoc?.rates
+    ? { ...fallbackRates, ...convexRatesDoc.rates }
+    : fetchedRates
+
+  const ratesLoaded = Boolean(convexRatesDoc?.rates) || fetchedRatesLoaded
 
   // Listen to cross-component currency changes
   useEffect(() => {

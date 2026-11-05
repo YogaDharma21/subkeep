@@ -25,7 +25,8 @@ import {
   Check,
   X,
 } from "lucide-react-native"
-import { SubscriptionCard } from "@/components/subscription-card"
+import { SubscriptionCard, SubscriptionItemProps } from "@/components/subscription-card"
+import { RecordPaymentSheet, RecordPaymentTarget } from "@/components/record-payment-sheet"
 import { Label, Numeral, Surface } from "@/components/ui/surface"
 import { UpcomingReminders } from "@/components/upcoming-reminders"
 import { currencies } from "@/constants/currencies"
@@ -33,6 +34,7 @@ import { categories, billingCycles } from "@/constants/categories"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useThemeColor } from "@/hooks/use-theme-color"
+import { useAlert } from "@/hooks/use-alert"
 import { differenceInDays } from "date-fns"
 
 export type StatusFilter = "active" | "due_soon" | "trial" | "canceled" | "all"
@@ -54,6 +56,8 @@ export default function SubscriptionsScreen() {
   const suspendMutation = useMutation(api.subscriptions.suspend)
 
   const { primaryCurrency, setPrimaryCurrency, rates } = usePrimaryCurrency()
+  const { showToast } = useAlert()
+  const [paymentSheetSub, setPaymentSheetSub] = useState<RecordPaymentTarget | null>(null)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("active")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
@@ -64,6 +68,19 @@ export default function SubscriptionsScreen() {
   const [sortModalOpen, setSortModalOpen] = useState(false)
   const [categoryModalOpen, setCategoryModalOpen] = useState(false)
   const [cycleModalOpen, setCycleModalOpen] = useState(false)
+
+  const handleRecordPayment = (sub: SubscriptionItemProps) => {
+    setPaymentSheetSub(sub as unknown as RecordPaymentTarget)
+  }
+
+  const handleTogglePause = async (sub: SubscriptionItemProps) => {
+    try {
+      await suspendMutation({ id: sub._id as never })
+      showToast(sub.isActive === false ? "Subscription resumed" : "Subscription suspended", "info")
+    } catch {
+      showToast("Failed to change subscription state", "error")
+    }
+  }
 
   const handleMarkCanceled = async (id: string) => {
     try {
@@ -870,6 +887,8 @@ export default function SubscriptionsScreen() {
                 sub={sub}
                 primaryCurrency={primaryCurrency}
                 rates={rates}
+                onRecordPayment={handleRecordPayment}
+                onTogglePause={handleTogglePause}
               />
             ))}
           </View>
@@ -1212,6 +1231,13 @@ export default function SubscriptionsScreen() {
           </TouchableOpacity>
         </Modal>
       )}
+
+      <RecordPaymentSheet
+        visible={!!paymentSheetSub}
+        onClose={() => setPaymentSheetSub(null)}
+        subscription={paymentSheetSub}
+        rates={rates}
+      />
     </SafeAreaView>
   )
 }

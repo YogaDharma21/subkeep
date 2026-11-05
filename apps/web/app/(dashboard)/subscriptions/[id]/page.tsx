@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState, useRef, useMemo } from "react"
+import { use, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
@@ -27,6 +27,7 @@ import {
   Paperclip,
   History,
   Wallet,
+  Compass,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -44,7 +45,7 @@ import { IconPicker } from "@/components/icon-picker"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { toast } from "sonner"
 import { useDocumentTitle } from "@/hooks/use-document-title"
-import { cn } from "@/lib/utils"
+import { cn, isCardExpired } from "@/lib/utils"
 import {
   categories,
   currencies,
@@ -57,6 +58,11 @@ import { convertAndFormat } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { SubscriptionDetailSkeleton } from "@/components/subscription-detail-skeleton"
 import { RecordPaymentDialog } from "@/components/record-payment-dialog"
+import { CancellationGuideDialog } from "@/components/cancellation-guide-dialog"
+import {
+  RecordReimbursementDialog,
+  ReimbursementMember,
+} from "@/components/record-reimbursement-dialog"
 
 export default function SubscriptionDetailPage({
   params,
@@ -69,6 +75,8 @@ export default function SubscriptionDetailPage({
   const [editing, setEditing] = useState(false)
   const [iconOpen, setIconOpen] = useState(false)
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false)
+  const [cancellationGuideOpen, setCancellationGuideOpen] = useState(false)
+  const [reimbursementMember, setReimbursementMember] = useState<ReimbursementMember | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const receiptInputRef = useRef<HTMLInputElement>(null)
@@ -78,20 +86,14 @@ export default function SubscriptionDetailPage({
     id ? { id: id as Id<"subscriptions"> } : "skip"
   )
   useDocumentTitle(sub?.name ?? "Subscription")
-  const allPayments = useQuery(
-    api.payments.list,
-    isSignedIn ? {} : "skip"
+  const subPayments = useQuery(
+    api.payments.listBySubscription,
+    isSignedIn && id ? { subscriptionId: id as Id<"subscriptions"> } : "skip"
   )
-  const subPayments = useMemo(() => {
-    if (!allPayments || !id) return []
-    return allPayments.filter(
-      (p) => p.subscriptionId === id || (sub && p.name === sub.name)
-    )
-  }, [allPayments, id, sub])
   const paymentMethods = useQuery(
     api.paymentMethods.list,
     isSignedIn ? {} : "skip"
-  ) as Array<{ _id: string; name: string; type: string; last4?: string }> | undefined
+  ) as Array<{ _id: string; name: string; type: string; last4?: string; expiryMonth?: number; expiryYear?: number }> | undefined
   const accounts = useQuery(
     api.accounts.list,
     isSignedIn ? {} : "skip"
@@ -300,16 +302,32 @@ export default function SubscriptionDetailPage({
   // SplitKeep Member toggle paid status
   const handleToggleMemberPaid = async (idx: number) => {
     if (!sub || !sub.splitMembers || !id) return
-    const updated = [...sub.splitMembers]
-    updated[idx] = {
-      ...updated[idx],
-      isPaid: !updated[idx].isPaid,
+    const member = sub.splitMembers[idx]
+    if (!member) return
+    if (member.isPaid) {
+      // Marking as unpaid: directly toggle without dialog
+      const updated = [...sub.splitMembers]
+      updated[idx] = {
+        ...updated[idx],
+        isPaid: false,
+      }
+      try {
+        await updateMutation({
+          id: id as Id<"subscriptions">,
+          splitMembers: updated,
+        })
+        toast.success(`Marked ${member.name} as unpaid`)
+      } catch {
+        toast.error(`Failed to mark ${member.name} as unpaid`)
+      }
+    } else {
+      // Marking as paid: prompt via reimbursement dialog
+      setReimbursementMember({
+        index: idx,
+        name: member.name,
+        shareAmount: member.shareAmount,
+      })
     }
-    await updateMutation({
-      id: id as Id<"subscriptions">,
-      splitMembers: updated,
-    })
-    toast.success(`Updated status for ${updated[idx].name}`)
   }
 
   // SplitKeep copy payment reminder
@@ -671,7 +689,7 @@ export default function SubscriptionDetailPage({
               <option value="">No linked payment method</option>
               {paymentMethods?.map((pm) => (
                 <option key={pm._id} value={pm._id}>
-                  {pm.name} {pm.last4 ? `(•••• ${pm.last4})` : ""}
+                  {pm.name} {pm.last4 ? `(•••• ${pm.last4})` : ""}{isCardExpired(pm.expiryMonth, pm.expiryYear) ? " [Expired]" : ""}
                 </option>
               ))}
             </select>
@@ -873,6 +891,28 @@ export default function SubscriptionDetailPage({
                     {sub.cancelUrl ? "Change" : "Set URL"}
                   </Button>
                 </div>
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="space-y-0.5">
+                  <span className="text-sm text-muted-foreground block">
+                    Cancellation Guide
+                  </span>
+                  <span className="text-xs text-muted-foreground/75 block">
+                    Step-by-step checklist walkthrough
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setCancellationGuideOpen(true)}
+                  className="h-8 gap-1.5 px-3 text-xs cursor-pointer"
+                >
+                  <Compass className="size-3.5" />
+                  <span>How to Cancel</span>
+                </Button>
               </div>
             </div>
           </div>
@@ -1328,6 +1368,23 @@ export default function SubscriptionDetailPage({
         open={recordPaymentOpen}
         onOpenChange={setRecordPaymentOpen}
         subscription={sub ? { ...sub, _id: sub._id } : null}
+        rates={rates}
+      />
+
+      {sub && (
+        <CancellationGuideDialog
+          open={cancellationGuideOpen}
+          onOpenChange={setCancellationGuideOpen}
+          subscriptionName={sub.name}
+          customCancelUrl={sub.cancelUrl}
+        />
+      )}
+
+      <RecordReimbursementDialog
+        open={Boolean(reimbursementMember)}
+        onOpenChange={(open) => !open && setReimbursementMember(null)}
+        member={reimbursementMember}
+        subscription={sub || null}
         rates={rates}
       />
     </div>

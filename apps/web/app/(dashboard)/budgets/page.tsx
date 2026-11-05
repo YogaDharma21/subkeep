@@ -23,6 +23,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { DynamicIcon } from "@/components/dynamic-icon"
+import { SinkingFundsAllocator } from "@/components/sinking-funds-allocator"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
 import { convertCurrency, formatCurrencyAmount } from "@/lib/currency"
@@ -33,6 +34,7 @@ import {
   monthLabel,
   shiftMonth,
 } from "@/lib/finance"
+import { calculateSinkingFunds } from "@/lib/sinking-funds"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
@@ -59,10 +61,12 @@ export default function BudgetsPage() {
     const txns = transactions || []
     return (budgets || []).map((b) => {
       const meta = financeCategoryMeta(b.category)
-      const spentNative = txns
+      const spent = txns
         .filter((t) => t.type === "expense" && t.category === b.category)
-        .reduce((s, t) => s + t.amount, 0)
-      const spent = convertCurrency(spentNative, b.currency, primaryCurrency, rates)
+        .reduce(
+          (s, t) => s + convertCurrency(t.amount, t.currency, primaryCurrency, rates),
+          0
+        )
       const cap = convertCurrency(b.amount, b.currency, primaryCurrency, rates)
       const pct = cap > 0 ? Math.round((spent / cap) * 100) : 0
       const remaining = cap - spent
@@ -93,6 +97,10 @@ export default function BudgetsPage() {
     const spent = rows.reduce((s, r) => s + r.spent, 0)
     return { cap, spent, pct: cap > 0 ? Math.round((spent / cap) * 100) : 0 }
   }, [rows])
+
+  const sinkingFunds = useMemo(() => {
+    return calculateSinkingFunds(subscriptions, month, primaryCurrency, rates)
+  }, [subscriptions, month, primaryCurrency, rates])
 
   const handleDelete = async () => {
     if (!deleteId) return
@@ -238,6 +246,14 @@ export default function BudgetsPage() {
           })}
         </div>
       )}
+
+      {/* Sinking Funds */}
+      <SinkingFundsAllocator
+        items={sinkingFunds.items}
+        totals={sinkingFunds.totals}
+        primaryCurrency={primaryCurrency}
+        isLoading={subscriptions === undefined}
+      />
 
       <Dialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <DialogContent className="max-w-sm rounded-lg p-5">
