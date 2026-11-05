@@ -133,6 +133,8 @@ export default defineSchema({
     note: v.optional(v.string()),
     accountId: v.optional(v.id("accounts")),
     toAccountId: v.optional(v.id("accounts")),
+    toAmount: v.optional(v.number()),
+    fee: v.optional(v.number()),
     subscriptionId: v.optional(v.id("subscriptions")),
     paymentId: v.optional(v.id("payments")),
     icon: v.optional(v.string()),
@@ -141,6 +143,7 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_and_date", ["userId", "date"])
     .index("by_account", ["accountId"])
+    .index("by_to_account", ["toAccountId"])
     .index("by_subscription", ["subscriptionId"]),
 
   budgets: defineTable({
