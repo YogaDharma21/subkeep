@@ -57,6 +57,10 @@ import { convertAndFormat } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { SubscriptionDetailSkeleton } from "@/components/subscription-detail-skeleton"
 import { RecordPaymentDialog } from "@/components/record-payment-dialog"
+import {
+  RecordReimbursementDialog,
+  ReimbursementMember,
+} from "@/components/record-reimbursement-dialog"
 
 export default function SubscriptionDetailPage({
   params,
@@ -69,6 +73,7 @@ export default function SubscriptionDetailPage({
   const [editing, setEditing] = useState(false)
   const [iconOpen, setIconOpen] = useState(false)
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false)
+  const [reimbursementMember, setReimbursementMember] = useState<ReimbursementMember | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const receiptInputRef = useRef<HTMLInputElement>(null)
@@ -300,16 +305,27 @@ export default function SubscriptionDetailPage({
   // SplitKeep Member toggle paid status
   const handleToggleMemberPaid = async (idx: number) => {
     if (!sub || !sub.splitMembers || !id) return
-    const updated = [...sub.splitMembers]
-    updated[idx] = {
-      ...updated[idx],
-      isPaid: !updated[idx].isPaid,
+    const member = sub.splitMembers[idx]
+    if (member.isPaid) {
+      // Marking as unpaid: directly toggle without dialog
+      const updated = [...sub.splitMembers]
+      updated[idx] = {
+        ...updated[idx],
+        isPaid: false,
+      }
+      await updateMutation({
+        id: id as Id<"subscriptions">,
+        splitMembers: updated,
+      })
+      toast.success(`Marked ${member.name} as unpaid`)
+    } else {
+      // Marking as paid: prompt via reimbursement dialog
+      setReimbursementMember({
+        index: idx,
+        name: member.name,
+        shareAmount: member.shareAmount,
+      })
     }
-    await updateMutation({
-      id: id as Id<"subscriptions">,
-      splitMembers: updated,
-    })
-    toast.success(`Updated status for ${updated[idx].name}`)
   }
 
   // SplitKeep copy payment reminder
@@ -1328,6 +1344,14 @@ export default function SubscriptionDetailPage({
         open={recordPaymentOpen}
         onOpenChange={setRecordPaymentOpen}
         subscription={sub ? { ...sub, _id: sub._id } : null}
+        rates={rates}
+      />
+
+      <RecordReimbursementDialog
+        open={Boolean(reimbursementMember)}
+        onOpenChange={(open) => !open && setReimbursementMember(null)}
+        member={reimbursementMember}
+        subscription={sub as any}
         rates={rates}
       />
     </div>
