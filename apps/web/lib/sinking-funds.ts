@@ -16,8 +16,15 @@ export interface SinkingFundItem<
   T extends SinkingFundSubscriptionInput = SinkingFundSubscriptionInput,
 > {
   subscription: T
+  id?: string
+  name?: string
+  icon?: string
+  category?: string
+  cycle?: string
+  nextBilling?: string
   cycleMonths: number
   cost: number
+  totalCost?: number
   monthlyReserve: number
   diffMonths: number
   accruedMonths: number
@@ -26,9 +33,17 @@ export interface SinkingFundItem<
   currency: string
 }
 
+export interface SinkingFundsTotals {
+  totalMonthlyReserve: number
+  totalAccruedTarget: number
+  totalCommitment?: number
+  count: number
+  currency?: string
+}
+
 export interface SinkingFundsSummary<
   T extends SinkingFundSubscriptionInput = SinkingFundSubscriptionInput,
-> {
+> extends SinkingFundsTotals {
   items: SinkingFundItem<T>[]
   totalMonthlyReserve: number
   totalAccruedTarget: number
@@ -165,8 +180,17 @@ export function calculateSinkingFunds<
 
     items.push({
       subscription: sub,
+      id:
+        ((sub as Record<string, unknown>)._id as string | undefined) ??
+        ((sub as Record<string, unknown>).id as string | undefined),
+      name: sub.name,
+      icon: (sub as Record<string, unknown>).icon as string | undefined,
+      category: (sub as Record<string, unknown>).category as string | undefined,
+      cycle: sub.cycle,
+      nextBilling: sub.nextBilling,
       cycleMonths,
       cost,
+      totalCost: cost,
       monthlyReserve,
       diffMonths,
       accruedMonths,
