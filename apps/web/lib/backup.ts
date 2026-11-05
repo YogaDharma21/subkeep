@@ -1,13 +1,13 @@
 export type BackupVersion = 1 | 2 | 3
 
 export interface NormalizedBackupData {
-  subscriptions: any[]
-  paymentMethods: any[]
-  payments: any[]
-  userSettings: any | null
-  accounts: any[]
-  transactions: any[]
-  budgets: any[]
+  subscriptions: Record<string, unknown>[]
+  paymentMethods: Record<string, unknown>[]
+  payments: Record<string, unknown>[]
+  userSettings: Record<string, unknown> | null
+  accounts: Record<string, unknown>[]
+  transactions: Record<string, unknown>[]
+  budgets: Record<string, unknown>[]
 }
 
 export interface BackupSummary {
@@ -37,11 +37,11 @@ const RECOGNIZED_TABLE_KEYS = [
   "budgets",
 ] as const
 
-function isObject(val: unknown): val is Record<string, any> {
+function isObject(val: unknown): val is Record<string, unknown> {
   return typeof val === "object" && val !== null && !Array.isArray(val)
 }
 
-function validateRecordsArray(arr: any[]): boolean {
+function validateRecordsArray(arr: unknown[]): arr is Record<string, unknown>[] {
   return arr.every((item) => isObject(item))
 }
 
@@ -88,7 +88,7 @@ export function parseAndNormalizeBackup(raw: unknown): ParsedBackup {
         throw new Error("Unrecognized backup format. Expected SubKeep v1, v2, or v3 JSON.")
       }
 
-      const source: Record<string, any> = isObject(parsed.data) ? parsed.data : parsed
+      const source: Record<string, unknown> = isObject(parsed.data) ? parsed.data : parsed
 
       const subscriptions = Array.isArray(source.subscriptions) ? source.subscriptions : []
       const paymentMethods = Array.isArray(source.paymentMethods) ? source.paymentMethods : []
@@ -180,12 +180,12 @@ export function parseAndNormalizeBackup(raw: unknown): ParsedBackup {
     const isValidEmptyV1 = Array.isArray(parsed)
     const isValidEmptyV2 =
       isObject(parsed) && "subscriptions" in parsed && Array.isArray(parsed.subscriptions)
+    const parsedData = "data" in parsed && isObject(parsed.data) ? parsed.data : null
     const isValidEmptyV3 =
       isObject(parsed) &&
-      ("data" in parsed
-        ? isObject(parsed.data) &&
-          (Object.keys(parsed.data).length === 0 ||
-            RECOGNIZED_TABLE_KEYS.some((key) => key in parsed.data))
+      (parsedData
+        ? Object.keys(parsedData).length === 0 ||
+          RECOGNIZED_TABLE_KEYS.some((key) => key in parsedData)
         : RECOGNIZED_TABLE_KEYS.some((key) => key in parsed))
 
     if (!isValidEmptyV1 && !isValidEmptyV2 && !isValidEmptyV3) {

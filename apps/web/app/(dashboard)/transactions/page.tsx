@@ -298,9 +298,12 @@ export default function TransactionsPage() {
   const [isBatchDeleteOpen, setIsBatchDeleteOpen] = useState(false)
 
   // Reset selectedIds when month filter, type filter, or view mode changes
-  useEffect(() => {
+  const [prevFilterKey, setPrevFilterKey] = useState(`${month}-${typeFilter}-${viewMode}`)
+  const currentFilterKey = `${month}-${typeFilter}-${viewMode}`
+  if (prevFilterKey !== currentFilterKey) {
+    setPrevFilterKey(currentFilterKey)
     setSelectedIds(new Set())
-  }, [month, typeFilter, viewMode])
+  }
 
   const filtered = useMemo(() => {
     let list = [...(transactions || [])]

@@ -6,9 +6,7 @@ import {
   normalizeSubscriptionToMonthly,
   calculateMonthlyRecurringExpense,
   calculateMonthlyTransactions,
-  calculateRunwayProjection,
   calculateRunway,
-  convertCurrency,
 } from "./runway.ts"
 
 const rates = { USD: 1, IDR: 16200 }

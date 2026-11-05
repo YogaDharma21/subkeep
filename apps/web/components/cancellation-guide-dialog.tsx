@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import {
   Dialog,
   DialogContent,
@@ -36,11 +36,14 @@ export function CancellationGuideDialog({
   const [checkedSteps, setCheckedSteps] = useState<Record<number, boolean>>({})
 
   // Reset checklist whenever the dialog is reopened or target subscription changes
-  useEffect(() => {
+  const [prevDialogKey, setPrevDialogKey] = useState(`${open}:${subscriptionName}`)
+  const currentDialogKey = `${open}:${subscriptionName}`
+  if (prevDialogKey !== currentDialogKey) {
+    setPrevDialogKey(currentDialogKey)
     if (open) {
       setCheckedSteps({})
     }
-  }, [open, subscriptionName])
+  }
 
   const toggleStep = (index: number) => {
     setCheckedSteps((prev) => ({

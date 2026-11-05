@@ -5,6 +5,7 @@ import {
   formatCycleBadge,
   getCycleMonths,
   isSinkingFundSubscription,
+  type SinkingFundSubscriptionInput,
 } from "./sinking-funds.ts"
 
 // 1. Cycle normalization
@@ -286,8 +287,8 @@ assert.equal(overdueRes.items[0].isOverdue, true)
 
 // 10. Corrupt elements and negative price sanitization
 const dirtySubs = [
-  null as any,
-  undefined as any,
+  null as unknown as SinkingFundSubscriptionInput,
+  undefined as unknown as SinkingFundSubscriptionInput,
   {
     id: "sub-neg",
     name: "Negative Price",
