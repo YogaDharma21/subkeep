@@ -13,6 +13,7 @@ import {
   Pencil,
   Trash2,
   ArrowLeftRight,
+  Check,
 } from "lucide-react"
 import { SectionHeader } from "@/components/section-nav"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -65,6 +66,7 @@ export default function TransactionsPage() {
   const [typeFilter, setTypeFilter] = useState<"all" | TransactionType>("all")
   const [editing, setEditing] = useState<TxnDoc | null>(null)
   const [deleting, setDeleting] = useState<TxnDoc | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const transactions = useQuery(
     api.transactions.list,
@@ -99,6 +101,29 @@ export default function TransactionsPage() {
     }
     return list.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
   }, [transactions, typeFilter, search])
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  const selectAll = () => {
+    setSelectedIds(new Set(filtered.map((t) => t._id)))
+  }
+
+  const clearSelection = () => {
+    setSelectedIds(new Set())
+  }
+
+  const isAllSelected =
+    filtered.length > 0 && filtered.every((t) => selectedIds.has(t._id))
 
   const totals = useMemo(() => {
     let income = 0
@@ -152,6 +177,12 @@ export default function TransactionsPage() {
     setIsSaving(true)
     try {
       await removeMutation({ id: deleting._id as Id<"transactions"> })
+      setSelectedIds((prev) => {
+        if (!prev.has(deleting._id)) return prev
+        const next = new Set(prev)
+        next.delete(deleting._id)
+        return next
+      })
       toast.success("Transaction deleted")
       setDeleting(null)
     } catch {
@@ -238,28 +269,58 @@ export default function TransactionsPage() {
           />
         </div>
 
-        <div className="quiet-scroll flex items-center gap-1 overflow-x-auto">
-          {(
-            [
-              { value: "all", label: "All" },
-              { value: "expense", label: "Expenses" },
-              { value: "income", label: "Income" },
-              { value: "transfer", label: "Transfers" },
-            ] as Array<{ value: "all" | TransactionType; label: string }>
-          ).map((f) => (
-            <button
-              key={f.value}
-              onClick={() => setTypeFilter(f.value)}
-              className={cn(
-                "shrink-0 rounded-full px-3 py-1.5 text-[11px] transition-colors cursor-pointer",
-                typeFilter === f.value
-                  ? "bg-foreground text-background"
-                  : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
+        <div className="flex items-center gap-2 overflow-x-auto">
+          {filtered.length > 0 && (
+            <div className="flex items-center gap-1.5 shrink-0 border-r border-border/70 pr-2">
+              <button
+                type="button"
+                onClick={isAllSelected ? clearSelection : selectAll}
+                className="rounded-full px-2.5 py-1.5 text-[11px] text-muted-foreground hover:bg-foreground/5 hover:text-foreground transition-colors cursor-pointer"
+              >
+                {isAllSelected ? "Clear" : "Select All"}
+              </button>
+              {selectedIds.size > 0 && (
+                <div className="flex items-center gap-1">
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                    {selectedIds.size} selected
+                  </span>
+                  {!isAllSelected && (
+                    <button
+                      type="button"
+                      onClick={clearSelection}
+                      className="rounded-full px-2 py-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
               )}
-            >
-              {f.label}
-            </button>
-          ))}
+            </div>
+          )}
+
+          <div className="quiet-scroll flex items-center gap-1 overflow-x-auto">
+            {(
+              [
+                { value: "all", label: "All" },
+                { value: "expense", label: "Expenses" },
+                { value: "income", label: "Income" },
+                { value: "transfer", label: "Transfers" },
+              ] as Array<{ value: "all" | TransactionType; label: string }>
+            ).map((f) => (
+              <button
+                key={f.value}
+                onClick={() => setTypeFilter(f.value)}
+                className={cn(
+                  "shrink-0 rounded-full px-3 py-1.5 text-[11px] transition-colors cursor-pointer",
+                  typeFilter === f.value
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
+                )}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -292,8 +353,33 @@ export default function TransactionsPage() {
               <div className="divide-y divide-border/70">
                 {items.map((t) => {
                   const meta = financeCategoryMeta(t.category)
+                  const isSelected = selectedIds.has(t._id)
                   return (
-                    <div key={t._id} className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-foreground/[0.025]">
+                    <div
+                      key={t._id}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 transition-colors hover:bg-foreground/[0.025]",
+                        isSelected && "bg-foreground/[0.02]"
+                      )}
+                    >
+                      <button
+                        type="button"
+                        role="checkbox"
+                        aria-checked={isSelected}
+                        aria-label="Select transaction"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleSelect(t._id)
+                        }}
+                        className={cn(
+                          "rounded-[4px] border size-4 shrink-0 flex items-center justify-center cursor-pointer transition-colors",
+                          isSelected
+                            ? "bg-primary border-primary text-primary-foreground"
+                            : "border-border/80 hover:border-foreground/40 bg-foreground/[0.02]"
+                        )}
+                      >
+                        {isSelected && <Check className="size-2.5 stroke-[3]" />}
+                      </button>
                       <span className="surface-inset flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground">
                         <DynamicIcon name={t.icon || meta.icon} className="size-3.5" />
                       </span>
