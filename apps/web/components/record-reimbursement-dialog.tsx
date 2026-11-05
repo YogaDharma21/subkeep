@@ -31,7 +31,7 @@ export interface ReimbursementSubscription {
   currency: string
   icon?: string
   color?: string
-  accountId?: Id<"accounts">
+  accountId?: Id<"accounts"> | null
   splitMembers?: Array<{
     name: string
     shareAmount: number
@@ -85,8 +85,15 @@ function RecordReimbursementForm({
   const [amount, setAmount] = useState(() => member.shareAmount.toString())
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0])
   const [accountId, setAccountId] = useState(defaultAccountId)
+  const [userSelectedAccount, setUserSelectedAccount] = useState(false)
   const [note, setNote] = useState(() => `${member.name} share for ${subscription.name}`)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  React.useEffect(() => {
+    if (!userSelectedAccount && defaultAccountId && !accountId) {
+      setAccountId(defaultAccountId)
+    }
+  }, [defaultAccountId, accountId, userSelectedAccount])
 
   const selectedAccount = activeAccounts.find((a: AccountItem) => a._id === accountId)
   const parsedAmount = parseFloat(amount || "0")
@@ -108,18 +115,23 @@ function RecordReimbursementForm({
       return
     }
 
+    const isConverted = Boolean(
+      selectedAccount && selectedAccount.currency !== subscription.currency
+    )
+    const finalAmount = isConverted
+      ? Math.round(convertedAccountAmount * 100) / 100
+      : numAmount
+    const finalCurrency = isConverted && selectedAccount
+      ? selectedAccount.currency
+      : subscription.currency
+
+    if (isNaN(finalAmount) || finalAmount <= 0) {
+      toast.error("Please enter a valid amount")
+      return
+    }
+
     setIsSubmitting(true)
     try {
-      const isConverted = Boolean(
-        selectedAccount && selectedAccount.currency !== subscription.currency
-      )
-      const finalAmount = isConverted
-        ? Math.round(convertedAccountAmount * 100) / 100
-        : numAmount
-      const finalCurrency = isConverted && selectedAccount
-        ? selectedAccount.currency
-        : subscription.currency
-
       await createTransactionMutation({
         type: "income",
         amount: finalAmount,
@@ -190,7 +202,10 @@ function RecordReimbursementForm({
         </label>
         <select
           value={accountId}
-          onChange={(e) => setAccountId(e.target.value)}
+          onChange={(e) => {
+            setUserSelectedAccount(true)
+            setAccountId(e.target.value)
+          }}
           className="flex h-9 w-full rounded-xl border border-border bg-foreground/[0.03] px-3 text-xs outline-none focus:ring-1 focus:ring-primary font-mono tabular-nums"
         >
           {activeAccounts.length === 0 ? (
@@ -267,7 +282,7 @@ function RecordReimbursementForm({
           size="sm"
           onClick={onClose}
           disabled={isSubmitting}
-          className="rounded-xl cursor-pointer"
+          className="rounded-xl cursor-pointer active:scale-95 transition-all duration-300"
         >
           Cancel
         </Button>
@@ -277,7 +292,7 @@ function RecordReimbursementForm({
           size="sm"
           onClick={handleMarkPaidOnly}
           disabled={isSubmitting}
-          className="rounded-xl cursor-pointer"
+          className="rounded-xl cursor-pointer active:scale-95 transition-all duration-300"
         >
           {isSubmitting ? "Saving..." : "Mark Paid Only"}
         </Button>
@@ -285,7 +300,7 @@ function RecordReimbursementForm({
           type="submit"
           size="sm"
           disabled={isSubmitting || !amount || !date}
-          className="rounded-xl cursor-pointer"
+          className="rounded-xl cursor-pointer active:scale-95 transition-all duration-300"
         >
           {isSubmitting ? "Recording..." : "Record Income"}
         </Button>

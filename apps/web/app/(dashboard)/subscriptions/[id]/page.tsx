@@ -306,6 +306,7 @@ export default function SubscriptionDetailPage({
   const handleToggleMemberPaid = async (idx: number) => {
     if (!sub || !sub.splitMembers || !id) return
     const member = sub.splitMembers[idx]
+    if (!member) return
     if (member.isPaid) {
       // Marking as unpaid: directly toggle without dialog
       const updated = [...sub.splitMembers]
@@ -313,11 +314,15 @@ export default function SubscriptionDetailPage({
         ...updated[idx],
         isPaid: false,
       }
-      await updateMutation({
-        id: id as Id<"subscriptions">,
-        splitMembers: updated,
-      })
-      toast.success(`Marked ${member.name} as unpaid`)
+      try {
+        await updateMutation({
+          id: id as Id<"subscriptions">,
+          splitMembers: updated,
+        })
+        toast.success(`Marked ${member.name} as unpaid`)
+      } catch {
+        toast.error(`Failed to mark ${member.name} as unpaid`)
+      }
     } else {
       // Marking as paid: prompt via reimbursement dialog
       setReimbursementMember({
@@ -1351,7 +1356,7 @@ export default function SubscriptionDetailPage({
         open={Boolean(reimbursementMember)}
         onOpenChange={(open) => !open && setReimbursementMember(null)}
         member={reimbursementMember}
-        subscription={sub as any}
+        subscription={sub || null}
         rates={rates}
       />
     </div>
