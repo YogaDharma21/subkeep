@@ -403,3 +403,158 @@ export const removeAll = mutation({
     }
   },
 })
+
+export const removeBatch = mutation({
+  args: {
+    ids: v.array(v.id("transactions")),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Not authenticated")
+
+    let count = 0
+    for (const id of args.ids) {
+      const txn = await ctx.db.get(id)
+      if (!txn) throw new Error("Transaction not found")
+      if (txn.userId !== identity.subject) throw new Error("Unauthorized")
+
+      await applyBalanceEffect(
+        ctx,
+        identity.subject,
+        {
+          type: txn.type,
+          amount: txn.amount,
+          accountId: txn.accountId,
+          toAccountId: txn.toAccountId,
+        },
+        -1,
+        { lenient: true }
+      )
+
+      if (txn.paymentId) {
+        const payment = await ctx.db.get(txn.paymentId)
+        if (payment && payment.userId === identity.subject) {
+          await ctx.db.delete(txn.paymentId)
+        }
+      } else if (txn.subscriptionId) {
+        const matchingPayment = await ctx.db
+          .query("payments")
+          .withIndex("by_subscription", (q) => q.eq("subscriptionId", txn.subscriptionId!))
+          .filter((q) =>
+            q.and(
+              q.eq(q.field("date"), txn.date),
+              q.eq(q.field("amount"), txn.amount)
+            )
+          )
+          .first()
+        if (matchingPayment && matchingPayment.userId === identity.subject) {
+          await ctx.db.delete(matchingPayment._id)
+        }
+      }
+
+      await ctx.db.delete(txn._id)
+      count += 1
+    }
+
+    return { count }
+  },
+})
+
+export const updateCategoryBatch = mutation({
+  args: {
+    ids: v.array(v.id("transactions")),
+    category: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Not authenticated")
+
+    let count = 0
+    for (const id of args.ids) {
+      const txn = await ctx.db.get(id)
+      if (!txn) throw new Error("Transaction not found")
+      if (txn.userId !== identity.subject) throw new Error("Unauthorized")
+
+      await ctx.db.patch(id, { category: args.category })
+
+      if (txn.paymentId) {
+        const payment = await ctx.db.get(txn.paymentId)
+        if (payment && payment.userId === identity.subject) {
+          await ctx.db.patch(txn.paymentId, { category: args.category })
+        }
+      }
+
+      count += 1
+    }
+
+    return { count }
+  },
+})
+
+export const updateAccountBatch = mutation({
+  args: {
+    ids: v.array(v.id("transactions")),
+    accountId: v.id("accounts"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error("Not authenticated")
+
+    const targetAccount = await ctx.db.get(args.accountId)
+    if (!targetAccount || targetAccount.userId !== identity.subject) {
+      throw new Error("Account not found")
+    }
+
+    let count = 0
+    for (const id of args.ids) {
+      const txn = await ctx.db.get(id)
+      if (!txn) throw new Error("Transaction not found")
+      if (txn.userId !== identity.subject) throw new Error("Unauthorized")
+
+      if (
+        txn.type === "transfer" &&
+        txn.toAccountId &&
+        args.accountId === txn.toAccountId
+      ) {
+        throw new Error("Transfer accounts must be different")
+      }
+
+      if (txn.accountId === args.accountId) {
+        count += 1
+        continue
+      }
+
+      await applyBalanceEffect(
+        ctx,
+        identity.subject,
+        {
+          type: txn.type,
+          amount: txn.amount,
+          accountId: txn.accountId,
+          toAccountId: txn.toAccountId,
+        },
+        -1,
+        { lenient: true }
+      )
+
+      await ctx.db.patch(id, { accountId: args.accountId })
+
+      await applyBalanceEffect(
+        ctx,
+        identity.subject,
+        {
+          type: txn.type,
+          amount: txn.amount,
+          accountId: args.accountId,
+          toAccountId: txn.toAccountId,
+        },
+        1
+      )
+
+      count += 1
+    }
+
+    return { count }
+  },
+})
+
