@@ -1,6 +1,37 @@
 import { query, mutation } from "./_generated/server"
 import { v } from "convex/values"
 
+export function validateCardExpiry(
+  expiryMonth?: number,
+  expiryYear?: number,
+  now: Date = new Date(),
+) {
+  const currentYear = now.getFullYear()
+  const currentMonth = now.getMonth() + 1
+
+  if (expiryMonth !== undefined) {
+    if (!Number.isInteger(expiryMonth) || expiryMonth < 1 || expiryMonth > 12) {
+      throw new Error("Invalid expiry month: must be 1-12")
+    }
+  }
+
+  if (expiryYear !== undefined) {
+    if (
+      !Number.isInteger(expiryYear) ||
+      expiryYear < currentYear ||
+      expiryYear > currentYear + 50
+    ) {
+      throw new Error("Invalid expiry year")
+    }
+  }
+
+  if (expiryMonth !== undefined && expiryYear !== undefined) {
+    if (expiryYear === currentYear && expiryMonth < currentMonth) {
+      throw new Error("Card has already expired")
+    }
+  }
+}
+
 export const list = query({
   args: {},
   handler: async (ctx) => {
@@ -26,6 +57,9 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity()
     if (!identity) throw new Error("Not authenticated")
+
+    validateCardExpiry(args.expiryMonth, args.expiryYear)
+
     return await ctx.db.insert("paymentMethods", {
       userId: identity.subject,
       name: args.name,
@@ -53,6 +87,13 @@ export const update = mutation({
     if (!identity) throw new Error("Not authenticated")
     const card = await ctx.db.get(args.id)
     if (!card || card.userId !== identity.subject) throw new Error("Unauthorized")
+
+    if (args.expiryMonth !== undefined || args.expiryYear !== undefined) {
+      validateCardExpiry(
+        args.expiryMonth ?? card.expiryMonth,
+        args.expiryYear ?? card.expiryYear,
+      )
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id: _, ...updates } = args
