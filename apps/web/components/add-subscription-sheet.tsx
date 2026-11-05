@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input"
 import dynamic from "next/dynamic"
 import { TemplateList } from "@/components/template-list"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
+import { cn, isCardExpired } from "@/lib/utils"
 
 const IconPicker = dynamic(
   () => import("@/components/icon-picker").then((m) => m.IconPicker),
@@ -44,7 +44,7 @@ export function AddSubscriptionSheet({
   const paymentMethods = useQuery(
     api.paymentMethods.list,
     isSignedIn && open ? {} : "skip"
-  ) as Array<{ _id: string; name: string; type: string; last4?: string }> | undefined
+  ) as Array<{ _id: string; name: string; type: string; last4?: string; expiryMonth?: number; expiryYear?: number }> | undefined
   const accounts = useQuery(
     api.accounts.list,
     isSignedIn && open ? {} : "skip"
@@ -442,7 +442,7 @@ export function AddSubscriptionSheet({
                       <option value="">No linked payment method (Default)</option>
                       {paymentMethods?.map((pm) => (
                         <option key={pm._id} value={pm._id}>
-                          {pm.name} {pm.last4 ? `(•••• ${pm.last4})` : ""} - {pm.type.toUpperCase()}
+                          {pm.name} {pm.last4 ? `(•••• ${pm.last4})` : ""} - {pm.type.toUpperCase()}{isCardExpired(pm.expiryMonth, pm.expiryYear) ? " [Expired]" : ""}
                         </option>
                       ))}
                     </select>

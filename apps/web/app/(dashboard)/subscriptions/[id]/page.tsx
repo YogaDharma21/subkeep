@@ -44,7 +44,7 @@ import { IconPicker } from "@/components/icon-picker"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { toast } from "sonner"
 import { useDocumentTitle } from "@/hooks/use-document-title"
-import { cn } from "@/lib/utils"
+import { cn, isCardExpired } from "@/lib/utils"
 import {
   categories,
   currencies,
@@ -91,7 +91,7 @@ export default function SubscriptionDetailPage({
   const paymentMethods = useQuery(
     api.paymentMethods.list,
     isSignedIn ? {} : "skip"
-  ) as Array<{ _id: string; name: string; type: string; last4?: string }> | undefined
+  ) as Array<{ _id: string; name: string; type: string; last4?: string; expiryMonth?: number; expiryYear?: number }> | undefined
   const accounts = useQuery(
     api.accounts.list,
     isSignedIn ? {} : "skip"
@@ -671,7 +671,7 @@ export default function SubscriptionDetailPage({
               <option value="">No linked payment method</option>
               {paymentMethods?.map((pm) => (
                 <option key={pm._id} value={pm._id}>
-                  {pm.name} {pm.last4 ? `(•••• ${pm.last4})` : ""}
+                  {pm.name} {pm.last4 ? `(•••• ${pm.last4})` : ""}{isCardExpired(pm.expiryMonth, pm.expiryYear) ? " [Expired]" : ""}
                 </option>
               ))}
             </select>
