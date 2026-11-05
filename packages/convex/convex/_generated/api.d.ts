@@ -15,6 +15,7 @@ import type * as exchangeRates from "../exchangeRates.js";
 import type * as paymentMethods from "../paymentMethods.js";
 import type * as payments from "../payments.js";
 import type * as pushSubscriptions from "../pushSubscriptions.js";
+import type * as recurringTransactions from "../recurringTransactions.js";
 import type * as reminders from "../reminders.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as templates from "../templates.js";
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   paymentMethods: typeof paymentMethods;
   payments: typeof payments;
   pushSubscriptions: typeof pushSubscriptions;
+  recurringTransactions: typeof recurringTransactions;
   reminders: typeof reminders;
   subscriptions: typeof subscriptions;
   templates: typeof templates;

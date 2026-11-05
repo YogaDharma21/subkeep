@@ -139,12 +139,37 @@ export default defineSchema({
     paymentId: v.optional(v.id("payments")),
     icon: v.optional(v.string()),
     color: v.optional(v.string()),
+    recurringTransactionId: v.optional(v.id("recurringTransactions")),
   })
     .index("by_user", ["userId"])
     .index("by_user_and_date", ["userId", "date"])
     .index("by_account", ["accountId"])
     .index("by_to_account", ["toAccountId"])
-    .index("by_subscription", ["subscriptionId"]),
+    .index("by_subscription", ["subscriptionId"])
+    .index("by_recurring", ["recurringTransactionId"]),
+
+  recurringTransactions: defineTable({
+    userId: v.string(),
+    name: v.string(),
+    type: v.string(),
+    amount: v.number(),
+    currency: v.string(),
+    category: v.string(),
+    frequency: v.string(),
+    startDate: v.string(),
+    nextDueDate: v.string(),
+    endDate: v.optional(v.string()),
+    accountId: v.optional(v.id("accounts")),
+    toAccountId: v.optional(v.id("accounts")),
+    isActive: v.boolean(),
+    note: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    color: v.optional(v.string()),
+    lastProcessedDate: v.optional(v.string()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_and_active", ["userId", "isActive"])
+    .index("by_next_due", ["isActive", "nextDueDate"]),
 
   budgets: defineTable({
     userId: v.string(),
