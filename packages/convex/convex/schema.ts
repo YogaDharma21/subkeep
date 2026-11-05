@@ -168,4 +168,10 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_endpoint", ["endpoint"]),
+
+  exchangeRates: defineTable({
+    baseCurrency: v.string(),
+    rates: v.record(v.string(), v.number()),
+    updatedAt: v.number(),
+  }).index("by_base_currency", ["baseCurrency"]),
 })

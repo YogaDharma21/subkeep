@@ -10,4 +10,11 @@ crons.interval(
   {}
 )
 
+crons.interval(
+  "daily-exchange-rates-sync",
+  { hours: 12 },
+  internal.exchangeRates.syncRates,
+  {}
+)
+
 export default crons

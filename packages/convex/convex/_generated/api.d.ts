@@ -11,6 +11,7 @@
 import type * as accounts from "../accounts.js";
 import type * as budgets from "../budgets.js";
 import type * as crons from "../crons.js";
+import type * as exchangeRates from "../exchangeRates.js";
 import type * as paymentMethods from "../paymentMethods.js";
 import type * as payments from "../payments.js";
 import type * as pushSubscriptions from "../pushSubscriptions.js";
@@ -30,6 +31,7 @@ declare const fullApi: ApiFromModules<{
   accounts: typeof accounts;
   budgets: typeof budgets;
   crons: typeof crons;
+  exchangeRates: typeof exchangeRates;
   paymentMethods: typeof paymentMethods;
   payments: typeof payments;
   pushSubscriptions: typeof pushSubscriptions;
