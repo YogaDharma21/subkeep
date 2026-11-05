@@ -45,6 +45,7 @@ export interface SinkingFundsSummary<
   T extends SinkingFundSubscriptionInput = SinkingFundSubscriptionInput,
 > extends SinkingFundsTotals {
   items: SinkingFundItem<T>[]
+  totals: SinkingFundsTotals
   totalMonthlyReserve: number
   totalAccruedTarget: number
   totalCommitment: number
@@ -138,8 +139,16 @@ export function calculateSinkingFunds<
   const rates = isOptionsObject ? selectedMonthOrOptions.rates : ratesParam
 
   if (!subscriptions || !Array.isArray(subscriptions)) {
+    const emptyTotals: SinkingFundsTotals = {
+      totalMonthlyReserve: 0,
+      totalAccruedTarget: 0,
+      totalCommitment: 0,
+      count: 0,
+      currency: targetCurrency,
+    }
     return {
       items: [],
+      totals: emptyTotals,
       totalMonthlyReserve: 0,
       totalAccruedTarget: 0,
       totalCommitment: 0,
@@ -204,8 +213,17 @@ export function calculateSinkingFunds<
   const totalAccruedTarget = items.reduce((sum, item) => sum + item.accruedAmount, 0)
   const totalCommitment = items.reduce((sum, item) => sum + item.cost, 0)
 
+  const totals: SinkingFundsTotals = {
+    totalMonthlyReserve,
+    totalAccruedTarget,
+    totalCommitment,
+    count: items.length,
+    currency: targetCurrency,
+  }
+
   return {
     items,
+    totals,
     totalMonthlyReserve,
     totalAccruedTarget,
     totalCommitment,

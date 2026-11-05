@@ -114,6 +114,9 @@ assert.equal(currentRes.totalMonthlyReserve, 10)
 assert.equal(currentRes.totalAccruedTarget, 120)
 assert.equal(currentRes.totalCommitment, 120)
 assert.equal(currentRes.count, 1)
+assert.equal(currentRes.totals.totalMonthlyReserve, 10)
+assert.equal(currentRes.totals.totalAccruedTarget, 120)
+assert.equal(currentRes.totals.count, 1)
 
 // 5. Calculations: diffMonths >= cycleMonths (0% accrued)
 const fullCycleSubs = [
@@ -230,6 +233,7 @@ assert.equal(emptyRes.count, 0)
 assert.equal(emptyRes.totalMonthlyReserve, 0)
 assert.equal(emptyRes.totalAccruedTarget, 0)
 assert.equal(emptyRes.totalCommitment, 0)
+assert.equal(emptyRes.totals.count, 0)
 assert.deepEqual(emptyRes.items, [])
 
 console.log("All sinking funds test assertions passed.")
