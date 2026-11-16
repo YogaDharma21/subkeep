@@ -10,6 +10,40 @@ export const fallbackRates: Record<string, number> = {
 let cachedRates: Record<string, number> = { ...fallbackRates }
 let lastFetchTime = 0
 
+export async function getStoredExchangeRates(): Promise<Record<string, number>> {
+  try {
+    const cached = await AsyncStorage.getItem("subkeep_exchange_rates")
+    if (cached) {
+      const parsed = JSON.parse(cached)
+      if (parsed.rates) {
+        cachedRates = { ...fallbackRates, ...parsed.rates }
+        lastFetchTime = parsed.timestamp || 0
+        return cachedRates
+      }
+    }
+  } catch {
+    // Ignore AsyncStorage read errors
+  }
+  return cachedRates
+}
+
+export async function setExchangeRatesCache(
+  rates: Record<string, number>,
+  timestamp: number = Date.now()
+): Promise<Record<string, number>> {
+  cachedRates = { ...fallbackRates, ...rates }
+  lastFetchTime = timestamp
+  try {
+    await AsyncStorage.setItem(
+      "subkeep_exchange_rates",
+      JSON.stringify({ rates: cachedRates, timestamp: lastFetchTime })
+    )
+  } catch {
+    // Ignore AsyncStorage write errors
+  }
+  return cachedRates
+}
+
 export async function fetchExchangeRates(): Promise<Record<string, number>> {
   try {
     const cached = await AsyncStorage.getItem("subkeep_exchange_rates")

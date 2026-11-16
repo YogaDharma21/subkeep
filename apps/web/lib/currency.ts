@@ -1,4 +1,4 @@
-import { getSymbol } from "./constants"
+import { getSymbol } from "./constants.ts"
 
 // Fallback rates relative to USD (1 USD = X target currency)
 export const fallbackRates: Record<string, number> = {
@@ -8,6 +8,43 @@ export const fallbackRates: Record<string, number> = {
 
 let cachedRates: Record<string, number> = { ...fallbackRates }
 let lastFetchTime = 0
+
+export function getStoredExchangeRates(): Record<string, number> {
+  if (typeof window === "undefined") return fallbackRates
+  try {
+    const cached = localStorage.getItem("subkeep_exchange_rates")
+    if (cached) {
+      const parsed = JSON.parse(cached)
+      if (parsed.rates) {
+        cachedRates = { ...fallbackRates, ...parsed.rates }
+        lastFetchTime = parsed.timestamp || 0
+        return cachedRates
+      }
+    }
+  } catch {
+    // ignore parse error
+  }
+  return cachedRates
+}
+
+export function setExchangeRatesCache(
+  rates: Record<string, number>,
+  timestamp: number = Date.now()
+): Record<string, number> {
+  cachedRates = { ...fallbackRates, ...rates }
+  lastFetchTime = timestamp
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(
+        "subkeep_exchange_rates",
+        JSON.stringify({ rates: cachedRates, timestamp: lastFetchTime })
+      )
+    } catch {
+      // ignore storage access errors
+    }
+  }
+  return cachedRates
+}
 
 export async function fetchExchangeRates(): Promise<Record<string, number>> {
   if (typeof window === "undefined") return fallbackRates

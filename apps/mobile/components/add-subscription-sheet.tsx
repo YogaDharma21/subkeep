@@ -28,7 +28,7 @@ import { Button } from "@/components/ui/button"
 import { TemplateList } from "@/components/template-list"
 import { IconPickerModal } from "@/components/icon-picker-modal"
 import { SubscriptionTemplate } from "@/constants/default-templates"
-import { categories, billingCycles, colorPresets, getContrastTextColor } from "@/constants/categories"
+import { categories, billingCycles } from "@/constants/categories"
 import { currencies } from "@/constants/currencies"
 import { useThemeColor } from "@/hooks/use-theme-color"
 import { useAlert } from "@/hooks/use-alert"
@@ -62,7 +62,6 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
   const [account, setAccount] = useState("")
   const [website, setWebsite] = useState("")
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null)
-  const [selectedColor, setSelectedColor] = useState("#000000")
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<string>("")
   const [selectedAccountId, setSelectedAccountId] = useState<string>("")
 
@@ -89,7 +88,6 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
     setAccount("")
     setWebsite("")
     setSelectedIcon(null)
-    setSelectedColor("#000000")
     setSelectedPaymentMethodId("")
     setSelectedAccountId("")
     setIsTrial(false)
@@ -112,7 +110,6 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
     setCurrency(template.defaultCurrency)
     setCategory(template.category)
     setSelectedIcon(template.icon)
-    setSelectedColor(template.color)
     if (template.cancelUrl) setCancelUrl(template.cancelUrl)
     setStep(2)
   }
@@ -178,7 +175,6 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
         cycle,
         category,
         icon: selectedIcon || "Receipt",
-        color: selectedColor,
         startDate: startDate || new Date().toISOString().split("T")[0],
         nextBilling: startDate || new Date().toISOString().split("T")[0],
         endDate: endDate.trim() ? endDate.trim() : undefined,
@@ -270,7 +266,7 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
             </View>
           ) : (
             <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }} keyboardShouldPersistTaps="handled">
-              {/* Icon & Color Header Box */}
+              {/* Icon Header Box */}
               <View
                 style={{
                   backgroundColor: colors.card,
@@ -288,14 +284,14 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                       width: 54,
                       height: 54,
                       borderRadius: 14,
-                      backgroundColor: selectedColor || "#6366F1",
+                      backgroundColor: colors.surfaceInset,
                       borderWidth: 1,
                       borderColor: colors.border,
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <DynamicIcon name={selectedIcon || "Receipt"} size={26} color={getContrastTextColor(selectedColor)} />
+                    <DynamicIcon name={selectedIcon || "Receipt"} size={26} color={colors.text} />
                   </TouchableOpacity>
 
                   <View style={{ flex: 1, gap: 4 }}>
@@ -307,70 +303,6 @@ export function AddSubscriptionSheet({ visible, onClose }: AddSubscriptionSheetP
                     <Text style={{ fontSize: 11, color: colors.mutedText }}>
                       Choose from 100+ Lucide icons or company logo
                     </Text>
-                  </View>
-                </View>
-
-                {/* Color circles & Custom Hex Input */}
-                <View style={{ gap: 8 }}>
-                  <Text style={{ fontSize: 10, fontWeight: "500", letterSpacing: 1.2, textTransform: "uppercase", color: colors.mutedText }}>
-                    Brand Color
-                  </Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8, alignItems: "center" }}>
-                    {colorPresets.map((c) => {
-                      const isSelected = selectedColor?.toLowerCase() === c.toLowerCase()
-                      return (
-                        <TouchableOpacity
-                          key={c}
-                          onPress={() => setSelectedColor(c)}
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: 14,
-                            backgroundColor: c,
-                            borderWidth: isSelected ? 2.5 : c.toLowerCase() === "#ffffff" ? 1 : 0,
-                            borderColor: isSelected ? colors.primary : colors.border,
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        />
-                      )
-                    })}
-                  </ScrollView>
-
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 2 }}>
-                    <View
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 14,
-                        backgroundColor: selectedColor?.startsWith("#") ? selectedColor : "#FFFFFF",
-                        borderWidth: 1,
-                        borderColor: colors.border,
-                      }}
-                    />
-                    <TextInput
-                      value={selectedColor}
-                      onChangeText={(text) => {
-                        let val = text.trim()
-                        if (!val.startsWith("#") && val.length > 0) val = "#" + val
-                        setSelectedColor(val)
-                      }}
-                      placeholder="#FFFFFF"
-                      placeholderTextColor={colors.mutedText}
-                      maxLength={7}
-                      autoCapitalize="characters"
-                      style={{
-                        flex: 1,
-                        height: 38,
-                        borderWidth: 1,
-                        borderColor: colors.border,
-                        borderRadius: 14,
-                        paddingHorizontal: 12,
-                        fontSize: 13,
-                        color: colors.text,
-                        backgroundColor: colors.surfaceInset,
-                      }}
-                    />
                   </View>
                 </View>
               </View>

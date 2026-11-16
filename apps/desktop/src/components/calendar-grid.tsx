@@ -13,7 +13,7 @@ export interface SubscriptionItem {
   _id: string
   name: string
   icon: string
-  color: string
+  color?: string
   price: number
   currency: string
   cycle?: string
@@ -400,12 +400,11 @@ export function CalendarGrid({ subscriptions, onSelectSubscription }: CalendarGr
                     className="flex cursor-pointer items-center gap-3 rounded-xl p-3 transition-colors hover:bg-foreground/[0.03]"
                   >
                     <div
-                      className="surface-inset relative flex size-9 shrink-0 items-center justify-center rounded-full"
-                      style={{ backgroundColor: sub.color }}
+                      className="surface-inset relative flex size-9 shrink-0 items-center justify-center rounded-full text-foreground/80"
                     >
                       <DynamicIcon
                         name={sub.icon}
-                        className="size-4 text-foreground/80"
+                        className="size-4"
                       />
                     </div>
                     <div className="min-w-0 flex-1">

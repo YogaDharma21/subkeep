@@ -39,14 +39,14 @@ interface StatsChartsProps {
     startDate?: string
     nextBilling: string
     endDate?: string
-    color: string
+    color?: string
     isActive?: boolean
   }>
   payments?: Array<{
     _id: string
     name: string
     icon: string
-    color: string
+    color?: string
     amount: number
     currency: string
     category: string

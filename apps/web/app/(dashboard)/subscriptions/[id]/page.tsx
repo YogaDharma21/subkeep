@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState, useRef, useMemo } from "react"
+import { use, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery, useMutation } from "convex/react"
 import { useAuth } from "@clerk/nextjs"
@@ -26,8 +26,8 @@ import {
   MessageSquare,
   Paperclip,
   History,
-  Pipette,
   Wallet,
+  Compass,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -45,21 +45,24 @@ import { IconPicker } from "@/components/icon-picker"
 import { DynamicIcon } from "@/components/dynamic-icon"
 import { toast } from "sonner"
 import { useDocumentTitle } from "@/hooks/use-document-title"
-import { cn } from "@/lib/utils"
+import { cn, isCardExpired } from "@/lib/utils"
 import {
   categories,
   currencies,
   billingCycles,
   getSymbol,
   categoryColors,
-  colorPresets,
-  getContrastTextColor,
 } from "@/lib/constants"
 import { format, differenceInDays } from "date-fns"
 import { convertAndFormat } from "@/lib/currency"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { SubscriptionDetailSkeleton } from "@/components/subscription-detail-skeleton"
 import { RecordPaymentDialog } from "@/components/record-payment-dialog"
+import { CancellationGuideDialog } from "@/components/cancellation-guide-dialog"
+import {
+  RecordReimbursementDialog,
+  ReimbursementMember,
+} from "@/components/record-reimbursement-dialog"
 
 export default function SubscriptionDetailPage({
   params,
@@ -72,6 +75,8 @@ export default function SubscriptionDetailPage({
   const [editing, setEditing] = useState(false)
   const [iconOpen, setIconOpen] = useState(false)
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false)
+  const [cancellationGuideOpen, setCancellationGuideOpen] = useState(false)
+  const [reimbursementMember, setReimbursementMember] = useState<ReimbursementMember | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const receiptInputRef = useRef<HTMLInputElement>(null)
@@ -81,20 +86,14 @@ export default function SubscriptionDetailPage({
     id ? { id: id as Id<"subscriptions"> } : "skip"
   )
   useDocumentTitle(sub?.name ?? "Subscription")
-  const allPayments = useQuery(
-    api.payments.list,
-    isSignedIn ? {} : "skip"
+  const subPayments = useQuery(
+    api.payments.listBySubscription,
+    isSignedIn && id ? { subscriptionId: id as Id<"subscriptions"> } : "skip"
   )
-  const subPayments = useMemo(() => {
-    if (!allPayments || !id) return []
-    return allPayments.filter(
-      (p) => p.subscriptionId === id || (sub && p.name === sub.name)
-    )
-  }, [allPayments, id, sub])
   const paymentMethods = useQuery(
     api.paymentMethods.list,
     isSignedIn ? {} : "skip"
-  ) as Array<{ _id: string; name: string; type: string; last4?: string }> | undefined
+  ) as Array<{ _id: string; name: string; type: string; last4?: string; expiryMonth?: number; expiryYear?: number }> | undefined
   const accounts = useQuery(
     api.accounts.list,
     isSignedIn ? {} : "skip"
@@ -116,7 +115,6 @@ export default function SubscriptionDetailPage({
   const [editCycle, setEditCycle] = useState("monthly")
   const [editCategory, setEditCategory] = useState("entertainment")
   const [editIcon, setEditIcon] = useState<string | null>(null)
-  const [editColor, setEditColor] = useState("#000000")
   const [editEndDate, setEditEndDate] = useState("")
   const [editAccount, setEditAccount] = useState("")
   const [editAccountId, setEditAccountId] = useState("")
@@ -223,7 +221,6 @@ export default function SubscriptionDetailPage({
     setEditCycle(sub.cycle)
     setEditCategory(sub.category)
     setEditIcon(sub.icon)
-    setEditColor(sub.color)
     setEditEndDate(sub.endDate || "")
     setEditAccount(sub.account || "")
     setEditAccountId(sub.accountId || "")
@@ -250,7 +247,6 @@ export default function SubscriptionDetailPage({
         cycle: editCycle,
         category: editCategory,
         icon: editIcon || sub.icon,
-        color: editColor,
         endDate: editEndDate,
         account: editAccount,
         accountId: editAccountId ? (editAccountId as Id<"accounts">) : null,
@@ -306,16 +302,32 @@ export default function SubscriptionDetailPage({
   // SplitKeep Member toggle paid status
   const handleToggleMemberPaid = async (idx: number) => {
     if (!sub || !sub.splitMembers || !id) return
-    const updated = [...sub.splitMembers]
-    updated[idx] = {
-      ...updated[idx],
-      isPaid: !updated[idx].isPaid,
+    const member = sub.splitMembers[idx]
+    if (!member) return
+    if (member.isPaid) {
+      // Marking as unpaid: directly toggle without dialog
+      const updated = [...sub.splitMembers]
+      updated[idx] = {
+        ...updated[idx],
+        isPaid: false,
+      }
+      try {
+        await updateMutation({
+          id: id as Id<"subscriptions">,
+          splitMembers: updated,
+        })
+        toast.success(`Marked ${member.name} as unpaid`)
+      } catch {
+        toast.error(`Failed to mark ${member.name} as unpaid`)
+      }
+    } else {
+      // Marking as paid: prompt via reimbursement dialog
+      setReimbursementMember({
+        index: idx,
+        name: member.name,
+        shareAmount: member.shareAmount,
+      })
     }
-    await updateMutation({
-      id: id as Id<"subscriptions">,
-      splitMembers: updated,
-    })
-    toast.success(`Updated status for ${updated[idx].name}`)
   }
 
   // SplitKeep copy payment reminder
@@ -492,16 +504,14 @@ export default function SubscriptionDetailPage({
           <button
             onClick={() => editing && setIconOpen(true)}
             className={cn(
-              "flex size-14 items-center justify-center rounded-2xl border border-black/10 dark:border-white/10 shadow-xs",
+              "surface-inset flex size-14 items-center justify-center rounded-2xl text-foreground shadow-xs",
               editing && "cursor-pointer ring-2 ring-primary ring-offset-2"
             )}
-            style={{ backgroundColor: (editing ? editColor : sub.color) || "#6366F1" }}
             disabled={!editing}
           >
             <DynamicIcon
               name={currentIcon}
               className="size-7"
-              style={{ color: getContrastTextColor(editing ? editColor : sub.color) }}
             />
           </button>
           <div className="flex-1">
@@ -679,7 +689,7 @@ export default function SubscriptionDetailPage({
               <option value="">No linked payment method</option>
               {paymentMethods?.map((pm) => (
                 <option key={pm._id} value={pm._id}>
-                  {pm.name} {pm.last4 ? `(•••• ${pm.last4})` : ""}
+                  {pm.name} {pm.last4 ? `(•••• ${pm.last4})` : ""}{isCardExpired(pm.expiryMonth, pm.expiryYear) ? " [Expired]" : ""}
                 </option>
               ))}
             </select>
@@ -765,55 +775,6 @@ export default function SubscriptionDetailPage({
               value={editEndDate}
               onChange={(e) => setEditEndDate(e.target.value)}
             />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-medium">Icon Color</label>
-            <div className="flex flex-wrap items-center gap-2">
-              {colorPresets.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setEditColor(c)}
-                  className={cn(
-                    "size-7 rounded-full border-2 transition-all cursor-pointer shadow-xs",
-                    editColor?.toLowerCase() === c.toLowerCase()
-                      ? "border-primary ring-2 ring-primary/30 scale-110"
-                      : c.toLowerCase() === "#ffffff"
-                        ? "border-muted-foreground/30"
-                        : "border-transparent"
-                  )}
-                  style={{ backgroundColor: c }}
-                  title={c}
-                />
-              ))}
-              <div className="flex items-center gap-1.5 ml-1 pl-2 border-l border-border">
-                <label
-                  className="relative size-7 rounded-full border border-border cursor-pointer overflow-hidden flex items-center justify-center bg-foreground/[0.03] hover:bg-foreground/[0.06] transition-colors shrink-0"
-                  title="Pick custom color"
-                >
-                  <Pipette className="size-3.5 text-muted-foreground" />
-                  <input
-                    type="color"
-                    value={
-                      editColor?.startsWith("#") && editColor.length === 7
-                        ? editColor
-                        : "#FFFFFF"
-                    }
-                    onChange={(e) => setEditColor(e.target.value)}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                  />
-                </label>
-                <input
-                  type="text"
-                  value={editColor}
-                  onChange={(e) => setEditColor(e.target.value)}
-                  placeholder="#FFFFFF"
-                  maxLength={7}
-                  className="w-20 px-2 py-1 text-xs font-mono rounded-lg border border-border bg-foreground/[0.03] focus:outline-hidden focus:ring-1 focus:ring-primary"
-                />
-              </div>
-            </div>
           </div>
 
           <Button className="w-full cursor-pointer" onClick={saveEdit}>
@@ -930,6 +891,28 @@ export default function SubscriptionDetailPage({
                     {sub.cancelUrl ? "Change" : "Set URL"}
                   </Button>
                 </div>
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="space-y-0.5">
+                  <span className="text-sm text-muted-foreground block">
+                    Cancellation Guide
+                  </span>
+                  <span className="text-xs text-muted-foreground/75 block">
+                    Step-by-step checklist walkthrough
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setCancellationGuideOpen(true)}
+                  className="h-8 gap-1.5 px-3 text-xs cursor-pointer"
+                >
+                  <Compass className="size-3.5" />
+                  <span>How to Cancel</span>
+                </Button>
               </div>
             </div>
           </div>
@@ -1108,8 +1091,7 @@ export default function SubscriptionDetailPage({
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div
-                          className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-border bg-foreground/[0.05] font-medium text-foreground text-[11px]"
-                          style={{ backgroundColor: (p.color || sub.color) + "22", color: p.color || sub.color }}
+                          className="surface-inset flex size-7 shrink-0 items-center justify-center rounded-lg font-medium text-foreground text-[11px]"
                         >
                           {p.name.charAt(0)}
                         </div>
@@ -1376,7 +1358,6 @@ export default function SubscriptionDetailPage({
         selected={editIcon}
         onSelect={(icon) => {
           setEditIcon(icon)
-          setEditColor("#000000")
         }}
         open={iconOpen}
         onClose={() => setIconOpen(false)}
@@ -1387,6 +1368,23 @@ export default function SubscriptionDetailPage({
         open={recordPaymentOpen}
         onOpenChange={setRecordPaymentOpen}
         subscription={sub ? { ...sub, _id: sub._id } : null}
+        rates={rates}
+      />
+
+      {sub && (
+        <CancellationGuideDialog
+          open={cancellationGuideOpen}
+          onOpenChange={setCancellationGuideOpen}
+          subscriptionName={sub.name}
+          customCancelUrl={sub.cancelUrl}
+        />
+      )}
+
+      <RecordReimbursementDialog
+        open={Boolean(reimbursementMember)}
+        onOpenChange={(open) => !open && setReimbursementMember(null)}
+        member={reimbursementMember}
+        subscription={sub || null}
         rates={rates}
       />
     </div>

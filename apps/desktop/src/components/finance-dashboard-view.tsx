@@ -275,7 +275,10 @@ export function FinanceDashboardView({ onNavigate }: FinanceDashboardViewProps) 
     return { weeks, activeDays, peak, totalSpend }
   }, [allTransactions, primaryCurrency, rates])
 
-  const loading = accounts === undefined || transactions === undefined
+  const loading =
+    accounts === undefined ||
+    transactions === undefined ||
+    userSettings === undefined
   const monthShort = monthLabel(month).split(" ")[0]
   const hasUpcoming =
     (subscriptions || []).some((s) => {
@@ -375,13 +378,24 @@ export function FinanceDashboardView({ onNavigate }: FinanceDashboardViewProps) 
           </div>
 
           {loading ? (
-            <div className="mt-6 flex items-center gap-6">
-              <div className="size-[130px] animate-pulse rounded-full bg-muted" />
-              <div className="flex-1 space-y-2">
-                <div className="h-7 w-32 animate-pulse rounded-xl bg-muted" />
-                <div className="h-3 w-24 animate-pulse rounded-full bg-muted" />
+            budgetCap ? (
+              <div className="mt-4 flex items-center gap-6">
+                <div className="size-[118px] shrink-0 animate-pulse rounded-full bg-muted sm:size-[130px]" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="h-7 w-32 animate-pulse rounded-lg bg-muted" />
+                  <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+                  <div className="mt-1 h-3 w-36 animate-pulse rounded bg-muted" />
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="mt-6 flex items-end justify-between gap-4">
+                <div>
+                  <div className="h-8 w-40 animate-pulse rounded-lg bg-muted" />
+                  <div className="mt-2 h-3.5 w-24 animate-pulse rounded bg-muted" />
+                </div>
+                <div className="h-7 w-20 animate-pulse rounded-full bg-muted" />
+              </div>
+            )
           ) : budgetCap ? (
             <div className="mt-4 flex items-center gap-6">
               <Ring pct={budgetUsedPct || 0} />

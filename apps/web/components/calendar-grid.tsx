@@ -16,7 +16,7 @@ export interface SubscriptionItem {
   _id: string
   name: string
   icon: string
-  color: string
+  color?: string
   price: number
   currency: string
   cycle?: string
@@ -406,14 +406,10 @@ export function CalendarGrid({ subscriptions }: CalendarGridProps) {
                     onClick={() => router.push(`/subscriptions/${sub._id}`)}
                     className="flex cursor-pointer items-center gap-3 rounded-2xl p-3 transition-colors hover:bg-accent/60"
                   >
-                    <div className="relative flex size-9 shrink-0 items-center justify-center rounded-xl border border-border bg-foreground/[0.03]">
+                    <div className="surface-inset flex size-9 shrink-0 items-center justify-center rounded-xl text-foreground/85">
                       <DynamicIcon
                         name={sub.icon}
-                        className="size-4 text-foreground/85"
-                      />
-                      <span
-                        className="absolute -bottom-px -right-px size-2 rounded-full ring-2 ring-card"
-                        style={{ backgroundColor: sub.color }}
+                        className="size-4"
                       />
                     </div>
                     <div className="min-w-0 flex-1">

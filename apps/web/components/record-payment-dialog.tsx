@@ -106,6 +106,10 @@ function RecordPaymentForm({
         amount: numAmount,
         date,
         accountId: accountId ? (accountId as Id<"accounts">) : undefined,
+        accountAmount:
+          selectedAccount && selectedAccount.currency !== subscription.currency
+            ? convertedAccountDeduction
+            : undefined,
         linkAccount: Boolean(accountId && linkAccount),
       })
 
@@ -257,10 +261,9 @@ export function RecordPaymentDialog({
         <DialogHeader className="space-y-1 text-left">
           <div className="flex items-center gap-2.5">
             <span
-              className="flex size-9 shrink-0 items-center justify-center rounded-xl shadow-xs"
-              style={{ backgroundColor: subscription.color || "#3b82f6" }}
+              className="surface-inset flex size-9 shrink-0 items-center justify-center rounded-xl text-foreground shadow-xs"
             >
-              <DynamicIcon name={subscription.icon || "receipt"} className="size-5 text-white" />
+              <DynamicIcon name={subscription.icon || "receipt"} className="size-5" />
             </span>
             <div>
               <DialogTitle className="text-base font-semibold">Record Payment</DialogTitle>

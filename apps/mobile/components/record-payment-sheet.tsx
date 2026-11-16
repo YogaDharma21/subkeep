@@ -359,12 +359,12 @@ export function RecordPaymentSheet({
                   width: 32,
                   height: 32,
                   borderRadius: 14,
-                  backgroundColor: subscription.color || colors.primary,
+                  backgroundColor: colors.surfaceInset,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <DynamicIcon name={subscription.icon || "receipt"} size={16} color="#ffffff" />
+                <DynamicIcon name={subscription.icon || "receipt"} size={16} color={colors.text} />
               </View>
               <View>
                 <Text style={{ fontSize: 18, fontWeight: "600", letterSpacing: -0.4, color: colors.text }}>

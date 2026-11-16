@@ -10,4 +10,18 @@ crons.interval(
   {}
 )
 
+crons.interval(
+  "daily-exchange-rates-sync",
+  { hours: 12 },
+  internal.exchangeRates.syncRates,
+  {}
+)
+
+crons.interval(
+  "daily-recurring-transactions",
+  { hours: 24 },
+  internal.recurringTransactions.processDueRecurringTransactions,
+  {}
+)
+
 export default crons

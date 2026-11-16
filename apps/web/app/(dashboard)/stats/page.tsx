@@ -7,6 +7,7 @@ import { api } from "@/convex/_generated/api"
 import { SectionHeader } from "@/components/section-nav"
 import { StatsCharts } from "@/components/stats-charts"
 import { FinanceAnalytics } from "@/components/finance-analytics"
+import { CashRunwaySimulator } from "@/components/cash-runway-simulator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
@@ -22,6 +23,10 @@ export default function StatsPage() {
     api.transactions.list,
     isSignedIn ? {} : "skip"
   )
+  const accounts = useQuery(
+    api.accounts.list,
+    isSignedIn ? { includeArchived: true } : "skip"
+  )
 
   const { primaryCurrency, rates } = usePrimaryCurrency()
 
@@ -30,7 +35,8 @@ export default function StatsPage() {
   const isLoading =
     subscriptions === undefined ||
     transactions === undefined ||
-    payments === undefined
+    payments === undefined ||
+    accounts === undefined
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -42,6 +48,7 @@ export default function StatsPage() {
             <Skeleton className="h-[340px] rounded-2xl" />
             <Skeleton className="h-[340px] rounded-2xl" />
           </div>
+          <Skeleton className="h-[360px] rounded-2xl" />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Skeleton className="h-[340px] rounded-2xl" />
             <Skeleton className="h-[340px] rounded-2xl" />
@@ -54,6 +61,13 @@ export default function StatsPage() {
             transactions={transactions}
             months={months}
             currentMonth={currentMonthKey()}
+            primaryCurrency={primaryCurrency}
+            rates={rates}
+          />
+          <CashRunwaySimulator
+            accounts={accounts}
+            subscriptions={subscriptions}
+            transactions={transactions}
             primaryCurrency={primaryCurrency}
             rates={rates}
           />

@@ -270,7 +270,10 @@ export default function HomePage() {
     return { weeks, activeDays, peak, totalSpend }
   }, [allTransactions, primaryCurrency, rates])
 
-  const loading = accounts === undefined || transactions === undefined
+  const loading =
+    accounts === undefined ||
+    transactions === undefined ||
+    userSettings === undefined
 
   const hasUpcoming = useMemo(
     () => findUpcomingReminders(subscriptions || [], 3).length > 0,
@@ -351,13 +354,24 @@ export default function HomePage() {
           </div>
 
           {loading ? (
-            <div className="mt-6 flex items-center gap-6">
-              <Skeleton className="size-[130px] rounded-full" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-7 w-32" />
-                <Skeleton className="h-3 w-24" />
+            budgetCap ? (
+              <div className="mt-4 flex items-center gap-6">
+                <Skeleton className="size-[118px] shrink-0 rounded-full sm:size-[130px]" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-7 w-32 rounded-lg" />
+                  <Skeleton className="h-3 w-24 rounded" />
+                  <Skeleton className="mt-1 h-3 w-36 rounded" />
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="mt-6 flex items-end justify-between gap-4">
+                <div>
+                  <Skeleton className="h-8 w-40 rounded-lg" />
+                  <Skeleton className="mt-2 h-3.5 w-24 rounded" />
+                </div>
+                <Skeleton className="h-7 w-20 rounded-full" />
+              </div>
+            )
           ) : budgetCap ? (
             <div className="mt-4 flex items-center gap-6">
               <Ring pct={ringPct} />
@@ -385,7 +399,7 @@ export default function HomePage() {
                 </p>
               </div>
               <Link
-                href="/more"
+                href="/budgets"
                 className="rounded-full border border-border px-3 py-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
               >
                 Set a cap
@@ -444,24 +458,26 @@ export default function HomePage() {
           </div>
 
           <div className="quiet-scroll mt-6 overflow-x-auto pb-1">
-            <div className="flex min-w-max items-start gap-2">
+            <div className="flex w-full min-w-[640px] items-stretch gap-2">
               {/* Weekday labels */}
-              <div className="flex flex-col gap-[3px] select-none text-[9px] font-medium text-muted-foreground">
+              <div className="flex flex-col select-none text-[9px] font-medium leading-none text-muted-foreground">
                 <div className="h-4" />
-                <span className="flex h-[10px] items-center">Mon</span>
-                <span className="h-[10px]" />
-                <span className="flex h-[10px] items-center">Wed</span>
-                <span className="h-[10px]" />
-                <span className="flex h-[10px] items-center">Fri</span>
-                <span className="h-[10px]" />
-                <span className="h-[10px]" />
+                <div className="flex flex-1 flex-col gap-[3px]">
+                  <span className="flex flex-1 min-h-0 items-center">Mon</span>
+                  <span className="flex-1 min-h-0" />
+                  <span className="flex flex-1 min-h-0 items-center">Wed</span>
+                  <span className="flex-1 min-h-0" />
+                  <span className="flex flex-1 min-h-0 items-center">Fri</span>
+                  <span className="flex-1 min-h-0" />
+                  <span className="flex-1 min-h-0" />
+                </div>
               </div>
 
               {/* 52-53 weeks */}
-              <div className="flex gap-[3px]">
+              <div className="flex flex-1 gap-[3px]">
                 {activity.weeks.map((week, index) => (
-                  <div key={index} className="flex flex-col gap-[3px]">
-                    <div className="relative h-4 w-[10px]">
+                  <div key={index} className="flex flex-1 flex-col min-w-0">
+                    <div className="relative h-4 w-full">
                       {week.monthLabel ? (
                         <span className="absolute left-0 top-0 select-none whitespace-nowrap text-[10px] font-medium text-muted-foreground">
                           {week.monthLabel}
@@ -469,39 +485,41 @@ export default function HomePage() {
                       ) : null}
                     </div>
 
-                    {week.days.map((day) => {
-                      const intensity =
-                        day.amount <= 0 || activity.peak <= 0
-                          ? 0
-                          : 0.22 + 0.78 * Math.sqrt(day.amount / activity.peak)
-                      return (
-                        <span
-                          key={day.key}
-                          title={
-                            day.future
-                              ? undefined
-                              : `${shortDate(day.key)}${
-                                  day.amount > 0
-                                    ? ` · ${formatCurrencyAmount(day.amount, primaryCurrency)}`
-                                    : " · No spend"
-                                }`
-                          }
-                          className={cn(
-                            "size-[10px] rounded-[2px] transition-colors",
-                            day.future
-                              ? "opacity-0 pointer-events-none"
-                              : day.amount > 0
-                                ? "bg-foreground"
-                                : "bg-muted/40 hover:bg-muted/70"
-                          )}
-                          style={
-                            day.future || day.amount <= 0
-                              ? undefined
-                              : { opacity: Math.max(0.18, intensity) }
-                          }
-                        />
-                      )
-                    })}
+                    <div className="flex flex-1 flex-col gap-[3px]">
+                      {week.days.map((day) => {
+                        const intensity =
+                          day.amount <= 0 || activity.peak <= 0
+                            ? 0
+                            : 0.22 + 0.78 * Math.sqrt(day.amount / activity.peak)
+                        return (
+                          <span
+                            key={day.key}
+                            title={
+                              day.future
+                                ? undefined
+                                : `${shortDate(day.key)}${
+                                    day.amount > 0
+                                      ? ` · ${formatCurrencyAmount(day.amount, primaryCurrency)}`
+                                      : " · No spend"
+                                  }`
+                            }
+                            className={cn(
+                              "block aspect-square w-full rounded-[2px] transition-colors",
+                              day.future
+                                ? "opacity-0 pointer-events-none"
+                                : day.amount > 0
+                                  ? "bg-foreground"
+                                  : "bg-muted/40 hover:bg-muted/70"
+                            )}
+                            style={
+                              day.future || day.amount <= 0
+                                ? undefined
+                                : { opacity: Math.max(0.18, intensity) }
+                            }
+                          />
+                        )
+                      })}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -644,10 +662,12 @@ export default function HomePage() {
           ) : (
             <div className="mt-4 space-y-4">
               {budgets.slice(0, 4).map((b) => {
-                const spentNative = (transactions || [])
+                const spent = (transactions || [])
                   .filter((t) => t.type === "expense" && t.category === b.category)
-                  .reduce((s, t) => s + t.amount, 0)
-                const spent = convertCurrency(spentNative, b.currency, primaryCurrency, rates)
+                  .reduce(
+                    (s, t) => s + convertCurrency(t.amount, t.currency, primaryCurrency, rates),
+                    0
+                  )
                 const cap = convertCurrency(b.amount, b.currency, primaryCurrency, rates)
                 const pct = cap > 0 ? Math.min(100, Math.round((spent / cap) * 100)) : 0
                 const meta = financeCategoryMeta(b.category)

@@ -115,7 +115,7 @@ export const remove = mutation({
     }
     const linkedTo = await ctx.db
       .query("transactions")
-      .filter((q) => q.eq(q.field("toAccountId"), args.id))
+      .withIndex("by_to_account", (q) => q.eq("toAccountId", args.id))
       .collect()
     for (const t of linkedTo) {
       if (t.userId === identity.subject) {

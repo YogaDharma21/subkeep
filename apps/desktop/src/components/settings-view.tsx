@@ -148,7 +148,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
     const data = subscriptions.map((s: {
       name: string
       icon: string
-      color: string
+      color?: string
       price: number
       currency: string
       cycle: string
@@ -192,7 +192,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
       subscriptions: subscriptions.map((s: {
         name: string
         icon: string
-        color: string
+        color?: string
         price: number
         currency: string
         cycle: string
@@ -227,7 +227,7 @@ export function SettingsView({ onOpenPaymentMethods }: SettingsViewProps) {
       payments: (payments || []).map((p: {
         name: string
         icon: string
-        color: string
+        color?: string
         amount: number
         currency: string
         category: string

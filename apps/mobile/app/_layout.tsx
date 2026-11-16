@@ -1,7 +1,7 @@
 import { ClerkProvider, useAuth } from "@clerk/expo"
 import { ConvexProviderWithClerk } from "convex/react-clerk"
 import { ConvexReactClient } from "convex/react"
-import { DarkTheme, DefaultTheme, ThemeProvider } from "expo-router/react-navigation"
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { Stack, useRouter, useSegments } from "expo-router"
 import { StatusBar } from "expo-status-bar"
@@ -12,6 +12,7 @@ import { LandingScreen } from "@/components/landing-screen"
 import { CustomAlertProvider } from "@/components/custom-alert-provider"
 import { AppThemeProvider, useThemeColor } from "@/hooks/use-theme-color"
 import { Colors } from "@/constants/theme"
+import { GestureHandlerRootView } from "react-native-gesture-handler"
 import "react-native-reanimated"
 
 const convexUrl =
@@ -179,16 +180,18 @@ function ThemedApp() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider style={{ flex: 1, backgroundColor: Colors.dark.background }}>
-      <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
-        <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-          <AppThemeProvider>
-            <CustomAlertProvider>
-              <ThemedApp />
-            </CustomAlertProvider>
-          </AppThemeProvider>
-        </ConvexProviderWithClerk>
-      </ClerkProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider style={{ flex: 1, backgroundColor: Colors.dark.background }}>
+        <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
+          <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+            <AppThemeProvider>
+              <CustomAlertProvider>
+                <ThemedApp />
+              </CustomAlertProvider>
+            </AppThemeProvider>
+          </ConvexProviderWithClerk>
+        </ClerkProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   )
 }

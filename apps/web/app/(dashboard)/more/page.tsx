@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react"
 import Image from "next/image"
-import { useQuery, useMutation } from "convex/react"
+import { useQuery, useMutation, useConvex } from "convex/react"
 import { useAuth, useUser, useClerk } from "@clerk/nextjs"
 import { useTheme } from "next-themes"
 import { api } from "@/convex/_generated/api"
@@ -29,6 +29,8 @@ import {
 import { SettingsSheet } from "@/components/settings-sheet"
 import { PaymentMethodsSheet } from "@/components/payment-methods-sheet"
 import { exportSubscriptionsToCSV, parseCSVToSubscriptions, exportTransactionsToCSV } from "@/lib/csv"
+import { parseAndNormalizeBackup, downloadBackupJson, ParsedBackup } from "@/lib/backup"
+import { RestorePreviewDialog } from "@/components/restore-preview-dialog"
 import { usePrimaryCurrency } from "@/hooks/use-primary-currency"
 import { useDocumentTitle } from "@/hooks/use-document-title"
 import { getSymbol } from "@/lib/constants"
@@ -47,25 +49,20 @@ export default function MorePage() {
   const [paymentMethodsOpen, setPaymentMethodsOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
-  const [restoreConfirm, setRestoreConfirm] = useState(false)
-  const [restoreData, setRestoreData] = useState<{
-    subscriptions: Array<Record<string, unknown>>
-    payments?: Array<Record<string, unknown>>
-  } | null>(null)
+  const [restorePreviewOpen, setRestorePreviewOpen] = useState(false)
+  const [parsedBackup, setParsedBackup] = useState<ParsedBackup | null>(null)
+  const [isRestoring, setIsRestoring] = useState(false)
 
   const jsonFileInputRef = useRef<HTMLInputElement>(null)
   const csvFileInputRef = useRef<HTMLInputElement>(null)
 
+  const convex = useConvex()
+  const restoreDataMutation = useMutation(api.backup.restoreData)
   const removeAll = useMutation(api.subscriptions.removeAll)
   const removeAllFinance = useMutation(api.transactions.removeAll)
-  const restoreSubscriptions = useMutation(api.subscriptions.restoreAll)
-  const restorePayments = useMutation(api.payments.restoreAll)
 
   const subscriptions = useQuery(api.subscriptions.list, isSignedIn ? {} : "skip")
-  const payments = useQuery(api.payments.list, isSignedIn ? {} : "skip")
-  const accounts = useQuery(api.accounts.list, isSignedIn ? { includeArchived: true } : "skip")
   const transactions = useQuery(api.transactions.list, isSignedIn ? {} : "skip")
-  const budgets = useQuery(api.budgets.list, isSignedIn ? {} : "skip")
 
   const handleDeleteAll = async () => {
     try {
@@ -127,67 +124,14 @@ export default function MorePage() {
     toast.success("Exported subscriptions to JSON")
   }
 
-  const handleBackup = () => {
-    if (!subscriptions || !payments) return
-    const data = {
-      version: 2,
-      exportDate: new Date().toISOString(),
-      subscriptions: subscriptions.map((s) => ({
-        name: s.name,
-        icon: s.icon,
-        color: s.color,
-        price: s.price,
-        currency: s.currency,
-        cycle: s.cycle,
-        category: s.category,
-        startDate: s.startDate,
-        nextBilling: s.nextBilling,
-        isActive: s.isActive,
-        isTrial: s.isTrial,
-        trialEndDate: s.trialEndDate,
-        cancelUrl: s.cancelUrl,
-        isShared: s.isShared,
-        totalPlanPrice: s.totalPlanPrice,
-        totalMembers: s.totalMembers,
-      })),
-      payments: payments.map((p) => ({
-        name: p.name,
-        icon: p.icon,
-        color: p.color,
-        amount: p.amount,
-        currency: p.currency,
-        category: p.category,
-        date: p.date,
-      })),
-      accounts: (accounts || []).map((a) => ({
-        name: a.name,
-        type: a.type,
-        balance: a.balance,
-        currency: a.currency,
-        icon: a.icon,
-        color: a.color,
-        last4: a.last4,
-      })),
-      transactions: (transactions || []).map((t) => ({
-        type: t.type,
-        amount: t.amount,
-        currency: t.currency,
-        category: t.category,
-        date: t.date,
-        note: t.note,
-        icon: t.icon,
-        color: t.color,
-      })),
-      budgets: (budgets || []).map((b) => ({
-        category: b.category,
-        amount: b.amount,
-        currency: b.currency,
-        month: b.month,
-      })),
+  const handleBackup = async () => {
+    try {
+      const data = await convex.query(api.backup.exportData, {})
+      downloadBackupJson(data)
+      toast.success("Full system backup exported")
+    } catch {
+      toast.error("Failed to export backup")
     }
-    const date = new Date().toISOString().split("T")[0]
-    downloadFile(JSON.stringify(data, null, 2), `subkeep-backup-${date}.json`, "application/json")
-    toast.success("Full system backup exported")
   }
 
   const handleExportTransactionsCSV = () => {
@@ -207,15 +151,12 @@ export default function MorePage() {
     const reader = new FileReader()
     reader.onload = (event) => {
       try {
-        const data = JSON.parse(event.target?.result as string)
-        if (data.subscriptions && Array.isArray(data.subscriptions)) {
-          setRestoreData(data)
-          setRestoreConfirm(true)
-        } else {
-          toast.error("Invalid backup file structure")
-        }
-      } catch {
-        toast.error("Invalid JSON file")
+        const text = event.target?.result as string
+        const parsed = parseAndNormalizeBackup(text)
+        setParsedBackup(parsed)
+        setRestorePreviewOpen(true)
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Invalid backup file")
       }
     }
     reader.readAsText(file)
@@ -230,31 +171,36 @@ export default function MorePage() {
       try {
         const parsedRows = parseCSVToSubscriptions(event.target?.result as string)
         if (parsedRows.length > 0) {
-          setRestoreData({ subscriptions: parsedRows as never[] })
-          setRestoreConfirm(true)
+          const parsed = parseAndNormalizeBackup(parsedRows)
+          setParsedBackup(parsed)
+          setRestorePreviewOpen(true)
         } else {
           toast.error("No valid subscription rows found in CSV")
         }
-      } catch {
-        toast.error("Failed to parse CSV file")
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to parse CSV file")
       }
     }
     reader.readAsText(file)
     e.target.value = ""
   }
 
-  const handleRestore = async () => {
-    if (!restoreData) return
+  const handleConfirmRestore = async () => {
+    if (!parsedBackup) return
+    setIsRestoring(true)
     try {
-      await restoreSubscriptions({ subscriptions: restoreData.subscriptions as never[] })
-      if (restoreData.payments && restoreData.payments.length > 0) {
-        await restorePayments({ payments: restoreData.payments as never[] })
-      }
-      setRestoreConfirm(false)
-      setRestoreData(null)
-      toast.success(`Successfully restored ${restoreData.subscriptions.length} subscriptions!`)
+      await restoreDataMutation({
+        version: parsedBackup.version,
+        exportedAt: parsedBackup.exportedAt,
+        data: parsedBackup.data,
+      })
+      toast.success("Data successfully restored")
+      setRestorePreviewOpen(false)
+      setParsedBackup(null)
     } catch {
       toast.error("Failed to restore data")
+    } finally {
+      setIsRestoring(false)
     }
   }
 
@@ -517,47 +463,13 @@ export default function MorePage() {
         </div>
       )}
 
-      {restoreConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl border border-border bg-popover p-6 shadow-[0_40px_90px_-40px_rgba(0,0,0,0.95)]">
-            <div className="mb-4 flex justify-center">
-              <div className="flex size-12 items-center justify-center rounded-2xl border border-border bg-foreground/[0.04]">
-                <Upload className="size-6 text-foreground" />
-              </div>
-            </div>
-            <h3 className="mb-2 text-center text-lg font-medium tracking-tight">
-              Restore subscriptions?
-            </h3>
-            <p className="mb-6 text-center text-sm text-muted-foreground">
-              This replaces your current subscription records with the imported file.
-            </p>
-            <div className="mb-4 rounded-2xl border border-border bg-foreground/[0.03] p-3 text-xs text-muted-foreground">
-              <div>{restoreData?.subscriptions?.length || 0} subscriptions ready to import</div>
-              {restoreData?.payments && (
-                <div>{restoreData.payments.length} payments included</div>
-              )}
-            </div>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1 cursor-pointer"
-                onClick={() => {
-                  setRestoreConfirm(false)
-                  setRestoreData(null)
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                className="flex-1 cursor-pointer"
-                onClick={handleRestore}
-              >
-                Restore
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <RestorePreviewDialog
+        open={restorePreviewOpen}
+        onOpenChange={setRestorePreviewOpen}
+        backup={parsedBackup}
+        onConfirm={handleConfirmRestore}
+        isRestoring={isRestoring}
+      />
 
       <SettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
       <PaymentMethodsSheet open={paymentMethodsOpen} onOpenChange={setPaymentMethodsOpen} />
