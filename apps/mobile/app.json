@@ -13,6 +13,7 @@
       "backgroundColor": "#09090b"
     },
     "android": {
+      "package": "com.subkeep.mobile",
       "backgroundColor": "#09090b",
       "adaptiveIcon": {
         "backgroundColor": "#000000",
@@ -48,6 +49,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8e6a49da-258a-4872-8596-75903b9d8c0d"
+      }
     }
   }
 }

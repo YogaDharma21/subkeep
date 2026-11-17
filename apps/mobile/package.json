@@ -10,7 +10,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:apk": "eas build -p android --profile preview"
   },
   "dependencies": {
     "@clerk/expo": "^4.14.0",
